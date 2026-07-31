@@ -23,6 +23,8 @@ import {
 } from './features/storage/harvestPalletMemo';
 import ShopTerminalPaymentModal from './features/payment/ShopTerminalPaymentModal';
 import { useGameSfx } from './features/audio/useGameSfx';
+import { LoadingScreen } from './systems/loading/GameBootLoader';
+import { preloadLoadingPhase, warmLoadingPhases } from './systems/loading/preloadAssets';
 import MAIN_MENU_BGM_1 from './assets/images/효과음/메인메뉴/메인메뉴1.mp3';
 import MAIN_MENU_BGM_2 from './assets/images/효과음/메인메뉴/메인메뉴2.mp3';
 import WEATHER_CLEAR_BREEZE from './assets/images/효과음/환경사운드/날씨/날씨 맑음 바람약간.mp3';
@@ -693,7 +695,9 @@ import {
   DEFAULT_HOUSING_FRIDGE_SETTING,
   DEFAULT_HOUSING_HVAC_SETTING,
   HOUSING_APPLIANCE_SLOT_DEFS,
+  HOUSING_CLOTHING_SLOT_DEFS,
   HOUSING_FURNITURE_SLOT_DEFS,
+  HOUSING_DAILY_LIVING_WATER_LITERS,
   HOUSING_DAILY_MEAL_TARGET,
   HOUSING_MEAL_COOLDOWN_MS,
   HOUSING_MEAL_LABOR_RECOVERY,
@@ -714,17 +718,29 @@ import {
   HOUSING_MEAL_RECIPE_BY_KEY,
   housingMealRecipePreparedNameOf,
   housingMealRecipeIngredientTextOf,
+  housingMealWaterLitersOf,
+  housingWaterDisplayTextOf,
   housingMealCookConsumeQtyOf,
+  addHousingFoodStorageBatch,
+  consumeHousingFoodStorageBatches,
+  expireHousingFoodStorageBatchesForField,
   housingOptionExtraCost,
   housingOptionKeysOfFacility,
   housingOptionMapOfFacility,
   housingOptionsOfFacility,
+  housingBathroomTierOfFacility,
+  housingBathroomInfoOf,
+  housingHasBathroomOfFacility,
   housingRoomButtonsByFacilityKey,
   housingSleepQualityInfoOf,
   housingDefaultFurnitureOfFacility,
   housingDefaultFurniturePackageCostOfFacility,
   normalizeHousingFoodStorageByItemKey,
+  normalizeHousingFoodStorageBatchesByFacilityKey,
+  moveHousingFoodStorageBatch,
   normalizeHousingApplianceInstallations,
+  normalizeHousingClothingEquipments,
+  normalizeHousingClothingStorageByItemKey,
   normalizeHousingFurnitureInstallations,
   normalizeHousingFridgeSetting,
   normalizeHousingHvacSetting,
@@ -741,6 +757,13 @@ import {
   healthWorkEfficiencyMultiplierOf,
   playerStatusStepForValue,
 } from './features/health/playerHealthSystem';
+import {
+  applyWorkAccidentToGameState,
+  normalizePlayerIllnesses,
+  normalizePlayerInjuries,
+  rollDailyPlayerConditions,
+  rollWorkAccident,
+} from './features/health/playerConditionSystem';
 import {
   ConstructionOfficeOverlay,
   ConstructionOfficePanel,
@@ -911,6 +934,7 @@ import {
 import {
   applyRestorableViewState as applyRestorableViewStateFromModule,
   buildCurrentRestorableViewState as buildCurrentRestorableViewStateFromModule,
+  getRestorableViewLoadingPhaseKeys,
   restoreAutoSavedView as restoreAutoSavedViewFromModule,
   sanitizeAccountPreferences as sanitizeAccountPreferencesFromModule,
   sanitizeLastActiveSaveSlotPreference as sanitizeLastActiveSaveSlotPreferenceFromModule,
@@ -3701,7 +3725,8 @@ const SHOP_TAB_LABEL_OVERRIDES = {
   pollen: '\uAF43\uAC00\uB8E8',
   fertilizer: '\uBE44\uB8CC',
   appliance: '\uAC00\uC804',
-  furniture: '\uAC00\uAD6C'
+  furniture: '\uAC00\uAD6C',
+  clothing: '\uC791\uC5C5\uBCF5\u00B7\uBCF4\uD638\uAD6C'
 };
 const shopCategoryLabelOf = (categoryKeyRaw = '', fallback = '\uAE30\uD0C0') => {
   const categoryKey = String(categoryKeyRaw || '');
@@ -3774,6 +3799,17 @@ const HOME_LIVING_FURNITURE_TABS = Object.freeze([
   ['storage', '🗄️ 수납장'],
   ['diningTable', '🍽️ 식탁']
 ]);
+const HOME_LIVING_CLOTHING_TABS = Object.freeze([
+  ['all', '🧥 전체'],
+  ['gloves', '🧤 장갑'],
+  ['shoes', '🥾 신발'],
+  ['outerwear', '🧥 작업복'],
+  ['head', '⛑️ 머리'],
+  ['vest', '🦺 조끼'],
+  ['face', '😷 마스크'],
+  ['eyes', '🥽 눈 보호구']
+]);
+
 const HOME_LIVING_INTERNET_PLANS = Object.freeze([
   {
     key: 'internet100m',
@@ -3879,15 +3915,21 @@ const FOOD_MART_READY_MEAL_ITEM_KEYS = new Set([
   'foodInstantSoupYukgaejang',
   'foodRicePorridgeAbalone',
   'foodRicePorridgeVegetable',
-  'foodCupRiceBeefSoup'
+  'foodCupRiceBeefSoup',
+  'foodCreamSoupSingle',
+  'foodCreamSoupPack'
 ]);
 const FOOD_MART_NOODLE_ITEM_KEYS = new Set([
+  'foodBagRamenSingle',
   'foodBagRamen5Pack',
   'foodUdonPack2',
   'foodColdNoodle2Pack',
   'foodPastaSpaghetti500g',
+  'foodRamenSpicySingle',
   'foodRamenSpicy5Pack',
+  'foodRamenMildSingle',
   'foodRamenMild5Pack',
+  'foodJjajangRamenSingle',
   'foodJjajangRamen4Pack'
 ]);
 const FOOD_MART_FROZEN_ITEM_KEYS = new Set([
@@ -3974,8 +4016,13 @@ const FOOD_MART_FEATURED_ITEM_KEYS = [
   'foodPeanutSnack',
   'foodIceCreamBar6Pack',
   'foodFrozenPizza',
+  'foodBagRamenSingle',
+  'foodRamenSpicySingle',
+  'foodCreamSoupSingle',
   'foodRamenSpicy5Pack',
+  'foodRamenMildSingle',
   'foodRamenMild5Pack',
+  'foodJjajangRamenSingle',
   'foodJjajangRamen4Pack',
   'foodCupRiceBeefSoup',
   'foodCereal500g',
@@ -8910,6 +8957,89 @@ const fieldTankWaterLitersEffective = (field) => {
   );
   return Math.max(direct, byUnit);
 };
+const HOUSING_LIVING_WATER_SOURCE_QUALITY = 85;
+const HOUSING_LIVING_WATER_STORED_MIN_QUALITY = 55;
+const HOUSING_LIVING_WATER_DAILY_DECAY = 3;
+const normalizeHousingLivingWaterQuality = (valueRaw = 0) => clamp(Number(valueRaw) || 0, 0, 100);
+const housingLivingWaterQualityLabelOf = (qualityRaw = 0) => {
+  const quality = normalizeHousingLivingWaterQuality(qualityRaw);
+  if (quality >= 80) return '좋음';
+  if (quality >= 65) return '보통';
+  if (quality >= 55) return '저하';
+  return '관리 불가';
+};
+const blendHousingLivingWaterQualityWithWellWater = ({ field, addLiters }) => {
+  const incomingLiters = Math.max(0, Number(addLiters) || 0);
+  if (!field || incomingLiters <= 0) return normalizeHousingLivingWaterQuality(field?.housingLivingWaterQuality);
+  const beforeLiters = fieldTankWaterLitersEffective(field);
+  const beforeQuality = beforeLiters > 0
+    ? Math.max(
+        HOUSING_LIVING_WATER_STORED_MIN_QUALITY,
+        normalizeHousingLivingWaterQuality(field?.housingLivingWaterQuality || HOUSING_LIVING_WATER_STORED_MIN_QUALITY)
+      )
+    : HOUSING_LIVING_WATER_SOURCE_QUALITY;
+  const blended = ((beforeQuality * beforeLiters) + (HOUSING_LIVING_WATER_SOURCE_QUALITY * incomingLiters))
+    / Math.max(1, beforeLiters + incomingLiters);
+  return clamp(blended, HOUSING_LIVING_WATER_STORED_MIN_QUALITY, HOUSING_LIVING_WATER_SOURCE_QUALITY);
+};
+const decayHousingLivingWaterQualityForField = (field, day) => {
+  if (!field) return field;
+  const hasTank = fieldTankOperationalCapacityLiters(field, day) > 0;
+  const waterLiters = fieldTankWaterLitersEffective(field);
+  if (!hasTank || waterLiters <= 0) {
+    return {
+      ...field,
+      housingLivingWaterQuality: 0
+    };
+  }
+  const current = normalizeHousingLivingWaterQuality(
+    field?.housingLivingWaterQuality || HOUSING_LIVING_WATER_STORED_MIN_QUALITY
+  );
+  return {
+    ...field,
+    housingLivingWaterQuality: Math.max(
+      HOUSING_LIVING_WATER_STORED_MIN_QUALITY,
+      current - HOUSING_LIVING_WATER_DAILY_DECAY
+    )
+  };
+};
+const consumeHousingDailyWaterForField = ({ field, day, fieldIndex }) => {
+  if (!field) return { field, logs: [] };
+  const hasUsableHousing = HOUSING_FACILITY_KEYS.some((facilityKey) => fieldFacilityUsable(field, facilityKey, day));
+  if (!hasUsableHousing) return { field, logs: [] };
+  const requiredLiters = Math.max(0, Number(HOUSING_DAILY_LIVING_WATER_LITERS) || 0);
+  if (requiredLiters <= 0) return { field, logs: [] };
+  const capacityLiters = fieldTankOperationalCapacityLiters(field, day);
+  const currentLiters = clamp(fieldTankWaterLitersEffective(field), 0, Math.max(capacityLiters, fieldTankWaterLitersEffective(field)));
+  const label = `밭 ${Number(fieldIndex) + 1}`;
+  if (capacityLiters <= 0) {
+    return {
+      field,
+      logs: [`${label} 하우징 생활용수 부족: 사용할 물탱크가 없습니다.`]
+    };
+  }
+  if (currentLiters + 0.0001 < requiredLiters) {
+    const nextUnits = splitTankWaterByUnit(field, 0);
+    return {
+      field: {
+        ...field,
+        tankWaterLiters: 0,
+        tankWaterLitersByUnit: tankUnitWaterMapFromUnits(nextUnits)
+      },
+      logs: [`${label} 하우징 생활용수 부족: 물탱크 물 ${Math.floor(currentLiters).toLocaleString()}L만 사용했습니다.`]
+    };
+  }
+  const nextLiters = Math.max(0, currentLiters - requiredLiters);
+  const nextUnits = splitTankWaterByUnit(field, nextLiters);
+  return {
+    field: {
+      ...field,
+      tankWaterLiters: nextLiters,
+      tankWaterLitersByUnit: tankUnitWaterMapFromUnits(nextUnits)
+    },
+    logs: []
+  };
+};
 const tankOptionExtraCost = (optionKeys) =>
   (optionKeys || []).reduce((sum, key) => sum + (TANK_UPGRADE_OPTION_MAP[key]?.price || 0), 0);
 const FACILITY_OPTION_RETROFIT_COST_MULTIPLIER = 1.35;
@@ -10403,6 +10533,7 @@ const DEFAULT_VILLAGE_PENSION_MARKER_POS = { x: 43.0, y: 69.3 };
 const DEFAULT_SMALL_CITY_MARKER_POS = { x: 49.0, y: 17.3 };
 const DEFAULT_LOCAL_FOOD_STORE_MARKER_POS = { x: 78.4, y: 68.8 };
 const DEFAULT_USED_CAR_DEALER_MARKER_POS = { x: 21.6, y: 68.5 };
+const DEFAULT_HOSPITAL_MARKER_POS = { x: 80.7, y: 52.4 };
 const DEFAULT_MOTEL_MARKER_POS = { x: 83.7, y: 75.4 };
 const DEFAULT_GUEST_HOUSE_MARKER_POS = { x: 35.4, y: 40.3 };
 const DEFAULT_REAL_ESTATE_OFFICE_MARKER_POS = { x: 66.7, y: 51.7 };
@@ -10564,6 +10695,7 @@ const normalizeVillagePensionMarkerPos = (pos) => normalizeMarkerPos(pos, DEFAUL
 const normalizeSmallCityMarkerPos = (pos) => normalizeMarkerPos(pos, DEFAULT_SMALL_CITY_MARKER_POS);
 const normalizeLocalFoodStoreMarkerPos = (pos) => normalizeMarkerPos(pos, DEFAULT_LOCAL_FOOD_STORE_MARKER_POS);
 const normalizeUsedCarDealerMarkerPos = (pos) => normalizeMarkerPos(pos, DEFAULT_USED_CAR_DEALER_MARKER_POS);
+const normalizeHospitalMarkerPos = (pos) => normalizeMarkerPos(pos, DEFAULT_HOSPITAL_MARKER_POS);
 const normalizeMotelMarkerPos = (pos) => normalizeMarkerPos(pos, DEFAULT_MOTEL_MARKER_POS);
 const normalizeGuestHouseMarkerPos = (pos) => normalizeMarkerPos(pos, DEFAULT_GUEST_HOUSE_MARKER_POS);
 const normalizeRealEstateOfficeMarkerPos = (pos) => normalizeMarkerPos(pos, DEFAULT_REAL_ESTATE_OFFICE_MARKER_POS);
@@ -10800,16 +10932,93 @@ const TOOL_IMAGE_KEYWORDS_BY_ITEM_KEY = {
   hydratedLime: ['석회'],
   limeSulfur: ['석회유황'],
   foodHamburger: ['햄버거'],
+  foodBagRamenSingle: ['얼큰라면 1봉', '얼큰라면'],
+  foodBagRamen5Pack: ['얼큰라면 5입', '얼큰라면'],
   foodSpam200g: ['스팸 200g', '스팸'],
   foodFrozenDumpling1kg: ['만두1kg', '만두 1kg'],
   foodBagel4Pack: ['베이글 4개', '베이글'],
   foodYogurt4Pack: ['요구르트 4개', '요구르트'],
   foodApple4Pack: ['사과 4개'],
   foodInstantRice210g: ['즉석밥 210g', '즉석밥'],
+  foodRamenSpicySingle: ['매운라면 1봉', '매운라면'],
+  foodRamenMildSingle: ['순한라면 1봉', '순한라면'],
+  foodJjajangRamenSingle: ['짜장라면 1봉', '짜장라면'],
   preparedCupRamen: ['끓인 컵라면'],
+  boiledBagRamen: ['끓인 얼큰라면'],
+  boiledSpicyRamen: ['끓인 매운라면'],
+  boiledMildRamen: ['끓인 순한라면'],
+  boiledJjajangRamen: ['끓인 짜장라면'],
+  boiledFrozenUdon: ['끓인 냉동 우동'],
+  eggRiceBreakfast: ['간장 계란밥'],
+  bibimbap: ['비빔밥'],
+  friedRice: ['채소 볶음밥'],
+  curryRice: ['카레라이스'],
+  porkKimchiStew: ['돼지고기 김치찌개'],
+  doenjangStewSet: ['된장찌개'],
+  beanSproutSoupSet: ['콩나물국밥'],
+  porkPotatoStew: ['돼지고기 감자찌개'],
+  porkDoenjangStewSet: ['돼지고기 된장찌개'],
+  budaeStewSet: ['부대찌개'],
+  dumplingRiceSoup: ['만두국밥'],
+  tunaKimchiStew: ['참치김치찌개'],
+  eggDropRiceSoup: ['계란국밥'],
+  tofuEggPanSet: ['두부계란부침'],
+  mushroomTofuRiceBowl: ['버섯두부덮밥'],
+  shiitakeBeanSproutRice: ['표고 콩나물밥'],
+  kingOysterMushroomSteakSet: ['새송이버섯 구이'],
+  mushroomVegetableFriedRice: ['버섯 채소볶음밥'],
+  curryUdon: ['카레우동'],
+  mushroomDoenjangStew: ['버섯 된장찌개'],
+  mushroomCurryRice: ['버섯카레라이스'],
+  mushroomStirFryUdon: ['버섯 볶음우동'],
+  potatoSoyBraisedSet: ['감자조림'],
+  cabbageTofuStirFrySet: ['양배추 두부볶음'],
+  beanSproutBibimbap: ['콩나물 비빔밥'],
+  kimchiTofuRiceSoup: ['김치두부국밥'],
+  potatoCarrotFriedRice: ['감자채 볶음밥'],
+  mushroomSesameBibimbap: ['버섯 참기름 비빔밥'],
+  lettuceTomatoSalad: ['양상추 토마토 샐러드'],
+  tofuSaladBowl: ['두부 샐러드'],
+  potatoEggSalad: ['감자 계란 샐러드'],
+  sweetPotatoSalad: ['고구마 샐러드'],
+  cucumberBibimbap: ['오이무침 비빔밥'],
+  ramenWithEgg: ['계란라면'],
+  fishCakeUdon: ['어묵우동'],
+  dumplingRamenPot: ['만두라면 냄비'],
+  porkStirFryUdon: ['돼지고기 볶음우동'],
+  sausageBreadPlate: ['소시지 빵식사'],
+  cabbageEggToast: ['양배추 계란토스트'],
+  bagelCheeseBreakfast: ['베이글 치즈 브런치'],
+  tunaMayoToast: ['참치마요 토스트'],
+  jjajangRice: ['짜장덮밥'],
+  kimchiPorkStirFrySet: ['김치제육'],
+  porkCurryRice: ['돼지고기 카레덮밥'],
+  porkCutletRiceSet: ['돈까스 정식'],
+  spamKimchiFriedRice: ['스팸김치볶음밥', '스팸 김치볶음밥'],
+  sausageVegStirFrySet: ['소시지 야채볶음'],
+  kimchiTunaFriedRice: ['김치참치볶음밥'],
+  spamMayoRiceBowl: ['스팸마요 덮밥'],
+  fishCakeStirFrySet: ['어묵볶음'],
   heatedPorridgeAbalone: ['데운 전복죽'],
   heatedPorridgeVegetable: ['데운 야채죽'],
   preparedCupRiceSoup: ['끓인 컵국밥'],
+  heatedInstantRice: ['데운 즉석밥'],
+  heatedTriangleGimbap: ['데운 삼각김밥'],
+  heatedKimbapRoll: ['데운 줄김밥'],
+  heatedInstantSeaweedSoup: ['데운 미역국'],
+  heatedInstantYukgaejang: ['데운 육개장'],
+  heatedFrozenPorkCutlet: ['데운 돈까스'],
+  heatedHotdog: ['데운 핫도그'],
+  heatedHamburger: ['데운 편의점 햄버거'],
+  steamedFrozenDumpling: ['찐 냉동만두'],
+  boiledColdNoodle: ['삶은 냉면'],
+  heatedLunchBox: ['데운 도시락'],
+  heatedFrozenPizza: ['데운 냉동피자'],
+  heatedFrozenFriedRice: ['데운 냉동볶음밥'],
+  heatedFrozenPasta: ['데운 냉동파스타'],
+  heatedFrozenTteokbokki: ['데운 냉동 떡볶이'],
+  preparedCreamSoup: ['탄 컵스프'],
+  foodCreamSoupSingle: ['컵스프 1개', '컵스프'],
   foodGreenOnion300g: ['대파 300g', '대파'],
   foodLettuce300g: ['양상추 300g', '양상추'],
   foodCucumber3Pack: ['오이 3개', '오이'],
@@ -11489,6 +11698,7 @@ function createField(land, owned = false, difficultyProfile = null) {
     workbenchInstallationsByFacilityKey: {},
     tankWaterLiters: 0,
     tankWaterLitersByUnit: {},
+    housingLivingWaterQuality: 0,
     evChargeSlotNos: [],
     evChargeUsageKwhTotal: 0,
     evSlowChargeReservedInstanceId: '',
@@ -11522,7 +11732,10 @@ function createField(land, owned = false, difficultyProfile = null) {
     housingPreparedMealCountByFacilityKey: {},
     housingPreparedMealStockByFacilityKey: {},
     housingApplianceInstallationsByFacilityKey: {},
+    housingClothingEquipmentsByFacilityKey: {},
+    housingClothingStorageByFacilityKey: {},
     housingFurnitureInstallationsByFacilityKey: {},
+    housingBathroomStateByFacilityKey: {},
     housingInternetContractsByFacilityKey: {},
     housingFridgeSettingsByFacilityKey: {},
     housingHvacSettingsByFacilityKey: {},
@@ -11655,6 +11868,8 @@ function makeNewGame(
     weedRainBoostUntilDay: 0,
     labor: SELF_LABOR_BASE,
     health: 100,
+    playerInjuries: {},
+    playerIllnesses: {},
     lastSleepQualityInfo: null,
     storage: [],
     soldToday: 0,
@@ -14341,6 +14556,13 @@ const normalizeLoadedGame = (loaded, accountUsername = '') => {
       });
       return next;
     })(),
+    housingLivingWaterQuality: (() => {
+      const quality = normalizeHousingLivingWaterQuality(field?.housingLivingWaterQuality);
+      if (quality > 0) return quality;
+      const tankWater = Math.max(0, Number(field?.tankWaterLiters) || 0)
+        + Object.values(field?.tankWaterLitersByUnit || {}).reduce((sum, liters) => sum + Math.max(0, Number(liters) || 0), 0);
+      return tankWater > 0 ? HOUSING_LIVING_WATER_STORED_MIN_QUALITY : 0;
+    })(),
     evChargeUsageKwhTotal: Math.max(0, Number(field?.evChargeUsageKwhTotal) || 0),
     evSlowChargeReservedInstanceId: String(field?.evSlowChargeReservedInstanceId || ''),
     evFastChargeDay: Math.max(0, Math.floor(Number(field?.evFastChargeDay) || 0)),
@@ -14546,6 +14768,26 @@ const normalizeLoadedGame = (loaded, accountUsername = '') => {
       });
       return next;
     })(),
+    housingFoodStorageBatchesByFacilityKey: (() => {
+      const raw = normalizeHousingFoodStorageBatchesByFacilityKey(field?.housingFoodStorageBatchesByFacilityKey || {});
+      const next = {};
+      HOUSING_FACILITY_KEYS.forEach((facilityKey) => {
+        if (fieldFacilityCountOf(field, facilityKey) <= 0) return;
+        const batches = raw?.[facilityKey] || {};
+        if (Object.keys(batches).length > 0) next[facilityKey] = batches;
+      });
+      return next;
+    })(),
+    housingFreezerFoodStorageBatchesByFacilityKey: (() => {
+      const raw = normalizeHousingFoodStorageBatchesByFacilityKey(field?.housingFreezerFoodStorageBatchesByFacilityKey || {});
+      const next = {};
+      HOUSING_FACILITY_KEYS.forEach((facilityKey) => {
+        if (fieldFacilityCountOf(field, facilityKey) <= 0) return;
+        const batches = raw?.[facilityKey] || {};
+        if (Object.keys(batches).length > 0) next[facilityKey] = batches;
+      });
+      return next;
+    })(),
     housingPreparedMealCountByFacilityKey: (() => {
       const raw = normalizeHousingPreparedMealCountByFacilityKey(field?.housingPreparedMealCountByFacilityKey || {});
       const next = {};
@@ -14589,6 +14831,26 @@ const normalizeLoadedGame = (loaded, accountUsername = '') => {
       });
       return next;
     })(),
+    housingClothingEquipmentsByFacilityKey: (() => {
+      const raw = field?.housingClothingEquipmentsByFacilityKey || {};
+      const next = {};
+      HOUSING_FACILITY_KEYS.forEach((facilityKey) => {
+        if (fieldFacilityCountOf(field, facilityKey) <= 0) return;
+        const equipped = normalizeHousingClothingEquipments(raw?.[facilityKey] || {});
+        if (Object.keys(equipped).length > 0) next[facilityKey] = equipped;
+      });
+      return next;
+    })(),
+    housingClothingStorageByFacilityKey: (() => {
+      const raw = field?.housingClothingStorageByFacilityKey || {};
+      const next = {};
+      HOUSING_FACILITY_KEYS.forEach((facilityKey) => {
+        if (fieldFacilityCountOf(field, facilityKey) <= 0) return;
+        const stored = normalizeHousingClothingStorageByItemKey(raw?.[facilityKey] || {});
+        if (Object.keys(stored).length > 0) next[facilityKey] = stored;
+      });
+      return next;
+    })(),
     housingFurnitureInstallationsByFacilityKey: (() => {
       const raw = field?.housingFurnitureInstallationsByFacilityKey || {};
       const next = {};
@@ -14596,6 +14858,26 @@ const normalizeLoadedGame = (loaded, accountUsername = '') => {
         if (fieldFacilityCountOf(field, facilityKey) <= 0) return;
         const installed = normalizeHousingFurnitureInstallations(raw?.[facilityKey] || {});
         if (Object.keys(installed).length > 0) next[facilityKey] = installed;
+      });
+      return next;
+    })(),
+    housingBathroomStateByFacilityKey: (() => {
+      const raw = field?.housingBathroomStateByFacilityKey || {};
+      const next = {};
+      HOUSING_FACILITY_KEYS.forEach((facilityKey) => {
+        if (fieldFacilityCountOf(field, facilityKey) <= 0) return;
+        if (!housingHasBathroomOfFacility(facilityKey)) return;
+        const state = housingBathroomInfoOf({
+          facilityKey,
+          bathroomState: raw?.[facilityKey] || {},
+          day
+        });
+        next[facilityKey] = {
+          cleanliness: state.cleanliness,
+          showeredDay: state.showeredDay,
+          chemicalWashDay: state.chemicalWashDay,
+          cleanedDay: state.cleanedDay
+        };
       });
       return next;
     })(),
@@ -15076,6 +15358,7 @@ const normalizeLoadedGame = (loaded, accountUsername = '') => {
     smallCityMarkerPos: normalizeSmallCityMarkerPos(loaded.smallCityMarkerPos),
     localFoodStoreMarkerPos: normalizeLocalFoodStoreMarkerPos(loaded.localFoodStoreMarkerPos),
     usedCarDealerMarkerPos: normalizeUsedCarDealerMarkerPos(loaded.usedCarDealerMarkerPos),
+    hospitalMarkerPos: normalizeHospitalMarkerPos(loaded.hospitalMarkerPos),
     motelMarkerPos: normalizeMotelMarkerPos(loaded.motelMarkerPos),
     guestHouseMarkerPos: normalizeGuestHouseMarkerPos(loaded.guestHouseMarkerPos),
     realEstateOfficeMarkerPos: normalizeRealEstateOfficeMarkerPos(loaded.realEstateOfficeMarkerPos),
@@ -15302,6 +15585,8 @@ const normalizeLoadedGame = (loaded, accountUsername = '') => {
     timeOfDay: String(loaded.timeOfDay || 'day') === 'night' ? 'night' : 'day',
     housingMealUsage: normalizeHousingMealUsage(loaded.housingMealUsage, day),
     health: Number.isFinite(Number(loaded.health)) ? clamp(Number(loaded.health), 0, 100) : 100,
+    playerInjuries: normalizePlayerInjuries(loaded.playerInjuries || {}),
+    playerIllnesses: normalizePlayerIllnesses(loaded.playerIllnesses || {}),
     temperatureC: normalizedTemperatureC,
     nightTemperatureC: normalizedNightTemperatureC,
     lastSleepQualityInfo: normalizeLastSleepQualityInfo(loaded.lastSleepQualityInfo),
@@ -17096,6 +17381,7 @@ const TOWN_MARKER_VISIBLE_POSITION_STATE_KEYS = Object.freeze({
   smallCity: 'smallCityMarkerPos',
   localFoodStore: 'localFoodStoreMarkerPos',
   usedCarDealer: 'usedCarDealerMarkerPos',
+  hospital: 'hospitalMarkerPos',
 });
 
 const phoneHomeAppsFromOrder = (order) => (
@@ -20061,6 +20347,7 @@ export default function App() {
   const ownedFieldSuppressClickRef = useRef(false);
   const prevDevModeRef = useRef(devMode);
   const townMoveMapViewportRef = useRef(null);
+  const townMoveMapPreloadPromiseRef = useRef(null);
   const townMoveMapDragRef = useRef({
     active: false,
     pointerId: -1,
@@ -20178,6 +20465,11 @@ export default function App() {
   const [mapShopExitAnimating, setMapShopExitAnimating] = useState(false);
   const [mapShopPaymentEntering, setMapShopPaymentEntering] = useState(false);
   const [mapShopClosing, setMapShopClosing] = useState(false);
+  const [autoRestoreLoadingState, setAutoRestoreLoadingState] = useState({
+    active: false,
+    progress: 0,
+    detail: '이전에 보던 화면을 준비하고 있습니다.'
+  });
   const [harvestPlanModalClosing, setHarvestPlanModalClosing] = useState(false);
   const [harvestTransportModalClosing, setHarvestTransportModalClosing] = useState(false);
   const [closingModalKeys, setClosingModalKeys] = useState({});
@@ -20843,6 +21135,7 @@ body { display: flex !important; align-items: center !important; justify-content
   const mapSmallCityMarkerDragRef = React.useRef(createSettlementMarkerDragState());
   const mapLocalFoodStoreMarkerDragRef = React.useRef(createSettlementMarkerDragState());
   const mapUsedCarDealerMarkerDragRef = React.useRef(createSettlementMarkerDragState());
+  const mapHospitalMarkerDragRef = React.useRef(createSettlementMarkerDragState());
   const mapMotelMarkerDragRef = React.useRef(createSettlementMarkerDragState());
   const mapGuestHouseMarkerDragRef = React.useRef(createSettlementMarkerDragState());
   const mapRealEstateOfficeMarkerDragRef = React.useRef(createSettlementMarkerDragState());
@@ -22071,6 +22364,7 @@ body { display: flex !important; align-items: center !important; justify-content
   const smallCityMarkerPos = townSettlementMarkerPositions.smallCity;
   const localFoodStoreMarkerPos = townSettlementMarkerPositions.localFoodStore;
   const usedCarDealerMarkerPos = townSettlementMarkerPositions.usedCarDealer;
+  const hospitalMarkerPos = townSettlementMarkerPositions.hospital;
   const motelMarkerPos = townSettlementMarkerPositions.motel;
   const guestHouseMarkerPos = townSettlementMarkerPositions.guestHouse;
   const realEstateOfficeMarkerPos = townSettlementMarkerPositions.realEstateOffice;
@@ -23268,6 +23562,7 @@ body { display: flex !important; align-items: center !important; justify-content
         processingCenter: processingCenterMarkerPos,
         smallApc: smallApcMarkerPos,
         herbalClinic: herbalClinicMarkerPos,
+        hospital: hospitalMarkerPos,
         villageInn: villageInnMarkerPos,
         villagePension: villagePensionMarkerPos,
         motel: motelMarkerPos,
@@ -23287,6 +23582,7 @@ body { display: flex !important; align-items: center !important; justify-content
       fuelMarkerPos,
       guestHouseMarkerPos,
       herbalClinicMarkerPos,
+      hospitalMarkerPos,
       homeLivingCenterMarkerPos,
       isSmallCityContext,
       laborOfficeMarkerPos,
@@ -23321,6 +23617,7 @@ body { display: flex !important; align-items: center !important; justify-content
     processingCenter: mapProcessingCenterMarkerDragRef,
     smallApc: mapSmallApcMarkerDragRef,
     herbalClinic: mapHerbalClinicMarkerDragRef,
+    hospital: mapHospitalMarkerDragRef,
     villageInn: mapVillageInnMarkerDragRef,
     villagePension: mapVillagePensionMarkerDragRef,
     motel: mapMotelMarkerDragRef,
@@ -23345,6 +23642,7 @@ body { display: flex !important; align-items: center !important; justify-content
     processingCenterMarkerPos: normalizeProcessingCenterMarkerPos,
     smallApcMarkerPos: normalizeSmallApcMarkerPos,
     herbalClinicMarkerPos: normalizeHerbalClinicMarkerPos,
+    hospitalMarkerPos: normalizeHospitalMarkerPos,
     villageInnMarkerPos: normalizeVillageInnMarkerPos,
     villagePensionMarkerPos: normalizeVillagePensionMarkerPos,
     motelMarkerPos: normalizeMotelMarkerPos,
@@ -23976,6 +24274,7 @@ body { display: flex !important; align-items: center !important; justify-content
           optionsText: optionNames.length ? optionNames.join(', ') : '없음',
           selectedOptionKeys: selectedKeys,
           durability: fieldFacilityDurabilityOf(housingViewField, facilityKey),
+          bathroomTier: housingBathroomTierOfFacility(facilityKey),
           rooms: housingRoomButtonsByFacilityKey(facilityKey)
         };
       })
@@ -24226,6 +24525,97 @@ body { display: flex !important; align-items: center !important; justify-content
     }),
     [housingFacilityLivingQualityInfo, housingIndoorTemperatureInfo, housingInteriorPowerInfo, housingInternetInfo, housingLifeSupplyInfo, housingSleepQualityInfo]
   );
+  const housingBathroomInfo = useMemo(() => {
+    const facilityKey = String(housingInteriorFacilityRow?.key || '');
+    if (!facilityKey) return null;
+    return housingBathroomInfoOf({
+      facilityKey,
+      bathroomState: selectedField?.housingBathroomStateByFacilityKey?.[facilityKey] || {},
+      day: game?.day
+    });
+  }, [game?.day, housingInteriorFacilityRow?.key, selectedField?.housingBathroomStateByFacilityKey]);
+  const updateHousingBathroomState = (updater, logTextOf = null) => {
+    const facilityKey = String(housingInteriorFacilityRow?.key || housingInteriorFacilityKey || '').trim();
+    const fieldId = selectedField?.id;
+    if (!facilityKey || fieldId == null || !housingHasBathroomOfFacility(facilityKey)) return;
+    setGame((prev) => {
+      if (!prev) return prev;
+      const day = Math.max(1, Math.floor(Number(prev.day) || 1));
+      const nextFields = (prev.fields || []).map((field) => {
+        if (field?.id !== fieldId) return field;
+        const currentMap = field?.housingBathroomStateByFacilityKey || {};
+        const currentInfo = housingBathroomInfoOf({
+          facilityKey,
+          bathroomState: currentMap?.[facilityKey] || {},
+          day
+        });
+        const nextInfo = typeof updater === 'function' ? updater(currentInfo, field, prev) : currentInfo;
+        return {
+          ...field,
+          housingBathroomStateByFacilityKey: {
+            ...currentMap,
+            [facilityKey]: {
+              cleanliness: Math.max(0, Math.min(100, Math.round(Number(nextInfo?.cleanliness) || 0))),
+              showeredDay: Math.max(0, Math.floor(Number(nextInfo?.showeredDay) || 0)),
+              chemicalWashDay: Math.max(0, Math.floor(Number(nextInfo?.chemicalWashDay) || 0)),
+              cleanedDay: Math.max(0, Math.floor(Number(nextInfo?.cleanedDay) || 0))
+            }
+          }
+        };
+      });
+      const logText = typeof logTextOf === 'function'
+        ? logTextOf(prev)
+        : String(logTextOf || '');
+      return {
+        ...prev,
+        fields: nextFields,
+        logs: logText ? pushDiary(prev, logText) : prev.logs
+      };
+    });
+  };
+  const showerHousingBathroom = () => {
+    const facilityName = String(housingInteriorFacilityRow?.name || '하우징');
+    updateHousingBathroomState(
+      (currentInfo) => ({
+        ...currentInfo,
+        cleanliness: Math.max(0, Number(currentInfo.cleanliness) - 3),
+        showeredDay: Math.max(1, Math.floor(Number(game?.day) || 1))
+      }),
+      `${facilityName} 욕실 샤워: 개인 청결 정리 완료`
+    );
+  };
+  const washHousingBathroomAfterWork = () => {
+    const facilityName = String(housingInteriorFacilityRow?.name || '하우징');
+    updateHousingBathroomState(
+      (currentInfo) => ({
+        ...currentInfo,
+        cleanliness: Math.max(0, Number(currentInfo.cleanliness) - 5),
+        showeredDay: Math.max(1, Math.floor(Number(game?.day) || 1)),
+        chemicalWashDay: Math.max(1, Math.floor(Number(game?.day) || 1))
+      }),
+      `${facilityName} 욕실 작업 후 세척: 피부와 작업복 표면 오염을 씻어냄`
+    );
+  };
+  const cleanHousingBathroom = () => {
+    const facilityName = String(housingInteriorFacilityRow?.name || '하우징');
+    const laborCost = 2;
+    if ((Number(game?.labor) || 0) < laborCost) return;
+    updateHousingBathroomState(
+      (currentInfo) => ({
+        ...currentInfo,
+        cleanliness: Math.min(100, Number(currentInfo.cleanliness) + 30),
+        cleanedDay: Math.max(1, Math.floor(Number(game?.day) || 1))
+      }),
+      `${facilityName} 욕실 청소: 청결도 회복 (자가노동력 -${laborCost})`
+    );
+    setGame((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        labor: clamp((Number(prev.labor) || 0) - laborCost, 0, 100)
+      };
+    });
+  };
   const housingInteriorImageSrc = useMemo(() => {
     if (!housingInteriorFacilityRow?.key) return '';
     const interiorImageOptions = {
@@ -24311,6 +24701,7 @@ body { display: flex !important; align-items: center !important; justify-content
       closeHousingDoorAnimation();
       return;
     }
+    if (itemKey === 'bathroom' && !housingHasBathroomOfFacility(housingInteriorFacilityRow?.key || housingInteriorFacilityKey)) return;
     setHousingInteriorPendingObjectKey(itemKey);
   };
   const closeLandFacilityDetailModal = () => {
@@ -27074,8 +27465,74 @@ body { display: flex !important; align-items: center !important; justify-content
       };
     });
   }, [housingInteriorFurnitureInstallations, toolImageSrcOf]);
+  const housingInteriorClothingEquipments = useMemo(() => {
+    const facilityKey = String(housingInteriorFacilityRow?.key || '');
+    if (!facilityKey) return {};
+    return normalizeHousingClothingEquipments(
+      selectedField?.housingClothingEquipmentsByFacilityKey?.[facilityKey] || {}
+    );
+  }, [housingInteriorFacilityRow, selectedField?.housingClothingEquipmentsByFacilityKey]);
+  const housingInteriorClothingSlotRows = useMemo(() => {
+    const clothingItems = SHOP_ITEMS.clothing || [];
+    const clothingMap = clothingItems.reduce((acc, item) => {
+      const key = String(item?.key || '');
+      if (key) acc[key] = item;
+      return acc;
+    }, {});
+    return HOUSING_CLOTHING_SLOT_DEFS.map((slot) => {
+      const itemKey = String(housingInteriorClothingEquipments?.[slot.key] || '');
+      const item = clothingMap[itemKey] || null;
+      return {
+        ...slot,
+        itemKey,
+        installed: Boolean(item),
+        name: item ? String(item?.name || itemKey) : '',
+        desc: item ? String(item?.desc || '') : '',
+        imageSrc: item ? toolImageSrcOf(itemKey) : ''
+      };
+    });
+  }, [housingInteriorClothingEquipments, toolImageSrcOf]);
+  const housingInteriorClothingStorage = useMemo(() => {
+    const facilityKey = String(housingInteriorFacilityRow?.key || '');
+    if (!facilityKey) return {};
+    return normalizeHousingClothingStorageByItemKey(
+      selectedField?.housingClothingStorageByFacilityKey?.[facilityKey] || {}
+    );
+  }, [housingInteriorFacilityRow, selectedField?.housingClothingStorageByFacilityKey]);
+  const housingInteriorClothingStorageRows = useMemo(() => (
+    Object.entries(housingInteriorClothingStorage || {})
+      .map(([itemKeyRaw, qtyRaw]) => {
+        const itemKey = String(itemKeyRaw || '');
+        const qty = Math.max(0, Math.floor(Number(qtyRaw) || 0));
+        if (!itemKey || qty <= 0) return null;
+        const meta = itemMetaByKey?.[itemKey] || {};
+        const slot = HOUSING_CLOTHING_SLOT_DEFS.find((entry) => String(entry?.type || '') === String(meta?.type || '')) || null;
+        return {
+          itemKey,
+          name: String(meta?.name || itemNameByKey?.[itemKey] || itemKey),
+          qty,
+          unit: String(meta?.unit || '개'),
+          type: String(meta?.type || ''),
+          slotKey: String(slot?.key || ''),
+          slotLabel: String(slot?.label || ''),
+          imageSrc: toolImageSrcOf(itemKey)
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => String(a.slotLabel).localeCompare(String(b.slotLabel), 'ko') || String(a.name).localeCompare(String(b.name), 'ko'))
+  ), [housingInteriorClothingStorage, itemMetaByKey, itemNameByKey, toolImageSrcOf]);
+  const housingInteriorBagClothingRows = useMemo(() => (
+    housingInteriorBagRows
+      .filter((row) => String(row?.category || '') === 'clothing')
+      .map((row) => ({
+        ...row,
+        qty: Math.max(0, Math.floor(Number(row?.qty) || 0)),
+        unit: String(row?.unit || '개')
+      }))
+      .filter((row) => row.itemKey && row.qty > 0)
+  ), [housingInteriorBagRows]);
   const housingInteriorInstallSourceRows = useMemo(() => {
-    const installableCategorySet = new Set(['appliance', 'furniture']);
+    const installableCategorySet = new Set(['appliance', 'furniture', 'clothing']);
     const buildRows = (rows = [], sourceType = '', sourceKey = '', sourceName = '', sourceDetail = '', sourceImageSrc = '', sourceIcon = '') => (
       (Array.isArray(rows) ? rows : [])
         .filter((row) => installableCategorySet.has(String(row?.category || '')))
@@ -27323,6 +27780,42 @@ body { display: flex !important; align-items: center !important; justify-content
     selectedField?.housingFreezerFoodStorageByFacilityKey,
     selectedFieldFacilityInventoryState
   ]);
+  const housingWaterInfo = useMemo(() => {
+    if (!selectedField) {
+      return {
+        availableLiters: 0,
+        capacityLiters: 0,
+        displayText: '물탱크 없음',
+        dailyLivingWaterLiters: HOUSING_DAILY_LIVING_WATER_LITERS,
+        hasTank: false
+      };
+    }
+    const capacityLiters = fieldTankOperationalCapacityLiters(selectedField, game?.day);
+    const availableLiters = clamp(fieldTankWaterLitersEffective(selectedField), 0, Math.max(capacityLiters, fieldTankWaterLitersEffective(selectedField)));
+    const livingWaterQuality = capacityLiters > 0 && availableLiters > 0
+      ? normalizeHousingLivingWaterQuality(selectedField?.housingLivingWaterQuality || HOUSING_LIVING_WATER_STORED_MIN_QUALITY)
+      : 0;
+    return {
+      availableLiters,
+      capacityLiters,
+      livingWaterQuality,
+      livingWaterQualityLabel: livingWaterQuality > 0 ? housingLivingWaterQualityLabelOf(livingWaterQuality) : '관리 불가',
+      displayText: capacityLiters > 0
+        ? tankWaterDisplayText(selectedField, availableLiters, capacityLiters)
+        : '물탱크 없음',
+      dailyLivingWaterLiters: HOUSING_DAILY_LIVING_WATER_LITERS,
+      hasTank: capacityLiters > 0
+    };
+  }, [
+    game?.day,
+    selectedField?.facilityMap,
+    selectedField?.facilityDurabilityByKey,
+    selectedField?.facilityRepairByKey,
+    selectedField?.tankWaterLiters,
+    selectedField?.tankWaterLitersByUnit,
+    selectedField?.housingLivingWaterQuality,
+    selectedField?.housingOptionKeysByFacility
+  ]);
   const housingMealInfo = useMemo(() => {
     const facilityKey = String(housingInteriorFacilityRow?.key || '');
     const phase = String(game?.timeOfDay || 'day') === 'night' ? 'night' : 'day';
@@ -27350,8 +27843,23 @@ body { display: flex !important; align-items: center !important; justify-content
     const fridgeStorageMap = normalizeHousingFoodStorageByItemKey(selectedField?.housingFoodStorageByFacilityKey?.[facilityKey] || {});
     const freezerStorageMap = normalizeHousingFoodStorageByItemKey(selectedField?.housingFreezerFoodStorageByFacilityKey?.[facilityKey] || {});
     const plateOptionRows = buildHousingMealPlateOptionRows(fridgeStorageMap);
-    const prepRows = buildHousingMealPrepRows(fridgeStorageMap, freezerStorageMap);
-    const recipeRows = buildHousingMealRecipeRows(fridgeStorageMap);
+    const availableWaterLiters = Math.max(0, Number(housingWaterInfo?.availableLiters) || 0);
+    const applyWaterAvailability = (row) => {
+      const waterLiters = Math.max(0, Number(row?.waterLiters) || 0);
+      const waterOk = waterLiters <= 0 || availableWaterLiters + 0.0001 >= waterLiters;
+      return {
+        ...row,
+        waterLiters,
+        waterOk,
+        waterDisplayText: waterLiters > 0 ? housingWaterDisplayTextOf(waterLiters) : '',
+        canCook: Boolean(row?.canCook) && waterOk
+      };
+    };
+    const prepRows = buildHousingMealPrepRows(fridgeStorageMap, freezerStorageMap)
+      .map(applyWaterAvailability);
+    const recipeRows = buildHousingMealRecipeRows(fridgeStorageMap)
+      .map(applyWaterAvailability)
+      .map((recipe) => ({ ...recipe, imageSrc: toolImageSrcOf(String(recipe?.key || '')) }));
     const remaining = Math.max(0, limit - used);
     const cooldownUntilAt = Math.max(0, Number(usage.lastMealAt) || 0) + HOUSING_MEAL_COOLDOWN_MS;
     const cooldownRemainingMs = Math.max(0, cooldownUntilAt - Date.now());
@@ -27397,6 +27905,7 @@ body { display: flex !important; align-items: center !important; justify-content
     selectedField?.housingFreezerFoodStorageByFacilityKey,
     itemMetaByKey,
     housingInteriorFridgeStoredRows,
+    housingWaterInfo?.availableLiters,
     toolImageSrcOf
   ]);
   const eatHousingMeal = (mealKeyRaw = '') => {
@@ -27473,9 +27982,15 @@ body { display: flex !important; align-items: center !important; justify-content
       if (!currentField) return prev;
       const nextHousingFoodStorageByFacilityKey = { ...(currentField.housingFoodStorageByFacilityKey || {}) };
       const nextHousingFreezerFoodStorageByFacilityKey = { ...(currentField.housingFreezerFoodStorageByFacilityKey || {}) };
+      let nextHousingFoodStorageBatchesByFacilityKey = normalizeHousingFoodStorageBatchesByFacilityKey(currentField.housingFoodStorageBatchesByFacilityKey || {});
+      let nextHousingFreezerFoodStorageBatchesByFacilityKey = normalizeHousingFoodStorageBatchesByFacilityKey(currentField.housingFreezerFoodStorageBatchesByFacilityKey || {});
       const fridgeInventory = normalizeHousingFoodStorageByItemKey(nextHousingFoodStorageByFacilityKey[housingFacilityKey] || {});
       const freezerInventory = normalizeHousingFoodStorageByItemKey(nextHousingFreezerFoodStorageByFacilityKey[housingFacilityKey] || {});
       const ingredients = Object.entries(recipe.ingredients || {});
+      const waterLiters = Math.max(0, Number(housingMealWaterLitersOf(recipe)) || 0);
+      const tankCapacityLiters = fieldTankOperationalCapacityLiters(currentField, prev?.day);
+      const tankWaterBefore = clamp(fieldTankWaterLitersEffective(currentField), 0, Math.max(tankCapacityLiters, fieldTankWaterLitersEffective(currentField)));
+      if (waterLiters > 0 && (tankCapacityLiters <= 0 || tankWaterBefore + 0.0001 < waterLiters)) return prev;
       const canCook = ingredients.length > 0 && ingredients.every(([itemKey, qtyRaw]) => {
         const requiredQty = Math.max(0, Number(qtyRaw) || 0);
         const availableQty = prep
@@ -27493,6 +28008,12 @@ body { display: flex !important; align-items: center !important; justify-content
             const nextFridgeQty = Math.max(0, fridgeQty - fridgeUseQty);
             if (nextFridgeQty > 0.0001) fridgeInventory[itemKey] = Math.round(nextFridgeQty * 100) / 100;
             else delete fridgeInventory[itemKey];
+            nextHousingFoodStorageBatchesByFacilityKey = consumeHousingFoodStorageBatches({
+              batchesByFacilityKey: nextHousingFoodStorageBatchesByFacilityKey,
+              facilityKey: housingFacilityKey,
+              itemKey,
+              qty: fridgeUseQty
+            }).batchesByFacilityKey;
             requiredQty = Math.max(0, requiredQty - fridgeUseQty);
           }
           if (requiredQty > 0.0001) {
@@ -27500,12 +28021,24 @@ body { display: flex !important; align-items: center !important; justify-content
             const nextFreezerQty = Math.max(0, freezerQty - requiredQty);
             if (nextFreezerQty > 0.0001) freezerInventory[itemKey] = Math.round(nextFreezerQty * 100) / 100;
             else delete freezerInventory[itemKey];
+            nextHousingFreezerFoodStorageBatchesByFacilityKey = consumeHousingFoodStorageBatches({
+              batchesByFacilityKey: nextHousingFreezerFoodStorageBatchesByFacilityKey,
+              facilityKey: housingFacilityKey,
+              itemKey,
+              qty: requiredQty
+            }).batchesByFacilityKey;
           }
           return;
         }
         const nextQty = Math.max(0, (Number(fridgeInventory[itemKey]) || 0) - requiredQty);
         if (nextQty > 0.0001) fridgeInventory[itemKey] = Math.round(nextQty * 100) / 100;
         else delete fridgeInventory[itemKey];
+        nextHousingFoodStorageBatchesByFacilityKey = consumeHousingFoodStorageBatches({
+          batchesByFacilityKey: nextHousingFoodStorageBatchesByFacilityKey,
+          facilityKey: housingFacilityKey,
+          itemKey,
+          qty: requiredQty
+        }).batchesByFacilityKey;
       });
       if (Object.keys(fridgeInventory).length > 0) nextHousingFoodStorageByFacilityKey[housingFacilityKey] = fridgeInventory;
       else delete nextHousingFoodStorageByFacilityKey[housingFacilityKey];
@@ -27521,12 +28054,22 @@ body { display: flex !important; align-items: center !important; justify-content
         [housingFacilityKey]: facilityStock
       };
       const nextFields = Array.isArray(prev.fields) ? [...prev.fields] : [];
+      const tankWaterAfter = waterLiters > 0 ? Math.max(0, tankWaterBefore - waterLiters) : tankWaterBefore;
+      const nextTankUnits = waterLiters > 0 ? splitTankWaterByUnit(currentField, tankWaterAfter) : null;
       nextFields[selectedFieldIndex] = {
         ...currentField,
         housingFoodStorageByFacilityKey: nextHousingFoodStorageByFacilityKey,
         ...(prep ? { housingFreezerFoodStorageByFacilityKey: nextHousingFreezerFoodStorageByFacilityKey } : {}),
+        housingFoodStorageBatchesByFacilityKey: nextHousingFoodStorageBatchesByFacilityKey,
+        ...(prep ? { housingFreezerFoodStorageBatchesByFacilityKey: nextHousingFreezerFoodStorageBatchesByFacilityKey } : {}),
         housingPreparedMealStockByFacilityKey: nextPreparedMealMap,
-        housingPreparedMealCountByFacilityKey: {}
+        housingPreparedMealCountByFacilityKey: {},
+        ...(waterLiters > 0
+          ? {
+              tankWaterLiters: tankWaterAfter,
+              tankWaterLitersByUnit: tankUnitWaterMapFromUnits(nextTankUnits)
+            }
+          : {})
       };
       const ingredientText = housingMealRecipeIngredientTextOf(recipe);
       return {
@@ -27563,6 +28106,7 @@ body { display: flex !important; align-items: center !important; justify-content
       const currentField = prev?.fields?.[selectedFieldIndex];
       if (!currentField) return prev;
       const nextHousingFoodStorageByFacilityKey = { ...(currentField.housingFoodStorageByFacilityKey || {}) };
+      let nextHousingFoodStorageBatchesByFacilityKey = normalizeHousingFoodStorageBatchesByFacilityKey(currentField.housingFoodStorageBatchesByFacilityKey || {});
       const fridgeInventory = normalizeHousingFoodStorageByItemKey(nextHousingFoodStorageByFacilityKey[housingFacilityKey] || {});
       const requiredByItemKey = {};
       selectedOptions.forEach((option) => {
@@ -27580,6 +28124,12 @@ body { display: flex !important; align-items: center !important; justify-content
         const nextQty = Math.max(0, (Number(fridgeInventory[itemKey]) || 0) - Math.max(0, Number(requiredQty) || 0));
         if (nextQty > 0.0001) fridgeInventory[itemKey] = Math.round(nextQty * 100) / 100;
         else delete fridgeInventory[itemKey];
+        nextHousingFoodStorageBatchesByFacilityKey = consumeHousingFoodStorageBatches({
+          batchesByFacilityKey: nextHousingFoodStorageBatchesByFacilityKey,
+          facilityKey: housingFacilityKey,
+          itemKey,
+          qty: requiredQty
+        }).batchesByFacilityKey;
       });
       if (Object.keys(fridgeInventory).length > 0) nextHousingFoodStorageByFacilityKey[housingFacilityKey] = fridgeInventory;
       else delete nextHousingFoodStorageByFacilityKey[housingFacilityKey];
@@ -27590,6 +28140,7 @@ body { display: flex !important; align-items: center !important; justify-content
       nextFields[selectedFieldIndex] = {
         ...currentField,
         housingFoodStorageByFacilityKey: nextHousingFoodStorageByFacilityKey,
+        housingFoodStorageBatchesByFacilityKey: nextHousingFoodStorageBatchesByFacilityKey,
         housingPreparedMealStockByFacilityKey: {
           ...preparedMealMap,
           [housingFacilityKey]: facilityStock
@@ -27649,6 +28200,8 @@ body { display: flex !important; align-items: center !important; justify-content
       const nextField = { ...currentField };
       const nextHousingFoodStorageByFacilityKey = { ...(nextField.housingFoodStorageByFacilityKey || {}) };
       const nextHousingFreezerFoodStorageByFacilityKey = { ...(nextField.housingFreezerFoodStorageByFacilityKey || {}) };
+      let nextHousingFoodStorageBatchesByFacilityKey = normalizeHousingFoodStorageBatchesByFacilityKey(nextField.housingFoodStorageBatchesByFacilityKey || {});
+      let nextHousingFreezerFoodStorageBatchesByFacilityKey = normalizeHousingFoodStorageBatchesByFacilityKey(nextField.housingFreezerFoodStorageBatchesByFacilityKey || {});
       const targetColdStorageByFacilityKey = targetColdStorage === 'freezer'
         ? nextHousingFreezerFoodStorageByFacilityKey
         : nextHousingFoodStorageByFacilityKey;
@@ -27693,8 +28246,29 @@ body { display: flex !important; align-items: center !important; justify-content
       if (moved <= 0) return prev;
       targetColdStorageInventory[targetStorageItemKey] = Math.round((Math.max(0, Number(targetColdStorageInventory[targetStorageItemKey]) || 0) + (moved * targetStorageQtyPerMove)) * 100) / 100;
       targetColdStorageByFacilityKey[housingFacilityKey] = targetColdStorageInventory;
+      if (targetColdStorage === 'freezer') {
+        nextHousingFreezerFoodStorageBatchesByFacilityKey = addHousingFoodStorageBatch({
+          batchesByFacilityKey: nextHousingFreezerFoodStorageBatchesByFacilityKey,
+          facilityKey: housingFacilityKey,
+          itemKey: targetStorageItemKey,
+          qty: moved * targetStorageQtyPerMove,
+          storageType: 'freezer',
+          day: prev.day
+        });
+      } else {
+        nextHousingFoodStorageBatchesByFacilityKey = addHousingFoodStorageBatch({
+          batchesByFacilityKey: nextHousingFoodStorageBatchesByFacilityKey,
+          facilityKey: housingFacilityKey,
+          itemKey: targetStorageItemKey,
+          qty: moved * targetStorageQtyPerMove,
+          storageType: 'fridge',
+          day: prev.day
+        });
+      }
       nextField.housingFoodStorageByFacilityKey = nextHousingFoodStorageByFacilityKey;
       nextField.housingFreezerFoodStorageByFacilityKey = nextHousingFreezerFoodStorageByFacilityKey;
+      nextField.housingFoodStorageBatchesByFacilityKey = nextHousingFoodStorageBatchesByFacilityKey;
+      nextField.housingFreezerFoodStorageBatchesByFacilityKey = nextHousingFreezerFoodStorageBatchesByFacilityKey;
       nextFields[selectedFieldIndex] = nextField;
       const targetLabel = targetColdStorage === 'freezer' ? '냉동고' : '냉장고';
       const movedLabel = expandedStorage?.label || `${itemName} 1${String(itemMetaByKey?.[itemKey]?.unit || '')}`;
@@ -27826,14 +28400,119 @@ body { display: flex !important; align-items: center !important; justify-content
       };
     });
   };
-  const housingSlotMapKeyOf = (slotGroupRaw = 'appliance') => (
-    String(slotGroupRaw || '') === 'furniture'
-      ? 'housingFurnitureInstallationsByFacilityKey'
-      : 'housingApplianceInstallationsByFacilityKey'
-  );
-  const housingSlotDefsOf = (slotGroupRaw = 'appliance') => (
-    String(slotGroupRaw || '') === 'furniture' ? HOUSING_FURNITURE_SLOT_DEFS : HOUSING_APPLIANCE_SLOT_DEFS
-  );
+  const moveClothingItemToHousingWardrobe = ({
+    itemKey: itemKeyRaw = ''
+  } = {}) => {
+    const housingFacilityKey = String(housingInteriorFacilityRow?.key || '').trim();
+    const itemKey = String(itemKeyRaw || '').trim();
+    if (!housingFacilityKey || !itemKey) return;
+    const itemMeta = itemMetaByKey?.[itemKey] || {};
+    if (String(itemMeta?.category || itemCategoryByKey?.[itemKey] || '') !== 'clothing') return;
+    const itemName = String(itemMeta?.name || itemKey);
+    setGame((prev) => {
+      if (!prev) return prev;
+      const selectedFieldIndex = Math.max(0, Math.floor(Number(prev?.selectedField) || 0));
+      const currentField = prev?.fields?.[selectedFieldIndex];
+      if (!currentField) return prev;
+      const nextVehicleCargoByInstance = { ...(prev.vehicleCargoByInstance || {}) };
+      const personalCargo = normalizeCargoByItemKey(nextVehicleCargoByInstance[MAP_TRANSFER_PERSONAL_CARRIER_ID] || {});
+      const sourceQty = Math.max(0, Math.floor(Number(personalCargo[itemKey]) || 0));
+      if (sourceQty <= 0) return prev;
+      personalCargo[itemKey] = sourceQty - 1;
+      if ((personalCargo[itemKey] || 0) <= 0) delete personalCargo[itemKey];
+      if (Object.keys(personalCargo).length > 0) nextVehicleCargoByInstance[MAP_TRANSFER_PERSONAL_CARRIER_ID] = personalCargo;
+      else delete nextVehicleCargoByInstance[MAP_TRANSFER_PERSONAL_CARRIER_ID];
+      const nextClothingStorageByFacilityKey = { ...(currentField.housingClothingStorageByFacilityKey || {}) };
+      const wardrobe = normalizeHousingClothingStorageByItemKey(nextClothingStorageByFacilityKey[housingFacilityKey] || {});
+      wardrobe[itemKey] = Math.max(0, Math.floor(Number(wardrobe[itemKey]) || 0)) + 1;
+      nextClothingStorageByFacilityKey[housingFacilityKey] = wardrobe;
+      const nextFields = Array.isArray(prev.fields) ? [...prev.fields] : [];
+      nextFields[selectedFieldIndex] = {
+        ...currentField,
+        housingClothingStorageByFacilityKey: nextClothingStorageByFacilityKey
+      };
+      return {
+        ...prev,
+        fields: nextFields,
+        vehicleCargoByInstance: nextVehicleCargoByInstance,
+        logs: pushDiary(prev, `개인소지품 → ${housingInteriorFacilityRow?.name || '하우징'} 옷장: ${itemName} 1개`)
+      };
+    });
+  };
+  const moveClothingItemFromHousingWardrobe = ({
+    itemKey: itemKeyRaw = ''
+  } = {}) => {
+    const housingFacilityKey = String(housingInteriorFacilityRow?.key || '').trim();
+    const itemKey = String(itemKeyRaw || '').trim();
+    if (!housingFacilityKey || !itemKey) return;
+    const itemMeta = itemMetaByKey?.[itemKey] || {};
+    if (String(itemMeta?.category || itemCategoryByKey?.[itemKey] || '') !== 'clothing') return;
+    const itemName = String(itemMeta?.name || itemKey);
+    setGame((prev) => {
+      if (!prev) return prev;
+      const selectedFieldIndex = Math.max(0, Math.floor(Number(prev?.selectedField) || 0));
+      const currentField = prev?.fields?.[selectedFieldIndex];
+      if (!currentField) return prev;
+      const nextClothingStorageByFacilityKey = { ...(currentField.housingClothingStorageByFacilityKey || {}) };
+      const wardrobe = normalizeHousingClothingStorageByItemKey(nextClothingStorageByFacilityKey[housingFacilityKey] || {});
+      const sourceQty = Math.max(0, Math.floor(Number(wardrobe[itemKey]) || 0));
+      if (sourceQty <= 0) return prev;
+      const equipped = normalizeHousingClothingEquipments(currentField.housingClothingEquipmentsByFacilityKey?.[housingFacilityKey] || {});
+      const equippedCount = Object.values(equipped).filter((equippedItemKey) => String(equippedItemKey || '') === itemKey).length;
+      if (sourceQty - 1 < equippedCount) {
+        setGameAlertMessage('착용 중인 복장은 먼저 벗어 주세요.');
+        return prev;
+      }
+      const itemWeightKg = Math.max(0, Number(itemMeta?.weightKg) || 0);
+      const usedKg = carrierCargoUsedKgByInstance(prev, MAP_TRANSFER_PERSONAL_CARRIER_ID);
+      if (itemWeightKg > 0 && usedKg + itemWeightKg > MAP_TRANSFER_PERSONAL_PAYLOAD_KG + 0.0001) {
+        setGameAlertMessage('개인소지품 무게가 부족합니다.');
+        return prev;
+      }
+      wardrobe[itemKey] = sourceQty - 1;
+      if ((wardrobe[itemKey] || 0) <= 0) delete wardrobe[itemKey];
+      if (Object.keys(wardrobe).length > 0) nextClothingStorageByFacilityKey[housingFacilityKey] = wardrobe;
+      else delete nextClothingStorageByFacilityKey[housingFacilityKey];
+      const nextVehicleCargoByInstance = { ...(prev.vehicleCargoByInstance || {}) };
+      const personalCargo = normalizeCargoByItemKey(nextVehicleCargoByInstance[MAP_TRANSFER_PERSONAL_CARRIER_ID] || {});
+      personalCargo[itemKey] = Math.max(0, Math.floor(Number(personalCargo[itemKey]) || 0)) + 1;
+      nextVehicleCargoByInstance[MAP_TRANSFER_PERSONAL_CARRIER_ID] = personalCargo;
+      const nextFields = Array.isArray(prev.fields) ? [...prev.fields] : [];
+      nextFields[selectedFieldIndex] = {
+        ...currentField,
+        housingClothingStorageByFacilityKey: nextClothingStorageByFacilityKey
+      };
+      return {
+        ...prev,
+        fields: nextFields,
+        vehicleCargoByInstance: nextVehicleCargoByInstance,
+        logs: pushDiary(prev, `${housingInteriorFacilityRow?.name || '하우징'} 옷장 → 개인소지품: ${itemName} 1개`)
+      };
+    });
+  };
+  const housingSlotGroupOf = (slotGroupRaw = 'appliance') => {
+    const slotGroup = String(slotGroupRaw || '');
+    if (slotGroup === 'furniture' || slotGroup === 'clothing') return slotGroup;
+    return 'appliance';
+  };
+  const housingSlotMapKeyOf = (slotGroupRaw = 'appliance') => {
+    const slotGroup = housingSlotGroupOf(slotGroupRaw);
+    if (slotGroup === 'furniture') return 'housingFurnitureInstallationsByFacilityKey';
+    if (slotGroup === 'clothing') return 'housingClothingEquipmentsByFacilityKey';
+    return 'housingApplianceInstallationsByFacilityKey';
+  };
+  const housingSlotDefsOf = (slotGroupRaw = 'appliance') => {
+    const slotGroup = housingSlotGroupOf(slotGroupRaw);
+    if (slotGroup === 'furniture') return HOUSING_FURNITURE_SLOT_DEFS;
+    if (slotGroup === 'clothing') return HOUSING_CLOTHING_SLOT_DEFS;
+    return HOUSING_APPLIANCE_SLOT_DEFS;
+  };
+  const normalizeHousingSlotMapOf = (slotGroupRaw = 'appliance', raw = {}, housingFacilityKey = '') => {
+    const slotGroup = housingSlotGroupOf(slotGroupRaw);
+    if (slotGroup === 'furniture') return normalizeHousingFurnitureInstallations(raw || {});
+    if (slotGroup === 'clothing') return normalizeHousingClothingEquipments(raw || {});
+    return normalizeHousingApplianceInstallations(raw || {}, housingFacilityKey);
+  };
   const canChangeHousingColdStorageAppliance = (field, housingFacilityKey) => {
     const fridgeMap = normalizeHousingFoodStorageByItemKey(field?.housingFoodStorageByFacilityKey?.[housingFacilityKey] || {});
     const freezerMap = normalizeHousingFoodStorageByItemKey(field?.housingFreezerFoodStorageByFacilityKey?.[housingFacilityKey] || {});
@@ -27910,13 +28589,13 @@ body { display: flex !important; align-items: center !important; justify-content
     itemKey: itemKeyRaw = ''
   } = {}) => {
     const housingFacilityKey = String(housingInteriorFacilityRow?.key || '').trim();
-    const slotGroup = String(slotGroupRaw || '') === 'furniture' ? 'furniture' : 'appliance';
+    const slotGroup = housingSlotGroupOf(slotGroupRaw);
     const slotKey = String(slotKeyRaw || '').trim();
     const sourceType = String(sourceTypeRaw || '').trim();
     const sourceKey = String(sourceKeyRaw || '').trim();
     const itemKey = String(itemKeyRaw || '').trim();
     const slot = housingSlotDefsOf(slotGroup).find((entry) => entry.key === slotKey);
-    if (!housingFacilityKey || !slot || !sourceType || !sourceKey || !itemKey) return;
+    if (!housingFacilityKey || !slot || !sourceType || (sourceType !== 'wardrobe' && !sourceKey) || !itemKey) return;
     const itemMeta = itemMetaByKey?.[itemKey] || {};
     if (String(itemMeta?.category || itemCategoryByKey?.[itemKey] || '') !== slotGroup) return;
     if (String(itemMeta?.type || '') !== String(slot.type || '')) return;
@@ -27929,11 +28608,30 @@ body { display: flex !important; align-items: center !important; justify-content
       if (!currentField || !fieldId) return prev;
       const slotMapKey = housingSlotMapKeyOf(slotGroup);
       const currentSlotMapByFacility = { ...(currentField?.[slotMapKey] || {}) };
-      const currentInstalled = slotGroup === 'furniture'
-        ? normalizeHousingFurnitureInstallations(currentSlotMapByFacility[housingFacilityKey] || {})
-        : normalizeHousingApplianceInstallations(currentSlotMapByFacility[housingFacilityKey] || {}, housingFacilityKey);
+      const currentInstalled = normalizeHousingSlotMapOf(slotGroup, currentSlotMapByFacility[housingFacilityKey] || {}, housingFacilityKey);
       const oldItemKey = String(currentInstalled?.[slotKey] || '');
       if (oldItemKey && oldItemKey === itemKey) return prev;
+      if (slotGroup === 'clothing') {
+        const wardrobe = normalizeHousingClothingStorageByItemKey(currentField.housingClothingStorageByFacilityKey?.[housingFacilityKey] || {});
+        if (Math.max(0, Math.floor(Number(wardrobe[itemKey]) || 0)) <= 0) {
+          setGameAlertMessage('옷장에 보관된 복장만 착용할 수 있습니다.');
+          return prev;
+        }
+        const nextInstalled = { ...currentInstalled, [slotKey]: itemKey };
+        const nextFields = Array.isArray(prev.fields) ? [...prev.fields] : [];
+        nextFields[selectedFieldIndex] = {
+          ...currentField,
+          [slotMapKey]: {
+            ...currentSlotMapByFacility,
+            [housingFacilityKey]: normalizeHousingSlotMapOf(slotGroup, nextInstalled, housingFacilityKey)
+          }
+        };
+        return {
+          ...prev,
+          fields: nextFields,
+          logs: pushDiary(prev, `${housingInteriorFacilityRow?.name || '하우징'} ${slot.label}: ${itemName} ${oldItemKey ? '갈아입음' : '착용'}`)
+        };
+      }
       if (slotGroup === 'appliance' && slotKey === 'fridge' && oldItemKey && !canChangeHousingColdStorageAppliance(currentField, housingFacilityKey)) {
         setGameAlertMessage('냉장고를 교체하거나 이동하려면 냉장/냉동 식료품을 먼저 비워 주세요.');
         return prev;
@@ -27979,9 +28677,7 @@ body { display: flex !important; align-items: center !important; justify-content
         ...currentField,
         [slotMapKey]: {
           ...currentSlotMapByFacility,
-          [housingFacilityKey]: slotGroup === 'furniture'
-            ? normalizeHousingFurnitureInstallations(nextInstalled)
-            : normalizeHousingApplianceInstallations(nextInstalled, housingFacilityKey)
+          [housingFacilityKey]: normalizeHousingSlotMapOf(slotGroup, nextInstalled, housingFacilityKey)
         }
       };
       return {
@@ -28003,7 +28699,7 @@ body { display: flex !important; align-items: center !important; justify-content
     targetKey: targetKeyRaw = ''
   } = {}) => {
     const housingFacilityKey = String(housingInteriorFacilityRow?.key || '').trim();
-    const slotGroup = String(slotGroupRaw || '') === 'furniture' ? 'furniture' : 'appliance';
+    const slotGroup = housingSlotGroupOf(slotGroupRaw);
     const slotKey = String(slotKeyRaw || '').trim();
     const targetType = String(targetTypeRaw || '') === 'warehouse' ? 'warehouse' : 'carrier';
     const targetKey = String(targetKeyRaw || '').trim();
@@ -28017,11 +28713,27 @@ body { display: flex !important; align-items: center !important; justify-content
       if (!currentField || !fieldId) return prev;
       const slotMapKey = housingSlotMapKeyOf(slotGroup);
       const currentSlotMapByFacility = { ...(currentField?.[slotMapKey] || {}) };
-      const currentInstalled = slotGroup === 'furniture'
-        ? normalizeHousingFurnitureInstallations(currentSlotMapByFacility[housingFacilityKey] || {})
-        : normalizeHousingApplianceInstallations(currentSlotMapByFacility[housingFacilityKey] || {}, housingFacilityKey);
+      const currentInstalled = normalizeHousingSlotMapOf(slotGroup, currentSlotMapByFacility[housingFacilityKey] || {}, housingFacilityKey);
       const itemKey = String(currentInstalled?.[slotKey] || '');
       if (!itemKey) return prev;
+      if (slotGroup === 'clothing') {
+        const nextInstalled = { ...currentInstalled };
+        delete nextInstalled[slotKey];
+        const nextSlotMapByFacility = { ...currentSlotMapByFacility };
+        if (Object.keys(nextInstalled).length > 0) nextSlotMapByFacility[housingFacilityKey] = nextInstalled;
+        else delete nextSlotMapByFacility[housingFacilityKey];
+        const nextFields = Array.isArray(prev.fields) ? [...prev.fields] : [];
+        nextFields[selectedFieldIndex] = {
+          ...currentField,
+          [slotMapKey]: nextSlotMapByFacility
+        };
+        const itemName = String(itemMetaByKey?.[itemKey]?.name || itemKey);
+        return {
+          ...prev,
+          fields: nextFields,
+          logs: pushDiary(prev, `${housingInteriorFacilityRow?.name || '하우징'} ${slot.label}: ${itemName} 벗음`)
+        };
+      }
       if (slotGroup === 'appliance' && slotKey === 'fridge' && !canChangeHousingColdStorageAppliance(currentField, housingFacilityKey)) {
         setGameAlertMessage('냉장고를 이동하려면 냉장/냉동 식료품을 먼저 비워 주세요.');
         return prev;
@@ -28106,6 +28818,8 @@ body { display: flex !important; align-items: center !important; justify-content
       const nextFields = Array.isArray(prev.fields) ? [...prev.fields] : [];
       const fridgeByFacility = { ...(currentField.housingFoodStorageByFacilityKey || {}) };
       const freezerByFacility = { ...(currentField.housingFreezerFoodStorageByFacilityKey || {}) };
+      let fridgeBatchByFacility = normalizeHousingFoodStorageBatchesByFacilityKey(currentField.housingFoodStorageBatchesByFacilityKey || {});
+      let freezerBatchByFacility = normalizeHousingFoodStorageBatchesByFacilityKey(currentField.housingFreezerFoodStorageBatchesByFacilityKey || {});
       const sourceByFacility = fromKey === 'freezer' ? freezerByFacility : fridgeByFacility;
       const targetByFacility = toKey === 'freezer' ? freezerByFacility : fridgeByFacility;
       const sourceInventory = normalizeHousingFoodStorageByItemKey(sourceByFacility[housingFacilityKey] || {});
@@ -28117,13 +28831,28 @@ body { display: flex !important; align-items: center !important; justify-content
       if (remainQty > 0.0001) sourceInventory[itemKey] = Math.round(remainQty * 100) / 100;
       else delete sourceInventory[itemKey];
       targetInventory[itemKey] = Math.round((Math.max(0, Number(targetInventory[itemKey]) || 0) + moved) * 100) / 100;
+      const batchMoveResult = moveHousingFoodStorageBatch({
+        sourceBatchesByFacilityKey: fromKey === 'freezer' ? freezerBatchByFacility : fridgeBatchByFacility,
+        targetBatchesByFacilityKey: toKey === 'freezer' ? freezerBatchByFacility : fridgeBatchByFacility,
+        facilityKey: housingFacilityKey,
+        itemKey,
+        qty: moved,
+        targetStorageType: toKey,
+        day: prev.day
+      });
+      if (fromKey === 'freezer') freezerBatchByFacility = batchMoveResult.sourceBatchesByFacilityKey;
+      else fridgeBatchByFacility = batchMoveResult.sourceBatchesByFacilityKey;
+      if (toKey === 'freezer') freezerBatchByFacility = batchMoveResult.targetBatchesByFacilityKey;
+      else fridgeBatchByFacility = batchMoveResult.targetBatchesByFacilityKey;
       if (Object.keys(sourceInventory).length > 0) sourceByFacility[housingFacilityKey] = sourceInventory;
       else delete sourceByFacility[housingFacilityKey];
       targetByFacility[housingFacilityKey] = targetInventory;
       nextFields[selectedFieldIndex] = {
         ...currentField,
         housingFoodStorageByFacilityKey: fridgeByFacility,
-        housingFreezerFoodStorageByFacilityKey: freezerByFacility
+        housingFreezerFoodStorageByFacilityKey: freezerByFacility,
+        housingFoodStorageBatchesByFacilityKey: fridgeBatchByFacility,
+        housingFreezerFoodStorageBatchesByFacilityKey: freezerBatchByFacility
       };
       const sourceLabel = fromKey === 'freezer' ? '냉동고' : '냉장고';
       const targetLabel = toKey === 'freezer' ? '냉동고' : '냉장고';
@@ -28164,6 +28893,8 @@ body { display: flex !important; align-items: center !important; justify-content
       const nextFields = Array.isArray(prev.fields) ? [...prev.fields] : [];
       const fridgeByFacility = { ...(currentField.housingFoodStorageByFacilityKey || {}) };
       const freezerByFacility = { ...(currentField.housingFreezerFoodStorageByFacilityKey || {}) };
+      let fridgeBatchByFacility = normalizeHousingFoodStorageBatchesByFacilityKey(currentField.housingFoodStorageBatchesByFacilityKey || {});
+      let freezerBatchByFacility = normalizeHousingFoodStorageBatchesByFacilityKey(currentField.housingFreezerFoodStorageBatchesByFacilityKey || {});
       const sourceByFacility = fromKey === 'freezer' ? freezerByFacility : fridgeByFacility;
       const sourceInventory = normalizeHousingFoodStorageByItemKey(sourceByFacility[housingFacilityKey] || {});
       const sourceQty = Math.max(0, Number(sourceInventory[itemKey]) || 0);
@@ -28172,6 +28903,14 @@ body { display: flex !important; align-items: center !important; justify-content
       const remainQty = Math.max(0, sourceQty - moved);
       if (remainQty > 0.0001) sourceInventory[itemKey] = Math.round(remainQty * 100) / 100;
       else delete sourceInventory[itemKey];
+      const consumeBatchResult = consumeHousingFoodStorageBatches({
+        batchesByFacilityKey: fromKey === 'freezer' ? freezerBatchByFacility : fridgeBatchByFacility,
+        facilityKey: housingFacilityKey,
+        itemKey,
+        qty: moved
+      });
+      if (fromKey === 'freezer') freezerBatchByFacility = consumeBatchResult.batchesByFacilityKey;
+      else fridgeBatchByFacility = consumeBatchResult.batchesByFacilityKey;
       if (Object.keys(sourceInventory).length > 0) sourceByFacility[housingFacilityKey] = sourceInventory;
       else delete sourceByFacility[housingFacilityKey];
 
@@ -28210,7 +28949,9 @@ body { display: flex !important; align-items: center !important; justify-content
       nextFields[selectedFieldIndex] = {
         ...currentField,
         housingFoodStorageByFacilityKey: fridgeByFacility,
-        housingFreezerFoodStorageByFacilityKey: freezerByFacility
+        housingFreezerFoodStorageByFacilityKey: freezerByFacility,
+        housingFoodStorageBatchesByFacilityKey: fridgeBatchByFacility,
+        housingFreezerFoodStorageBatchesByFacilityKey: freezerBatchByFacility
       };
       const sourceLabel = fromKey === 'freezer' ? '냉동고' : '냉장고';
       return {
@@ -39621,7 +40362,7 @@ body { display: flex !important; align-items: center !important; justify-content
         setAuthSession(data.session || null);
         replaceLocalSaveSlots(data.slots || {});
         applyAccountPreferences(data.preferences || {});
-        restoreAutoSavedView(data.preferences || {}, data.session || null);
+        await restoreAutoSavedView(data.preferences || {}, data.session || null);
       } catch (error) {
         if (cancelled) return;
         if (String(error?.message || '').includes('invalid_session')) {
@@ -39871,6 +40612,14 @@ body { display: flex !important; align-items: center !important; justify-content
     return (SHOP_ITEMS.furniture || [])
       .filter((item) => !SHOP_HIDDEN_ITEM_KEYS.has(String(item?.key || '')))
       .filter((item) => selectedFurnitureTab === 'all' || String(item?.type || '') === selectedFurnitureTab);
+  }, [mapLocationModal.tab]);
+  const mapHomeLivingClothingItemsView = useMemo(() => {
+    const selectedClothingTab = HOME_LIVING_CLOTHING_TABS.some(([key]) => key === String(mapLocationModal.tab || ''))
+      ? String(mapLocationModal.tab || '')
+      : 'all';
+    return (SHOP_ITEMS.clothing || [])
+      .filter((item) => !SHOP_HIDDEN_ITEM_KEYS.has(String(item?.key || '')))
+      .filter((item) => selectedClothingTab === 'all' || String(item?.type || '') === selectedClothingTab);
   }, [mapLocationModal.tab]);
   const mapHomeLivingInternetFacilityRows = useMemo(() => (
     housingViewFacilityRows.map((row) => {
@@ -42227,6 +42976,7 @@ body { display: flex !important; align-items: center !important; justify-content
       try {
         resetFacilityStorageUiStateForGameLoad();
         setGame(normalizeLoadedGame(loaded, String(authSession?.username || '')));
+        warmLoadingPhases(['field', 'map', 'warehouse']);
         const shouldRestoreManualView = autoSaveEnabled
           && autoRestoreViewEnabled
           && sanitizeLastActiveSaveSlotPreference(lastRestorableSaveSlot) === slot;
@@ -42374,6 +43124,7 @@ body { display: flex !important; align-items: center !important; justify-content
       }
     }
     setGame(nextGame);
+    warmLoadingPhases(['field', 'map', 'warehouse']);
     setActiveSaveSlot(nextActiveSaveSlot);
     setUiEntranceSeed((prev) => prev + 1);
     setScreen('game');
@@ -42882,8 +43633,20 @@ body { display: flex !important; align-items: center !important; justify-content
         const { deadAdd, hailLogText, nextField } = fieldLifecycleResult.fieldFinalizationResult;
         if (hailLogText) hailDamageLogs.push(hailLogText);
         if (deadAdd > 0) deadTreeToday += deadAdd;
-        const housingLifeSupplyResult = consumeHousingDailyLifeSupplyForField({
+        const housingWaterResult = consumeHousingDailyWaterForField({
           field: nextField,
+          day: nextDay,
+          fieldIndex
+        });
+        housingLifeSupplyLogs.push(...housingWaterResult.logs);
+        const housingFoodExpireResult = expireHousingFoodStorageBatchesForField({
+          field: housingWaterResult.field,
+          day: nextDay,
+          itemMetaByKey
+        });
+        housingLifeSupplyLogs.push(...housingFoodExpireResult.logs);
+        const housingLifeSupplyResult = consumeHousingDailyLifeSupplyForField({
+          field: housingFoodExpireResult.field,
           day: nextDay,
           fieldIndex,
           itemMetaByKey,
@@ -43024,9 +43787,20 @@ body { display: flex !important; align-items: center !important; justify-content
         remainingSelfLabor: prev.labor,
         nightUsedLabor
       });
-      nextStatePatch.health = healthChange.nextHealth;
+      const conditionChange = rollDailyPlayerConditions({
+        gameState: prev,
+        weatherName: weather.name,
+        temperatureC: nextNightTemperatureC,
+        remainingSelfLabor: prev.labor
+      });
+      const healthAfterConditions = Math.round(clamp(healthChange.nextHealth + conditionChange.healthDelta, 0, 100) * 10) / 10;
+      nextStatePatch.health = healthAfterConditions;
+      nextStatePatch.playerInjuries = conditionChange.playerInjuries;
+      nextStatePatch.playerIllnesses = conditionChange.playerIllnesses;
       const healthReasonText = String(healthChange.reasonText || '').trim();
-      const healthChangeLog = `건강 변화: ${healthChange.delta >= 0 ? '+' : ''}${healthChange.delta.toFixed(1)} (${healthChange.previousHealth.toFixed(1)} → ${healthChange.nextHealth.toFixed(1)}, ${healthChange.tone || '변화'})${healthReasonText ? ` · ${healthReasonText}` : ''}`;
+      const totalHealthDelta = Math.round((healthAfterConditions - healthChange.previousHealth) * 10) / 10;
+      const conditionReasonText = Math.abs(conditionChange.healthDelta) >= 0.05 ? ` / 병·부상 ${conditionChange.healthDelta.toFixed(1)}` : '';
+      const healthChangeLog = `건강 변화: ${totalHealthDelta >= 0 ? '+' : ''}${totalHealthDelta.toFixed(1)} (${healthChange.previousHealth.toFixed(1)} → ${healthAfterConditions.toFixed(1)}, ${healthChange.tone || '변화'})${healthReasonText || conditionReasonText ? ` · ${healthReasonText}${conditionReasonText}` : ''}`;
       const nextPhoneNotificationState = appendPhoneNotifications(prev, [
         ...buildCrewPhoneNotificationEntries({
           crewApprovalNotice,
@@ -43082,7 +43856,16 @@ body { display: flex !important; align-items: center !important; justify-content
             )
           }
         : nextGameStateWithHealthLog;
-      return rollPhoneHelperMemoryToNextDay(nextGameStateWithLifeSupplyLogs);
+      const nextGameStateWithConditionLogs = conditionChange.logs.length
+        ? {
+            ...nextGameStateWithLifeSupplyLogs,
+            logs: conditionChange.logs.reduce(
+              (logs, logText) => pushDiary({ ...nextGameStateWithLifeSupplyLogs, logs }, logText),
+              nextGameStateWithLifeSupplyLogs.logs
+            )
+          }
+        : nextGameStateWithLifeSupplyLogs;
+      return rollPhoneHelperMemoryToNextDay(nextGameStateWithConditionLogs);
     });
   };
   const startDayTimeTransition = (requestedMode = 'nextDay', options = null) => {
@@ -43699,6 +44482,34 @@ body { display: flex !important; align-items: center !important; justify-content
       const reason = getTaskBlockReason(current, task, currentMonth, prev.day, prev.weather);
       if (reason) return prev;
       const isSprayTask = SPRAY_TASK_KEYS.includes(taskKey);
+      const applySelfWorkAccident = (nextGameState) => {
+        const accident = rollWorkAccident({
+          taskKey,
+          source,
+          field: nextGameState?.fields?.[prev.selectedField] || current,
+          health: prev.health,
+          remainingLabor: prev.labor,
+          weatherName: prev.weather,
+          timeOfDay: prev.timeOfDay
+        });
+        if (accident) {
+          const healthBeforeAccident = Number.isFinite(Number(nextGameState?.health))
+            ? clamp(Number(nextGameState.health), 0, 100)
+            : clamp(Number(prev.health) || 100, 0, 100);
+          const healthAfterAccident = Math.round(clamp(healthBeforeAccident - accident.healthLoss, 0, 100) * 10) / 10;
+          const protectionText = accident.protected
+            ? '착용한 보호구 덕분에 피해가 줄었습니다.'
+            : '맞는 보호구가 없어 피해를 그대로 받았습니다.';
+          setGameAlertMessage([
+            '작업 사고 발생',
+            `${accident.label} ${accident.severity}단계`,
+            `건강 -${accident.healthLoss.toFixed(1)} (${healthBeforeAccident.toFixed(1)} → ${healthAfterAccident.toFixed(1)})`,
+            protectionText,
+            '직접적인 사고라 즉시 확인되었습니다.'
+          ].join('\n'));
+        }
+        return applyWorkAccidentToGameState(nextGameState, accident, pushDiary);
+      };
       const isCleanupWasteTask = CLEANUP_WASTE_TASK_KEYS.has(taskKey);
       const isBrickCoatingTask = taskKey === BRICK_COATING_TASK_KEY;
       const isBrickCollectionTask = taskKey === BRICK_COLLECTION_TASK_KEY;
@@ -45742,7 +46553,7 @@ body { display: flex !important; align-items: center !important; justify-content
               ? `${task.label} 부분 진행 (${(CLEANUP_WASTE_LABEL_BY_TASK?.[taskKey] || '폐기물')} -${cleanupWasteRemovedKg.toFixed(1)}kg${cleanupPestReduction > 0 ? ` / 병해충 위험 -${cleanupPestReduction.toFixed(2)}` : ''}${selectedCleanupTransport ? ` / 적재 ${selectedCleanupTransport?.item?.name || selectedCleanupTransport?.machineKey}` : ''}${selectedCleanupStorageKey ? ` / 창고 보관 ${withColdStorageIconName(FACILITY_MAP?.[selectedCleanupStorageKey]?.name || selectedCleanupStorageKey, selectedCleanupStorageKey)}` : ''}, 노동력 -${laborText(spendLabor)})`
           : `${task.label}${PRUNING_AGE_TASK_KEYS.has(taskKey) && selectedAgeYear ? `(${selectedAgeYear}년차)` : ''} 부분 진행 (노동력 -${laborText(spendLabor)}${isPruningTask ? ` / 수세 ${WINTER_PRUNING_TASK_KEYS.has(taskKey) ? `${winterPruningVigorDelta >= 0 ? '+' : ''}${winterPruningVigorDelta.toFixed(2)}` : `-${pruningVigorDrop.toFixed(2)}`}` : ''})`;
       const workLog = `${workLogBase}${isSprayTask && sprayStagePenalty.summaryText ? ` / ${sprayStagePenalty.summaryText}` : ''}`;
-      return {
+      return applySelfWorkAccident({
         ...prev,
         ...spent,
         fields,
@@ -45757,7 +46568,7 @@ body { display: flex !important; align-items: center !important; justify-content
         equipmentDurability: wearApplied.equipmentDurability,
         equipmentDurabilityByInstance: wearApplied.equipmentDurabilityByInstance,
         logs: pushDiary(prev, workLog)
-      };
+      });
     });
   };
   const runPlantWithLabor = (cropKey, laborToUse, requestedTrees = null, source = WORK_SOURCE.work) => {
@@ -46634,10 +47445,24 @@ body { display: flex !important; align-items: center !important; justify-content
   const requestCloseFieldMoveModal = useCallback(() => {
     runGenericModalClose('fieldMove', closeFieldMoveModal);
   }, [closeFieldMoveModal, runGenericModalClose]);
-  const openTownMoveModal = (options = {}) => {
+  const preloadTownMoveMapAssets = useCallback(async () => {
+    if (!townMoveMapPreloadPromiseRef.current) {
+      townMoveMapPreloadPromiseRef.current = preloadLoadingPhase('map', { timeoutMs: 8000 });
+    }
+    await townMoveMapPreloadPromiseRef.current.catch(() => null);
+  }, []);
+
+  useEffect(() => {
+    if (screen !== 'game') return;
+    if (tabGroup !== 'farmOps' && tab !== 'map') return;
+    warmLoadingPhases(['map', 'field']);
+  }, [screen, tab, tabGroup]);
+
+  const openTownMoveModal = async (options = {}) => {
     if (!game) return;
     if (!townMoveModal.open) {
       playMapOpenSound();
+      await preloadTownMoveMapAssets();
     }
     const selectFieldMode = Boolean(options?.selectFieldMode);
     const locationContext = String(options?.locationContext || 'field') === 'town' ? 'town' : 'field';
@@ -55715,6 +56540,16 @@ const requestRepairEquipment = (itemKey) => {
     : chatStatus === 'connecting'
       ? '연결 중...'
       : '실시간 대기';
+  if (autoRestoreLoadingState.active) {
+    return (
+      <LoadingScreen
+        progress={autoRestoreLoadingState.progress}
+        label="이전 화면 불러오는 중"
+        detail={autoRestoreLoadingState.detail}
+      />
+    );
+  }
+
   if (screen === 'menu') {
     const menuBurstStyle = menuBurstTransition.active ? {
       '--burst-x': `${menuBurstTransition.x}px`,
@@ -57132,15 +57967,16 @@ const requestRepairEquipment = (itemKey) => {
       };
     }).filter(Boolean));
   })();
-  const townMoveContourRings = [5, 8, 11, 14, 17, 20];
-  const townMoveContourSets = [
-    { key: 'center', name: '중앙', cx: 0, cy: 0, phase: 0.4 },
-    { key: 'east', name: '동부', cx: 44, cy: 0, phase: 1.1 },
-    { key: 'west', name: '서부', cx: -44, cy: 0, phase: 2.0 },
-    { key: 'north', name: '북부', cx: 0, cy: -34, phase: 2.8 },
-    { key: 'south', name: '남부', cx: 0, cy: 34, phase: 3.6 }
-  ];
-  const townMoveContours = townMoveContourSets.flatMap((set) => {
+  const townMoveContourData = (() => {
+    const townMoveContourRings = [5, 8, 11, 14, 17, 20];
+    const townMoveContourSets = [
+      { key: 'center', name: '중앙', cx: 0, cy: 0, phase: 0.4 },
+      { key: 'east', name: '동부', cx: 44, cy: 0, phase: 1.1 },
+      { key: 'west', name: '서부', cx: -44, cy: 0, phase: 2.0 },
+      { key: 'north', name: '북부', cx: 0, cy: -34, phase: 2.8 },
+      { key: 'south', name: '남부', cx: 0, cy: 34, phase: 3.6 }
+    ];
+    const contours = townMoveContourSets.flatMap((set) => {
     return townMoveContourRings.map((radius, idx) => {
       const points = Array.from({ length: 88 }, (_, i) => {
         const t = (i / 88) * Math.PI * 2;
@@ -57155,11 +57991,15 @@ const requestRepairEquipment = (itemKey) => {
       });
       return { key: `contour-${set.key}-${idx}`, d: townMoveMapPathFromPoints(points, true) };
     });
-  });
-  const townMoveContourLabels = townMoveContourSets.map((set) => {
-    const p = townMoveMapProjectPoint(set.cx, set.cy);
-    return { key: `contour-label-${set.key}`, name: set.name, x: p.x, y: p.y };
-  });
+    });
+    const labels = townMoveContourSets.map((set) => {
+      const p = townMoveMapProjectPoint(set.cx, set.cy);
+      return { key: `contour-label-${set.key}`, name: set.name, x: p.x, y: p.y };
+    });
+    return { contours, labels };
+  })();
+  const townMoveContours = townMoveContourData.contours;
+  const townMoveContourLabels = townMoveContourData.labels;
   const townMoveUserContourPaths = townMoveUserContours.map((item) => ({
     key: item.id,
     d: townMoveMapPathFromPoints(item.points.map((p) => [p.x, p.y]), true)
@@ -57200,36 +58040,38 @@ const requestRepairEquipment = (itemKey) => {
     showCloseHint: idx === 0 && townMoveLandCloseHover
   }));
   const activeTownMarkerId = String(game?.townCurrentMarkerId || '');
-  const hasActiveTownMarker = townMoveUserMarkers.some((m) => String(m?.id || '') === activeTownMarkerId);
-  let villageSequenceNo = 0;
-  let citySequenceNo = 0;
-  const townMoveMarkerViews = townMoveUserMarkers.map((m, idx) => {
-    const isSmallCity = String(m?.type || 'village') === 'city';
-    const cityNo = isSmallCity ? (citySequenceNo += 1) : 0;
-    const villageNo = isSmallCity ? 0 : (villageSequenceNo += 1);
-    const isCurrentTownMarker = townMoveFieldSelectMode
-      && townMoveLocationContext === 'town'
-      && (activeTownMarkerId && hasActiveTownMarker
-        ? String(m?.id || '') === activeTownMarkerId
-        : idx === 0);
-    return {
-      ...m,
-      p: townMoveMapProjectPoint(m.x, m.y),
-      settlementKind: isSmallCity ? 'city' : 'village',
-      settlementLabel: isSmallCity
-        ? '청솔시'
-        : (
-            {
-              1: '고라니마을',
-              2: '제비마을',
-              3: '까치마을',
-              4: '산토끼마을',
-              5: '다람쥐마을'
-            }[villageNo] || `마을 ${villageNo}`
-          ),
-      isCurrentLocation: isCurrentTownMarker
-    };
-  });
+  const townMoveMarkerViews = (() => {
+    const hasActiveTownMarker = townMoveUserMarkers.some((m) => String(m?.id || '') === activeTownMarkerId);
+    let villageSequenceNo = 0;
+    let citySequenceNo = 0;
+    return townMoveUserMarkers.map((m, idx) => {
+      const isSmallCity = String(m?.type || 'village') === 'city';
+      const cityNo = isSmallCity ? (citySequenceNo += 1) : 0;
+      const villageNo = isSmallCity ? 0 : (villageSequenceNo += 1);
+      const isCurrentTownMarker = townMoveFieldSelectMode
+        && townMoveLocationContext === 'town'
+        && (activeTownMarkerId && hasActiveTownMarker
+          ? String(m?.id || '') === activeTownMarkerId
+          : idx === 0);
+      return {
+        ...m,
+        p: townMoveMapProjectPoint(m.x, m.y),
+        settlementKind: isSmallCity ? 'city' : 'village',
+        settlementLabel: isSmallCity
+          ? '청솔시'
+          : (
+              {
+                1: '고라니마을',
+                2: '제비마을',
+                3: '까치마을',
+                4: '산토끼마을',
+                5: '다람쥐마을'
+              }[villageNo] || `마을 ${villageNo}`
+            ),
+        isCurrentLocation: isCurrentTownMarker
+      };
+    });
+  })();
   const activeTownMarkerLabel = (() => {
     const marker = townMoveMarkerViews.find((m) => String(m.id || '') === activeTownMarkerId);
     return marker?.settlementLabel || '현재 마을';
@@ -57292,33 +58134,39 @@ const requestRepairEquipment = (itemKey) => {
     }
     return '';
   })();
-  const townMoveRoads = [
-    [[-56, -48], [-44, -40], [-30, -30], [-14, -18], [2, -6], [18, 8], [34, 24], [48, 40], [56, 52]],
-    [[-56, 50], [-42, 42], [-28, 33], [-12, 22], [4, 9], [20, -5], [36, -21], [50, -38], [56, -50]],
-    [[-56, 0], [-40, 1], [-24, 2], [-8, 4], [10, 7], [28, 11], [44, 16], [56, 22]],
-    [[-52, -56], [-40, -44], [-28, -32], [-16, -20], [-4, -8], [8, 6], [20, 20], [34, 36], [46, 50]],
-    [[-8, -56], [-4, -42], [1, -28], [6, -14], [10, 0], [13, 14], [16, 28], [20, 42], [24, 56]],
-    [[-48, -26], [-38, -22], [-28, -17], [-18, -12], [-7, -5], [5, 3], [16, 12], [28, 21], [40, 30]],
-    [[-44, 20], [-33, 15], [-22, 9], [-10, 2], [2, -4], [16, -10], [30, -16], [42, -21]],
-    [[-18, 48], [-12, 36], [-7, 24], [-2, 12], [4, 0], [8, -12], [11, -24], [14, -36], [18, -48]],
-    [[-50, 3], [-39, 2], [-27, 3], [-14, 4], [0, 7], [14, 10], [28, 15], [40, 20], [50, 24]],
-    [[-36, -38], [-28, -28], [-20, -18], [-12, -9], [-4, 0], [5, 8], [15, 15]],
-    [[-6, -44], [2, -33], [10, -22], [20, -10], [30, 2], [39, 14]],
-    [[-30, 34], [-18, 28], [-6, 23], [8, 18], [20, 15], [34, 12]],
-    [[-6, 8], [0, 5], [8, 0], [16, -6], [24, -13]]
-  ].map((points, idx) => ({
-    key: `road-${idx}`,
-    d: townMoveMapPathFromPoints(points, false),
-    tone: idx >= 4 ? 'sub' : 'main'
-  }));
-  const townMoveRivers = [
-    [[-46, 40], [-30, 28], [-18, 16], [-8, 6], [2, -8], [14, -22], [30, -40]],
-    [[-22, 48], [-10, 32], [0, 20], [14, 8], [28, -6], [40, -20]]
-  ].map((points, idx) => ({ key: `river-${idx}`, d: townMoveMapPathFromPoints(points, false) }));
-  const townMoveVillages = [
-    { key: 'town', name: '마을', kind: 'village', x: -2, y: -2 },
-    { key: 'small-city', name: '소도시', kind: 'city', x: 22, y: 12 }
-  ].map((v) => ({ ...v, p: townMoveMapProjectPoint(v.x, v.y) }));
+  const townMoveStaticRouteViews = (() => {
+    const roads = [
+      [[-56, -48], [-44, -40], [-30, -30], [-14, -18], [2, -6], [18, 8], [34, 24], [48, 40], [56, 52]],
+      [[-56, 50], [-42, 42], [-28, 33], [-12, 22], [4, 9], [20, -5], [36, -21], [50, -38], [56, -50]],
+      [[-56, 0], [-40, 1], [-24, 2], [-8, 4], [10, 7], [28, 11], [44, 16], [56, 22]],
+      [[-52, -56], [-40, -44], [-28, -32], [-16, -20], [-4, -8], [8, 6], [20, 20], [34, 36], [46, 50]],
+      [[-8, -56], [-4, -42], [1, -28], [6, -14], [10, 0], [13, 14], [16, 28], [20, 42], [24, 56]],
+      [[-48, -26], [-38, -22], [-28, -17], [-18, -12], [-7, -5], [5, 3], [16, 12], [28, 21], [40, 30]],
+      [[-44, 20], [-33, 15], [-22, 9], [-10, 2], [2, -4], [16, -10], [30, -16], [42, -21]],
+      [[-18, 48], [-12, 36], [-7, 24], [-2, 12], [4, 0], [8, -12], [11, -24], [14, -36], [18, -48]],
+      [[-50, 3], [-39, 2], [-27, 3], [-14, 4], [0, 7], [14, 10], [28, 15], [40, 20], [50, 24]],
+      [[-36, -38], [-28, -28], [-20, -18], [-12, -9], [-4, 0], [5, 8], [15, 15]],
+      [[-6, -44], [2, -33], [10, -22], [20, -10], [30, 2], [39, 14]],
+      [[-30, 34], [-18, 28], [-6, 23], [8, 18], [20, 15], [34, 12]],
+      [[-6, 8], [0, 5], [8, 0], [16, -6], [24, -13]]
+    ].map((points, idx) => ({
+      key: `road-${idx}`,
+      d: townMoveMapPathFromPoints(points, false),
+      tone: idx >= 4 ? 'sub' : 'main'
+    }));
+    const rivers = [
+      [[-46, 40], [-30, 28], [-18, 16], [-8, 6], [2, -8], [14, -22], [30, -40]],
+      [[-22, 48], [-10, 32], [0, 20], [14, 8], [28, -6], [40, -20]]
+    ].map((points, idx) => ({ key: `river-${idx}`, d: townMoveMapPathFromPoints(points, false) }));
+    const villages = [
+      { key: 'town', name: '마을', kind: 'village', x: -2, y: -2 },
+      { key: 'small-city', name: '소도시', kind: 'city', x: 22, y: 12 }
+    ].map((v) => ({ ...v, p: townMoveMapProjectPoint(v.x, v.y) }));
+    return { roads, rivers, villages };
+  })();
+  const townMoveRoads = townMoveStaticRouteViews.roads;
+  const townMoveRivers = townMoveStaticRouteViews.rivers;
+  const townMoveVillages = townMoveStaticRouteViews.villages;
   const seasonalTasks = Object.values(TASKS).filter((task) => isTaskSeasonActive(selectedField, task, month));
   const currentWorkLaborFactors = workLaborFactorsOf({
     weatherName: game.weather,
@@ -61655,26 +62503,62 @@ body { display: flex !important; align-items: center !important; justify-content
       }, 22);
     }, 170);
   };
-  function restoreAutoSavedView(preferencesRaw = {}, session = null) {
-    return restoreAutoSavedViewFromModule({
-      preferencesRaw,
-      session,
-      authSession,
-      config: AUTO_RESTORE_VIEW_CONFIG,
-      loadGame,
-      normalizeLoadedGame,
-      resetFacilityStorageUiStateForGameLoad,
-      applyRestorableViewState,
-      setters: {
-        setGame,
-        setActiveSaveSlot,
-        setLastRestorableSaveSlot,
-        setLastRestorableViewState,
-        setScreen,
-        setSlotMode,
-        setUiEntranceSeed
+  async function restoreAutoSavedView(preferencesRaw = {}, session = null) {
+    const preferences = sanitizeAccountPreferences(preferencesRaw);
+    const view = sanitizeLastViewStatePreference(preferences.lastViewState || {});
+    const shouldRestoreGameView = Boolean(preferences.autoSaveEnabled && preferences.autoRestoreViewEnabled && view.screen === 'game');
+    const phaseKeys = shouldRestoreGameView ? getRestorableViewLoadingPhaseKeys(view, AUTO_RESTORE_VIEW_CONFIG) : [];
+    if (phaseKeys.length > 0) {
+      setAutoRestoreLoadingState({
+        active: true,
+        progress: 0,
+        detail: '이전에 보던 화면을 준비하고 있습니다.'
+      });
+      for (let phaseIndex = 0; phaseIndex < phaseKeys.length; phaseIndex += 1) {
+        const phaseKey = phaseKeys[phaseIndex];
+        await preloadLoadingPhase(phaseKey, {
+          timeoutMs: 8000,
+          onProgress: ({ completed, total, current }) => {
+            const phaseRatio = total > 0 ? completed / total : 1;
+            const overallRatio = (phaseIndex + phaseRatio) / phaseKeys.length;
+            setAutoRestoreLoadingState({
+              active: true,
+              progress: overallRatio,
+              detail: current?.label ? `${current.label} 불러오는 중` : '이전에 보던 화면을 준비하고 있습니다.'
+            });
+          }
+        });
       }
-    });
+    }
+    try {
+      return restoreAutoSavedViewFromModule({
+        preferencesRaw,
+        session,
+        authSession,
+        config: AUTO_RESTORE_VIEW_CONFIG,
+        loadGame,
+        normalizeLoadedGame,
+        resetFacilityStorageUiStateForGameLoad,
+        applyRestorableViewState,
+        setters: {
+          setGame,
+          setActiveSaveSlot,
+          setLastRestorableSaveSlot,
+          setLastRestorableViewState,
+          setScreen,
+          setSlotMode,
+          setUiEntranceSeed
+        }
+      });
+    } finally {
+      if (phaseKeys.length > 0) {
+        setAutoRestoreLoadingState({
+          active: false,
+          progress: 1,
+          detail: '이전에 보던 화면을 준비했습니다.'
+        });
+      }
+    }
   }
   function applyRestorableViewState(viewRaw = {}) {
     return applyRestorableViewStateFromModule(viewRaw, {
@@ -62338,6 +63222,7 @@ body { display: flex !important; align-items: center !important; justify-content
         >
           {isHousingInteriorActive ? (
             <HousingInteriorView
+              housingInteriorFacilityKey={housingInteriorFacilityRow?.key || housingInteriorFacilityKey}
               housingInteriorImageSrc={housingInteriorImageSrc}
               housingInteriorHasDedicatedImage={housingInteriorHasDedicatedImage}
               housingIndoorTemperatureInfo={housingIndoorTemperatureInfo}
@@ -62354,6 +63239,7 @@ body { display: flex !important; align-items: center !important; justify-content
               updateHousingInteriorFridgeSetting={updateHousingInteriorFridgeSetting}
               toggleHousingInteriorPowerControl={toggleHousingInteriorBreakerEnabled}
               housingInteriorPendingObject={housingInteriorPendingObject}
+              housingBathroomInfo={housingBathroomInfo}
               housingInteriorFridgeStoredRows={housingInteriorFridgeStoredRows}
               housingInteriorFreezerStoredRows={housingInteriorFreezerStoredRows}
               housingInteriorColdStorageCapacityInfo={housingInteriorColdStorageCapacityInfo}
@@ -62361,13 +63247,17 @@ body { display: flex !important; align-items: center !important; justify-content
               housingInteriorStorageRows={housingInteriorStorageRows}
               housingInteriorStorageInfo={housingInteriorStorageInfo}
               housingInteriorApplianceSlotRows={housingInteriorApplianceSlotRows}
+              housingInteriorClothingSlotRows={housingInteriorClothingSlotRows}
+              housingInteriorClothingStorageRows={housingInteriorClothingStorageRows}
               housingInteriorFurnitureSlotRows={housingInteriorFurnitureSlotRows}
               housingInteriorInstallSourceRows={housingInteriorInstallSourceRows}
               housingInteriorInstallDestinationRows={housingInteriorInstallDestinationRows}
               housingInteriorBagRows={housingInteriorBagRows}
               housingInteriorBagFoodRows={housingInteriorBagFoodRows}
+              housingInteriorBagClothingRows={housingInteriorBagClothingRows}
               housingInteriorVehicleFoodSourceRows={housingInteriorVehicleFoodSourceRows}
               housingMealInfo={housingMealInfo}
+              housingWaterInfo={housingWaterInfo}
               isHousingInteriorWindowPreviewOpen={isHousingInteriorWindowPreviewOpen}
               weatherSceneImage={weatherSceneImage}
               game={game}
@@ -62379,11 +63269,16 @@ body { display: flex !important; align-items: center !important; justify-content
               startDayTimeTransition={startDayTimeTransition}
               advanceMultipleDays={advanceMultipleDays}
               eatHousingMeal={eatHousingMeal}
+              showerHousingBathroom={showerHousingBathroom}
+              washHousingBathroomAfterWork={washHousingBathroomAfterWork}
+              cleanHousingBathroom={cleanHousingBathroom}
               cookHousingMeal={cookHousingMeal}
               plateHousingMeal={plateHousingMeal}
               moveFoodItemToHousingFridge={moveFoodItemToHousingFridge}
               moveFoodItemToHousingStorage={moveFoodItemToHousingStorage}
               moveFoodItemFromHousingStorageToInventory={moveFoodItemFromHousingStorageToInventory}
+              moveClothingItemToHousingWardrobe={moveClothingItemToHousingWardrobe}
+              moveClothingItemFromHousingWardrobe={moveClothingItemFromHousingWardrobe}
               installHousingSlotItem={installHousingSlotItem}
               moveHousingSlotItemToTarget={moveHousingSlotItemToTarget}
               moveFoodItemFromHousingColdStorage={moveFoodItemFromHousingColdStorage}
@@ -73880,6 +74775,12 @@ body { display: flex !important; align-items: center !important; justify-content
                     onClick: () => setMapLocationModal((prev) => ({ ...prev, store: 'appliance', tab: 'all', view: 'shop' })),
                   },
                   {
+                    key: 'home-living-clothing',
+                    icon: '🧥',
+                    label: '작업복·보호구',
+                    onClick: () => setMapLocationModal((prev) => ({ ...prev, store: 'clothing', tab: 'all', view: 'shop' })),
+                  },
+                  {
                     key: 'home-living-office',
                     icon: '🏢',
                     label: '사무실',
@@ -73967,9 +74868,15 @@ body { display: flex !important; align-items: center !important; justify-content
         <MapDualShopModal
           containerClassName={`map-shop-dual-modal ${shouldHideDealerCartPanel ? 'is-single-panel' : ''} ${mapShopIsPaymentShifted ? 'is-payment-docking' : ''} ${mapTransferSelectedCarrier ? 'is-transfer-linked' : ''} ${mapShopPaymentEntering ? 'is-payment-entering' : ''} ${mapShopClosing ? 'is-closing' : ''}`.trim()}
           title="홈리빙센터"
-          description={String(mapLocationModal.store || 'appliance') === 'furniture' ? '가구매장' : '가전매장'}
-          tabs={(
-            String(mapLocationModal.store || 'appliance') === 'furniture' ? (
+          description={(() => {
+            const storeKey = String(mapLocationModal.store || 'appliance');
+            if (storeKey === 'furniture') return '가구매장';
+            if (storeKey === 'clothing') return '작업복·보호구';
+            return '가전매장';
+          })()}
+          tabs={(() => {
+            const storeKey = String(mapLocationModal.store || 'appliance');
+            if (storeKey === 'furniture') return (
               <div className="focus-tabs" role="tablist" aria-label="홈리빙센터 가구 카테고리">
                 {HOME_LIVING_FURNITURE_TABS.map(([tabKey, label]) => {
                   const activeTab = HOME_LIVING_FURNITURE_TABS.some(([key]) => key === String(mapLocationModal.tab || ''))
@@ -73990,7 +74897,30 @@ body { display: flex !important; align-items: center !important; justify-content
                   );
                 })}
               </div>
-            ) : (() => {
+            );
+            if (storeKey === 'clothing') return (
+              <div className="focus-tabs" role="tablist" aria-label="홈리빙센터 작업복·보호구 카테고리">
+                {HOME_LIVING_CLOTHING_TABS.map(([tabKey, label]) => {
+                  const activeTab = HOME_LIVING_CLOTHING_TABS.some(([key]) => key === String(mapLocationModal.tab || ''))
+                    ? String(mapLocationModal.tab || '')
+                    : 'all';
+                  const isActive = activeTab === tabKey;
+                  return (
+                    <button
+                      key={`home-living-clothing-tab-${tabKey}`}
+                      type="button"
+                      role="tab"
+                      aria-selected={isActive}
+                      className={`focus-tab ${isActive ? 'focus-tab--active' : ''}`.trim()}
+                      onClick={() => setMapLocationModal((prev) => ({ ...prev, tab: tabKey }))}
+                    >
+                      <span>{label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            );
+            return (() => {
               const activeTab = HOME_LIVING_APPLIANCE_TABS.some(([key]) => key === String(mapLocationModal.tab || ''))
                 || HOME_LIVING_APPLIANCE_GROUP_TABS.some(([key]) => key === String(mapLocationModal.tab || ''))
                 ? String(mapLocationModal.tab || '')
@@ -74039,11 +74969,14 @@ body { display: flex !important; align-items: center !important; justify-content
                   ) : null}
                 </div>
               );
-            })()
-          )}
-          itemsContent={String(mapLocationModal.store || 'appliance') === 'furniture'
-            ? mapHomeLivingFurnitureItemsView.map((item) => renderMapShopItemCard(item, 'furniture', 'map-home-living-furniture-item'))
-            : mapHomeLivingApplianceItemsView.map((item) => renderMapShopItemCard(item, 'appliance', 'map-home-living-appliance-item'))}
+            })();
+          })()}
+          itemsContent={(() => {
+            const storeKey = String(mapLocationModal.store || 'appliance');
+            if (storeKey === 'furniture') return mapHomeLivingFurnitureItemsView.map((item) => renderMapShopItemCard(item, 'furniture', 'map-home-living-furniture-item'));
+            if (storeKey === 'clothing') return mapHomeLivingClothingItemsView.map((item) => renderMapShopItemCard(item, 'clothing', 'map-home-living-clothing-item'));
+            return mapHomeLivingApplianceItemsView.map((item) => renderMapShopItemCard(item, 'appliance', 'map-home-living-appliance-item'));
+          })()}
           showCart={!shouldHideDealerCartPanel}
           cartPanel={renderSharedShopCartPanel()}
           paymentDockedPlaceholder={mapShopIsPaymentShifted ? renderMapTransferPlaceholderModal({ paymentDocked: true }) : null}
@@ -74237,23 +75170,7 @@ body { display: flex !important; align-items: center !important; justify-content
             <MapEntryModal
               className={`confirm-modal confirm-modal--map-shop-entry ${mapShopClosing ? 'is-closing' : ''}`.trim()}
               title={mapMarkerNameOf('seedlingShop')}
-              actions={isSmallCityContext ? [
-                {
-                  key: 'outpatient',
-                  label: '외래 진료',
-                  onClick: () => setMapLocationModal((prev) => ({ ...prev, view: 'outpatient' }))
-                },
-                {
-                  key: 'emergency',
-                  label: '응급실',
-                  onClick: () => setMapLocationModal((prev) => ({ ...prev, view: 'emergency' }))
-                },
-                {
-                  key: 'pickup',
-                  label: '물품 임시보관소',
-                  onClick: () => setMapLocationModal((prev) => ({ ...prev, view: 'pickup' }))
-                }
-              ] : [
+              actions={[
                 {
                   key: 'shop',
                   label: '상품구매',
@@ -74319,6 +75236,80 @@ body { display: flex !important; align-items: center !important; justify-content
               onBack={goBackMapLocationModal}
               onClose={closeMapLocationModal}
             />
+          )}
+        </>
+      ) : null}
+      {mapLocationModal.open && ['hospital', 'herbalClinic'].includes(String(mapLocationModal.key || '')) ? (
+        <>
+          <div className={`confirm-modal-backdrop ${mapShopClosing ? 'is-closing' : ''}`.trim()} onClick={closeMapLocationModal} />
+          {mapLocationModal.view === 'menu' ? (
+            <MapEntryModal
+              className={`confirm-modal confirm-modal--map-shop-entry ${mapShopClosing ? 'is-closing' : ''}`.trim()}
+              title={mapMarkerNameOf(mapLocationModal.key)}
+              description={mapLocationModal.key === 'hospital'
+                ? '증상 진단, 사고 부상 처치, 응급 대응을 받는 의료기관입니다.'
+                : '가벼운 통증과 컨디션 저하를 살피는 동네 한의원입니다.'}
+              actions={mapLocationModal.key === 'hospital' ? [
+                {
+                  key: 'outpatient',
+                  label: '외래 진료',
+                  onClick: () => setMapLocationModal((prev) => ({ ...prev, view: 'outpatient' }))
+                },
+                {
+                  key: 'emergency',
+                  label: '응급실',
+                  onClick: () => setMapLocationModal((prev) => ({ ...prev, view: 'emergency' }))
+                }
+              ] : [
+                {
+                  key: 'outpatient',
+                  label: '한방 진료',
+                  onClick: () => setMapLocationModal((prev) => ({ ...prev, view: 'outpatient' }))
+                }
+              ]}
+              onBack={goBackMapLocationModal}
+              onClose={closeMapLocationModal}
+            />
+          ) : mapLocationModal.view === 'emergency' ? (
+            <div className={`confirm-modal confirm-modal--small-apc-receiving ${mapShopClosing ? 'is-closing' : ''}`.trim()}>
+              <div className="confirm-modal__title">{`${mapMarkerNameOf(mapLocationModal.key)} 응급실`}</div>
+              <div className="confirm-modal__desc">직접적인 사고와 급성 증상을 우선 분류하는 응급 진료 구역입니다.</div>
+              <div className="option-card option-card--left option-card--selected" style={{ marginTop: 14, padding: 18 }}>
+                <div className="option-card__row">
+                  <strong>응급 접수 안내</strong>
+                  <span>우선 대응</span>
+                </div>
+                <div className="option-card__meta">대상: 약제 노출, 심한 탈수, 깊은 상처, 머리 충격, 농기계 사고</div>
+                <div className="option-card__meta">응급실에서는 사고 부상은 바로 확인되고, 병으로 의심되는 상태는 진단 후 병명이 표시됩니다.</div>
+                <div className="option-card__meta">치료비·회복일 단축 처리는 다음 단계에서 붙이면 됩니다.</div>
+              </div>
+              <div className="footer-actions">
+                <button className="button button--ghost warehouse-storage-footer-button" onClick={() => setMapLocationModal((prev) => ({ ...prev, view: 'menu' }))}>뒤로</button>
+                <button className="button button--ghost warehouse-storage-footer-button" onClick={closeMapLocationModal}>나가기</button>
+              </div>
+            </div>
+          ) : (
+            <div className={`confirm-modal confirm-modal--small-apc-receiving ${mapShopClosing ? 'is-closing' : ''}`.trim()}>
+              <div className="confirm-modal__title">{`${mapMarkerNameOf(mapLocationModal.key)} ${mapLocationModal.key === 'hospital' ? '외래 진료' : '한방 진료'}`}</div>
+              <div className="confirm-modal__desc">
+                {mapLocationModal.key === 'hospital'
+                  ? '현재 느끼는 증상을 문진하고 병명 확인을 준비하는 진료 창구입니다.'
+                  : '피로, 몸살 기운, 손목·허리 통증처럼 생활형 증상을 완화하는 진료 창구입니다.'}
+              </div>
+              <div className="option-card option-card--left option-card--selected" style={{ marginTop: 14, padding: 18 }}>
+                <div className="option-card__row">
+                  <strong>진료 접수 안내</strong>
+                  <span>{mapLocationModal.key === 'hospital' ? '진단 가능' : '완화 중심'}</span>
+                </div>
+                <div className="option-card__meta">증상으로만 보이던 상태는 병원 진단을 거쳐 실제 병명으로 확인하는 구조로 연결됩니다.</div>
+                <div className="option-card__meta">한의원은 큰 사고보다 몸살, 피로, 허리·손목 통증 같은 농작업 후유증에 맞게 쓰면 됩니다.</div>
+                <div className="option-card__meta">다음 단계에서 진단 버튼, 진료비, 치료 효과를 실제 상태값에 반영하면 됩니다.</div>
+              </div>
+              <div className="footer-actions">
+                <button className="button button--ghost warehouse-storage-footer-button" onClick={() => setMapLocationModal((prev) => ({ ...prev, view: 'menu' }))}>뒤로</button>
+                <button className="button button--ghost warehouse-storage-footer-button" onClick={closeMapLocationModal}>나가기</button>
+              </div>
+            </div>
           )}
         </>
       ) : null}

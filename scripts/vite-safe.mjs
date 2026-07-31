@@ -5,7 +5,14 @@ import path from "node:path";
 
 const require = createRequire(import.meta.url);
 const childProcess = require("node:child_process");
+const fs = require("node:fs");
 const originalExec = childProcess.exec.bind(childProcess);
+
+// On mapped network drives, Node's native realpath can expand "Z:\..." to a
+// UNC path that Vite later treats as "Z:\192.168...". Keep the drive path form.
+if (process.platform === "win32" && fs.realpathSync?.native) {
+  fs.realpathSync.native = fs.realpathSync;
+}
 
 childProcess.exec = function patchedExec(command, options, callback) {
   let cb = callback;

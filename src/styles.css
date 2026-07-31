@@ -12915,6 +12915,10 @@ button {
   background: linear-gradient(145deg, #c67652 0%, #a85836 55%, #7f3e24 100%);
 }
 
+.map-marker--hospital .map-marker__pin {
+  background: linear-gradient(145deg, #f2fff8 0%, #52b788 55%, #2d6a4f 100%);
+}
+
 .map-marker--village-inn .map-marker__pin {
   background: linear-gradient(145deg, #d48a54 0%, #b56a36 55%, #8a4c22 100%);
 }
@@ -13632,6 +13636,12 @@ button {
 
 .farm-right-empty-panel__labor-card--health {
   border-color: rgba(179, 91, 84, 0.5);
+}
+
+.farm-right-empty-panel__labor-card--health .farm-right-empty-panel__self-value,
+.farm-right-empty-panel__labor-card--health .farm-right-empty-panel__self-desc {
+  width: 100%;
+  text-align: center;
 }
 
 .farm-right-widget-drag-wrap:not([data-drag-armed='true']):not([data-dragging='true']) .farm-right-empty-panel__crew-widget.crew-widget--clickable:hover,
@@ -30173,7 +30183,7 @@ button.small-apc-receiving-queue__item:hover {
   width: min(980px, 88%);
   margin-top: auto;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 10px;
   padding: 8px;
   border-radius: 24px;
@@ -30243,6 +30253,27 @@ button.small-apc-receiving-queue__item:hover {
     0 0 0 1px rgba(246, 239, 205, 0.28),
     0 12px 22px rgba(0, 0, 0, 0.22),
     inset 0 1px 0 rgba(255, 255, 255, 0.48);
+}
+
+.housing-interior-panel__object-button:disabled,
+.housing-interior-panel__object-button[aria-disabled="true"] {
+  border-color: rgba(88, 92, 82, 0.34);
+  background:
+    linear-gradient(180deg, rgba(226, 224, 216, 0.78), rgba(194, 189, 176, 0.66)),
+    linear-gradient(145deg, rgba(176, 184, 169, 0.44), rgba(129, 139, 128, 0.38));
+  color: rgba(34, 43, 37, 0.58);
+  text-shadow: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.36),
+    0 8px 14px rgba(0, 0, 0, 0.08);
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.housing-interior-panel__object-button:disabled .housing-interior-panel__object-icon,
+.housing-interior-panel__object-button[aria-disabled="true"] .housing-interior-panel__object-icon {
+  filter: grayscale(0.7);
+  opacity: 0.68;
 }
 
 .housing-interior-overlay.is-night .housing-interior-panel__object-icon {
@@ -30587,10 +30618,25 @@ button.small-apc-receiving-queue__item:hover {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding-bottom: 12px;
+}
+
+.housing-interior-kitchen-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
 }
 
 .housing-interior-kitchen-panel > .housing-interior-placeholder-grid {
   margin-top: 6px;
+}
+
+.housing-interior-kitchen-panel .housing-interior-placeholder-card--storage-wide {
+  min-height: 0;
+  max-height: none;
+  overflow: visible;
 }
 
 .housing-interior-kitchen-tabs {
@@ -30601,6 +30647,10 @@ button.small-apc-receiving-queue__item:hover {
 .housing-interior-kitchen-tabs .focus-tab {
   min-width: 104px;
   justify-content: center;
+}
+
+.housing-interior-meal-limit-badge {
+  flex: 0 0 auto;
 }
 
 .housing-interior-recipe-tabs {
@@ -30689,6 +30739,7 @@ button.small-apc-receiving-queue__item:hover {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin-top: 12px;
+  padding-bottom: 16px;
 }
 
 .housing-interior-cooking-appliance-card {
@@ -30702,9 +30753,28 @@ button.small-apc-receiving-queue__item:hover {
 }
 
 .housing-interior-cooking-appliance-card.is-installed {
+  cursor: pointer;
+  transition:
+    transform 160ms cubic-bezier(0.22, 0.8, 0.24, 1),
+    border-color 160ms ease,
+    box-shadow 160ms ease;
   background:
     radial-gradient(circle at top right, rgba(220, 246, 235, 0.68), rgba(255, 255, 255, 0) 56%),
     rgba(255, 253, 248, 0.94);
+}
+
+.housing-interior-cooking-appliance-card.is-installed:hover,
+.housing-interior-cooking-appliance-card.is-installed:focus-visible {
+  border-color: rgba(43, 111, 73, 0.34);
+  box-shadow:
+    0 12px 22px rgba(38, 84, 59, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.72);
+  transform: translateY(-2px);
+  outline: none;
+}
+
+.housing-interior-cooking-appliance-card.is-installed:active {
+  transform: translateY(0) scale(0.985);
 }
 
 .housing-interior-cooking-appliance-card__head,
@@ -30766,7 +30836,7 @@ button.small-apc-receiving-queue__item:hover {
 .housing-interior-cooking-appliance-card__empty {
   min-height: 58px;
   align-content: center;
-  padding: 8px 10px;
+  padding: 10px 12px 14px;
   border-radius: 12px;
   border: 1px dashed rgba(71, 109, 86, 0.18);
   background: rgba(255, 255, 255, 0.42);
@@ -31083,6 +31153,86 @@ button.small-apc-receiving-queue__item:hover {
 
 .confirm-modal--housing-recipe-detail {
   width: min(720px, calc(100vw - 36px));
+}
+
+.confirm-modal--housing-cooking-appliance {
+  width: min(680px, calc(100vw - 36px));
+}
+
+.housing-interior-cookable-prep-list {
+  display: grid;
+  gap: 10px;
+  max-height: min(430px, calc(100vh - 260px));
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 4px 4px 4px 0;
+  scrollbar-gutter: stable;
+}
+
+.housing-interior-cookable-prep-card {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(71, 109, 86, 0.16);
+  background:
+    radial-gradient(circle at top right, rgba(220, 246, 235, 0.62), rgba(255, 255, 255, 0) 54%),
+    rgba(255, 253, 248, 0.92);
+  color: #214c35;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    transform 160ms cubic-bezier(0.22, 0.8, 0.24, 1),
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.housing-interior-cookable-prep-card:hover,
+.housing-interior-cookable-prep-card:focus-visible {
+  border-color: rgba(43, 111, 73, 0.34);
+  box-shadow:
+    0 12px 22px rgba(38, 84, 59, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.72);
+  transform: translateY(-2px);
+  outline: none;
+}
+
+.housing-interior-cookable-prep-card:active {
+  transform: translateY(0) scale(0.985);
+}
+
+.housing-interior-cookable-prep-card > div,
+.housing-interior-cookable-prep-card > small {
+  min-width: 0;
+}
+
+.housing-interior-cookable-prep-card strong {
+  display: block;
+  color: #214c35;
+  font-weight: 900;
+}
+
+.housing-interior-cookable-prep-card span,
+.housing-interior-cookable-prep-card small {
+  color: rgba(42, 74, 55, 0.62);
+  font-size: 0.82rem;
+  font-weight: 760;
+  line-height: 1.35;
+}
+
+.housing-interior-cookable-prep-empty {
+  min-height: 112px;
+  border-radius: 14px;
+  border: 1px dashed rgba(71, 109, 86, 0.2);
+  background: rgba(243, 247, 239, 0.52);
+  color: rgba(49, 95, 70, 0.62);
+  display: grid;
+  place-items: center;
+  font-size: 0.9rem;
+  font-weight: 850;
 }
 
 .housing-interior-recipe-detail {
@@ -31668,20 +31818,36 @@ button.small-apc-receiving-queue__item:hover {
   border-radius: 14px;
   border: 1px solid rgba(71, 109, 86, 0.14);
   background: rgba(255, 255, 255, 0.54);
-  display: flex;
+  display: grid;
   align-items: center;
+  align-content: center;
   justify-content: center;
+  justify-items: center;
+  gap: 6px;
   min-width: 0;
-  padding: 10px;
+  padding: 8px 10px;
 }
 
 .housing-interior-appliance-slot-card__installed img {
-  width: 74px;
-  height: 74px;
+  width: 58px;
+  height: 58px;
   object-fit: contain;
   border-radius: 10px;
   border: 1px solid rgba(71, 109, 86, 0.12);
   background: rgba(255, 255, 255, 0.72);
+}
+
+.housing-interior-appliance-slot-card__installed span {
+  max-width: 100%;
+  color: #214c35;
+  font-size: 0.78rem;
+  font-weight: 900;
+  line-height: 1.2;
+  text-align: center;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .housing-build-furniture-choice {
@@ -31749,6 +31915,28 @@ button.small-apc-receiving-queue__item:hover {
     transform 150ms ease,
     border-color 150ms ease,
     background 150ms ease;
+}
+
+.housing-interior-clothing-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.housing-interior-clothing-storage-layout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  min-width: 0;
+}
+
+.housing-interior-clothing-storage-card {
+  min-width: 0;
+}
+
+.housing-interior-clothing-storage-card .housing-interior-placeholder-item-list--bag {
+  max-height: 220px;
+  overflow: auto;
+  padding-right: 4px;
 }
 
 .housing-install-slot-detail-panel {

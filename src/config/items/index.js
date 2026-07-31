@@ -10,6 +10,7 @@ import { CONSUMABLE_MATERIAL_ITEMS } from './consumableMaterial.js';
 import { FOOD_MART_ITEMS } from './foodMart.js';
 import { APPLIANCE_ITEMS } from './appliance.js';
 import { FURNITURE_ITEMS } from './furniture.js';
+import { CLOTHING_ITEMS } from './clothing.js';
 
 const CATEGORY_DEFAULT_WEIGHT_KG = {
   tool: 1.2,
@@ -23,7 +24,8 @@ const CATEGORY_DEFAULT_WEIGHT_KG = {
   consumableMaterial: 1.0,
   foodMart: 1.0,
   appliance: 45,
-  furniture: 18
+  furniture: 18,
+  clothing: 0.6
 };
 
 const PESTICIDE_WEIGHT_KG_BY_KEY = {
@@ -153,5 +155,6 @@ export const SHOP_ITEMS = {
   consumableMaterial: attachWeight('consumableMaterial', CONSUMABLE_MATERIAL_ITEMS),
   foodMart: attachWeight('foodMart', FOOD_MART_ITEMS),
   appliance: attachWeight('appliance', APPLIANCE_ITEMS),
-  furniture: attachWeight('furniture', FURNITURE_ITEMS)
+  furniture: attachWeight('furniture', FURNITURE_ITEMS),
+  clothing: attachWeight('clothing', CLOTHING_ITEMS)
 };

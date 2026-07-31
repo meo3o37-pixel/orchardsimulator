@@ -146,6 +146,40 @@ export const sanitizeAccountPreferences = (raw = {}, config = {}) => ({
 
 export const buildCurrentRestorableViewState = (state = {}, config = {}) => sanitizeLastViewStatePreference(state, config);
 
+export const getRestorableViewLoadingPhaseKeys = (viewRaw = {}, config = {}) => {
+  const view = sanitizeLastViewStatePreference(viewRaw, config);
+  if (view.screen !== 'game') return [];
+  const keys = new Set(['field']);
+  const tab = String(view.tab || 'farm');
+  const focusTab = String(view.focusTab || 'manage');
+  const mapLocationKey = String(view.mapLocationModal?.key || '');
+  const mapLocationView = String(view.mapLocationModal?.view || '');
+  const mapLocationTab = String(view.mapLocationModal?.tab || '');
+
+  if (tab === 'map' || view.externalMapOpen || view.mapLocationModal?.open) {
+    keys.add('map');
+  }
+  if (tab === 'storage' || tab === 'warehouse' || view.mapLocationModal?.open) {
+    keys.add('warehouse');
+  }
+  if (tab === 'shop' || ['machineRent', 'smallCity', 'usedCarDealer'].includes(mapLocationKey)) {
+    keys.add('vehicle');
+  }
+  if (
+    tab === 'facility'
+    || focusTab === 'landFacility'
+    || focusTab === 'housing'
+    || ['constructionOffice', 'maintenanceShop', 'smallApc'].includes(mapLocationKey)
+    || (mapLocationKey === 'townOffice' && mapLocationTab === 'machine')
+  ) {
+    keys.add('facility');
+  }
+  if (mapLocationView === 'shop' || mapLocationView === 'pickup') {
+    keys.add('warehouse');
+  }
+  return [...keys];
+};
+
 export const applyRestorableViewState = (viewRaw = {}, context = {}) => {
   const config = context.config || {};
   const setters = context.setters || {};

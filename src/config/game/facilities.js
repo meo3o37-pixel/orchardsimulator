@@ -28,13 +28,18 @@ export const FACILITIES_BY_TAB = {
     { key: 'appleSortingLineLarge', name: '사과선별기 대형', price: 23300000, desc: '출하 물량이 많은 농장용 고용량 사과 선별 설비', weightKg: 2800, minWorkers: 3, recommendedWorkers: 6 }
   ],
   support: [
-    { key: 'evChargerStation', name: 'EV 충전소', price: 4200000, desc: '전기 농기계·차량 수동 충전 시설 (전력 ON 필요)' }
+    { key: 'evChargerStation', name: 'EV 충전소', price: 4200000, desc: '전기 농기계·차량 수동 충전 시설 (전력 ON 필요)' },
+    { key: 'portableToilet', name: '간이 화장실', price: 1200000, desc: '전기·급수 없이 설치 가능한 임시 화장실 · 단기 작업 인원 대응' },
+    { key: 'outdoorToilet', name: '야외 화장실', price: 4800000, desc: '정화조/배수 기반의 고정식 야외 화장실 · 상시 현장 체류 대응' },
+    { key: 'workerRestroom', name: '작업자 화장실', price: 12000000, desc: '세면대와 남녀 분리 공간을 갖춘 작업자용 화장실' },
+    { key: 'hygieneShowerUnit', name: '샤워실 포함 위생동', price: 28000000, desc: '샤워실·세면장·탈의 공간을 갖춘 농약 작업 후 세척용 위생동' }
   ]
 };
 
 export const FACILITIES = Object.values(FACILITIES_BY_TAB).flat();
 export const TANK_FACILITY_KEYS = ['peTankSmall', 'peTankMedium', 'peTankLarge', 'peTankXl', 'peTankXxl'];
 export const SINGLE_PER_LAND_FACILITY_KEYS = ['wellFacility', 'farmPowerElectric'];
+export const SANITATION_FACILITY_KEYS = ['portableToilet', 'outdoorToilet', 'workerRestroom', 'hygieneShowerUnit'];
 export const TANK_CAPACITY_LITERS = {
   peTankSmall: 1000,
   peTankMedium: 3000,
@@ -46,6 +51,10 @@ export const IRRIGATION_FACILITY_KEYS = ['dripIrrigation', 'sprinklerIrrigation'
 export const FACILITY_OCCUPY_PY = {
   wellFacility: 1,
   evChargerStation: 1,
+  portableToilet: 1,
+  outdoorToilet: 2,
+  workerRestroom: 6,
+  hygieneShowerUnit: 12,
   peTankSmall: 1,
   peTankMedium: 2,
   peTankLarge: 3,

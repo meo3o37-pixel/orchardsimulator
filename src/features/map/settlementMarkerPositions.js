@@ -129,6 +129,10 @@ export const resolveTownSettlementMarkerPositions = ({
     game?.homeLivingCenterMarkerPos,
     SMALL_CITY_MARKER_DEFAULT_POSITIONS.homeLivingCenter,
   );
+  const normalizedHospitalPos = normalizeSettlementMarkerPos(
+    game?.hospitalMarkerPos,
+    SMALL_CITY_MARKER_DEFAULT_POSITIONS.hospital,
+  );
   const hasSavedMarkerLayout = Math.max(0, Math.floor(Number(game?.townMarkerLayoutSavedAtDay) || 0)) > 0;
   const editablePos = (stateKey, fallbackPos) => (
     (townMarkerCoordsLocked && !hasSavedMarkerLayout) || !hasFiniteMarkerCoords(game?.[stateKey])
@@ -193,6 +197,9 @@ export const resolveTownSettlementMarkerPositions = ({
     oneRoomVilla: editablePos('oneRoomVillaMarkerPos', SMALL_CITY_MARKER_DEFAULT_POSITIONS.oneRoomVilla),
     apartment: editablePos('apartmentMarkerPos', SMALL_CITY_MARKER_DEFAULT_POSITIONS.apartment),
     homeLivingCenter: editablePos('homeLivingCenterMarkerPos', SMALL_CITY_MARKER_DEFAULT_POSITIONS.homeLivingCenter),
+    hospital: isSmallCityContext
+      ? editablePos('hospitalMarkerPos', SMALL_CITY_MARKER_DEFAULT_POSITIONS.hospital)
+      : normalizedHospitalPos,
   };
 };
 
@@ -217,6 +224,7 @@ export const buildTownSettlementMarkerViewModel = ({
     'processingCenter',
     'smallApc',
     'herbalClinic',
+    'hospital',
     'villageInn',
     'villagePension',
     'motel',
@@ -237,8 +245,8 @@ export const buildTownSettlementMarkerViewModel = ({
     ),
     directDrag: DIRECT_DRAG_MARKER_KEY_SET.has(key),
     hidden: (
-      (isSmallCityContext && ['processingCenter', 'smallApc', 'herbalClinic', 'villageInn', 'villagePension'].includes(key))
-      || (!isSmallCityContext && ['motel', 'guestHouse', 'realEstateOffice', 'oneRoomVilla', 'apartment', 'homeLivingCenter'].includes(key))
+      (isSmallCityContext && ['processingCenter', 'smallApc', 'herbalClinic', 'seedlingShop', 'villageInn', 'villagePension'].includes(key))
+      || (!isSmallCityContext && ['hospital', 'motel', 'guestHouse', 'realEstateOffice', 'oneRoomVilla', 'apartment', 'homeLivingCenter'].includes(key))
     ),
     draggable: key !== 'processingCenter',
   }));

@@ -82,12 +82,21 @@ export const FOOD_MART_ITEMS = [
   },
   {
     key: 'foodBagRamen5Pack',
-    name: '봉지라면 5입',
+    name: '얼큰라면 5입',
     price: 4300,
     desc: '숙소나 휴게공간 비치용 묶음 라면',
     unit: '봉지',
     subgroup: 'instant',
     weightKg: 0.62
+  },
+  {
+    key: 'foodBagRamenSingle',
+    name: '얼큰라면 1봉',
+    price: 1100,
+    desc: '한 끼 조리에 바로 쓰는 얼큰한 봉지라면',
+    unit: '봉',
+    subgroup: 'instant',
+    weightKg: 0.12
   },
   {
     key: 'foodBreadLoaf',
@@ -331,6 +340,15 @@ export const FOOD_MART_ITEMS = [
     unit: '상자',
     subgroup: 'instant',
     weightKg: 0.12
+  },
+  {
+    key: 'foodCreamSoupSingle',
+    name: '컵스프 1개',
+    price: 1300,
+    desc: '뜨거운 물만 부으면 먹을 수 있는 컵스프 낱개',
+    unit: '개',
+    subgroup: 'instant',
+    weightKg: 0.04
   },
   {
     key: 'foodCurry3Pack',
@@ -720,6 +738,15 @@ export const FOOD_MART_ITEMS = [
     weightKg: 0.62
   },
   {
+    key: 'foodRamenSpicySingle',
+    name: '매운라면 1봉',
+    price: 1200,
+    desc: '한 끼 조리에 바로 쓰는 매운 봉지라면',
+    unit: '봉',
+    subgroup: 'instant',
+    weightKg: 0.12
+  },
+  {
     key: 'foodRamenMild5Pack',
     name: '순한라면 5입',
     price: 4500,
@@ -729,6 +756,15 @@ export const FOOD_MART_ITEMS = [
     weightKg: 0.62
   },
   {
+    key: 'foodRamenMildSingle',
+    name: '순한라면 1봉',
+    price: 1100,
+    desc: '한 끼 조리에 바로 쓰는 순한 봉지라면',
+    unit: '봉',
+    subgroup: 'instant',
+    weightKg: 0.12
+  },
+  {
     key: 'foodJjajangRamen4Pack',
     name: '짜장라면 4입',
     price: 5200,
@@ -736,6 +772,15 @@ export const FOOD_MART_ITEMS = [
     unit: '봉지',
     subgroup: 'instant',
     weightKg: 0.56
+  },
+  {
+    key: 'foodJjajangRamenSingle',
+    name: '짜장라면 1봉',
+    price: 1500,
+    desc: '한 끼 조리에 바로 쓰는 짜장 봉지라면',
+    unit: '봉',
+    subgroup: 'instant',
+    weightKg: 0.14
   },
   {
     key: 'foodCupRiceBeefSoup',

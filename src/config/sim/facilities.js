@@ -41,6 +41,7 @@ export {
 };
 
 export const SINGLE_PER_LAND_FACILITY_KEYS = ['wellFacility', 'farmPowerElectric', 'evChargerStation', 'openStorage3000Py', 'autoRefillSystem', 'irrigationControlSystem', ...HOUSING_FACILITY_KEYS];
+export const SANITATION_FACILITY_KEYS = ['portableToilet', 'outdoorToilet', 'workerRestroom', 'hygieneShowerUnit'];
 export const TANK_CAPACITY_LITERS = {
   peTankSmall: 1000,
   peTankMedium: 3000,
@@ -57,6 +58,10 @@ export const FACILITY_OCCUPY_PY = {
   dripIrrigation: 0,
   sprinklerIrrigation: 0,
   evChargerStation: 1,
+  portableToilet: 1,
+  outdoorToilet: 2,
+  workerRestroom: 6,
+  hygieneShowerUnit: 12,
   openStorage3000Py: 0,
   frostFan: 1,
   peTankSmall: 1,
@@ -211,6 +216,10 @@ export const FACILITY_DURABILITY_RULES = {
   machineShedLarge: { naturalDaily: 0.0095 },
   machineShedLargePlus: { naturalDaily: 0.0092 },
   machineShedXl: { naturalDaily: 0.009 },
+  portableToilet: { naturalDaily: 0.045 },
+  outdoorToilet: { naturalDaily: 0.018 },
+  workerRestroom: { naturalDaily: 0.012 },
+  hygieneShowerUnit: { naturalDaily: 0.01 },
   farmHut6Basic: { naturalDaily: 0.012 },
   farmHut6Insulated: { naturalDaily: 0.01 },
   farmContainer20Used: { naturalDaily: 0.015 },

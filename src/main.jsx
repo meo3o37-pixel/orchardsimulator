@@ -1,9 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App.jsx';
+import GameBootLoader, { LoadingScreen } from './systems/loading/GameBootLoader.jsx';
 import './styles.css';
 
 document.title = '농장 시뮬레이터';
+
+const App = React.lazy(() => import('./App.jsx'));
 
 class RootErrorBoundary extends React.Component {
   constructor(props) {
@@ -46,6 +48,10 @@ class RootErrorBoundary extends React.Component {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <RootErrorBoundary>
-    <App />
+    <GameBootLoader>
+      <React.Suspense fallback={<LoadingScreen progress={1} label="게임 화면 준비" detail="앱 화면을 불러오고 있습니다." />}>
+        <App />
+      </React.Suspense>
+    </GameBootLoader>
   </RootErrorBoundary>
 );

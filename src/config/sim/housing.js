@@ -24,15 +24,13 @@ const buildHousingOptions = (facilityKey, specs = []) =>
 const HOUSING_OPTION_PRESETS = {
   hut: [
     { key: 'insulationPack', name: '단열 패키지', rate: 0.07, min: 500000, desc: '벽체/창호 단열 강화' },
-    { key: 'toiletShower', name: '화장실+샤워실', rate: 0.1, min: 800000, desc: '현장 체류 편의 개선' },
     { key: 'solarLite', name: '태양광 미니팩', rate: 0.08, min: 700000, desc: '기본 전력 자가보조' },
     { key: 'securitySet', name: '방범 세트', rate: 0.05, min: 400000, desc: '도어락/CCTV 1채널' }
   ],
   container: [
     { key: 'highCubeRoof', name: '하이큐브 단열천장', rate: 0.08, min: 900000, desc: '고온/결로 대응형 천장' },
     { key: 'windowUpgrade', name: '창호 업그레이드', rate: 0.06, min: 700000, desc: '로이창호/방충망 포함' },
-    { key: 'restDeck', name: '외부 데크', rate: 0.09, min: 1000000, desc: '작업자 휴게 동선 확장' },
-    { key: 'toiletModule', name: '위생 모듈', rate: 0.12, min: 1300000, desc: '화장실/급수/배수 일체형' }
+    { key: 'restDeck', name: '외부 데크', rate: 0.09, min: 1000000, desc: '작업자 휴게 동선 확장' }
   ],
   house: [
     { key: 'doubleWindow', name: '고단열 창호', rate: 0.06, min: 1200000, desc: '기밀 성능 강화' },

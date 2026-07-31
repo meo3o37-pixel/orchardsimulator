@@ -51,6 +51,12 @@ export const createSettlementModalOpeners = ({
     view: 'menu',
     parkingReturnKey: 'seedlingShop',
   }),
+  openMapHospitalModal: () => openSettlementMapLocation(setMapLocationModal, {
+    key: 'hospital',
+    tab: 'service',
+    view: 'menu',
+    parkingReturnKey: 'hospital',
+  }),
   openMapMachineRentModal: () => openSettlementMapLocation(setMapLocationModal, {
     key: 'machineRent',
     tab: 'machine',
@@ -160,7 +166,12 @@ export const createSettlementModalOpeners = ({
     parkingReturnKey: 'homeLivingCenter',
   }),
   openMapProcessingCenterModal: () => setGameAlertMessage?.('농산물가공센터 기능은 준비 중입니다.'),
-  openMapHerbalClinicModal: () => setGameAlertMessage?.('한의원 기능은 준비 중입니다.'),
+  openMapHerbalClinicModal: () => openSettlementMapLocation(setMapLocationModal, {
+    key: 'herbalClinic',
+    tab: 'service',
+    view: 'menu',
+    parkingReturnKey: 'herbalClinic',
+  }),
   openSmallApcMapModal: () => openSmallApcMapModal?.(setMapLocationModal),
 });
 
@@ -174,6 +185,7 @@ export const resolveSettlementMarkerAction = (destinationKeyRaw, handlers = {}) 
     machineRent: handlers.openMapMachineRentModal,
     processingCenter: handlers.openMapProcessingCenterModal,
     seedlingShop: handlers.openMapSeedlingModal,
+    hospital: handlers.openMapHospitalModal,
     foodMart: handlers.openMapFoodMartModal,
     townOffice: handlers.openMapTownOfficeModal,
     landBank: handlers.openMapLandBankModal,

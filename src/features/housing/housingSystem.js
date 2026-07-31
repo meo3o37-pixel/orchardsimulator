@@ -1,6 +1,7 @@
 import { FOOD_MART_ITEMS } from '../../config/items/foodMart';
 import { APPLIANCE_ITEMS } from '../../config/items/appliance';
 import { FURNITURE_ITEMS } from '../../config/items/furniture';
+import { CLOTHING_ITEMS } from '../../config/items/clothing';
 import { clamp, monthOf } from '../../utils/common';
 import { seasonKey } from '../../systems/weatherSystem';
 import {
@@ -41,6 +42,16 @@ export const HOUSING_FURNITURE_SLOT_DEFS = Object.freeze([
   { key: 'diningTable', type: 'diningTable', icon: '🍽️', label: '식탁 자리', hint: '식사와 간단한 준비 작업 공간' }
 ]);
 
+export const HOUSING_CLOTHING_SLOT_DEFS = Object.freeze([
+  { key: 'head', type: 'head', icon: '⛑️', label: '머리', hint: '안전모나 모자를 착용하는 자리' },
+  { key: 'outerwear', type: 'outerwear', icon: '🧥', label: '작업복', hint: '작업복, 방수자켓, 방한복을 착용하는 자리' },
+  { key: 'vest', type: 'vest', icon: '🦺', label: '조끼', hint: '안전조끼를 착용하는 자리' },
+  { key: 'gloves', type: 'gloves', icon: '🧤', label: '장갑', hint: '목장갑이나 고무장갑을 착용하는 자리' },
+  { key: 'shoes', type: 'shoes', icon: '🥾', label: '신발', hint: '작업화나 장화를 착용하는 자리' },
+  { key: 'face', type: 'face', icon: '😷', label: '마스크', hint: '방진마스크를 착용하는 자리' },
+  { key: 'eyes', type: 'eyes', icon: '🥽', label: '눈 보호구', hint: '보안경을 착용하는 자리' }
+]);
+
 const HOUSING_DEFAULT_APPLIANCES_BY_FACILITY = Object.freeze({
   sandwichPanelDorm4: {
     fridge: 'livingCoolR93M',
@@ -67,6 +78,7 @@ const HOUSING_DEFAULT_APPLIANCES_BY_FACILITY = Object.freeze({
     washer: 'cleanSpinMini35',
     aircon: 'airBreezeWindow6',
     fan: 'windMateStand14',
+    electricKettle: 'boilMateK17',
     inductionCooktop: 'cookTopSolo1'
   },
   farmHut6Insulated: {
@@ -77,6 +89,7 @@ const HOUSING_DEFAULT_APPLIANCES_BY_FACILITY = Object.freeze({
     aircon: 'airBreezeWindow6',
     fan: 'windMateStand14',
     heatingMat: 'warmPadSingle',
+    electricKettle: 'boilMateK17',
     inductionCooktop: 'cookTopSolo1'
   },
   farmContainer40Office: {
@@ -87,6 +100,7 @@ const HOUSING_DEFAULT_APPLIANCES_BY_FACILITY = Object.freeze({
     aircon: 'airBreezeWall8',
     fan: 'windMateStand14',
     heatingMat: 'warmPadSingle',
+    electricKettle: 'boilMateK17',
     inductionCooktop: 'cookTopSolo1'
   },
   panelHouse9: {
@@ -97,6 +111,7 @@ const HOUSING_DEFAULT_APPLIANCES_BY_FACILITY = Object.freeze({
     aircon: 'airBreezeWall8',
     fan: 'windMateStand14',
     heatingMat: 'warmPadSingle',
+    electricKettle: 'boilMateK17',
     inductionCooktop: 'cookTopSolo1'
   },
   lightWood12: {
@@ -107,6 +122,8 @@ const HOUSING_DEFAULT_APPLIANCES_BY_FACILITY = Object.freeze({
     aircon: 'airBreezeWall12',
     fan: 'windMateCirculator12',
     heatingMat: 'warmPadDouble',
+    waterPurifier: 'pureDropCounter4',
+    electricKettle: 'boilMateGlass18',
     inductionCooktop: 'cookTopDuo2',
     pc: 'officeMiniPc',
     tv: 'basicTv32'
@@ -119,6 +136,8 @@ const HOUSING_DEFAULT_APPLIANCES_BY_FACILITY = Object.freeze({
     aircon: 'airBreezeWall12',
     fan: 'windMateCirculator12',
     heatingMat: 'warmPadDouble',
+    waterPurifier: 'pureDropCounter4',
+    electricKettle: 'boilMateGlass18',
     inductionCooktop: 'cookTopDuo2',
     pc: 'basicDesktopPc',
     tv: 'smartTv43'
@@ -131,6 +150,8 @@ const HOUSING_DEFAULT_APPLIANCES_BY_FACILITY = Object.freeze({
     aircon: 'airBreezeWall12',
     fan: 'windMateCirculator12',
     heatingMat: 'warmPadDouble',
+    waterPurifier: 'pureDropCounter4',
+    electricKettle: 'boilMateGlass18',
     inductionCooktop: 'cookTopDuo2',
     pc: 'officeMiniPc',
     tv: 'smartTv43'
@@ -143,6 +164,8 @@ const HOUSING_DEFAULT_APPLIANCES_BY_FACILITY = Object.freeze({
     aircon: 'airBreezeWall12',
     fan: 'windMateCirculator12',
     heatingMat: 'warmPadDouble',
+    waterPurifier: 'pureDropCounter4',
+    electricKettle: 'boilMateGlass18',
     inductionCooktop: 'cookTopDuo2',
     pc: 'basicDesktopPc',
     tv: 'smartTv43'
@@ -155,6 +178,8 @@ const HOUSING_DEFAULT_APPLIANCES_BY_FACILITY = Object.freeze({
     aircon: 'airBreezeWall12',
     fan: 'windMateCirculator12',
     heatingMat: 'warmPadDouble',
+    waterPurifier: 'pureDropCounter4',
+    electricKettle: 'boilMateGlass18',
     inductionCooktop: 'cookTopDuo2',
     pc: 'basicDesktopPc',
     tv: 'smartTv43'
@@ -167,6 +192,8 @@ const HOUSING_DEFAULT_APPLIANCES_BY_FACILITY = Object.freeze({
     aircon: 'airBreezeStand18',
     fan: 'windMateCirculator12',
     heatingMat: 'warmWaterMatQueen',
+    waterPurifier: 'pureDropHotCool6',
+    electricKettle: 'boilMateThermo30',
     inductionCooktop: 'cookTopFlex3',
     pc: 'farmWorkstationPc',
     tv: 'smartTv55'
@@ -179,6 +206,8 @@ const HOUSING_DEFAULT_APPLIANCES_BY_FACILITY = Object.freeze({
     aircon: 'airBreezeStand18',
     fan: 'windMateCirculator12',
     heatingMat: 'warmWaterMatQueen',
+    waterPurifier: 'pureDropHotCool6',
+    electricKettle: 'boilMateThermo30',
     inductionCooktop: 'cookTopFlex3',
     pc: 'farmWorkstationPc',
     tv: 'smartTv55'
@@ -191,6 +220,8 @@ const HOUSING_DEFAULT_APPLIANCES_BY_FACILITY = Object.freeze({
     aircon: 'airBreezeMulti23',
     fan: 'windMateCirculator12',
     heatingMat: 'warmWaterMatQueen',
+    waterPurifier: 'pureDropHotCool6',
+    electricKettle: 'boilMateThermo30',
     inductionCooktop: 'cookTopFlex3',
     pc: 'farmWorkstationPc',
     tv: 'smartTv55'
@@ -203,6 +234,8 @@ const HOUSING_DEFAULT_APPLIANCES_BY_FACILITY = Object.freeze({
     aircon: 'airBreezeMulti23',
     fan: 'windMateCirculator12',
     heatingMat: 'warmWaterMatQueen',
+    waterPurifier: 'pureDropHotCool6',
+    electricKettle: 'boilMateThermo30',
     inductionCooktop: 'cookTopFlex3',
     pc: 'farmWorkstationPc',
     tv: 'premiumTv65'
@@ -215,6 +248,8 @@ const HOUSING_DEFAULT_APPLIANCES_BY_FACILITY = Object.freeze({
     aircon: 'airBreezeStand18',
     fan: 'windMateCirculator12',
     heatingMat: 'warmWaterMatQueen',
+    waterPurifier: 'pureDropHotCool6',
+    electricKettle: 'boilMateThermo30',
     inductionCooktop: 'cookTopFlex3',
     pc: 'basicDesktopPc',
     tv: 'smartTv55'
@@ -227,6 +262,8 @@ const HOUSING_DEFAULT_APPLIANCES_BY_FACILITY = Object.freeze({
     aircon: 'airBreezeMulti23',
     fan: 'windMateCirculator12',
     heatingMat: 'warmWaterMatQueen',
+    waterPurifier: 'pureDropHotCool6',
+    electricKettle: 'boilMateThermo30',
     inductionCooktop: 'cookTopFlex3',
     pc: 'farmWorkstationPc',
     tv: 'smartTv55'
@@ -239,6 +276,8 @@ const HOUSING_DEFAULT_APPLIANCES_BY_FACILITY = Object.freeze({
     aircon: 'airBreezeMulti23',
     fan: 'windMateCirculator12',
     heatingMat: 'warmWaterMatQueen',
+    waterPurifier: 'pureDropStand9',
+    electricKettle: 'boilMateThermo30',
     inductionCooktop: 'cookTopFlex3',
     pc: 'farmWorkstationPc',
     tv: 'premiumTv65'
@@ -251,6 +290,8 @@ const HOUSING_DEFAULT_APPLIANCES_BY_FACILITY = Object.freeze({
     aircon: 'airBreezeMulti23',
     fan: 'windMateCirculator12',
     heatingMat: 'warmWaterMatQueen',
+    waterPurifier: 'pureDropStand9',
+    electricKettle: 'boilMateThermo30',
     inductionCooktop: 'cookTopFlex3',
     pc: 'farmWorkstationPc',
     tv: 'premiumTv65'
@@ -269,12 +310,23 @@ const FURNITURE_ITEM_BY_KEY = FURNITURE_ITEMS.reduce((acc, item) => {
   return acc;
 }, {});
 
+const CLOTHING_ITEM_BY_KEY = CLOTHING_ITEMS.reduce((acc, item) => {
+  const key = String(item?.key || '');
+  if (key) acc[key] = item;
+  return acc;
+}, {});
+
 const HOUSING_APPLIANCE_SLOT_BY_KEY = HOUSING_APPLIANCE_SLOT_DEFS.reduce((acc, slot) => ({
   ...acc,
   [slot.key]: slot
 }), {});
 
 const HOUSING_FURNITURE_SLOT_BY_KEY = HOUSING_FURNITURE_SLOT_DEFS.reduce((acc, slot) => ({
+  ...acc,
+  [slot.key]: slot
+}), {});
+
+const HOUSING_CLOTHING_SLOT_BY_KEY = HOUSING_CLOTHING_SLOT_DEFS.reduce((acc, slot) => ({
   ...acc,
   [slot.key]: slot
 }), {});
@@ -378,6 +430,33 @@ export const normalizeHousingFurnitureInstallations = (raw = {}) => {
   return next;
 };
 
+export const normalizeHousingClothingEquipments = (raw = {}) => {
+  const source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+  const next = {};
+  Object.entries(source).forEach(([slotKeyRaw, itemKeyRaw]) => {
+    const slotKey = String(slotKeyRaw || '');
+    const itemKey = String(itemKeyRaw || '');
+    const slot = HOUSING_CLOTHING_SLOT_BY_KEY[slotKey];
+    const item = CLOTHING_ITEM_BY_KEY[itemKey];
+    if (!slot || !item || String(item?.type || '') !== String(slot.type || '')) return;
+    next[slotKey] = itemKey;
+  });
+  return next;
+};
+
+export const normalizeHousingClothingStorageByItemKey = (raw = {}) => {
+  const source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+  const next = {};
+  Object.entries(source).forEach(([itemKeyRaw, qtyRaw]) => {
+    const itemKey = String(itemKeyRaw || '');
+    const item = CLOTHING_ITEM_BY_KEY[itemKey];
+    const qty = Math.max(0, Math.floor(Number(qtyRaw) || 0));
+    if (!item || qty <= 0) return;
+    next[itemKey] = Math.max(0, Math.floor(Number(next[itemKey]) || 0)) + qty;
+  });
+  return next;
+};
+
 export const housingFacilityEmojiOf = (facilityKeyRaw = '') => {
   const facilityKey = String(facilityKeyRaw || '');
   if (facilityKey.toLowerCase().includes('container') || facilityKey === 'usedSiteOffice5') return '🏚️';
@@ -387,11 +466,96 @@ export const housingFacilityEmojiOf = (facilityKeyRaw = '') => {
   return '🏠';
 };
 
+export const HOUSING_BATHROOM_TIER_BY_FACILITY = Object.freeze({
+  sandwichPanelDorm4: 0,
+  farmContainer20Used: 0,
+  usedSiteOffice5: 0,
+  farmContainer40Office: 0,
+  steelOfficeLounge: 0,
+  farmHut6Basic: 1,
+  farmHut6Insulated: 1,
+  panelHouse9: 2,
+  lightWood12: 2,
+  modular15Value: 2,
+  mobileHome13: 2,
+  dualContainerLinked: 2,
+  modular25Standard: 3,
+  woodHouse30: 3,
+  smartFarmResidence: 3,
+  premiumCountry35: 3,
+  hanokHybrid28: 3,
+  passiveHouse30: 3,
+  villaFarm40: 4,
+  estateFarm55: 4
+});
+
+export const housingBathroomTierOfFacility = (facilityKeyRaw = '') => {
+  const facilityKey = String(facilityKeyRaw || '');
+  return Math.max(0, Math.floor(Number(HOUSING_BATHROOM_TIER_BY_FACILITY[facilityKey]) || 0));
+};
+
+export const housingHasBathroomOfFacility = (facilityKeyRaw = '') => housingBathroomTierOfFacility(facilityKeyRaw) > 0;
+
+export const housingBathroomTierLabelOf = (tierRaw = 0) => {
+  const tier = Math.max(0, Math.floor(Number(tierRaw) || 0));
+  if (tier >= 4) return '고급/복수 욕실';
+  if (tier >= 3) return '다인 욕실';
+  if (tier >= 2) return '일반 욕실';
+  if (tier >= 1) return '간이 욕실';
+  return '욕실 없음';
+};
+
+export const normalizeHousingBathroomState = (raw = {}, dayRaw = 1) => {
+  const day = Math.max(1, Math.floor(Number(dayRaw) || 1));
+  const cleanliness = clamp(Number(raw?.cleanliness), 0, 100);
+  return {
+    cleanliness: Number.isFinite(cleanliness) ? Math.round(cleanliness) : 70,
+    showeredDay: Math.max(0, Math.floor(Number(raw?.showeredDay) || 0)),
+    chemicalWashDay: Math.max(0, Math.floor(Number(raw?.chemicalWashDay) || 0)),
+    cleanedDay: Math.max(0, Math.floor(Number(raw?.cleanedDay) || 0)),
+    day
+  };
+};
+
+export const housingBathroomInfoOf = ({
+  facilityKey = '',
+  bathroomState = {},
+  day = 1
+} = {}) => {
+  const tier = housingBathroomTierOfFacility(facilityKey);
+  const state = normalizeHousingBathroomState(bathroomState, day);
+  const cleanliness = Math.max(0, Math.min(100, Number(state.cleanliness) || 0));
+  const cleanlinessLabel = cleanliness >= 85 ? '깨끗함'
+    : cleanliness >= 65 ? '양호'
+      : cleanliness >= 40 ? '보통'
+        : cleanliness >= 20 ? '주의'
+          : '불량';
+  const cleanlinessTone = cleanliness >= 65 ? 'good'
+    : cleanliness >= 40 ? 'normal'
+      : cleanliness >= 20 ? 'warn'
+        : 'bad';
+  return {
+    ...state,
+    tier,
+    tierLabel: housingBathroomTierLabelOf(tier),
+    hasBathroom: tier > 0,
+    cleanliness,
+    cleanlinessLabel,
+    cleanlinessTone,
+    showeredToday: state.showeredDay === Math.max(1, Math.floor(Number(day) || 1)),
+    chemicalWashedToday: state.chemicalWashDay === Math.max(1, Math.floor(Number(day) || 1)),
+    cleanedToday: state.cleanedDay === Math.max(1, Math.floor(Number(day) || 1))
+  };
+};
+
 export const housingRoomButtonsByFacilityKey = (facilityKey) => {
   const key = String(facilityKey || '');
-  if (['farmHut6Basic', 'sandwichPanelDorm4'].includes(key)) return ['거실', '부엌', '창고'];
-  if (['farmHut6Insulated', 'farmContainer20Used', 'usedSiteOffice5'].includes(key)) return ['거실', '부엌', '내방', '창고'];
-  if (['farmContainer40Office', 'panelHouse9', 'lightWood12', 'modular15Value', 'mobileHome13', 'steelOfficeLounge', 'dualContainerLinked'].includes(key)) {
+  if (key === 'farmHut6Basic') return ['거실', '부엌', '창고', '욕실'];
+  if (key === 'farmHut6Insulated') return ['거실', '부엌', '내방', '창고', '욕실'];
+  if (key === 'sandwichPanelDorm4') return ['거실', '부엌', '창고'];
+  if (['farmContainer20Used', 'usedSiteOffice5'].includes(key)) return ['거실', '부엌', '내방', '창고'];
+  if (['farmContainer40Office', 'steelOfficeLounge'].includes(key)) return ['거실', '부엌', '내방1', '창고'];
+  if (['panelHouse9', 'lightWood12', 'modular15Value', 'mobileHome13', 'dualContainerLinked'].includes(key)) {
     return ['거실', '부엌', '내방1', '창고', '욕실'];
   }
   if (['modular25Standard', 'woodHouse30', 'smartFarmResidence', 'premiumCountry35', 'hanokHybrid28', 'passiveHouse30'].includes(key)) {
@@ -431,6 +595,308 @@ export const normalizeHousingFoodStorageByItemKey = (rawCargo = {}) => {
     addQty(safeItemKey, rawQty);
   });
   return next;
+};
+
+const HOUSING_FOOD_SHELF_LIFE_BY_ITEM_KEY = Object.freeze({
+  foodTriangleGimbap: { room: 1, fridge: 1, freezer: 0 },
+  foodLunchBox: { room: 1, fridge: 1, freezer: 0 },
+  foodKimbapRoll: { room: 1, fridge: 1, freezer: 0 },
+  foodHotdog: { room: 1, fridge: 2, freezer: 0 },
+  foodHamburger: { room: 1, fridge: 2, freezer: 0 },
+  foodMilk1L: { room: 1, fridge: 5, freezer: 0 },
+  foodBananaMilk: { room: 1, fridge: 4, freezer: 0 },
+  foodYogurt4Pack: { room: 1, fridge: 10, freezer: 0 },
+  foodEgg30Pack: { room: 10, fridge: 30, freezer: 0 },
+  foodTofu300g: { room: 1, fridge: 5, freezer: 14 },
+  foodBeanSprouts500g: { room: 1, fridge: 4, freezer: 0 },
+  foodPorkFront600g: { room: 1, fridge: 3, freezer: 45 },
+  foodSausagePack: { room: 2, fridge: 14, freezer: 30 },
+  foodFishCake300g: { room: 1, fridge: 7, freezer: 30 },
+  foodFrozenPorkCutlet: { room: 1, fridge: 3, freezer: 60 },
+  foodFrozenPasta: { room: 1, fridge: 3, freezer: 45 },
+  foodFrozenDumpling1kg: { room: 1, fridge: 3, freezer: 60 },
+  foodFrozenFriedRice: { room: 1, fridge: 3, freezer: 45 },
+  foodFrozenTteokbokki: { room: 1, fridge: 3, freezer: 45 },
+  foodFrozenUdon: { room: 1, fridge: 3, freezer: 45 },
+  foodFrozenPizza: { room: 1, fridge: 3, freezer: 45 },
+  foodKimchi35kg: { room: 3, fridge: 60, freezer: 0 },
+  foodLettuce300g: { room: 1, fridge: 5, freezer: 0 },
+  foodCucumber3Pack: { room: 2, fridge: 7, freezer: 0 },
+  foodCherryTomato500g: { room: 3, fridge: 7, freezer: 0 },
+  foodGreenOnion300g: { room: 2, fridge: 10, freezer: 30 },
+  foodCabbageHalf: { room: 3, fridge: 10, freezer: 0 },
+  foodCarrot500g: { room: 5, fridge: 21, freezer: 60 },
+  foodOnion1kg: { room: 20, fridge: 30, freezer: 60 },
+  foodPotato1kg: { room: 21, fridge: 30, freezer: 0 },
+  foodSweetPotato1kg: { room: 14, fridge: 21, freezer: 0 },
+  foodKingOysterMushroom400g: { room: 1, fridge: 7, freezer: 30 },
+  foodOysterMushroom300g: { room: 1, fridge: 5, freezer: 30 },
+  foodShiitakeMushroom200g: { room: 2, fridge: 7, freezer: 30 },
+  foodApple4Pack: { room: 7, fridge: 21, freezer: 0 }
+});
+
+const HOUSING_FOOD_DEFAULT_SHELF_LIFE_BY_SUBGROUP = Object.freeze({
+  instant: { room: 30, fridge: 45, freezer: 0 },
+  fresh: { room: 2, fridge: 7, freezer: 21 },
+  frozen: { room: 1, fridge: 3, freezer: 45 },
+  drink: { room: 7, fridge: 14, freezer: 0 },
+  bulk: { room: 60, fridge: 90, freezer: 0 },
+  living: { room: 0, fridge: 0, freezer: 0 }
+});
+
+const HOUSING_FOOD_DEFAULT_SHELF_LIFE = Object.freeze({ room: 30, fridge: 45, freezer: 0 });
+
+export const housingFoodShelfLifeDaysOf = (itemKeyRaw = '', storageTypeRaw = 'fridge') => {
+  const itemKey = String(itemKeyRaw || '');
+  const storageType = String(storageTypeRaw || '') === 'freezer'
+    ? 'freezer'
+    : (String(storageTypeRaw || '') === 'room' ? 'room' : 'fridge');
+  const direct = HOUSING_FOOD_SHELF_LIFE_BY_ITEM_KEY[itemKey];
+  if (direct && Object.prototype.hasOwnProperty.call(direct, storageType)) return Math.max(0, Math.floor(Number(direct[storageType]) || 0));
+  const meta = FOOD_MART_META_BY_KEY[itemKey] || {};
+  const subgroup = String(meta?.subgroup || '');
+  const bySubgroup = HOUSING_FOOD_DEFAULT_SHELF_LIFE_BY_SUBGROUP[subgroup] || HOUSING_FOOD_DEFAULT_SHELF_LIFE;
+  return Math.max(0, Math.floor(Number(bySubgroup[storageType]) || 0));
+};
+
+export const housingFoodExpireDayOf = (itemKeyRaw = '', storageTypeRaw = 'fridge', storedDayRaw = 1) => {
+  const storedDay = Math.max(1, Math.floor(Number(storedDayRaw) || 1));
+  const shelfLifeDays = housingFoodShelfLifeDaysOf(itemKeyRaw, storageTypeRaw);
+  return shelfLifeDays > 0 ? storedDay + shelfLifeDays - 1 : 0;
+};
+
+export const normalizeHousingFoodStorageBatchesByFacilityKey = (raw = {}) => {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+  const next = {};
+  Object.entries(raw).forEach(([facilityKeyRaw, facilityRaw]) => {
+    const facilityKey = String(facilityKeyRaw || '');
+    if (!facilityKey || !facilityRaw || typeof facilityRaw !== 'object' || Array.isArray(facilityRaw)) return;
+    const nextFacility = {};
+    Object.entries(facilityRaw).forEach(([itemKeyRaw, batchRowsRaw]) => {
+      const itemKey = String(itemKeyRaw || '');
+      const batchRows = Array.isArray(batchRowsRaw) ? batchRowsRaw : [];
+      const mergedRows = {};
+      batchRows.forEach((row) => {
+        const qty = Math.round(Math.max(0, Number(row?.qty) || 0) * 10000) / 10000;
+        if (!itemKey || qty <= 0) return;
+        const storedDay = Math.max(1, Math.floor(Number(row?.storedDay) || 1));
+        const expireDay = Math.max(0, Math.floor(Number(row?.expireDay) || 0));
+        const batchKey = `${storedDay}:${expireDay}`;
+        const prevQty = Math.max(0, Number(mergedRows[batchKey]?.qty) || 0);
+        mergedRows[batchKey] = {
+          storedDay,
+          expireDay,
+          qty: Math.round((prevQty + qty) * 10000) / 10000
+        };
+      });
+      const rows = Object.values(mergedRows)
+        .filter((row) => Math.max(0, Number(row.qty) || 0) > 0)
+        .sort((a, b) => (Number(a.expireDay || 999999) - Number(b.expireDay || 999999)) || (Number(a.storedDay) - Number(b.storedDay)));
+      if (rows.length) nextFacility[itemKey] = rows;
+    });
+    if (Object.keys(nextFacility).length) next[facilityKey] = nextFacility;
+  });
+  return next;
+};
+
+export const addHousingFoodStorageBatch = ({
+  batchesByFacilityKey = {},
+  facilityKey = '',
+  itemKey = '',
+  qty = 0,
+  storageType = 'fridge',
+  day = 1
+} = {}) => {
+  const targetFacilityKey = String(facilityKey || '');
+  const targetItemKey = String(itemKey || '');
+  const safeQty = Math.round(Math.max(0, Number(qty) || 0) * 10000) / 10000;
+  if (!targetFacilityKey || !targetItemKey || safeQty <= 0) return normalizeHousingFoodStorageBatchesByFacilityKey(batchesByFacilityKey);
+  const next = normalizeHousingFoodStorageBatchesByFacilityKey(batchesByFacilityKey);
+  const facilityRows = { ...(next[targetFacilityKey] || {}) };
+  const rows = [...(facilityRows[targetItemKey] || [])];
+  const storedDay = Math.max(1, Math.floor(Number(day) || 1));
+  const expireDay = housingFoodExpireDayOf(targetItemKey, storageType, storedDay);
+  const existingIndex = rows.findIndex((row) => Number(row.storedDay) === storedDay && Number(row.expireDay) === expireDay);
+  if (existingIndex >= 0) {
+    rows[existingIndex] = {
+      ...rows[existingIndex],
+      qty: Math.round((Math.max(0, Number(rows[existingIndex].qty) || 0) + safeQty) * 10000) / 10000
+    };
+  } else {
+    rows.push({ storedDay, expireDay, qty: safeQty });
+  }
+  facilityRows[targetItemKey] = rows.sort((a, b) => (Number(a.expireDay || 999999) - Number(b.expireDay || 999999)) || (Number(a.storedDay) - Number(b.storedDay)));
+  next[targetFacilityKey] = facilityRows;
+  return next;
+};
+
+export const consumeHousingFoodStorageBatches = ({
+  batchesByFacilityKey = {},
+  facilityKey = '',
+  itemKey = '',
+  qty = 0
+} = {}) => {
+  const targetFacilityKey = String(facilityKey || '');
+  const targetItemKey = String(itemKey || '');
+  let remain = Math.round(Math.max(0, Number(qty) || 0) * 10000) / 10000;
+  const next = normalizeHousingFoodStorageBatchesByFacilityKey(batchesByFacilityKey);
+  if (!targetFacilityKey || !targetItemKey || remain <= 0) return { batchesByFacilityKey: next, consumed: 0, shortage: remain };
+  const facilityRows = { ...(next[targetFacilityKey] || {}) };
+  const rows = [...(facilityRows[targetItemKey] || [])].sort((a, b) => (Number(a.expireDay || 999999) - Number(b.expireDay || 999999)) || (Number(a.storedDay) - Number(b.storedDay)));
+  const consumedRows = [];
+  const keptRows = [];
+  rows.forEach((row) => {
+    const rowQty = Math.max(0, Number(row.qty) || 0);
+    if (rowQty <= 0) return;
+    if (remain <= 0.0001) {
+      keptRows.push(row);
+      return;
+    }
+    const useQty = Math.min(rowQty, remain);
+    consumedRows.push({ ...row, qty: Math.round(useQty * 10000) / 10000 });
+    const leftQty = Math.max(0, rowQty - useQty);
+    remain = Math.max(0, remain - useQty);
+    if (leftQty > 0.0001) keptRows.push({ ...row, qty: Math.round(leftQty * 10000) / 10000 });
+  });
+  if (keptRows.length) facilityRows[targetItemKey] = keptRows;
+  else delete facilityRows[targetItemKey];
+  if (Object.keys(facilityRows).length) next[targetFacilityKey] = facilityRows;
+  else delete next[targetFacilityKey];
+  return {
+    batchesByFacilityKey: next,
+    consumed: Math.round((Math.max(0, Number(qty) || 0) - remain) * 10000) / 10000,
+    shortage: Math.round(remain * 10000) / 10000,
+    consumedRows
+  };
+};
+
+export const moveHousingFoodStorageBatch = ({
+  sourceBatchesByFacilityKey = {},
+  targetBatchesByFacilityKey = {},
+  facilityKey = '',
+  itemKey = '',
+  qty = 0,
+  targetStorageType = 'fridge',
+  day = 1
+} = {}) => {
+  const consumed = consumeHousingFoodStorageBatches({
+    batchesByFacilityKey: sourceBatchesByFacilityKey,
+    facilityKey,
+    itemKey,
+    qty
+  });
+  let nextTarget = normalizeHousingFoodStorageBatchesByFacilityKey(targetBatchesByFacilityKey);
+  const targetFacilityKey = String(facilityKey || '');
+  const targetItemKey = String(itemKey || '');
+  const targetShelfLife = housingFoodShelfLifeDaysOf(targetItemKey, targetStorageType);
+  (consumed.consumedRows || []).forEach((row) => {
+    const sourceRemainDays = Math.max(0, Number(row.expireDay) || 0 ? Number(row.expireDay) - Math.max(1, Math.floor(Number(day) || 1)) + 1 : 0);
+    const storedDay = Math.max(1, Math.floor(Number(day) || 1));
+    const expireDay = targetShelfLife > 0
+      ? storedDay + Math.min(targetShelfLife, sourceRemainDays > 0 ? sourceRemainDays : targetShelfLife) - 1
+      : 0;
+    const facilityRows = { ...(nextTarget[targetFacilityKey] || {}) };
+    const rows = [...(facilityRows[targetItemKey] || []), { storedDay, expireDay, qty: row.qty }];
+    facilityRows[targetItemKey] = rows;
+    nextTarget[targetFacilityKey] = facilityRows;
+    nextTarget = normalizeHousingFoodStorageBatchesByFacilityKey(nextTarget);
+  });
+  return {
+    sourceBatchesByFacilityKey: consumed.batchesByFacilityKey,
+    targetBatchesByFacilityKey: nextTarget,
+    moved: consumed.consumed,
+    shortage: consumed.shortage
+  };
+};
+
+export const housingFoodStorageExpirySummaryOf = ({
+  batchesByFacilityKey = {},
+  facilityKey = '',
+  itemKey = '',
+  day = 1
+} = {}) => {
+  const normalized = normalizeHousingFoodStorageBatchesByFacilityKey(batchesByFacilityKey);
+  const rows = normalized?.[String(facilityKey || '')]?.[String(itemKey || '')] || [];
+  if (!rows.length) return null;
+  const today = Math.max(1, Math.floor(Number(day) || 1));
+  const datedRows = rows.filter((row) => Math.max(0, Number(row.expireDay) || 0) > 0);
+  if (!datedRows.length) return { tone: 'stable', label: '장기보관', expireDay: 0, remainDays: null };
+  const first = [...datedRows].sort((a, b) => Number(a.expireDay) - Number(b.expireDay))[0];
+  const expireDay = Math.max(0, Math.floor(Number(first.expireDay) || 0));
+  const remainDays = expireDay - today + 1;
+  const tone = remainDays <= 0 ? 'expired' : (remainDays <= 2 ? 'soon' : (remainDays <= 5 ? 'watch' : 'stable'));
+  const label = remainDays <= 0 ? '오늘 폐기 대상' : (remainDays <= 2 ? `${remainDays}일 내 사용` : `유통기한 ${remainDays}일 남음`);
+  return { tone, label, expireDay, remainDays };
+};
+
+export const expireHousingFoodStorageBatchesForField = ({
+  field = null,
+  day = 1,
+  itemMetaByKey = {}
+} = {}) => {
+  if (!field) return { field, logs: [] };
+  const today = Math.max(1, Math.floor(Number(day) || 1));
+  const storageConfigs = [
+    {
+      storageKey: 'housingFoodStorageByFacilityKey',
+      batchKey: 'housingFoodStorageBatchesByFacilityKey',
+      label: '냉장고'
+    },
+    {
+      storageKey: 'housingFreezerFoodStorageByFacilityKey',
+      batchKey: 'housingFreezerFoodStorageBatchesByFacilityKey',
+      label: '냉동고'
+    }
+  ];
+  let nextField = field;
+  const logs = [];
+  storageConfigs.forEach((config) => {
+    const batchMap = normalizeHousingFoodStorageBatchesByFacilityKey(nextField?.[config.batchKey] || {});
+    if (!Object.keys(batchMap).length) return;
+    const storageMapByFacility = { ...(nextField?.[config.storageKey] || {}) };
+    const nextBatchMap = {};
+    let changed = false;
+    Object.entries(batchMap).forEach(([facilityKey, itemRows]) => {
+      const storageInventory = normalizeHousingFoodStorageByItemKey(storageMapByFacility[facilityKey] || {});
+      const nextFacilityBatches = {};
+      Object.entries(itemRows || {}).forEach(([itemKey, rows]) => {
+        let expiredQty = 0;
+        const keptRows = [];
+        (Array.isArray(rows) ? rows : []).forEach((row) => {
+          const expireDay = Math.max(0, Math.floor(Number(row?.expireDay) || 0));
+          const qty = Math.max(0, Number(row?.qty) || 0);
+          if (qty <= 0) return;
+          if (expireDay > 0 && expireDay < today) {
+            expiredQty = Math.round((expiredQty + qty) * 10000) / 10000;
+            changed = true;
+          } else {
+            keptRows.push(row);
+          }
+        });
+        if (expiredQty > 0) {
+          const currentQty = Math.max(0, Number(storageInventory[itemKey]) || 0);
+          const nextQty = Math.max(0, currentQty - expiredQty);
+          if (nextQty > 0.0001) storageInventory[itemKey] = Math.round(nextQty * 100) / 100;
+          else delete storageInventory[itemKey];
+          const itemName = String(itemMetaByKey?.[itemKey]?.name || FOOD_MART_META_BY_KEY?.[itemKey]?.name || itemKey);
+          const unit = String(itemMetaByKey?.[itemKey]?.unit || FOOD_MART_META_BY_KEY?.[itemKey]?.unit || '');
+          logs.push(`${field?.name || '필지'} ${facilityKey} ${config.label} 유통기한 만료 폐기: ${itemName} ${Math.round(expiredQty * 100) / 100}${unit}`);
+        }
+        if (keptRows.length) nextFacilityBatches[itemKey] = keptRows;
+      });
+      if (Object.keys(storageInventory).length > 0) storageMapByFacility[facilityKey] = storageInventory;
+      else delete storageMapByFacility[facilityKey];
+      if (Object.keys(nextFacilityBatches).length) nextBatchMap[facilityKey] = nextFacilityBatches;
+    });
+    if (changed) {
+      nextField = {
+        ...nextField,
+        [config.storageKey]: storageMapByFacility,
+        [config.batchKey]: nextBatchMap
+      };
+    }
+  });
+  return { field: nextField, logs };
 };
 
 export const normalizeHousingPreparedMealCountByFacilityKey = (raw = {}) => {
@@ -756,6 +1222,7 @@ const HOUSING_LIFE_SUPPLY_EXPLICIT_DAYS_BY_ITEM_KEY = {
   foodHotdog: { foodDays: 0.25 },
   foodHamburger: { foodDays: 0.35 },
   foodBagRamen5Pack: { foodDays: 1.25 },
+  foodBagRamenSingle: { foodDays: 0.25 },
   foodBreadLoaf: { foodDays: 1 },
   foodMilk1L: { foodDays: 0.35 },
   foodEgg30Pack: { foodDays: 2.5 },
@@ -783,6 +1250,7 @@ const HOUSING_LIFE_SUPPLY_EXPLICIT_DAYS_BY_ITEM_KEY = {
   foodColdNoodle2Pack: { foodDays: 0.65 },
   foodPastaSpaghetti500g: { foodDays: 1.3 },
   foodCreamSoupPack: { foodDays: 0.6 },
+  foodCreamSoupSingle: { foodDays: 0.2 },
   foodCurry3Pack: { foodDays: 0.75 },
   foodJjajangSauce3Pack: { foodDays: 0.75 },
   foodRicePorridgeAbalone: { foodDays: 0.35 },
@@ -822,8 +1290,11 @@ const HOUSING_LIFE_SUPPLY_EXPLICIT_DAYS_BY_ITEM_KEY = {
   foodSaladDressing250ml: { foodDays: 0.7 },
   foodFishCake300g: { foodDays: 0.35 },
   foodFrozenPizza: { foodDays: 0.75 },
+  foodRamenSpicySingle: { foodDays: 0.25 },
   foodRamenSpicy5Pack: { foodDays: 1.25 },
+  foodRamenMildSingle: { foodDays: 0.25 },
   foodRamenMild5Pack: { foodDays: 1.25 },
+  foodJjajangRamenSingle: { foodDays: 0.25 },
   foodJjajangRamen4Pack: { foodDays: 1 },
   foodCupRiceBeefSoup: { foodDays: 0.45 },
   foodCereal500g: { foodDays: 1.1 },
@@ -854,13 +1325,18 @@ const HOUSING_LIFE_SUPPLY_DAILY_CONSUME_QTY_BY_ITEM_KEY = {
   foodSlicedCheese20: 0.18,
   foodBreadLoaf: 0.25,
   foodBagRamen5Pack: 0.25,
+  foodBagRamenSingle: 1,
+  foodRamenSpicySingle: 1,
   foodRamenSpicy5Pack: 0.25,
+  foodRamenMildSingle: 1,
   foodRamenMild5Pack: 0.25,
+  foodJjajangRamenSingle: 1,
   foodJjajangRamen4Pack: 0.25,
   foodFrozenDumpling1kg: 0.25,
   foodPastaSpaghetti500g: 0.2,
   foodCereal500g: 0.2,
   foodSeaweed16Pack: 0.12,
+  foodCreamSoupSingle: 1,
   foodLettuce300g: 0.35,
   foodCucumber3Pack: 0.34,
   foodCherryTomato500g: 0.3,
@@ -933,27 +1409,27 @@ export const HOUSING_MEAL_PREP_DEFS = Object.freeze([
   },
   {
     key: 'boiledBagRamen',
-    name: '끓인 봉지라면',
-    desc: '봉지라면 1봉을 물에 끓인 기본 라면',
-    ingredients: { foodBagRamen5Pack: 0.2 }
+    name: '끓인 얼큰라면',
+    desc: '얼큰라면 1봉을 물에 끓인 기본 라면',
+    ingredients: { foodBagRamenSingle: 1 }
   },
   {
     key: 'boiledSpicyRamen',
     name: '끓인 매운라면',
     desc: '매운라면 1봉을 끓인 간단한 면식',
-    ingredients: { foodRamenSpicy5Pack: 0.2 }
+    ingredients: { foodRamenSpicySingle: 1 }
   },
   {
     key: 'boiledMildRamen',
     name: '끓인 순한라면',
     desc: '순한라면 1봉을 끓인 부담 적은 면식',
-    ingredients: { foodRamenMild5Pack: 0.2 }
+    ingredients: { foodRamenMildSingle: 1 }
   },
   {
     key: 'boiledJjajangRamen',
     name: '끓인 짜장라면',
     desc: '짜장라면 1봉을 끓인 별미 간편식',
-    ingredients: { foodJjajangRamen4Pack: 0.25 }
+    ingredients: { foodJjajangRamenSingle: 1 }
   },
   {
     key: 'heatedInstantRice',
@@ -1001,7 +1477,7 @@ export const HOUSING_MEAL_PREP_DEFS = Object.freeze([
     key: 'preparedCreamSoup',
     name: '탄 컵스프',
     desc: '컵스프에 뜨거운 물을 부어 먹는 가벼운 간편식',
-    ingredients: { foodCreamSoupPack: 0.34 }
+    ingredients: { foodCreamSoupSingle: 1 }
   },
   {
     key: 'heatedFrozenFriedRice',
@@ -1052,20 +1528,70 @@ export const HOUSING_MEAL_PREP_BY_KEY = HOUSING_MEAL_PREP_DEFS.reduce((acc, prep
   return acc;
 }, {});
 
+export const HOUSING_DAILY_LIVING_WATER_LITERS = 50;
+
+const HOUSING_MEAL_PREP_WATER_LITERS_BY_KEY = Object.freeze({
+  preparedCupRamen: 0.35,
+  boiledBagRamen: 0.55,
+  boiledSpicyRamen: 0.55,
+  boiledMildRamen: 0.55,
+  boiledJjajangRamen: 0.45,
+  heatedInstantSeaweedSoup: 0.35,
+  heatedInstantYukgaejang: 0.35,
+  steamedFrozenDumpling: 0.2,
+  boiledColdNoodle: 1.2,
+  preparedCreamSoup: 0.18,
+  boiledFrozenUdon: 0.6,
+  preparedCupRiceSoup: 0.3
+});
+
+const HOUSING_MEAL_RECIPE_WATER_LITERS_BY_KEY = Object.freeze({
+  porkKimchiStew: 0.7,
+  doenjangStewSet: 0.75,
+  kimchiTofuSoup: 0.8,
+  eggRamen: 0.6,
+  fishCakeUdon: 0.65,
+  dumplingRamenPot: 0.75,
+  curryUdon: 0.55,
+  mushroomStirFryUdon: 0.25,
+  porkStirFryUdon: 0.25
+});
+
+export const housingWaterDisplayTextOf = (litersRaw = 0) => {
+  const liters = Math.max(0, Number(litersRaw) || 0);
+  if (liters <= 0) return '물 없음';
+  if (liters < 1) return `물 ${Math.round(liters * 1000)}ml`;
+  return `물 ${Math.round(liters * 10) / 10}L`;
+};
+
+export const housingMealWaterLitersOf = (meal = null) => {
+  const key = String(meal?.key || '');
+  if (!key) return 0;
+  if (HOUSING_MEAL_PREP_WATER_LITERS_BY_KEY[key] != null) {
+    return Math.max(0, Number(HOUSING_MEAL_PREP_WATER_LITERS_BY_KEY[key]) || 0);
+  }
+  if (HOUSING_MEAL_RECIPE_WATER_LITERS_BY_KEY[key] != null) {
+    return Math.max(0, Number(HOUSING_MEAL_RECIPE_WATER_LITERS_BY_KEY[key]) || 0);
+  }
+  const category = String(meal?.category || '');
+  if (category === 'soup') return 0.7;
+  return 0;
+};
+
 export const HOUSING_MEAL_RECIPE_DEFS = Object.freeze([
   {
-    key: 'kimchiRiceSet',
-    name: '김치밥',
-    category: 'rice',
-    desc: '밥, 김치, 김을 곁들인 가장 기본적인 농장 식사',
-    ingredients: { housingCookedRiceBowl: 1, foodKimchi35kg: 0.025, foodSeaweed16Pack: 0.06 }
+    key: 'eggRiceBreakfast',
+    name: '간장 계란밥',
+    category: 'vegetarian',
+    desc: '밥에 계란, 간장, 참기름을 더한 간단한 한 끼',
+    ingredients: { housingCookedRiceBowl: 1, foodEgg30Pack: 0.04, foodSoySauce18L: 0.007, foodSesameOil320ml: 0.015 }
   },
   {
-    key: 'eggRiceBreakfast',
-    name: '계란밥',
+    key: 'bibimbap',
+    name: '비빔밥',
     category: 'vegetarian',
-    desc: '짧은 아침에 빠르게 먹는 밥과 계란 조합',
-    ingredients: { housingCookedRiceBowl: 1, foodEgg30Pack: 0.04, foodSoySauce18L: 0.007, foodSesameOil320ml: 0.015 }
+    desc: '밥에 콩나물, 당근, 오이, 계란을 올리고 고추장과 참기름으로 비벼 먹는 기본 비빔밥',
+    ingredients: { housingCookedRiceBowl: 1.1, foodBeanSprouts500g: 0.14, foodCarrot500g: 0.08, foodCucumber3Pack: 0.34, foodEgg30Pack: 0.04, foodRedPepperPaste500g: 0.025, foodSesameOil320ml: 0.012 }
   },
   {
     key: 'porkKimchiStew',
@@ -1441,7 +1967,7 @@ export const HOUSING_MEAL_PLATE_OPTION_DEFS = Object.freeze({
     },
     {
       key: 'eggRice',
-      name: '계란밥',
+      name: '간장 계란밥',
       desc: '밥에 계란과 간장을 더한 간단한 밥',
       ingredients: { housingCookedRiceBowl: 1, foodEgg30Pack: 0.04, foodSoySauce18L: 0.004 }
     },
@@ -1638,9 +2164,13 @@ const HOUSING_MEAL_RECIPE_PORTION_UNIT_BY_ITEM_KEY = Object.freeze({
   foodSoybeanPaste500g: { amount: 500, unit: 'g', name: '된장' },
   foodOnion1kg: { amount: 1000, unit: 'g', name: '양파' },
   foodPotato1kg: { amount: 1000, unit: 'g', name: '감자' },
-  foodBagRamen5Pack: { amount: 5, unit: '봉', name: '라면' },
+  foodBagRamen5Pack: { amount: 5, unit: '봉', name: '얼큰라면' },
+  foodBagRamenSingle: { amount: 1, unit: '봉', name: '얼큰라면' },
+  foodRamenSpicySingle: { amount: 1, unit: '봉', name: '매운라면' },
   foodRamenSpicy5Pack: { amount: 5, unit: '봉', name: '매운라면' },
+  foodRamenMildSingle: { amount: 1, unit: '봉', name: '순한라면' },
   foodRamenMild5Pack: { amount: 5, unit: '봉', name: '순한라면' },
+  foodJjajangRamenSingle: { amount: 1, unit: '봉', name: '짜장라면' },
   foodJjajangRamen4Pack: { amount: 4, unit: '봉', name: '짜장라면' },
   foodCarrot500g: { amount: 500, unit: 'g', name: '당근' },
   foodLettuce300g: { amount: 300, unit: 'g', name: '양상추' },
@@ -1684,6 +2214,7 @@ const HOUSING_MEAL_RECIPE_PORTION_UNIT_BY_ITEM_KEY = Object.freeze({
   foodFrozenTteokbokki: { amount: 1, unit: '봉', name: '냉동 떡볶이' },
   foodFrozenUdon: { amount: 1, unit: '봉', name: '냉동 우동' },
   foodFrozenPizza: { amount: 1, unit: '판', name: '냉동피자' },
+  foodCreamSoupSingle: { amount: 1, unit: '개', name: '컵스프' },
   foodCreamSoupPack: { amount: 3, unit: '개', name: '컵스프' },
   foodRicePorridgeAbalone: { amount: 1, unit: '팩', name: '전복죽' },
   foodRicePorridgeVegetable: { amount: 1, unit: '팩', name: '야채죽' },
@@ -1772,6 +2303,7 @@ export const buildHousingMealRecipeRows = (fridgeStorageRaw = {}) => {
       ...recipe,
       category: String(recipe.category || 'rice'),
       categoryLabel: HOUSING_MEAL_RECIPE_CATEGORY_LABEL_BY_KEY[String(recipe.category || '')] || '기타',
+      waterLiters: housingMealWaterLitersOf(recipe),
       ingredients,
       canCook: ingredients.length > 0 && ingredients.every((ingredient) => ingredient.ok)
     };
@@ -1838,6 +2370,7 @@ export const buildHousingMealPrepRows = (fridgeStorageRaw = {}, freezerStorageRa
     return {
       ...prep,
       type: 'prep',
+      waterLiters: housingMealWaterLitersOf(prep),
       ingredients,
       canCook: ingredients.length > 0 && ingredients.every((ingredient) => ingredient.ok)
     };
@@ -1845,9 +2378,12 @@ export const buildHousingMealPrepRows = (fridgeStorageRaw = {}, freezerStorageRa
 };
 
 export const housingMealRecipeIngredientTextOf = (recipe = null) => (
-  Object.entries(recipe?.ingredients || {}).map(([itemKey, qtyRaw]) => {
-    return housingMealRecipeIngredientDisplayTextOf(itemKey, qtyRaw);
-  }).join(', ')
+  [
+    ...Object.entries(recipe?.ingredients || {}).map(([itemKey, qtyRaw]) => (
+      housingMealRecipeIngredientDisplayTextOf(itemKey, qtyRaw)
+    )),
+    ...(housingMealWaterLitersOf(recipe) > 0 ? [housingWaterDisplayTextOf(housingMealWaterLitersOf(recipe))] : [])
+  ].join(', ')
 );
 
 export const housingLifeSupplyItemDaysOf = (itemKeyRaw = '') => {
@@ -2002,6 +2538,7 @@ export const consumeHousingDailyLifeSupplyForField = ({
   const foodStorageByFacilityKey = field?.housingFoodStorageByFacilityKey || {};
   if (!foodStorageByFacilityKey || typeof foodStorageByFacilityKey !== 'object') return { field, logs: [] };
   const nextFoodStorageByFacilityKey = { ...foodStorageByFacilityKey };
+  let nextFoodStorageBatchesByFacilityKey = normalizeHousingFoodStorageBatchesByFacilityKey(field?.housingFoodStorageBatchesByFacilityKey || {});
   const logs = [];
   let changed = false;
   Object.entries(foodStorageByFacilityKey).forEach(([facilityKeyRaw, inventoryRaw]) => {
@@ -2030,6 +2567,12 @@ export const consumeHousingDailyLifeSupplyForField = ({
     const remainingQty = Math.max(0, (Number(nextInventory[picked.itemKey]) || 0) - consumeQty);
     if (remainingQty > 0.0001) nextInventory[picked.itemKey] = Math.round(remainingQty * 100) / 100;
     else delete nextInventory[picked.itemKey];
+    nextFoodStorageBatchesByFacilityKey = consumeHousingFoodStorageBatches({
+      batchesByFacilityKey: nextFoodStorageBatchesByFacilityKey,
+      facilityKey,
+      itemKey: picked.itemKey,
+      qty: consumeQty
+    }).batchesByFacilityKey;
     if (Object.keys(nextInventory).length > 0) nextFoodStorageByFacilityKey[facilityKey] = nextInventory;
     else delete nextFoodStorageByFacilityKey[facilityKey];
     changed = true;
@@ -2045,7 +2588,8 @@ export const consumeHousingDailyLifeSupplyForField = ({
   return {
     field: {
       ...field,
-      housingFoodStorageByFacilityKey: nextFoodStorageByFacilityKey
+      housingFoodStorageByFacilityKey: nextFoodStorageByFacilityKey,
+      housingFoodStorageBatchesByFacilityKey: nextFoodStorageBatchesByFacilityKey
     },
     logs
   };

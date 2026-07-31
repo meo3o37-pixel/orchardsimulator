@@ -4,6 +4,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 
+const PROJECT_ROOT = path.resolve(process.cwd());
+const PROJECT_INDEX_HTML = path.join(PROJECT_ROOT, 'index.html');
 const ANIMATION_LAB_PRESET_FILE = path.resolve(process.cwd(), 'src/data/animationLabPresets.js');
 const ANIMATION_LAB_DATA_DIR = path.resolve(process.cwd(), 'src/data');
 const EXTERNAL_MAP_DATA_FILE = path.resolve(process.cwd(), 'src/data/external-map-data.json');
@@ -2399,6 +2401,12 @@ export default defineConfig(({ mode }) => {
   LM_STUDIO_API_AUTH_TOKEN = String(env.LM_STUDIO_API_TOKEN || '').trim();
 
   return {
+    root: PROJECT_ROOT,
+    build: {
+      rollupOptions: {
+        input: PROJECT_INDEX_HTML
+      }
+    },
     server: {
       host: '0.0.0.0',
       allowedHosts: true,

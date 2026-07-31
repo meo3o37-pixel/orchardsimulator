@@ -1,6 +1,12 @@
 import React from 'react';
 import { HOUSING_INTERIOR_OBJECT_BUTTONS } from './housingInteriorConfig';
-import { HOUSING_APPLIANCE_SLOT_DEFS, HOUSING_FURNITURE_SLOT_DEFS } from './housingSystem';
+import {
+  HOUSING_APPLIANCE_SLOT_DEFS,
+  HOUSING_CLOTHING_SLOT_DEFS,
+  HOUSING_FURNITURE_SLOT_DEFS,
+  housingFoodStorageExpirySummaryOf,
+  housingHasBathroomOfFacility,
+} from './housingSystem';
 import HousingPcDesktop from './HousingPcDesktop';
 import {
   PLAYER_HEALTH_STATUS_STEPS,
@@ -17,7 +23,11 @@ function SmoothHeightPanel({ children, className = '', watchKey = '' }) {
     const innerEl = innerRef.current;
     if (!innerEl) return undefined;
     const updateHeight = () => {
-      setHeight(`${Math.ceil(innerEl.getBoundingClientRect().height)}px`);
+      const measuredHeight = Math.max(
+        innerEl.scrollHeight,
+        innerEl.getBoundingClientRect().height
+      );
+      setHeight(`${Math.ceil(measuredHeight) + 2}px`);
     };
     updateHeight();
     const rafId = window.requestAnimationFrame(updateHeight);
@@ -58,6 +68,7 @@ const HOUSING_KITCHEN_RECIPE_TABS = Object.freeze([
 ]);
 
 export default function HousingInteriorView({
+  housingInteriorFacilityKey = '',
   housingInteriorImageSrc,
   housingInteriorHasDedicatedImage,
   housingIndoorTemperatureInfo,
@@ -71,6 +82,7 @@ export default function HousingInteriorView({
   updateHousingInteriorFridgeSetting,
   toggleHousingInteriorPowerControl,
   housingInteriorPendingObject,
+  housingBathroomInfo = null,
   housingInteriorFridgeStoredRows,
   housingInteriorFreezerStoredRows = [],
   housingInteriorColdStorageCapacityInfo = null,
@@ -78,13 +90,17 @@ export default function HousingInteriorView({
   housingInteriorStorageRows = [],
   housingInteriorStorageInfo = null,
   housingInteriorApplianceSlotRows = [],
+  housingInteriorClothingSlotRows = [],
+  housingInteriorClothingStorageRows = [],
   housingInteriorFurnitureSlotRows = [],
   housingInteriorInstallSourceRows = [],
   housingInteriorInstallDestinationRows = [],
   housingInteriorBagRows = [],
   housingInteriorBagFoodRows = [],
+  housingInteriorBagClothingRows = [],
   housingInteriorVehicleFoodSourceRows = [],
   housingMealInfo,
+  housingWaterInfo = null,
   isHousingInteriorWindowPreviewOpen,
   weatherSceneImage,
   game,
@@ -96,11 +112,16 @@ export default function HousingInteriorView({
   startDayTimeTransition,
   advanceMultipleDays,
   eatHousingMeal,
+  showerHousingBathroom,
+  washHousingBathroomAfterWork,
+  cleanHousingBathroom,
   cookHousingMeal,
   plateHousingMeal,
   moveFoodItemToHousingFridge,
   moveFoodItemToHousingStorage,
   moveFoodItemFromHousingStorageToInventory,
+  moveClothingItemToHousingWardrobe,
+  moveClothingItemFromHousingWardrobe,
   installHousingSlotItem,
   moveHousingSlotItemToTarget,
   moveFoodItemFromHousingColdStorage,
@@ -125,6 +146,7 @@ export default function HousingInteriorView({
   const [kitchenTab, setKitchenTab] = React.useState('meal');
   const [cookRecipeTab, setCookRecipeTab] = React.useState('rice');
   const [selectedCookRecipeKey, setSelectedCookRecipeKey] = React.useState('');
+  const [selectedCookingApplianceKey, setSelectedCookingApplianceKey] = React.useState('');
   const [activePlateSlotKey, setActivePlateSlotKey] = React.useState('rice');
   const [plateOptionPickerSlotKey, setPlateOptionPickerSlotKey] = React.useState('');
   const [housingInstallRemovePickerOpen, setHousingInstallRemovePickerOpen] = React.useState(false);
@@ -146,7 +168,7 @@ export default function HousingInteriorView({
   const [mealCooldownNow, setMealCooldownNow] = React.useState(() => Date.now());
   const farmLogTypingTimerRef = React.useRef(null);
   const fridgeMoveTimerRef = React.useRef(null);
-  const housingStorageTabOrder = React.useMemo(() => ['warehouse', 'appliance', 'furniture'], []);
+  const housingStorageTabOrder = React.useMemo(() => ['warehouse', 'appliance', 'furniture', 'clothing'], []);
   const changeHousingStorageTab = React.useCallback((nextTabRaw) => {
     const nextTab = String(nextTabRaw || 'warehouse');
     if (nextTab === storageTab) return;
@@ -172,26 +194,50 @@ export default function HousingInteriorView({
   };
   const selectedInstallSlot = React.useMemo(() => {
     if (!housingInstallSlotDetail) return null;
-    const slotGroup = String(housingInstallSlotDetail.slotGroup || '') === 'furniture' ? 'furniture' : 'appliance';
-    const sourceRows = slotGroup === 'furniture' ? housingInteriorFurnitureSlotRows : housingInteriorApplianceSlotRows;
-    const fallbackRows = slotGroup === 'furniture' ? HOUSING_FURNITURE_SLOT_DEFS : HOUSING_APPLIANCE_SLOT_DEFS;
+    const requestedGroup = String(housingInstallSlotDetail.slotGroup || '');
+    const slotGroup = requestedGroup === 'furniture' || requestedGroup === 'clothing' ? requestedGroup : 'appliance';
+    const sourceRows = slotGroup === 'furniture'
+      ? housingInteriorFurnitureSlotRows
+      : (slotGroup === 'clothing' ? housingInteriorClothingSlotRows : housingInteriorApplianceSlotRows);
+    const fallbackRows = slotGroup === 'furniture'
+      ? HOUSING_FURNITURE_SLOT_DEFS
+      : (slotGroup === 'clothing' ? HOUSING_CLOTHING_SLOT_DEFS : HOUSING_APPLIANCE_SLOT_DEFS);
     const slotKey = String(housingInstallSlotDetail.slotKey || '');
     return (Array.isArray(sourceRows) ? sourceRows : []).find((slot) => String(slot?.key || '') === slotKey)
       || fallbackRows.find((slot) => String(slot?.key || '') === slotKey)
       || null;
-  }, [housingInstallSlotDetail, housingInteriorApplianceSlotRows, housingInteriorFurnitureSlotRows]);
+  }, [housingInstallSlotDetail, housingInteriorApplianceSlotRows, housingInteriorClothingSlotRows, housingInteriorFurnitureSlotRows]);
   const selectedInstallSlotSourceRows = React.useMemo(() => {
     if (!selectedInstallSlot || !housingInstallSlotDetail) return [];
-    const slotGroup = String(housingInstallSlotDetail.slotGroup || '') === 'furniture' ? 'furniture' : 'appliance';
+    const requestedGroup = String(housingInstallSlotDetail.slotGroup || '');
+    const slotGroup = requestedGroup === 'furniture' || requestedGroup === 'clothing' ? requestedGroup : 'appliance';
     const slotType = String(selectedInstallSlot?.type || '');
     const installedItemKey = String(selectedInstallSlot?.itemKey || '');
+    if (slotGroup === 'clothing') {
+      return (Array.isArray(housingInteriorClothingStorageRows) ? housingInteriorClothingStorageRows : [])
+        .filter((row) => (
+          String(row?.type || '') === slotType
+          && String(row?.itemKey || '') !== installedItemKey
+          && Math.max(0, Math.floor(Number(row?.qty) || 0)) > 0
+        ))
+        .map((row) => ({
+          ...row,
+          category: 'clothing',
+          sourceType: 'wardrobe',
+          sourceKey: 'wardrobe',
+          sourceName: '옷장',
+          sourceDetail: '집에 보관된 복장',
+          sourceImageSrc: '',
+          sourceIcon: '🧥'
+        }));
+    }
     return (Array.isArray(housingInteriorInstallSourceRows) ? housingInteriorInstallSourceRows : [])
       .filter((row) => (
         String(row?.category || '') === slotGroup
         && String(row?.type || '') === slotType
         && String(row?.itemKey || '') !== installedItemKey
       ));
-  }, [housingInstallSlotDetail, housingInteriorInstallSourceRows, selectedInstallSlot]);
+  }, [housingInstallSlotDetail, housingInteriorClothingStorageRows, housingInteriorInstallSourceRows, selectedInstallSlot]);
   const selectedInstallSlotSourceLocationRows = React.useMemo(() => {
     const byKey = new Map();
     selectedInstallSlotSourceRows.forEach((row) => {
@@ -246,6 +292,7 @@ export default function HousingInteriorView({
   const healthStatus = playerStatusStepForValue(PLAYER_HEALTH_STATUS_STEPS, healthValue);
   const laborStatus = playerStatusStepForValue(PLAYER_SELF_LABOR_STATUS_STEPS, laborValue);
   const livingDetailText = String(housingLivingConditionInfo?.detail || '');
+  const hasHousingBathroom = housingHasBathroomOfFacility(housingInteriorFacilityKey);
   const livingPanelExpanded = livingDetailText.length >= 22;
   const livingSupplyInfo = housingLivingConditionInfo?.lifeSupplyInfo || {};
   const livingFacilityQualityInfo = housingLivingConditionInfo?.facilityQualityInfo || {};
@@ -341,6 +388,7 @@ export default function HousingInteriorView({
   React.useEffect(() => {
     if (housingInteriorPendingObject?.key === 'meal') {
       setKitchenTab('meal');
+      setSelectedCookingApplianceKey('');
     }
     if (housingInteriorPendingObject?.key === 'storage') {
       setStorageTab('warehouse');
@@ -441,6 +489,16 @@ export default function HousingInteriorView({
       : HOUSING_APPLIANCE_SLOT_DEFS)
       .filter((slot) => ['microwave', 'riceCooker', 'electricKettle', 'waterPurifier'].includes(String(slot?.type || '')))
   ), [housingInteriorApplianceSlotRows]);
+  const cookingApplianceLabelOf = (slot = null) => {
+    const type = String(slot?.type || '');
+    if (type === 'microwave') return '전자레인지';
+    if (type === 'riceCooker') return '전기밥솥';
+    if (type === 'electricKettle') return '커피포트';
+    return '정수기';
+  };
+  const selectedCookingAppliance = cookingApplianceRows.find((slot) => String(slot?.key || '') === selectedCookingApplianceKey) || null;
+  const housingPrepRows = Array.isArray(housingMealInfo?.prepRows) ? housingMealInfo.prepRows : [];
+  const cookableHousingPrepRows = housingPrepRows.filter((prep) => prep?.canCook);
   const housingRecipeRows = Array.isArray(housingMealInfo?.recipeRows) ? housingMealInfo.recipeRows : [];
   const visibleHousingRecipeRows = housingRecipeRows.filter((recipe) => String(recipe?.category || '') === cookRecipeTab);
   const selectedCookRecipe = housingRecipeRows.find((recipe) => String(recipe?.key || '') === selectedCookRecipeKey) || null;
@@ -448,6 +506,11 @@ export default function HousingInteriorView({
     && String(selectedCookRecipe?.category || '') === cookRecipeTab
     ? selectedCookRecipe
     : null;
+  const housingWaterAvailableLiters = Math.max(0, Number(housingWaterInfo?.availableLiters) || 0);
+  const housingWaterDailyLiters = Math.max(0, Number(housingWaterInfo?.dailyLivingWaterLiters) || 0);
+  const housingWaterStatusText = housingWaterInfo?.hasTank
+    ? `물탱크 ${housingWaterInfo.displayText || '0L'}`
+    : '물탱크 없음';
   const fridgeTempModalConfig = fridgeTempModalKey === 'freezerTempC'
     ? {
         key: 'freezerTempC',
@@ -532,6 +595,33 @@ export default function HousingInteriorView({
       .filter((item) => String(item?.category || '') === 'foodMart' && String(item?.subgroup || '') !== 'living'),
     [housingInteriorStorageRows]
   );
+  const selectedHousingInteriorField = React.useMemo(() => {
+    const fields = Array.isArray(game?.fields) ? game.fields : [];
+    return fields[Math.max(0, Math.floor(Number(game?.selectedField) || 0))] || null;
+  }, [game?.fields, game?.selectedField]);
+  const housingFoodExpiryByColdStorage = React.useMemo(() => {
+    const facilityKey = String(housingInteriorFacilityKey || '');
+    const day = Math.max(1, Math.floor(Number(game?.day) || 1));
+    if (!facilityKey || !selectedHousingInteriorField) return { fridge: {}, freezer: {} };
+    const buildMap = (batchMap) => {
+      const next = {};
+      const itemRows = batchMap?.[facilityKey] || {};
+      Object.keys(itemRows || {}).forEach((itemKey) => {
+        const summary = housingFoodStorageExpirySummaryOf({
+          batchesByFacilityKey: batchMap,
+          facilityKey,
+          itemKey,
+          day
+        });
+        if (summary) next[itemKey] = summary;
+      });
+      return next;
+    };
+    return {
+      fridge: buildMap(selectedHousingInteriorField.housingFoodStorageBatchesByFacilityKey || {}),
+      freezer: buildMap(selectedHousingInteriorField.housingFreezerFoodStorageBatchesByFacilityKey || {})
+    };
+  }, [game?.day, housingInteriorFacilityKey, selectedHousingInteriorField]);
   const selectedColdStorageMoveTarget = React.useMemo(() => {
     if (fridgeSourceTab === 'vehicle') {
       if (!selectedFridgeVehicleSource) return null;
@@ -813,6 +903,11 @@ export default function HousingInteriorView({
       <div className="housing-interior-placeholder-item__meta">
         <span>{item.name}</span>
         <strong>{`${item.qty}${item.unit}`}</strong>
+        {item.expiry ? (
+          <small className={`housing-interior-food-expiry is-${item.expiry.tone || 'stable'}`.trim()}>
+            {item.expiry.label}
+          </small>
+        ) : null}
       </div>
     </>
   );
@@ -1110,19 +1205,24 @@ export default function HousingInteriorView({
               <span>내부 이미지가 준비되면 이 큰 패널 안에 바로 표시됩니다.</span>
             )}
             <div className="housing-interior-panel__object-grid">
-              {HOUSING_INTERIOR_OBJECT_BUTTONS.map((item) => (
-                <button
-                  key={item.key}
-                  type="button"
-                  data-sfx={item.key === 'door' ? 'none' : undefined}
-                  className="housing-interior-panel__object-button"
-                  title={item.hint}
-                  onClick={() => handleHousingInteriorObjectButtonClick(item.key)}
-                >
-                  <span className="housing-interior-panel__object-icon" aria-hidden="true">{item.icon}</span>
-                  <span className="housing-interior-panel__object-label">{item.label}</span>
-                </button>
-              ))}
+              {HOUSING_INTERIOR_OBJECT_BUTTONS.map((item) => {
+                const disabled = String(item?.key || '') === 'bathroom' && !hasHousingBathroom;
+                return (
+                  <button
+                    key={item.key}
+                    type="button"
+                    data-sfx={item.key === 'door' || disabled ? 'none' : undefined}
+                    className="housing-interior-panel__object-button"
+                    title={disabled ? '이 하우징에는 욕실이 없습니다.' : item.hint}
+                    onClick={() => handleHousingInteriorObjectButtonClick(item.key)}
+                    disabled={disabled}
+                    aria-disabled={disabled}
+                  >
+                    <span className="housing-interior-panel__object-icon" aria-hidden="true">{item.icon}</span>
+                    <span className="housing-interior-panel__object-label">{item.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -1338,6 +1438,75 @@ export default function HousingInteriorView({
                     </div>
                   ))}
                 </div>
+              </div>
+            ) : housingInteriorPendingObject.key === 'bathroom' ? (
+              <div className="housing-interior-bathroom-panel">
+                <div className={`housing-interior-living-detail-summary is-${housingBathroomInfo?.cleanlinessTone || 'normal'}`.trim()}>
+                  <span>욕실 상태</span>
+                  <strong>{`${housingBathroomInfo?.tierLabel || '욕실 없음'} · 청결 ${Math.round(Number(housingBathroomInfo?.cleanliness) || 0)}/100`}</strong>
+                  <small>{`현재 상태: ${housingBathroomInfo?.cleanlinessLabel || '확인 필요'}`}</small>
+                </div>
+                <div className="housing-interior-living-detail-grid">
+                  <div className="housing-interior-living-detail-item">
+                    <div className="housing-interior-living-detail-item__head">
+                      <span>오늘 샤워</span>
+                      <em className={`housing-interior-living-detail-delta ${housingBathroomInfo?.showeredToday ? 'is-plus' : 'is-zero'}`.trim()}>
+                        {housingBathroomInfo?.showeredToday ? '완료' : '대기'}
+                      </em>
+                    </div>
+                    <strong>{housingBathroomInfo?.showeredToday ? '씻음' : '안 함'}</strong>
+                    <small>자가노동력 회복 없이 개인 청결 상태만 정리합니다.</small>
+                  </div>
+                  <div className="housing-interior-living-detail-item">
+                    <div className="housing-interior-living-detail-item__head">
+                      <span>작업 후 세척</span>
+                      <em className={`housing-interior-living-detail-delta ${housingBathroomInfo?.chemicalWashedToday ? 'is-plus' : 'is-zero'}`.trim()}>
+                        {housingBathroomInfo?.chemicalWashedToday ? '완료' : '대기'}
+                      </em>
+                    </div>
+                    <strong>{housingBathroomInfo?.chemicalWashedToday ? '세척 기록 있음' : '세척 기록 없음'}</strong>
+                    <small>농약 작업 후 피부와 작업복 표면 오염을 씻어낸 기록입니다.</small>
+                  </div>
+                  <div className="housing-interior-living-detail-item">
+                    <div className="housing-interior-living-detail-item__head">
+                      <span>욕실 청소</span>
+                      <em className={`housing-interior-living-detail-delta ${housingBathroomInfo?.cleanedToday ? 'is-plus' : 'is-zero'}`.trim()}>
+                        {housingBathroomInfo?.cleanedToday ? '오늘 완료' : '필요 시'}
+                      </em>
+                    </div>
+                    <strong>{housingBathroomInfo?.cleanedDay ? `${housingBathroomInfo.cleanedDay}일차` : '기록 없음'}</strong>
+                    <small>청소는 자가노동력 2를 소모하고 욕실 청결도를 올립니다.</small>
+                  </div>
+                </div>
+                <div className="housing-interior-bed-actions">
+                  <button
+                    type="button"
+                    className="button button--ghost"
+                    onClick={showerHousingBathroom}
+                    disabled={!housingBathroomInfo?.hasBathroom || housingBathroomInfo?.showeredToday}
+                  >
+                    샤워하기
+                  </button>
+                  <button
+                    type="button"
+                    className="button button--ghost"
+                    onClick={washHousingBathroomAfterWork}
+                    disabled={!housingBathroomInfo?.hasBathroom || housingBathroomInfo?.chemicalWashedToday}
+                  >
+                    작업 후 세척
+                  </button>
+                  <button
+                    type="button"
+                    className="button button--primary"
+                    onClick={cleanHousingBathroom}
+                    disabled={!housingBathroomInfo?.hasBathroom || Number(game?.labor || 0) < 2 || Number(housingBathroomInfo?.cleanliness || 0) >= 100}
+                  >
+                    욕실 청소
+                  </button>
+                </div>
+                <p className="housing-interior-hvac-note">
+                  욕실 행동은 자가노동력을 회복하지 않습니다. 샤워와 작업 후 세척은 위생 기록만 남기고, 청소는 욕실 청결 유지용입니다.
+                </p>
               </div>
             ) : housingInteriorPendingObject.key === 'pc' ? (
               <HousingPcDesktop
@@ -1599,31 +1768,35 @@ export default function HousingInteriorView({
               </div>
             ) : housingInteriorPendingObject.key === 'meal' ? (
               <div className="housing-interior-kitchen-panel">
-                <div className="focus-tabs housing-interior-kitchen-tabs" role="tablist" aria-label="주방 메뉴">
-                  {[
-                    ['meal', '🍽️ 식사'],
-                    ['prep', '♨️ 조리'],
-                    ['cook', '🍳 요리']
-                  ].map(([tabKey, label]) => (
-                    <button
-                      key={`housing-kitchen-tab-${tabKey}`}
-                      type="button"
-                      className={`focus-tab ${kitchenTab === tabKey ? 'focus-tab--active' : ''}`.trim()}
-                      onClick={() => setKitchenTab(tabKey)}
-                    >
-                      {label}
-                    </button>
-                  ))}
+                <div className="housing-interior-kitchen-topbar">
+                  <div className="focus-tabs housing-interior-kitchen-tabs" role="tablist" aria-label="주방 메뉴">
+                    {[
+                      ['meal', '🍽️ 식사'],
+                      ['prep', '♨️ 조리'],
+                      ['cook', '🍳 요리']
+                    ].map(([tabKey, label]) => (
+                      <button
+                        key={`housing-kitchen-tab-${tabKey}`}
+                        type="button"
+                        className={`focus-tab ${kitchenTab === tabKey ? 'focus-tab--active' : ''}`.trim()}
+                        onClick={() => setKitchenTab(tabKey)}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  {kitchenTab === 'meal' ? (
+                    <div className="housing-interior-fridge-temp-control housing-interior-meal-limit-badge" aria-label="meal limit">
+                      <span>{`${housingMealInfo?.phaseLabel || '주간'} 식사`}</span>
+                      <strong>{`${Math.max(0, Number(housingMealInfo?.remaining) || 0)}회 남음`}</strong>
+                    </div>
+                  ) : null}
                 </div>
                 {kitchenTab === 'meal' ? (
                   <div className="housing-interior-placeholder-grid housing-interior-placeholder-grid--single">
                     <div className="housing-interior-placeholder-card housing-interior-placeholder-card--storage-wide">
                       <div className="housing-interior-placeholder-card__title-row housing-interior-meal-title-row">
                         <strong>🍽️ 간단식사</strong>
-                        <div className="housing-interior-fridge-temp-control" aria-label="meal limit">
-                          <span>{`${housingMealInfo?.phaseLabel || '주간'} 식사`}</span>
-                          <strong>{`${Math.max(0, Number(housingMealInfo?.remaining) || 0)}회 남음`}</strong>
-                        </div>
                       </div>
                       <div className="housing-interior-placeholder-item-list">
                         {(Array.isArray(housingMealInfo?.preparedMealRows) ? housingMealInfo.preparedMealRows : []).length ? (
@@ -1656,10 +1829,6 @@ export default function HousingInteriorView({
                       <div className="housing-interior-meal-plate-section">
                         <div className="housing-interior-placeholder-card__title-row housing-interior-meal-title-row">
                           <strong>🍱 한상 차려서 식사</strong>
-                          <div className="housing-interior-fridge-temp-control" aria-label="available meal plates">
-                            <span>{`${housingMealInfo?.phaseLabel || '주간'} 식사`}</span>
-                            <strong>{`${Math.max(0, Number(housingMealInfo?.remaining) || 0)}회 남음`}</strong>
-                          </div>
                         </div>
                         <div className="housing-interior-meal-plate-builder">
                           <div className="housing-interior-meal-plate-slots" aria-label="한상 구성">
@@ -1726,10 +1895,7 @@ export default function HousingInteriorView({
                     <div className="housing-interior-placeholder-card housing-interior-placeholder-card--storage-wide">
                       <div className="housing-interior-placeholder-card__title-row housing-interior-meal-title-row">
                         <strong>🍳 요리</strong>
-                        <div className="housing-interior-fridge-temp-control" aria-label="prepared meal stock">
-                          <span>준비된 식사</span>
-                          <strong>{`${Math.max(0, Number(housingMealInfo?.preparedMeals) || 0)}개`}</strong>
-                        </div>
+                        <small>{`${housingWaterStatusText} · 생활용수 ${housingWaterDailyLiters}L/일`}</small>
                       </div>
                       <div className="focus-tabs housing-interior-recipe-tabs" role="tablist" aria-label="요리 분류">
                         {HOUSING_KITCHEN_RECIPE_TABS.map(([tabKey, label]) => (
@@ -1789,28 +1955,30 @@ export default function HousingInteriorView({
                     <div className="housing-interior-placeholder-card housing-interior-placeholder-card--storage-wide">
                       <div className="housing-interior-placeholder-card__title-row housing-interior-meal-title-row">
                         <strong>♨️ 조리</strong>
-                        <div className="housing-interior-fridge-temp-control" aria-label="prepared quick meal stock">
-                          <span>준비된 식사</span>
-                          <strong>{`${Math.max(0, Number(housingMealInfo?.preparedMeals) || 0)}개`}</strong>
-                        </div>
+                        <small>{`${housingWaterStatusText} · 생활용수 ${housingWaterDailyLiters}L/일`}</small>
                       </div>
                       <div className="housing-interior-cooking-appliance-grid" aria-label="설치된 조리 가전">
                         {cookingApplianceRows.map((slot) => (
                           <div
                             key={`housing-cooking-appliance-${slot.key}`}
                             className={`housing-interior-cooking-appliance-card ${slot.installed ? 'is-installed' : 'is-empty'}`.trim()}
+                            role={slot.installed ? 'button' : undefined}
+                            tabIndex={slot.installed ? 0 : undefined}
+                            onClick={() => {
+                              if (!slot.installed) return;
+                              setSelectedCookingApplianceKey(String(slot.key || ''));
+                            }}
+                            onKeyDown={(event) => {
+                              if (!slot.installed) return;
+                              if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault();
+                                setSelectedCookingApplianceKey(String(slot.key || ''));
+                              }
+                            }}
                           >
                             <div className="housing-interior-cooking-appliance-card__head">
                               <span>{slot.icon}</span>
-                              <strong>
-                                {String(slot?.type || '') === 'microwave'
-                                  ? '전자레인지'
-                                  : String(slot?.type || '') === 'riceCooker'
-                                    ? '전기밥솥'
-                                    : String(slot?.type || '') === 'electricKettle'
-                                      ? '커피포트'
-                                      : '정수기'}
-                              </strong>
+                              <strong>{cookingApplianceLabelOf(slot)}</strong>
                             </div>
                             {slot.installed ? (
                               <div className="housing-interior-cooking-appliance-card__body">
@@ -1841,7 +2009,8 @@ export default function HousingInteriorView({
                   {[
                     ['warehouse', '📦 창고'],
                     ['appliance', '🔌 가전'],
-                    ['furniture', '🪑 가구']
+                    ['furniture', '🪑 가구'],
+                    ['clothing', '🧥 복장']
                   ].map(([tabKey, label]) => (
                     <button
                       key={`housing-storage-tab-${tabKey}`}
@@ -1957,6 +2126,7 @@ export default function HousingInteriorView({
                               {slot.imageSrc ? (
                                 <img src={slot.imageSrc} alt="" loading="lazy" />
                               ) : null}
+                              <span>{slot.name}</span>
                             </div>
                           ) : (
                             <div className="housing-interior-appliance-slot-card__empty">
@@ -1968,7 +2138,7 @@ export default function HousingInteriorView({
                       ))}
                     </div>
                   </>
-                ) : (
+                ) : storageTab === 'furniture' ? (
                   <div className="housing-interior-placeholder-grid housing-interior-placeholder-grid--storage housing-interior-placeholder-grid--furniture-slots">
                     {(housingInteriorFurnitureSlotRows.length ? housingInteriorFurnitureSlotRows : HOUSING_FURNITURE_SLOT_DEFS).map((slot) => (
                       <div
@@ -1992,6 +2162,7 @@ export default function HousingInteriorView({
                             {slot.imageSrc ? (
                               <img src={slot.imageSrc} alt="" loading="lazy" />
                             ) : null}
+                            <span>{slot.name}</span>
                           </div>
                         ) : (
                           <div className="housing-interior-appliance-slot-card__empty">
@@ -2001,6 +2172,112 @@ export default function HousingInteriorView({
                         )}
                       </div>
                     ))}
+                  </div>
+                ) : (
+                  <div className="housing-interior-clothing-panel">
+                    <div className="housing-interior-placeholder-grid housing-interior-placeholder-grid--storage housing-interior-placeholder-grid--clothing-slots">
+                      {(housingInteriorClothingSlotRows.length ? housingInteriorClothingSlotRows : HOUSING_CLOTHING_SLOT_DEFS).map((slot) => (
+                        <div
+                          key={`housing-clothing-slot-${slot.key}`}
+                          className={`housing-interior-placeholder-card housing-interior-appliance-slot-card housing-interior-clothing-slot-card ${slot.installed ? 'is-installed' : ''}`.trim()}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setHousingInstallSlotDetail({ slotGroup: 'clothing', slotKey: slot.key })}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                              event.preventDefault();
+                              setHousingInstallSlotDetail({ slotGroup: 'clothing', slotKey: slot.key });
+                            }
+                          }}
+                        >
+                          <div className="housing-interior-appliance-slot-card__head">
+                            <strong>{`${slot.icon} ${slot.label}`}</strong>
+                          </div>
+                          {slot.installed ? (
+                            <div className="housing-interior-appliance-slot-card__installed">
+                              {slot.imageSrc ? (
+                                <img src={slot.imageSrc} alt="" loading="lazy" />
+                              ) : null}
+                              <span>{slot.name}</span>
+                            </div>
+                          ) : (
+                            <div className="housing-interior-appliance-slot-card__empty">
+                              <span>착용한 복장 없음</span>
+                              <small>{slot.hint}</small>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="housing-interior-clothing-storage-layout">
+                      <div className="housing-interior-placeholder-card housing-interior-clothing-storage-card">
+                        <div className="housing-interior-placeholder-card__title-row">
+                          <strong>🧥 옷장 보관함</strong>
+                          <small>{`${housingInteriorClothingStorageRows.length.toLocaleString()}종`}</small>
+                        </div>
+                        {housingInteriorClothingStorageRows.length ? (
+                          <div className="housing-interior-placeholder-item-list housing-interior-placeholder-item-list--bag">
+                            {housingInteriorClothingStorageRows.map((item) => (
+                              <div key={`housing-clothing-wardrobe-${item.itemKey}`} className="housing-interior-placeholder-item">
+                                {renderFoodItemContent(item)}
+                                <div className="housing-interior-placeholder-move-actions">
+                                  <button
+                                    type="button"
+                                    className="button button--ghost button--compact housing-interior-placeholder-move-button"
+                                    disabled={!item.slotKey}
+                                    title={item.slotLabel ? `${item.slotLabel}에 착용` : '맞는 착용 부위 없음'}
+                                    onClick={() => item.slotKey && installHousingSlotItem?.({
+                                      slotGroup: 'clothing',
+                                      slotKey: item.slotKey,
+                                      sourceType: 'wardrobe',
+                                      sourceKey: 'wardrobe',
+                                      itemKey: item.itemKey
+                                    })}
+                                  >
+                                    착용
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="button button--ghost button--compact housing-interior-placeholder-move-button"
+                                    title="개인소지품으로 꺼내기"
+                                    onClick={() => moveClothingItemFromHousingWardrobe?.({ itemKey: item.itemKey })}
+                                  >
+                                    🎒
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <span>옷장에 보관된 복장이 없습니다.</span>
+                        )}
+                      </div>
+                      <div className="housing-interior-placeholder-card housing-interior-clothing-storage-card">
+                        <div className="housing-interior-placeholder-card__title-row">
+                          <strong>🧳 개인소지품 복장</strong>
+                          <small>{`${housingInteriorBagClothingRows.length.toLocaleString()}종`}</small>
+                        </div>
+                        {housingInteriorBagClothingRows.length ? (
+                          <div className="housing-interior-placeholder-item-list housing-interior-placeholder-item-list--bag">
+                            {housingInteriorBagClothingRows.map((item) => (
+                              <div key={`housing-clothing-bag-${item.itemKey}`} className="housing-interior-placeholder-item">
+                                {renderFoodItemContent(item)}
+                                <button
+                                  type="button"
+                                  className="button button--ghost button--compact housing-interior-placeholder-move-button"
+                                  title="옷장에 넣기"
+                                  onClick={() => moveClothingItemToHousingWardrobe?.({ itemKey: item.itemKey })}
+                                >
+                                  옷장
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <span>개인소지품에 보관할 복장이 없습니다.</span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
                 </div>
@@ -2328,7 +2605,9 @@ export default function HousingInteriorView({
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="panel__eyebrow">
-                  {housingInstallSlotDetail?.slotGroup === 'furniture' ? '가구 자리' : '가전 자리'}
+                  {housingInstallSlotDetail?.slotGroup === 'furniture'
+                    ? '가구 자리'
+                    : (housingInstallSlotDetail?.slotGroup === 'clothing' ? '복장 자리' : '가전 자리')}
                 </div>
                 <div className="confirm-modal__title">
                   {selectedInstallSlot.installed
@@ -2349,9 +2628,21 @@ export default function HousingInteriorView({
                     <button
                       type="button"
                       className="button button--primary"
-                      onClick={() => setHousingInstallRemovePickerOpen(true)}
+                      onClick={() => {
+                        if (housingInstallSlotDetail?.slotGroup === 'clothing') {
+                          moveHousingSlotItemToTarget?.({
+                            slotGroup: 'clothing',
+                            slotKey: selectedInstallSlot.key,
+                            targetType: 'carrier',
+                            targetKey: ''
+                          });
+                          setHousingInstallSlotDetail(null);
+                          return;
+                        }
+                        setHousingInstallRemovePickerOpen(true);
+                      }}
                     >
-                      🧰 설치제거
+                      {housingInstallSlotDetail?.slotGroup === 'clothing' ? '벗기' : '🧰 설치제거'}
                     </button>
                   </div>
                 ) : null}
@@ -2360,7 +2651,9 @@ export default function HousingInteriorView({
                     <strong>
                       {selectedInstallSlot.installed
                         ? '교체 가능한 물품'
-                        : (housingInstallSourcePickerKey ? '설치할 물품 선택' : '가져올 위치 선택')}
+                        : (housingInstallSourcePickerKey
+                            ? (housingInstallSlotDetail?.slotGroup === 'clothing' ? '착용할 복장 선택' : '설치할 물품 선택')
+                            : (housingInstallSlotDetail?.slotGroup === 'clothing' ? '옷장 위치 선택' : '가져올 위치 선택'))}
                     </strong>
                     {!selectedInstallSlot.installed && housingInstallSourcePickerKey ? (
                       <button
@@ -2420,12 +2713,14 @@ export default function HousingInteriorView({
                             <strong>{item.name}</strong>
                             <small>{`${item.sourceName || '보관처'} · ${Math.max(0, Number(item.qty) || 0).toLocaleString()}${item.unit || ''}`}</small>
                           </span>
-                          <em>{selectedInstallSlot.installed ? '교체' : '설치'}</em>
+                          <em>{housingInstallSlotDetail?.slotGroup === 'clothing' ? '착용' : (selectedInstallSlot.installed ? '교체' : '설치')}</em>
                         </button>
                       ))}
                     </div>
                   ) : (
-                    <span>{housingInstallSourcePickerKey ? '선택한 위치에 설치할 수 있는 물품이 없습니다.' : '현재 농장에 같은 자리에 설치할 수 있는 물품이 없습니다.'}</span>
+                    <span>{housingInstallSlotDetail?.slotGroup === 'clothing'
+                      ? '옷장에 같은 부위에 착용할 수 있는 복장이 없습니다.'
+                      : (housingInstallSourcePickerKey ? '선택한 위치에 설치할 수 있는 물품이 없습니다.' : '현재 농장에 같은 자리에 설치할 수 있는 물품이 없습니다.')}</span>
                   )}
                 </div>
                 <div className="footer-actions">
@@ -2603,7 +2898,11 @@ export default function HousingInteriorView({
                 <div className="confirm-modal__title">{visibleSelectedCookRecipe.name}</div>
                 <div className="housing-interior-recipe-detail">
                   <div className="housing-interior-recipe-detail__image" aria-label="요리 이미지">
-                    <span>이미지 준비중</span>
+                    {visibleSelectedCookRecipe.imageSrc ? (
+                      <img src={visibleSelectedCookRecipe.imageSrc} alt="" loading="lazy" />
+                    ) : (
+                      <span>이미지 준비중</span>
+                    )}
                   </div>
                   <div className="housing-interior-recipe-detail__body">
                     <p>{visibleSelectedCookRecipe.desc || '레시피 설명 없음'}</p>
@@ -2616,6 +2915,13 @@ export default function HousingInteriorView({
                           {ingredient.displayText || `${ingredient.name} ${Math.round((Number(ingredient.requiredQty) || 0) * 100) / 100}${ingredient.unit}`}
                         </span>
                       ))}
+                      {Math.max(0, Number(visibleSelectedCookRecipe.waterLiters) || 0) > 0 ? (
+                        <span
+                          className={housingWaterAvailableLiters + 0.0001 >= Math.max(0, Number(visibleSelectedCookRecipe.waterLiters) || 0) ? 'is-ready' : 'is-missing'}
+                        >
+                          {visibleSelectedCookRecipe.waterDisplayText || `물 ${Math.round((Number(visibleSelectedCookRecipe.waterLiters) || 0) * 10) / 10}L`}
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                 </div>
@@ -2637,6 +2943,62 @@ export default function HousingInteriorView({
                     }}
                   >
                     요리하기
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : null}
+          {selectedCookingAppliance?.installed ? (
+            <>
+              <div
+                className="confirm-modal-backdrop confirm-modal-backdrop--soft"
+                style={{ zIndex: 132 }}
+                onClick={() => setSelectedCookingApplianceKey('')}
+              />
+              <div
+                className="confirm-modal confirm-modal--housing-cooking-appliance"
+                style={{ zIndex: 133 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="panel__eyebrow">간편 조리</div>
+                <div className="confirm-modal__title">{`${selectedCookingAppliance.icon || '♨️'} ${cookingApplianceLabelOf(selectedCookingAppliance)}로 조리`}</div>
+                <div className="housing-interior-cookable-prep-list">
+                  {cookableHousingPrepRows.length ? cookableHousingPrepRows.map((prep) => (
+                    <button
+                      key={`housing-cookable-prep-${prep.key}`}
+                      type="button"
+                      className="housing-interior-cookable-prep-card"
+                      onClick={() => {
+                        cookHousingMeal?.(prep.key);
+                        setSelectedCookingApplianceKey('');
+                      }}
+                    >
+                      <div>
+                        <strong>{prep.name}</strong>
+                        <span>{prep.desc || '현재 재료로 바로 조리 가능'}</span>
+                      </div>
+                      <small>
+                        {[
+                          ...(Array.isArray(prep.ingredients) ? prep.ingredients : [])
+                          .map((ingredient) => ingredient.displayText || ingredient.name)
+                          ,
+                          ...(Math.max(0, Number(prep.waterLiters) || 0) > 0 ? [prep.waterDisplayText || `물 ${Math.round((Number(prep.waterLiters) || 0) * 10) / 10}L`] : [])
+                        ].join(' · ')}
+                      </small>
+                    </button>
+                  )) : (
+                    <div className="housing-interior-cookable-prep-empty">
+                      현재 재료로 조리 가능한 항목이 없습니다.
+                    </div>
+                  )}
+                </div>
+                <div className="footer-actions">
+                  <button
+                    type="button"
+                    className="button button--ghost"
+                    onClick={() => setSelectedCookingApplianceKey('')}
+                  >
+                    닫기
                   </button>
                 </div>
               </div>
