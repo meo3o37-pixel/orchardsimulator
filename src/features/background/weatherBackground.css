@@ -1,0 +1,46 @@
+.app-shell--weather {
+  background-repeat: no-repeat;
+}
+
+.app-shell__weather-layers {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.app-shell__weather-layer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 1400ms cubic-bezier(0.18, 0.82, 0.22, 1);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: scroll;
+  will-change: opacity, filter;
+  filter: blur(0px) saturate(1);
+}
+
+.app-shell__weather-layer.is-visible {
+  opacity: 1;
+}
+
+.app-shell__weather-layers.is-crossfading .app-shell__weather-layer {
+  animation: weather-layer-soft-focus 1400ms cubic-bezier(0.2, 0.92, 0.22, 1);
+}
+
+@keyframes weather-layer-soft-focus {
+  0% {
+    filter: blur(0px) saturate(1);
+  }
+  11% {
+    filter: blur(14px) saturate(1.1);
+  }
+  52% {
+    filter: blur(6px) saturate(1.04);
+  }
+  100% {
+    filter: blur(0px) saturate(1);
+  }
+}

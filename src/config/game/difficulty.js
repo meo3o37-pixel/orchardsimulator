@@ -1,0 +1,190 @@
+export const STARTUP_LOAN_OPTIONS = {
+  none: {
+    key: 'none',
+    label: '운영대출 없음',
+    amount: 0,
+    monthsTotal: 0,
+    desc: '무차입으로 출발합니다.'
+  },
+  bridge: {
+    key: 'bridge',
+    label: '운영대출 300만원',
+    amount: 3000000,
+    monthsTotal: 12,
+    desc: '급한 자재·유류비를 메우는 최소 운전자금입니다.'
+  },
+  light: {
+    key: 'light',
+    label: '운영대출 500만원',
+    amount: 5000000,
+    monthsTotal: 12,
+    desc: '비료·소모품 확보용 단기 운전자금입니다.'
+  },
+  moderate: {
+    key: 'moderate',
+    label: '운영대출 800만원',
+    amount: 8000000,
+    monthsTotal: 12,
+    desc: '초기 인건비와 자재비를 함께 대비합니다.'
+  },
+  pressure: {
+    key: 'pressure',
+    label: '운영대출 1,000만원',
+    amount: 10000000,
+    monthsTotal: 18,
+    desc: '운영비 여유를 확보하지만 상환 압박이 빠르게 따라옵니다.'
+  },
+  heavy: {
+    key: 'heavy',
+    label: '운영대출 1,200만원',
+    amount: 12000000,
+    monthsTotal: 24,
+    desc: '현금 숨통은 트이지만 월 상환 압박이 생깁니다.'
+  },
+  urgent: {
+    key: 'urgent',
+    label: '운영대출 1,500만원',
+    amount: 15000000,
+    monthsTotal: 24,
+    desc: '출발은 수월하지만 빚을 안고 운영하는 조건입니다.'
+  }
+};
+
+export const DIFFICULTY_OPTIONS = {
+  starter: {
+    key: 'starter',
+    label: '1단계 새순',
+    shortLabel: '새순',
+    emoji: '🌱',
+    indicatorLabel: '순풍권',
+    indicatorDesc: '학습형 출발',
+    desc: '시스템을 익히기 쉬운 완화된 출발 조건',
+    riskText: '초반 리스크 완화 · 무차입 출발',
+    defaultFundKey: 'veryHigh',
+    creditScore: 860,
+    fieldWater: 60,
+    fieldNutrition: 60,
+    fieldPest: 5,
+    fieldWeed: 7,
+    defaultStartupLoanKey: 'none'
+  },
+  cruise: {
+    key: 'cruise',
+    label: '2단계 순항',
+    shortLabel: '순항',
+    emoji: '⛵',
+    indicatorLabel: '완충권',
+    indicatorDesc: '여유형 출발',
+    desc: '초기 실수를 흡수할 완충 자금이 있어 흐름을 익히기 편한 조건',
+    riskText: '높은 여유자금 · 초소액 차입 출발',
+    defaultFundKey: 'high',
+    creditScore: 830,
+    fieldWater: 56,
+    fieldNutrition: 56,
+    fieldPest: 7,
+    fieldWeed: 9,
+    defaultStartupLoanKey: 'bridge'
+  },
+  stable: {
+    key: 'stable',
+    label: '3단계 안정',
+    shortLabel: '안정',
+    emoji: '🛡️',
+    indicatorLabel: '완만권',
+    indicatorDesc: '여유형 운영',
+    desc: '여유 자금과 낮은 압박으로 운영 흐름에 집중',
+    riskText: '낮은 부담 · 소액 차입 출발',
+    defaultFundKey: 'upperMid',
+    creditScore: 790,
+    fieldWater: 52,
+    fieldNutrition: 54,
+    fieldPest: 8,
+    fieldWeed: 10,
+    defaultStartupLoanKey: 'light'
+  },
+  standard: {
+    key: 'standard',
+    label: '4단계 표준',
+    shortLabel: '표준',
+    emoji: '⚖️',
+    indicatorLabel: '균형권',
+    indicatorDesc: '표준형 운영',
+    desc: '현재 게임의 기본 감각에 가까운 균형형',
+    riskText: '표준 운영 · 보통 수준 신용',
+    defaultFundKey: 'midHigh',
+    creditScore: 730,
+    fieldWater: 47,
+    fieldNutrition: 50,
+    fieldPest: 10,
+    fieldWeed: 10,
+    defaultStartupLoanKey: 'moderate'
+  },
+  challenge: {
+    key: 'challenge',
+    label: '5단계 도전',
+    shortLabel: '도전',
+    emoji: '🔥',
+    indicatorLabel: '경계권',
+    indicatorDesc: '도전형 운영',
+    desc: '여유자금이 줄고 작은 판단 실수도 운영비 압박으로 이어지는 조건',
+    riskText: '중간 이상 긴장감 · 빠듯한 현금 운용',
+    defaultFundKey: 'lowerMid',
+    creditScore: 690,
+    fieldWater: 44,
+    fieldNutrition: 48,
+    fieldPest: 11,
+    fieldWeed: 11,
+    defaultStartupLoanKey: 'pressure'
+  },
+  tight: {
+    key: 'tight',
+    label: '6단계 압박',
+    shortLabel: '압박',
+    emoji: '⏳',
+    indicatorLabel: '긴장권',
+    indicatorDesc: '압박형 운영',
+    desc: '초기 현금흐름과 상환 부담이 빠르게 체감되는 조건',
+    riskText: '높은 긴장감 · 차입 의존 운영',
+    defaultFundKey: 'low',
+    creditScore: 650,
+    fieldWater: 41,
+    fieldNutrition: 45,
+    fieldPest: 13,
+    fieldWeed: 12,
+    defaultStartupLoanKey: 'heavy'
+  },
+  survival: {
+    key: 'survival',
+    label: '7단계 생계',
+    shortLabel: '생계',
+    emoji: '🧱',
+    indicatorLabel: '생존권',
+    indicatorDesc: '사투형 운영',
+    desc: '빚과 현장 리스크를 안고 버텨야 하는 현실 지향 조건',
+    riskText: '높은 채무 부담 · 불리한 출발 상태',
+    defaultFundKey: 'veryLow',
+    creditScore: 615,
+    fieldWater: 37,
+    fieldNutrition: 41,
+    fieldPest: 15,
+    fieldWeed: 14,
+    defaultStartupLoanKey: 'urgent'
+  },
+  cliff: {
+    key: 'cliff',
+    label: '8단계 벼랑',
+    shortLabel: '벼랑',
+    emoji: '🪨',
+    indicatorLabel: '한계권',
+    indicatorDesc: '한계형 운영',
+    desc: '땅값을 치르고 나면 현금 여유가 거의 남지 않는 극한 출발 조건',
+    riskText: '최저 자금 · 최대 차입 · 현장 리스크 심화',
+    defaultFundKey: 'bare',
+    creditScore: 600,
+    fieldWater: 34,
+    fieldNutrition: 38,
+    fieldPest: 18,
+    fieldWeed: 16,
+    defaultStartupLoanKey: 'urgent'
+  }
+};

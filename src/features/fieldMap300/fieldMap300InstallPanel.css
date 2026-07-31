@@ -1,0 +1,630 @@
+.animation-lab__map-only {
+  --fieldmap300-ink: #304136;
+  --fieldmap300-muted: #6b7569;
+  --fieldmap300-soft: #8a9388;
+  --fieldmap300-line: rgba(203, 212, 197, 0.9);
+  --fieldmap300-surface: rgba(255, 253, 248, 0.94);
+  --fieldmap300-surface-strong: rgba(248, 245, 234, 0.98);
+  --fieldmap300-tint: rgba(235, 242, 225, 0.92);
+  --fieldmap300-accent: #5c8752;
+  --fieldmap300-accent-strong: #416d40;
+  margin-top: 12px;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(620px, 68vh) minmax(0, 1fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
+.animation-lab__map-only-preview {
+  min-width: 0;
+  max-width: none;
+}
+
+.fieldmap300-install-ui {
+  --fieldmap300-preview-cell-size: 18px;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 18px;
+  padding: 22px;
+  border-radius: 34px;
+  border: 1px solid rgba(218, 224, 210, 0.96);
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.95), transparent 26%),
+    linear-gradient(180deg, rgba(250, 247, 239, 0.98), rgba(244, 240, 228, 0.96)),
+    rgba(255, 255, 255, 0.92);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.98),
+    0 24px 48px rgba(47, 66, 48, 0.08);
+  overflow: hidden;
+  --scrollbar-track: rgba(233, 237, 226, 0.9);
+  --scrollbar-track-hover: rgba(223, 230, 217, 0.94);
+  --scrollbar-thumb: rgba(136, 149, 124, 0.74);
+  --scrollbar-thumb-hover: rgba(106, 121, 95, 0.86);
+  --scrollbar-thumb-border: rgba(248, 249, 244, 0.96);
+}
+
+.fieldmap300-install-ui__selected,
+.fieldmap300-install-ui__workspace {
+  margin: 0;
+  border: 1px solid var(--fieldmap300-line);
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 244, 0.94)),
+    rgba(255, 255, 255, 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.98),
+    0 12px 24px rgba(58, 72, 49, 0.06);
+}
+
+.fieldmap300-install-ui__eyebrow,
+.fieldmap300-install-ui__selected-label,
+.fieldmap300-install-ui__catalog-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: #6d6a5f;
+  letter-spacing: -0.02em;
+}
+
+.fieldmap300-install-ui__catalog-description {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--fieldmap300-muted);
+}
+
+.fieldmap300-install-ui__overview {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.fieldmap300-install-ui__selected {
+  padding: 22px;
+}
+
+.fieldmap300-install-ui__selected-body {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+  min-height: 126px;
+}
+
+.fieldmap300-install-ui__pixel-preview {
+  width: 90px;
+  height: 90px;
+  border-radius: 24px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(196, 209, 178, 0.92);
+  background:
+    linear-gradient(180deg, rgba(236, 245, 220, 0.98), rgba(223, 235, 203, 0.94)),
+    rgba(232, 241, 215, 0.92);
+}
+
+.fieldmap300-install-ui__art--pixel {
+  width: 60px;
+  height: 60px;
+}
+
+.fieldmap300-install-ui__selected-copy,
+.fieldmap300-install-ui__card-copy {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.fieldmap300-install-ui__selected-copy strong,
+.fieldmap300-install-ui__card-copy strong {
+  font-size: 21px;
+  line-height: 1.2;
+  color: var(--fieldmap300-ink);
+  letter-spacing: -0.03em;
+}
+
+.fieldmap300-install-ui__selected-copy span,
+.fieldmap300-install-ui__card-copy span {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fieldmap300-muted);
+}
+
+.fieldmap300-install-ui__selected-copy small,
+.fieldmap300-install-ui__card-copy small {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--fieldmap300-soft);
+}
+
+.fieldmap300-install-ui__card-copy {
+  gap: 4px;
+}
+
+.fieldmap300-install-ui__card-copy strong {
+  font-size: 16px;
+}
+
+.fieldmap300-install-ui__card-copy span {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.fieldmap300-install-ui__card-copy small {
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.fieldmap300-install-ui__workspace {
+  min-height: 0;
+  padding: 22px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  container-type: inline-size;
+}
+
+.fieldmap300-install-ui__library {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.fieldmap300-install-ui__library {
+  border-radius: 24px;
+  border: 1px solid rgba(217, 224, 207, 0.94);
+  background:
+    linear-gradient(180deg, rgba(244, 249, 236, 0.94), rgba(237, 244, 227, 0.92)),
+    rgba(255, 255, 255, 0.9);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.96);
+}
+
+.fieldmap300-install-ui__library {
+  overflow: hidden;
+  padding: 16px;
+  grid-template-rows: auto minmax(0, 1fr);
+  container-type: inline-size;
+}
+
+.fieldmap300-install-ui__catalog-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 6px 6px 2px;
+}
+
+.fieldmap300-install-ui__catalog-copy {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.fieldmap300-install-ui__catalog-actions {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.fieldmap300-install-ui__groups {
+  min-height: 0;
+  overflow-y: auto;
+  display: block;
+  padding: 4px 6px 2px 2px;
+}
+
+.fieldmap300-install-ui__group-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.fieldmap300-install-ui__card {
+  min-width: 0;
+  min-height: 142px;
+  border-radius: 20px;
+  border: 1px solid rgba(218, 224, 210, 0.96);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 249, 243, 0.94)),
+    rgba(255, 255, 255, 0.94);
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    border-color 0.16s ease,
+    background-color 0.16s ease;
+}
+
+.fieldmap300-install-ui__card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(150, 176, 136, 0.94);
+  box-shadow: 0 14px 28px rgba(65, 86, 58, 0.1);
+}
+
+.fieldmap300-install-ui__card.is-active {
+  border-color: rgba(107, 145, 90, 0.96);
+  background:
+    linear-gradient(180deg, rgba(246, 251, 238, 0.98), rgba(235, 244, 223, 0.94)),
+    rgba(255, 255, 255, 0.95);
+  box-shadow: 0 12px 22px rgba(97, 128, 82, 0.14);
+}
+
+.fieldmap300-install-ui__card-hit {
+  width: 100%;
+  min-height: 110px;
+  padding: 12px 12px 8px;
+  border: 0;
+  background: transparent;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.fieldmap300-install-ui__card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 0 12px 12px;
+}
+
+.fieldmap300-install-ui__thumb {
+  width: 56px;
+  min-width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 0;
+}
+
+.fieldmap300-install-ui__thumb.is-winter {
+  background: transparent;
+  border: 0;
+}
+
+.fieldmap300-install-ui__preview-media {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 90px;
+  min-height: 90px;
+  border-radius: 24px;
+  overflow: hidden;
+  background: transparent;
+  border: 0;
+}
+
+.fieldmap300-install-ui__preview-media.is-empty {
+  width: 90px;
+  height: 90px;
+}
+
+.fieldmap300-install-ui__art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 0;
+  overflow: visible;
+}
+
+.fieldmap300-install-ui__art img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.fieldmap300-install-ui__art--preview {
+  width: 96px;
+  height: 96px;
+}
+
+.fieldmap300-install-ui__tree-art {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  display: block;
+}
+
+.fieldmap300-install-ui__tree-trunk {
+  position: absolute;
+  left: 14px;
+  bottom: 2px;
+  width: 6px;
+  height: 14px;
+  border-radius: 999px;
+  background: #7b5639;
+}
+
+.fieldmap300-install-ui__tree-leaf {
+  position: absolute;
+  border-radius: 999px;
+  background: #71aa54;
+}
+
+.fieldmap300-install-ui__tree-leaf--1 {
+  left: 4px;
+  top: 8px;
+  width: 14px;
+  height: 14px;
+}
+
+.fieldmap300-install-ui__tree-leaf--2 {
+  left: 16px;
+  top: 5px;
+  width: 14px;
+  height: 14px;
+}
+
+.fieldmap300-install-ui__tree-leaf--3 {
+  left: 9px;
+  top: 1px;
+  width: 16px;
+  height: 16px;
+}
+
+.fieldmap300-install-ui__tree-leaf--4 {
+  left: 10px;
+  top: 12px;
+  width: 14px;
+  height: 14px;
+}
+
+.fieldmap300-install-ui__art--tree-age-1 .fieldmap300-install-ui__tree-leaf { transform: scale(0.68); transform-origin: center; }
+.fieldmap300-install-ui__art--tree-age-2 .fieldmap300-install-ui__tree-leaf { transform: scale(0.78); transform-origin: center; }
+.fieldmap300-install-ui__art--tree-age-3 .fieldmap300-install-ui__tree-leaf { transform: scale(0.88); transform-origin: center; }
+.fieldmap300-install-ui__art--tree-age-4 .fieldmap300-install-ui__tree-leaf { transform: scale(0.98); transform-origin: center; }
+.fieldmap300-install-ui__art--tree-age-5 .fieldmap300-install-ui__tree-leaf { transform: scale(1.08); transform-origin: center; }
+.fieldmap300-install-ui__art--tree-age-6 .fieldmap300-install-ui__tree-leaf { transform: scale(1.16); transform-origin: center; }
+
+@container (max-width: 980px) {
+  .fieldmap300-install-ui__workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+@container (max-width: 900px) {
+  .fieldmap300-install-ui__group-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container (max-width: 560px) {
+  .fieldmap300-install-ui__group-list {
+    grid-template-columns: 1fr;
+  }
+
+  .fieldmap300-install-ui__card-hit {
+    grid-template-columns: 1fr;
+  }
+
+  .fieldmap300-install-ui__thumb {
+    width: 72px;
+    min-width: 72px;
+    height: 72px;
+  }
+}
+
+.confirm-modal.confirm-modal--fieldmap300-catalog-editor {
+  width: min(1880px, calc(100vw - 2px));
+  max-width: none;
+  max-height: calc(100vh - 24px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.fieldmap300-install-ui__editor-modal {
+  display: grid;
+  gap: 16px;
+}
+
+.fieldmap300-install-ui__editor-layout {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(440px, 1fr) minmax(520px, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.fieldmap300-install-ui__editor-form,
+.fieldmap300-install-ui__editor-side {
+  min-width: 0;
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.fieldmap300-install-ui__editor-side {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.fieldmap300-install-ui__field-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.fieldmap300-install-ui__field {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.fieldmap300-install-ui__field > span {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fieldmap300-muted);
+}
+
+.fieldmap300-install-ui__field--toggle {
+  align-content: end;
+}
+
+.fieldmap300-install-ui__field--toggle input {
+  justify-self: start;
+}
+
+.fieldmap300-install-ui__textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.fieldmap300-install-ui__editor-preview,
+.fieldmap300-install-ui__image-picker {
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--fieldmap300-line);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 244, 0.94)),
+    rgba(255, 255, 255, 0.9);
+}
+
+.fieldmap300-install-ui__editor-preview-body {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+}
+
+.fieldmap300-install-ui__image-picker {
+  min-height: 0;
+  max-height: min(62vh, 980px);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
+}
+
+.fieldmap300-install-ui__image-grid {
+  min-height: 0;
+  max-height: min(54vh, 900px);
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding-right: 6px;
+}
+
+.fieldmap300-install-ui__image-option {
+  min-width: 0;
+  border: 1px solid rgba(214, 221, 204, 0.94);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 10px;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  text-align: left;
+}
+
+.fieldmap300-install-ui__image-option.is-active {
+  border-color: rgba(107, 145, 90, 0.96);
+  background:
+    linear-gradient(180deg, rgba(246, 251, 238, 0.98), rgba(235, 244, 223, 0.94)),
+    rgba(255, 255, 255, 0.95);
+}
+
+.fieldmap300-install-ui__image-thumb {
+  aspect-ratio: 1;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: rgba(242, 246, 235, 0.92);
+  overflow: hidden;
+}
+
+.fieldmap300-install-ui__image-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.fieldmap300-install-ui__image-name {
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--fieldmap300-muted);
+  word-break: break-all;
+}
+
+.fieldmap300-install-ui__editor-error {
+  color: #9a4735;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+@media (max-width: 1360px) {
+  .fieldmap300-install-ui__editor-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .fieldmap300-install-ui__field-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1180px) {
+  .animation-lab__map-only {
+    grid-template-rows: minmax(540px, 58vh) minmax(0, 1fr);
+  }
+
+  .fieldmap300-install-ui__overview,
+  .fieldmap300-install-ui__workspace {
+    grid-template-columns: 1fr;
+  }
+  .fieldmap300-install-ui__image-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .animation-lab__map-only {
+    grid-template-rows: minmax(440px, 50vh) minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .fieldmap300-install-ui {
+    padding: 16px;
+    border-radius: 26px;
+  }
+
+  .fieldmap300-install-ui__selected,
+  .fieldmap300-install-ui__workspace {
+    padding: 16px;
+    border-radius: 22px;
+  }
+
+  .fieldmap300-install-ui__overview,
+  .fieldmap300-install-ui__group-list {
+    grid-template-columns: 1fr;
+  }
+
+  .fieldmap300-install-ui__selected-body,
+  .fieldmap300-install-ui__card {
+    grid-template-columns: 1fr;
+  }
+
+  .fieldmap300-install-ui__thumb {
+    width: 68px;
+    min-width: 68px;
+    height: 68px;
+  }
+}

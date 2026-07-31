@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>현재토지 가상 지도 - 300평</title>
+<style>
+  :root {
+    --sky-top: #d8ecff;
+    --sky-bottom: #eef7ff;
+    --panel: rgba(255, 251, 244, 0.9);
+    --panel-border: rgba(110, 82, 48, 0.18);
+    --ink: #24331f;
+    --muted: #5d6958;
+    --soil-dark: #7d5a37;
+    --soil-mid: #9c7247;
+    --soil-light: #bf915e;
+    --lane: #c1a583;
+    --lane-edge: #8d6d4d;
+    --grass: #8dbd62;
+    --grass-deep: #5d8f43;
+    --tree-leaf: #477f3f;
+    --tree-leaf-2: #609b55;
+    --tree-trunk: #654122;
+    --accent: #d87431;
+    --water: #7ec7e7;
+    --shed: #7b8b6f;
+    --steel: #95a1a6;
+    --shadow: rgba(31, 26, 16, 0.22);
+    --tree-trunk-width: 16%;
+    --tree-trunk-height: 36%;
+    --tree-trunk-bottom: 8%;
+    --tree-crown-width: 68%;
+    --tree-crown-height: 76%;
+    --tree-crown-bottom: 6%;
+    --tree-crown-bright: rgba(208, 236, 170, 0.98);
+    --tree-crown-mid: rgba(178, 221, 129, 0.95);
+    --tree-crown-deep: rgba(126, 189, 89, 0.92);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-x: hidden;
+    overflow-y: auto;
+    color: var(--ink);
+    font-family: "Segoe UI", "Noto Sans KR", sans-serif;
+    background:
+      radial-gradient(circle at top, rgba(255, 255, 255, 0.95), transparent 30%),
+      linear-gradient(180deg, var(--sky-top), var(--sky-bottom) 35%, #eff0e2 100%);
+  }
+
+  .scene {
+    position: relative;
+    width: min(1200px, 96vw);
+    min-height: auto;
+    padding: 24px;
+    overflow: hidden;
+  }
+
+  .scene::before,
+  .scene::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(50px);
+    opacity: 0.42;
+    pointer-events: none;
+  }
+
+  .scene::before {
+    width: 320px;
+    height: 320px;
+    left: -70px;
+    top: 12px;
+    background: rgba(255, 238, 176, 0.65);
+  }
+
+  .scene::after {
+    width: 360px;
+    height: 360px;
+    right: -90px;
+    bottom: -100px;
+    background: rgba(137, 204, 149, 0.5);
+  }
+
+  .map-shell {
+    position: relative;
+    z-index: 1;
+    padding: 18px 22px 22px;
+    border-radius: 30px;
+    background: linear-gradient(180deg, rgba(255, 252, 246, 0.9), rgba(245, 239, 226, 0.92));
+    border: 1px solid rgba(128, 98, 66, 0.18);
+    box-shadow: 0 32px 80px rgba(52, 46, 34, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+
+  .map-workspace {
+    min-width: 0;
+  }
+
+  .map-canvas {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .tree-art {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .tree-art__trunk,
+  .tree-art__leaf {
+    position: absolute;
+  }
+
+  .tree-art__trunk {
+    left: 50%;
+    bottom: var(--tree-trunk-bottom);
+    width: var(--tree-trunk-width);
+    height: var(--tree-trunk-height);
+    transform: translateX(-50%);
+    border-radius: 999px 999px 10px 10px;
+    background:
+      linear-gradient(90deg, rgba(255,255,255,.14) 0 16%, transparent 16% 72%, rgba(0,0,0,.14) 72% 100%),
+      linear-gradient(90deg, #5a3318 0%, #9a5a28 52%, #5a3318 100%);
+    z-index: 1;
+  }
+
+  .tree-art__trunk::before {
+    content: "";
+    position: absolute;
+    left: 30%;
+    top: 16%;
+    width: 12%;
+    height: 64%;
+    border-radius: 999px;
+    background: rgba(255,255,255,.15);
+  }
+
+  .tree-art__leaf {
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 35% 30%, #88ef6b 0 22%, #35aa45 64%, #1e742d 100%),
+      radial-gradient(circle at 72% 78%, rgba(0,0,0,.12) 0 24%, transparent 58%);
+    z-index: 2;
+  }
+
+  .tree-art__leaf--1 {
+    width: var(--tree-leaf-top-size);
+    height: var(--tree-leaf-top-size);
+    left: 50%;
+    top: var(--tree-leaf-top-offset);
+    transform: translateX(-50%);
+  }
+
+  .tree-art__leaf--2 {
+    width: var(--tree-leaf-side-size);
+    height: var(--tree-leaf-side-size);
+    left: var(--tree-leaf-side-inset);
+    top: var(--tree-leaf-side-offset);
+  }
+
+  .tree-art__leaf--3 {
+    width: var(--tree-leaf-side-size);
+    height: var(--tree-leaf-side-size);
+    right: var(--tree-leaf-side-inset);
+    top: var(--tree-leaf-side-offset);
+  }
+
+  .tree-art__leaf--4 {
+    width: var(--tree-leaf-bottom-size);
+    height: var(--tree-leaf-bottom-size);
+    left: 50%;
+    top: var(--tree-leaf-bottom-offset);
+    transform: translateX(-50%);
+  }
+
+  .field-stage {
+    position: relative;
+    min-height: 720px;
+    overflow: hidden;
+    border-radius: 28px;
+    background:
+      linear-gradient(180deg, rgba(194, 225, 176, 0.55), rgba(136, 182, 98, 0.4)),
+      linear-gradient(135deg, #bfd7a3, #9bbd70 65%, #8cad64);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+    cursor: grab;
+  }
+
+  .field-stage__viewport {
+    position: absolute;
+    inset: 0;
+    will-change: transform;
+  }
+
+  .field-layout {
+    position: absolute;
+    inset: 26px;
+    pointer-events: none;
+  }
+
+  .field-grid-shell {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    pointer-events: auto;
+    transform-origin: 50% 50%;
+    will-change: transform;
+  }
+
+  .facility-overlay-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 6;
+  }
+
+  .placement-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: none;
+    pointer-events: none;
+    border-radius: 8px;
+    border: 1px solid rgba(57, 111, 52, 0.92);
+    background: rgba(57, 111, 52, 0.06);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.16);
+    z-index: 8;
+  }
+
+  .placed-facility-overlay {
+    position: absolute;
+    padding: 2px;
+    border-radius: 10px;
+    overflow: visible;
+  }
+
+  .placed-facility-overlay--well,
+  .placed-facility-overlay--facility,
+  .placed-facility-overlay--water {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .placed-facility-overlay__art {
+    position: absolute;
+    inset: 2px;
+  }
+
+  .placed-facility-overlay__art span {
+    position: absolute;
+    display: block;
+  }
+
+  .placed-facility-overlay__art--well::before,
+  .placed-facility-overlay__art--well::after,
+  .placed-facility-overlay__art--tank::before,
+  .placed-facility-overlay__art--tank::after,
+  .placed-facility-overlay__art--power::before,
+  .placed-facility-overlay__art--power::after,
+  .placed-facility-overlay__art--pump::before,
+  .placed-facility-overlay__art--pump::after,
+  .placed-facility-overlay__art--control::before,
+  .placed-facility-overlay__art--control::after,
+  .placed-facility-overlay__art--fan::before,
+  .placed-facility-overlay__art--fan::after,
+  .placed-facility-overlay__art--drip::before,
+  .placed-facility-overlay__art--drip::after,
+  .placed-facility-overlay__art--sprinkler::before,
+  .placed-facility-overlay__art--sprinkler::after {
+    content: "";
+    position: absolute;
+  }
+
+  .placed-facility-overlay__art--well::before {
+    left: 50%;
+    top: 50%;
+    width: 28%;
+    height: 28%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 50% 44%, #82d6ef 0 16%, transparent 18%),
+      radial-gradient(circle at 50% 50%, #5b4d3e 0 30%, #30261f 32% 100%);
+    box-shadow:
+      inset 0 0 0 5px rgba(184, 170, 150, 0.94),
+      inset 0 0 0 8px rgba(124, 106, 86, 0.34),
+      0 4px 10px rgba(47, 38, 29, 0.16);
+  }
+
+  .placed-facility-overlay__art--well::after {
+    left: 28%;
+    top: 30%;
+    width: 10%;
+    height: 22%;
+    border-radius: 7px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.18), transparent 22%),
+      linear-gradient(180deg, #48433e, #2c2723);
+    box-shadow:
+      inset 0 0 0 2px rgba(145,152,154,.24),
+      0 2px 6px rgba(44,35,27,.14);
+  }
+
+  .placed-facility-overlay__art--well span {
+    left: 30%;
+    top: 35%;
+    width: 5%;
+    height: 5%;
+    border-radius: 3px;
+    background: linear-gradient(180deg, #86d5ee, #58bbdc);
+    box-shadow: 0 0 0 1px rgba(206, 240, 249, 0.55);
+  }
+
+  .placed-facility-overlay__art--tank::before {
+    left: 16%;
+    right: 16%;
+    top: 18%;
+    bottom: 18%;
+    border-radius: 16px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.16), transparent 22%),
+      linear-gradient(180deg, #b79d82 0%, #9c8268 46%, #7c6350 100%);
+    box-shadow:
+      inset 0 0 0 2px rgba(236,226,214,.34),
+      0 4px 10px rgba(72,55,38,.14);
+  }
+
+  .placed-facility-overlay__art--tank::after {
+    left: 26%;
+    right: 26%;
+    top: 30%;
+    bottom: 26%;
+    border-radius: 6px;
+    background:
+      radial-gradient(circle at 22% 22%, rgba(255,255,255,.88) 0 10%, transparent 12%),
+      linear-gradient(180deg, #d7f2fb, #82d0eb 38%, #4e9dc4 100%);
+    box-shadow:
+      inset 0 0 0 3px rgba(232,248,253,.72),
+      inset 0 -8px 10px rgba(39,111,143,.14);
+  }
+
+  .placed-facility-overlay__art--tank span {
+    left: 42%;
+    top: 8%;
+    width: 16%;
+    height: 10%;
+    border-radius: 4px 4px 2px 2px;
+    background: linear-gradient(180deg, #6f777b, #42474a);
+  }
+
+  .placed-facility-overlay__art--power::before {
+    left: 47%;
+    top: 8%;
+    width: 8%;
+    height: 70%;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #7f664d, #5f4934);
+  }
+
+  .placed-facility-overlay__art--power::after {
+    left: 24%;
+    right: 24%;
+    top: 18%;
+    height: 10%;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #4e534e, #343936);
+  }
+
+  .placed-facility-overlay__art--power span {
+    left: 36%;
+    bottom: 10%;
+    width: 28%;
+    height: 18%;
+    border-radius: 7px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.26), transparent 28%),
+      linear-gradient(180deg, #c8d0cc, #7d867f);
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,.24);
+  }
+
+  .placed-facility-overlay__art--pump::before {
+    left: 36%;
+    right: 26%;
+    top: 24%;
+    bottom: 28%;
+    border-radius: 10px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.26), transparent 32%),
+      linear-gradient(180deg, #9fc7cf, #5d8690);
+    box-shadow: inset 0 0 0 2px rgba(219,241,248,.48);
+  }
+
+  .placed-facility-overlay__art--pump::after {
+    left: 24%;
+    right: 16%;
+    bottom: 18%;
+    height: 10%;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #666d66, #454b46);
+  }
+
+  .placed-facility-overlay__art--pump span {
+    left: 24%;
+    top: 34%;
+    width: 16%;
+    height: 8%;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #566560, #36433e);
+    box-shadow: 26px -10px 0 -2px rgba(76, 96, 103, 0.72);
+  }
+
+  .placed-facility-overlay__art--control::before {
+    left: 26%;
+    right: 26%;
+    top: 14%;
+    bottom: 18%;
+    border-radius: 9px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.28), transparent 24%),
+      linear-gradient(180deg, #cfcfc9, #94978f);
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,.4);
+  }
+
+  .placed-facility-overlay__art--control::after {
+    left: 30%;
+    top: 28%;
+    width: 40%;
+    height: 16%;
+    border-radius: 5px;
+    background: linear-gradient(180deg, #28353a, #162126);
+  }
+
+  .placed-facility-overlay__art--control span {
+    left: 34%;
+    bottom: 22%;
+    width: 32%;
+    height: 12%;
+    border-radius: 999px;
+    background:
+      radial-gradient(circle at 22% 50%, #79d85f 0 16%, transparent 18%),
+      radial-gradient(circle at 50% 50%, #f0d36d 0 16%, transparent 18%),
+      radial-gradient(circle at 78% 50%, #dd7d57 0 16%, transparent 18%);
+  }
+
+  .placed-facility-overlay__art--fan::before {
+    left: 47%;
+    top: 12%;
+    width: 6%;
+    height: 68%;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #838985, #545b57);
+  }
+
+  .placed-facility-overlay__art--fan::after {
+    left: 50%;
+    top: 8%;
+    width: 46%;
+    height: 46%;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at center, rgba(45, 50, 45, 0.95) 0 10%, transparent 12%),
+      conic-gradient(from 0deg, #59605a 0 24%, #8e958f 24% 27%, #59605a 27% 51%, #8e958f 51% 54%, #59605a 54% 78%, #8e958f 78% 81%, #59605a 81% 100%);
+    box-shadow: inset 0 0 0 3px rgba(77,83,78,.9);
+  }
+
+  .placed-facility-overlay__art--fan span {
+    left: 38%;
+    bottom: 12%;
+    width: 24%;
+    height: 10%;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #a66a35, #774920);
+  }
+
+  .placed-facility-overlay__art--drip::before {
+    left: 34%;
+    top: 16%;
+    width: 32%;
+    height: 66%;
+    border-radius: 10px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.24), transparent 24%),
+      linear-gradient(180deg, #565a57, #2f3431);
+    box-shadow:
+      inset 0 0 0 2px rgba(182, 188, 184, 0.2),
+      0 4px 8px rgba(37, 42, 36, 0.12);
+  }
+
+  .placed-facility-overlay__art--drip::after {
+    left: 46%;
+    top: 10%;
+    width: 8%;
+    height: 16%;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #86d4ed, #57b9dc);
+    box-shadow: 0 0 0 2px rgba(214, 242, 249, 0.42);
+  }
+
+  .placed-facility-overlay__art--drip span {
+    left: 28%;
+    top: 42%;
+    width: 44%;
+    height: 10%;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #4f5651, #303632);
+  }
+
+  .placed-facility-overlay__art--sprinkler::before {
+    left: 46%;
+    bottom: 18%;
+    width: 8%;
+    height: 32%;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #737b76, #4b524e);
+  }
+
+  .placed-facility-overlay__art--sprinkler::after {
+    left: 50%;
+    top: 16%;
+    width: 54%;
+    height: 34%;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    border: 2px solid rgba(122, 189, 220, 0.4);
+    background: conic-gradient(from 200deg, rgba(124,192,223,.7) 0 18%, transparent 18% 38%, rgba(124,192,223,.65) 38% 56%, transparent 56% 100%);
+  }
+
+  .placed-facility-overlay__art--sprinkler span {
+    left: 40%;
+    top: 34%;
+    width: 20%;
+    height: 10%;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #818984, #555d58);
+  }
+
+  .placement-overlay.is-invalid {
+    border-color: rgba(170, 68, 47, 0.96);
+    background: rgba(170, 68, 47, 0.06);
+  }
+
+  .field-grid {
+    --grid-cell-size: 1px;
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(60, var(--grid-cell-size));
+    grid-template-rows: repeat(30, var(--grid-cell-size));
+    justify-content: start;
+    align-content: start;
+    gap: 0;
+    border-radius: 22px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,.08)),
+      rgba(133, 169, 93, 0.58);
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,.3),
+      inset 0 -18px 34px rgba(70, 92, 42, 0.12);
+    overflow: hidden;
+  }
+
+  .grid-cell {
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+    border-radius: 1px;
+    background: rgba(171, 207, 113, 0.94);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
+    cursor: pointer;
+  }
+
+  .grid-cell::before,
+  .grid-cell::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  .grid-cell--orchard {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.14), transparent 36%),
+      linear-gradient(180deg, #a5cb6f, #8fb45d);
+  }
+
+  .grid-cell--summer-ground {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.14), transparent 36%),
+      linear-gradient(180deg, #a8cd72, #88b35a);
+  }
+
+  .grid-cell--winter-ground {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.14), transparent 34%),
+      linear-gradient(180deg, #c59568, #a8754b);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+  }
+
+  .grid-cell--tree {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.12), transparent 30%),
+      linear-gradient(180deg, #9ec16a, #82aa54);
+  }
+
+  .grid-cell--tree::before {
+    content: none;
+  }
+
+  .grid-cell--tree::after {
+    content: none;
+  }
+
+  .grid-cell--tree-age-1 {
+    --tree-trunk-width: 13%;
+    --tree-trunk-height: 28%;
+    --tree-trunk-bottom: 10%;
+    --tree-leaf-top-size: 36%;
+    --tree-leaf-side-size: 32%;
+    --tree-leaf-bottom-size: 40%;
+    --tree-leaf-top-offset: 24%;
+    --tree-leaf-side-offset: 40%;
+    --tree-leaf-bottom-offset: 48%;
+    --tree-leaf-side-inset: 15%;
+  }
+
+  .grid-cell--tree-age-2 {
+    --tree-trunk-width: 14%;
+    --tree-trunk-height: 30%;
+    --tree-trunk-bottom: 9%;
+    --tree-leaf-top-size: 39%;
+    --tree-leaf-side-size: 35%;
+    --tree-leaf-bottom-size: 43%;
+    --tree-leaf-top-offset: 21%;
+    --tree-leaf-side-offset: 37%;
+    --tree-leaf-bottom-offset: 45%;
+    --tree-leaf-side-inset: 14%;
+  }
+
+  .grid-cell--tree-age-3 {
+    --tree-trunk-width: 15%;
+    --tree-trunk-height: 32%;
+    --tree-trunk-bottom: 8%;
+    --tree-leaf-top-size: 42%;
+    --tree-leaf-side-size: 38%;
+    --tree-leaf-bottom-size: 46%;
+    --tree-leaf-top-offset: 18%;
+    --tree-leaf-side-offset: 34%;
+    --tree-leaf-bottom-offset: 42%;
+    --tree-leaf-side-inset: 13%;
+  }
+
+  .grid-cell--tree-age-4 {
+    --tree-trunk-width: 16%;
+    --tree-trunk-height: 34%;
+    --tree-trunk-bottom: 7%;
+    --tree-leaf-top-size: 45%;
+    --tree-leaf-side-size: 41%;
+    --tree-leaf-bottom-size: 49%;
+    --tree-leaf-top-offset: 15%;
+    --tree-leaf-side-offset: 31%;
+    --tree-leaf-bottom-offset: 39%;
+    --tree-leaf-side-inset: 12%;
+  }
+
+  .grid-cell--tree-age-5 {
+    --tree-trunk-width: 17%;
+    --tree-trunk-height: 37%;
+    --tree-trunk-bottom: 6%;
+    --tree-leaf-top-size: 48%;
+    --tree-leaf-side-size: 44%;
+    --tree-leaf-bottom-size: 52%;
+    --tree-leaf-top-offset: 12%;
+    --tree-leaf-side-offset: 28%;
+    --tree-leaf-bottom-offset: 36%;
+    --tree-leaf-side-inset: 11%;
+  }
+
+  .grid-cell--tree-age-6 {
+    --tree-trunk-width: 18%;
+    --tree-trunk-height: 40%;
+    --tree-trunk-bottom: 5%;
+    --tree-leaf-top-size: 51%;
+    --tree-leaf-side-size: 47%;
+    --tree-leaf-bottom-size: 55%;
+    --tree-leaf-top-offset: 10%;
+    --tree-leaf-side-offset: 25%;
+    --tree-leaf-bottom-offset: 33%;
+    --tree-leaf-side-inset: 10%;
+  }
+
+  .grid-cell--facility {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.14), transparent 36%),
+      linear-gradient(180deg, #a8cd72, #88b35a);
+  }
+
+  .grid-cell--shed::after {
+    left: 10%;
+    right: 10%;
+    top: 4%;
+    height: 42%;
+    clip-path: polygon(0 100%, 50% 8%, 100% 100%);
+    background: linear-gradient(180deg, #6e6352, #84745d);
+  }
+
+  .grid-cell--water {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.14), transparent 36%),
+      linear-gradient(180deg, #a8cd72, #88b35a);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+  }
+
+  .grid-cell--well {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.14), transparent 36%),
+      linear-gradient(180deg, #a8cd72, #88b35a);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+  }
+
+  .grid-cell--well::after {
+    display: none;
+  }
+
+  .grid-cell--apron {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.2), transparent 36%),
+      repeating-linear-gradient(135deg, rgba(255,255,255,.12) 0 5px, rgba(88,96,92,.08) 5px 10px),
+      linear-gradient(180deg, #bcc0ba, #8f968c);
+  }
+
+  .grid-cell--edge {
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.2), 0 0 0 1px rgba(96, 124, 67, 0.14);
+  }
+
+  .grid-cell--selected {
+    z-index: 4;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.28), 0 0 0 1px rgba(44, 58, 30, 0.78);
+  }
+
+  .measure {
+    position: absolute;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(47, 56, 42, 0.88); font-size: 12px; font-weight: 800; letter-spacing: 0.06em;
+  }
+
+  .measure::before,
+  .measure::after {
+    content: "";
+    position: absolute;
+    background: rgba(55, 67, 48, 0.42);
+  }
+
+  .measure--horizontal {
+    left: 15%; right: 18%; bottom: 3.2%; height: 16px;
+  }
+
+  .measure--horizontal::before {
+    left: 0; right: 0; top: 7px; height: 2px;
+  }
+
+  .measure--horizontal span::before,
+  .measure--horizontal span::after,
+  .measure--vertical span::before,
+  .measure--vertical span::after {
+    content: "";
+    position: absolute;
+    background: rgba(55, 67, 48, 0.42);
+  }
+
+  .measure--horizontal span::before,
+  .measure--horizontal span::after {
+    top: 2px; width: 2px; height: 10px;
+  }
+
+  .measure--horizontal span::before { left: -45%; }
+  .measure--horizontal span::after { right: -45%; }
+
+  .measure--vertical {
+    top: 14%; bottom: 21%; left: 2.8%; width: 18px;
+    writing-mode: vertical-rl; text-orientation: mixed;
+  }
+
+  .measure--vertical::before {
+    top: 0; bottom: 0; left: 8px; width: 2px;
+  }
+
+  .measure--vertical span::before,
+  .measure--vertical span::after {
+    left: 3px; width: 10px; height: 2px;
+  }
+
+  .measure--vertical span::before { top: -48%; }
+  .measure--vertical span::after { bottom: -48%; }
+
+  @media (max-width: 900px) {
+    body {
+      align-items: flex-start;
+    }
+
+    .scene { padding: 14px; }
+    .map-topbar, .map-topbar__aside { flex-direction: column; align-items: stretch; }
+    .field-layout { position: absolute; inset: 16px; }
+    .field-grid-shell { inset: 0; }
+    .field-stage { min-height: 560px; }
+  }
+</style>
+</head>
+<body>
+  <div class="scene">
+    <div class="map-shell">
+      <div class="map-workspace">
+        <div class="map-canvas">
+          <div class="field-stage" id="fieldStage">
+            <div class="field-stage__viewport" id="fieldViewport">
+              <div class="field-layout">
+                <div class="field-grid-shell" id="fieldGridShell">
+                  <div class="field-grid" id="fieldGrid" aria-label="현재 토지 격자 지도"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+__FIELD_MAP_300_MAP_RUNTIME__
+</script>
+<script>
+  const {
+    GRID_COLS,
+    GRID_ROWS,
+    CELL_TYPES,
+    clampTreeAge,
+    createDefaultSelectedPixelPreview,
+    createSelectedPixelPreview,
+    formatOrchardSummary,
+    createTreeArtElement,
+    createPlacedFacilityArtElement,
+    normalizeInstallableFacilities,
+    createInitialMapData,
+    createGridCellViewModels,
+    createPlacementGhostLayout,
+    collectPlacedFacilityOverlays,
+    DEFAULT_ZOOM,
+    MIN_ZOOM,
+    MAX_ZOOM,
+    ZOOM_SENSITIVITY,
+    clampPanPosition,
+    createViewportRenderState,
+    createZoomState,
+    createDragState,
+    canPlaceFacilityAt: runtimeCanPlaceFacilityAt,
+    placeFacilityAt: runtimePlaceFacilityAt,
+  } = window.FieldMap300MapRuntime;
+
+  const fieldGrid = document.getElementById('fieldGrid');
+  const fieldGridShell = document.getElementById('fieldGridShell');
+  const facilityOverlayLayer = document.createElement('div');
+  facilityOverlayLayer.className = 'facility-overlay-layer';
+  facilityOverlayLayer.setAttribute('aria-hidden', 'true');
+  fieldGridShell?.appendChild(facilityOverlayLayer);
+  const placementOverlay = document.createElement('div');
+  placementOverlay.className = 'placement-overlay';
+  placementOverlay.setAttribute('aria-hidden', 'true');
+  fieldGridShell?.appendChild(placementOverlay);
+  const orchardTreeSummary = document.getElementById('orchardTreeSummary');
+  const FACILITY_IMAGE_URLS = __FACILITY_IMAGE_URLS__;
+  let currentMapData = null;
+  let selectedCellElement = null;
+  let selectedCellCoords = null;
+  let selectedFacilityKey = null;
+  let facilityInstanceSeed = 1;
+
+  const INSTALLABLE_FACILITIES = normalizeInstallableFacilities(__INSTALLABLE_FACILITIES__);
+
+  const INSTALLABLE_BY_KEY = Object.fromEntries(INSTALLABLE_FACILITIES.map((facility) => [facility.key, facility]));
+
+  const makeGridData = () => createInitialMapData();
+
+  const updateOrchardSummary = (data) => {
+    const treeCount = data?.treePositions?.length ?? 0;
+    if (orchardTreeSummary) orchardTreeSummary.textContent = formatOrchardSummary(treeCount);
+  };
+
+  const postSelectedPixelPreview = (payload) => {
+    window.parent?.postMessage({
+      type: 'fieldMap300:selectedPixel',
+      selectedPixel: payload,
+    }, '*');
+  };
+
+  const clearSelectedCell = () => {
+    selectedCellElement?.classList.remove('grid-cell--selected');
+    selectedCellElement = null;
+    selectedCellCoords = null;
+    postSelectedPixelPreview(createDefaultSelectedPixelPreview());
+  };
+
+  const updateSelectedPreview = (x, y, cellElement) => {
+    const preview = createSelectedPixelPreview({
+      mapData: currentMapData,
+      x,
+      y,
+      installableByKey: INSTALLABLE_BY_KEY,
+    });
+    postSelectedPixelPreview(preview);
+    selectedCellElement?.classList.remove('grid-cell--selected');
+    cellElement?.classList.add('grid-cell--selected');
+    selectedCellElement = cellElement ?? null;
+    selectedCellCoords = cellElement ? { x, y } : null;
+  };
+
+  const clearPlacementGhost = () => {
+    if (!placementOverlay) return;
+    placementOverlay.style.display = 'none';
+    placementOverlay.classList.remove('is-invalid');
+  };
+
+  const canPlaceFacilityAt = (startX, startY, facility) => runtimeCanPlaceFacilityAt({
+    mapData: currentMapData,
+    startX,
+    startY,
+    facility,
+  });
+
+  const updatePlacementGhost = (startX, startY) => {
+    clearPlacementGhost();
+    const facility = INSTALLABLE_BY_KEY[selectedFacilityKey];
+    if (!facility || !fieldGrid) return;
+    const isValid = canPlaceFacilityAt(startX, startY, facility);
+    const cellSize = fieldGrid.clientWidth / GRID_COLS;
+    const layout = createPlacementGhostLayout({
+      startX,
+      startY,
+      facility,
+      cellSize,
+      gridOffsetLeft: fieldGrid.offsetLeft,
+      gridOffsetTop: fieldGrid.offsetTop,
+    });
+    placementOverlay.style.display = 'block';
+    placementOverlay.style.left = `${layout.left}px`;
+    placementOverlay.style.top = `${layout.top}px`;
+    placementOverlay.style.width = `${layout.width}px`;
+    placementOverlay.style.height = `${layout.height}px`;
+    placementOverlay.classList.toggle('is-invalid', !isValid);
+  };
+
+  const placeFacilityAt = (startX, startY) => {
+    const facility = INSTALLABLE_BY_KEY[selectedFacilityKey];
+    const result = runtimePlaceFacilityAt({
+      mapData: currentMapData,
+      startX,
+      startY,
+      facility,
+      facilityInstanceSeed,
+    });
+    if (!result?.placed) return false;
+    currentMapData = result.mapData;
+    facilityInstanceSeed = result.facilityInstanceSeed;
+    return true;
+  };
+
+  const renderPlacedFacilityOverlays = () => {
+    if (!facilityOverlayLayer || !fieldGrid || !currentMapData) return;
+    facilityOverlayLayer.replaceChildren();
+    const cellSize = fieldGrid.clientWidth / GRID_COLS;
+    if (!cellSize || !Number.isFinite(cellSize)) return;
+    const fragment = document.createDocumentFragment();
+    const overlays = collectPlacedFacilityOverlays({
+      mapData: currentMapData,
+      installableByKey: INSTALLABLE_BY_KEY,
+      gridOffsetLeft: fieldGrid.offsetLeft,
+      gridOffsetTop: fieldGrid.offsetTop,
+      cellSize,
+    });
+    overlays.forEach(({ facility, toneClass, left, top, width, height }) => {
+      const overlay = document.createElement('div');
+      overlay.className = `placed-facility-overlay ${toneClass}`;
+      overlay.style.left = `${left}px`;
+      overlay.style.top = `${top}px`;
+      overlay.style.width = `${width}px`;
+      overlay.style.height = `${height}px`;
+      const art = createPlacedFacilityArtElement({ facility, facilityImageUrls: FACILITY_IMAGE_URLS });
+      if (art) overlay.appendChild(art);
+      fragment.appendChild(overlay);
+    });
+
+    facilityOverlayLayer.appendChild(fragment);
+  };
+
+  const renderGrid = () => {
+    if (!fieldGrid) return;
+    if (!currentMapData) currentMapData = makeGridData();
+    const data = currentMapData;
+    const fragment = document.createDocumentFragment();
+    const gridCells = createGridCellViewModels(data);
+    gridCells.forEach((cellView) => {
+        const cell = document.createElement('div');
+        cell.className = cellView.className;
+        cell.title = cellView.title;
+        cell.dataset.x = String(cellView.x + 1);
+        cell.dataset.y = String(cellView.y + 1);
+        cell.dataset.type = cellView.type;
+        if (cellView.type === CELL_TYPES.TREE) {
+          cell.dataset.treeAge = String(clampTreeAge(cellView.treeAge));
+          cell.appendChild(createTreeArtElement());
+        }
+        cell.addEventListener('mouseenter', () => {
+          if (!selectedFacilityKey) return;
+          updatePlacementGhost(cellView.x, cellView.y);
+        });
+        cell.addEventListener('click', () => {
+          if (selectedFacilityKey && placeFacilityAt(cellView.x, cellView.y)) {
+            clearPlacementGhost();
+            renderGrid();
+            const placedCell = fieldGrid.children[(cellView.y * GRID_COLS) + cellView.x];
+            updateSelectedPreview(cellView.x, cellView.y, placedCell);
+            return;
+          }
+          if (selectedCellCoords?.x === cellView.x && selectedCellCoords?.y === cellView.y) {
+            clearSelectedCell();
+            return;
+          }
+          updateSelectedPreview(cellView.x, cellView.y, cell);
+        });
+        fragment.appendChild(cell);
+    });
+    fieldGrid.replaceChildren(fragment);
+    updateOrchardSummary(data);
+    renderPlacedFacilityOverlays();
+    clearSelectedCell();
+  };
+
+  const layoutGrid = () => {
+    if (!fieldGrid || !fieldStage) return;
+    const stageInnerWidth = Math.max(0, fieldStage.clientWidth - 52);
+    const stageInnerHeight = Math.max(0, fieldStage.clientHeight - 52);
+    const fitCellSize = Math.floor(Math.min(stageInnerWidth / GRID_COLS, stageInnerHeight / GRID_ROWS));
+    const safeCellSize = Math.max(1, fitCellSize);
+    fieldGrid.style.setProperty('--grid-cell-size', `${safeCellSize}px`);
+    fieldGrid.style.width = `${safeCellSize * GRID_COLS}px`;
+    fieldGrid.style.height = `${safeCellSize * GRID_ROWS}px`;
+    renderPlacedFacilityOverlays();
+  };
+
+  window.addEventListener('message', (event) => {
+    const payload = event?.data;
+    if (!payload || payload.type !== 'fieldMap300:setSelectedFacility') return;
+    const nextKey = String(payload.facilityKey || '').trim();
+    selectedFacilityKey = nextKey && INSTALLABLE_BY_KEY[nextKey] ? nextKey : null;
+    clearPlacementGhost();
+  });
+
+  const fieldViewport = document.getElementById('fieldViewport');
+  const fieldStage = document.getElementById('fieldStage');
+  let zoom = DEFAULT_ZOOM;
+  let panX = 0;
+  let panY = 0;
+  let isDragging = false;
+  let dragStartX = 0;
+  let dragStartY = 0;
+  let dragOriginX = 0;
+  let dragOriginY = 0;
+  let renderFrame = 0;
+
+  const clampPan = () => {
+    const clamped = clampPanPosition({
+      panX,
+      panY,
+      gridWidth: fieldGrid?.offsetWidth || 0,
+      gridHeight: fieldGrid?.offsetHeight || 0,
+      zoom,
+      stageWidth: fieldStage?.clientWidth || 0,
+      stageHeight: fieldStage?.clientHeight || 0,
+    });
+    panX = clamped.panX;
+    panY = clamped.panY;
+  };
+
+  const applyZoomRender = () => {
+    renderFrame = 0;
+    clampPan();
+    const renderState = createViewportRenderState({ zoom, panX, panY, isDragging });
+    if (fieldGridShell) {
+      fieldGridShell.style.transform = renderState.shellTransform;
+    }
+    if (fieldViewport) {
+      fieldViewport.style.transform = renderState.viewportTransform;
+    }
+    if (fieldStage) fieldStage.style.cursor = renderState.cursor;
+  };
+
+  const renderZoom = () => {
+    if (renderFrame) return;
+    renderFrame = window.requestAnimationFrame(applyZoomRender);
+  };
+
+  const setZoom = (nextZoom, anchorClientX = null, anchorClientY = null) => {
+    const nextState = createZoomState({
+      nextZoom,
+      currentZoom: zoom,
+      panX,
+      panY,
+      anchorClientX,
+      anchorClientY,
+      stageRect: fieldStage ? fieldStage.getBoundingClientRect() : null,
+      gridWidth: fieldGrid?.offsetWidth || 0,
+      gridHeight: fieldGrid?.offsetHeight || 0,
+      stageWidth: fieldStage?.clientWidth || 0,
+      stageHeight: fieldStage?.clientHeight || 0,
+    });
+    if (Math.abs(nextState.zoom - zoom) < 0.0001) return;
+    zoom = nextState.zoom;
+    panX = nextState.panX;
+    panY = nextState.panY;
+    renderZoom();
+  };
+
+  const startDrag = (clientX, clientY) => {
+    if (zoom <= MIN_ZOOM) return;
+    isDragging = true;
+    dragStartX = clientX;
+    dragStartY = clientY;
+    dragOriginX = panX;
+    dragOriginY = panY;
+    renderZoom();
+  };
+
+  const updateDrag = (clientX, clientY) => {
+    if (!isDragging) return;
+    const dragState = createDragState({
+      dragOriginX,
+      dragOriginY,
+      dragStartX,
+      dragStartY,
+      clientX,
+      clientY,
+      gridWidth: fieldGrid?.offsetWidth || 0,
+      gridHeight: fieldGrid?.offsetHeight || 0,
+      zoom,
+      stageWidth: fieldStage?.clientWidth || 0,
+      stageHeight: fieldStage?.clientHeight || 0,
+    });
+    panX = dragState.panX;
+    panY = dragState.panY;
+    renderZoom();
+  };
+
+  const endDrag = () => {
+    if (!isDragging) return;
+    isDragging = false;
+    renderZoom();
+  };
+
+  renderGrid();
+  layoutGrid();
+
+  fieldStage?.addEventListener('wheel', (event) => {
+    event.preventDefault();
+    const nextZoom = zoom * Math.exp(-event.deltaY * ZOOM_SENSITIVITY);
+    setZoom(nextZoom, event.clientX, event.clientY);
+  }, { passive: false });
+  fieldStage?.addEventListener('mousedown', (event) => {
+    event.preventDefault();
+    startDrag(event.clientX, event.clientY);
+  });
+  fieldStage?.addEventListener('mouseleave', () => {
+    clearPlacementGhost();
+  });
+  window.addEventListener('mousemove', (event) => {
+    updateDrag(event.clientX, event.clientY);
+  });
+  window.addEventListener('mouseup', () => {
+    endDrag();
+  });
+  fieldStage?.addEventListener('touchstart', (event) => {
+    const touch = event.touches?.[0];
+    if (!touch) return;
+    startDrag(touch.clientX, touch.clientY);
+  }, { passive: true });
+  window.addEventListener('touchmove', (event) => {
+    const touch = event.touches?.[0];
+    if (!touch) return;
+    updateDrag(touch.clientX, touch.clientY);
+  }, { passive: true });
+  window.addEventListener('touchend', () => {
+    endDrag();
+  });
+  window.addEventListener('resize', () => {
+    layoutGrid();
+    clampPan();
+    renderZoom();
+  });
+  renderZoom();
+</script>
+</body>
+</html>
+

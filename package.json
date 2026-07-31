@@ -1,0 +1,29 @@
+{
+  "name": "apple-orchard-sim",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "check:encoding": "node scripts/check-encoding.mjs",
+    "dev": "npm run dev:wsl",
+    "dev:win": "npm run check:encoding && node scripts/vite-safe.mjs dev --host 0.0.0.0 --port 5173 --strictPort",
+    "dev:wsl": "npm run check:encoding && node scripts/vite-safe.mjs dev --host 0.0.0.0 --port 5173 --strictPort",
+    "build": "npm run check:encoding && node scripts/vite-safe.mjs build",
+    "preview": "node scripts/vite-safe.mjs preview --host 0.0.0.0 --port 5173 --strictPort",
+    "preview:win": "node scripts/vite-safe.mjs preview --host 0.0.0.0 --port 5173 --strictPort",
+    "preview:wsl": "node scripts/vite-safe.mjs preview --host 0.0.0.0 --port 5173 --strictPort",
+    "hooks:install": "git config core.hooksPath .githooks",
+    "hooks:uninstall": "git config --unset core.hooksPath",
+    "auto-commit:once": "powershell -ExecutionPolicy Bypass -File scripts/auto-commit.ps1 -Once",
+    "auto-commit:5m": "powershell -ExecutionPolicy Bypass -File scripts/auto-commit.ps1 -IntervalSec 300",
+    "auto-backup:once": "powershell -ExecutionPolicy Bypass -File scripts/auto-backup.ps1 -Once",
+    "auto-backup:5m": "powershell -ExecutionPolicy Bypass -File scripts/auto-backup.ps1 -IntervalSec 300"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "vite": "^5.4.10"
+  }
+}

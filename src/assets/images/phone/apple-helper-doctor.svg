@@ -1,0 +1,47 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="40" y1="24" x2="216" y2="232" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F4FFF1"/>
+      <stop offset="1" stop-color="#D8F2D3"/>
+    </linearGradient>
+    <linearGradient id="appleBody" x1="84" y1="60" x2="176" y2="192" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF7D7D"/>
+      <stop offset="1" stop-color="#D93B49"/>
+    </linearGradient>
+    <linearGradient id="leaf" x1="136" y1="40" x2="184" y2="84" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9AE46A"/>
+      <stop offset="1" stop-color="#4E9D36"/>
+    </linearGradient>
+  </defs>
+  <circle cx="128" cy="128" r="120" fill="url(#bg)"/>
+  <circle cx="128" cy="128" r="120" fill="#FFFFFF" fill-opacity="0.16"/>
+  <path d="M130 44C130 35.1634 137.163 28 146 28H154C154 40.1503 144.15 50 132 50H130V44Z" fill="#7A4A24"/>
+  <path d="M141.149 44.8698C155.585 40.0075 171.886 47.7749 176.749 62.2106C162.312 67.0729 146.011 59.3055 141.149 44.8698Z" fill="url(#leaf)"/>
+  <path d="M128 63C157.271 63 181 86.2812 181 115C181 144.307 160.703 195 128 195C95.2968 195 75 144.307 75 115C75 86.2812 98.7289 63 128 63Z" fill="url(#appleBody)"/>
+  <path d="M128 63C138.378 63 146.792 71.4147 146.792 81.792C146.792 92.1694 138.378 100.584 128 100.584C117.623 100.584 109.208 92.1694 109.208 81.792C109.208 71.4147 117.623 63 128 63Z" fill="#EA5562" fill-opacity="0.42"/>
+  <circle cx="109" cy="122" r="12" stroke="#5E7FAE" stroke-width="6" fill="#F8FCFF"/>
+  <circle cx="147" cy="122" r="12" stroke="#5E7FAE" stroke-width="6" fill="#F8FCFF"/>
+  <path d="M121 122H135" stroke="#5E7FAE" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="109" cy="122" r="4.5" fill="#283246"/>
+  <circle cx="147" cy="122" r="4.5" fill="#283246"/>
+  <circle cx="111" cy="120" r="1.4" fill="white"/>
+  <circle cx="149" cy="120" r="1.4" fill="white"/>
+  <path d="M116 146C122.217 152.186 133.783 152.186 140 146" stroke="#283246" stroke-width="6" stroke-linecap="round"/>
+  <path d="M102 101C107.158 95.9473 115.256 95.9473 120.414 101" stroke="#283246" stroke-width="5" stroke-linecap="round"/>
+  <path d="M135.586 101C140.744 95.9473 148.842 95.9473 154 101" stroke="#283246" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="92" cy="92" r="18" fill="#FFFFFF" fill-opacity="0.2"/>
+  <path d="M190 169C190 181.703 179.703 192 167 192C154.297 192 144 181.703 144 169C144 156.297 154.297 146 167 146C179.703 146 190 156.297 190 169Z" fill="#F7F7F2"/>
+  <path d="M167 153V185" stroke="#58AF52" stroke-width="7" stroke-linecap="round"/>
+  <path d="M151 169H183" stroke="#58AF52" stroke-width="7" stroke-linecap="round"/>
+  <path d="M57 198C57 184.745 67.7452 174 81 174H175C188.255 174 199 184.745 199 198V204C199 211.732 192.732 218 185 218H71C63.268 218 57 211.732 57 204V198Z" fill="#E8F2E4"/>
+  <path d="M88 174H168V186C168 191.523 163.523 196 158 196H98C92.4772 196 88 191.523 88 186V174Z" fill="#FDFCF7"/>
+  <path d="M100 174V196" stroke="#D9D7CE" stroke-width="4"/>
+  <path d="M156 174V196" stroke="#D9D7CE" stroke-width="4"/>
+  <path d="M81 174C81 165.716 87.7157 159 96 159H160C168.284 159 175 165.716 175 174H81Z" fill="#FFFFFF"/>
+  <path d="M110 159L128 182L146 159" stroke="#DCEBFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M104 163C104 174.046 112.954 183 124 183V187C110.745 187 100 176.255 100 163" stroke="#7A9BC5" stroke-width="5" stroke-linecap="round"/>
+  <path d="M152 163C152 174.046 143.046 183 132 183V187C145.255 187 156 176.255 156 163" stroke="#7A9BC5" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="100" cy="163" r="7" fill="#F7FBFF" stroke="#7A9BC5" stroke-width="4"/>
+  <circle cx="156" cy="163" r="7" fill="#F7FBFF" stroke="#7A9BC5" stroke-width="4"/>
+  <circle cx="156" cy="163" r="3.2" fill="#59B56A"/>
+</svg>

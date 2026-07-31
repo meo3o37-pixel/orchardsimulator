@@ -1,0 +1,9 @@
+import CURRENT_FIELD_MAP_300_TEMPLATE_HTML from '../../data/animationLabCurrentFieldMap300.html?raw';
+import { FIELD_MAP_300_FACILITY_IMAGE_URLS } from './facilityImageAssets';
+import { FIELD_MAP_300_INSTALLABLE_FACILITIES } from './installableFacilities';
+import FIELD_MAP_300_MAP_RUNTIME_JS from './fieldMap300MapRuntime.js?raw';
+
+export const ANIMATION_LAB_CURRENT_FIELD_MAP_300_HTML = CURRENT_FIELD_MAP_300_TEMPLATE_HTML
+  .replace('__FIELD_MAP_300_MAP_RUNTIME__', FIELD_MAP_300_MAP_RUNTIME_JS)
+  .replace('__FACILITY_IMAGE_URLS__', JSON.stringify(FIELD_MAP_300_FACILITY_IMAGE_URLS))
+  .replace('__INSTALLABLE_FACILITIES__', JSON.stringify(FIELD_MAP_300_INSTALLABLE_FACILITIES));

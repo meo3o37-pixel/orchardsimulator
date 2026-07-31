@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>App Long Press Preview</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(255, 229, 180, 0.18), transparent 42%),
+        linear-gradient(180deg, #182233 0%, #0f141d 100%);
+      color: #f8f5ee;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      padding: 18px;
+    }
+
+    .preview-shell {
+      width: min(960px, 100%);
+      display: grid;
+      gap: 18px;
+    }
+
+    .preview-title {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .preview-desc {
+      margin: 6px 0 0;
+      color: rgba(248, 245, 238, 0.72);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .phone-stage {
+      padding: 24px;
+      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.05);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(18px);
+      display: grid;
+      gap: 24px;
+    }
+
+    .icon-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .app-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #ff6b6b, #ffb347);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+    }
+
+    .panel-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .demo-panel {
+      min-height: 164px;
+      border-radius: 24px;
+      padding: 18px 18px 16px;
+      background: linear-gradient(180deg, rgba(255, 252, 246, 0.96), rgba(244, 236, 219, 0.92));
+      color: #1b4a39;
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.16);
+      cursor: grab;
+      user-select: none;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .demo-panel::after {
+      content: "";
+      position: absolute;
+      inset: auto -20% -40% auto;
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(64, 132, 96, 0.12), transparent 70%);
+    }
+
+    .demo-panel__eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(27, 74, 57, 0.68);
+      margin-bottom: 8px;
+    }
+
+    .demo-panel__title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .demo-panel__text {
+      font-size: 14px;
+      line-height: 1.55;
+      color: rgba(27, 74, 57, 0.8);
+    }
+
+    .demo-panel__bar {
+      margin-top: 14px;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(55, 103, 82, 0.16);
+      overflow: hidden;
+    }
+
+    .demo-panel__bar span {
+      display: block;
+      width: 62%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #3b8b5f, #79b67f);
+    }
+
+    .demo-panel--control .demo-panel__bar span {
+      width: 78%;
+      background: linear-gradient(90deg, #4b8ed7, #87c4f1);
+    }
+
+    .long-press {
+      touch-action: manipulation;
+    }
+
+    .long-press.is-pressed {
+      animation: appWiggle 0.35s infinite;
+      transform: scale(1.04);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+      filter: saturate(1.04);
+    }
+
+    .long-press.is-dragging {
+      animation: appWiggle 0.35s infinite;
+      transform: scale(1.08);
+      box-shadow: 0 16px 30px rgba(0, 0, 0, 0.28);
+      filter: saturate(1.08);
+      cursor: grabbing;
+    }
+
+    @keyframes appWiggle {
+      0%   { transform: scale(1.08) rotate(0deg); }
+      25%  { transform: scale(1.08) rotate(-3deg); }
+      50%  { transform: scale(1.08) rotate(3deg); }
+      75%  { transform: scale(1.08) rotate(-2deg); }
+      100% { transform: scale(1.08) rotate(0deg); }
+    }
+
+    @media (max-width: 720px) {
+      .panel-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="preview-shell">
+    <div>
+      <h1 class="preview-title">앱 아이콘 / 패널 꾹누름 테스트</h1>
+      <p class="preview-desc">아이콘과 커스터마이즈 패널, 제어판 패널을 꾹 누르거나 드래그하면 실제 게임에 넣은 것처럼 커지고 흔들리는지 확인하는 프리셋입니다.</p>
+    </div>
+
+    <div class="phone-stage">
+      <div class="icon-row">
+        <div class="app-icon long-press" draggable="true" aria-label="사과 앱 아이콘">🍎</div>
+        <div class="app-icon long-press" draggable="true" aria-label="설정 앱 아이콘" style="background: linear-gradient(135deg, #79a7ff, #c0d4ff);">⚙</div>
+        <div class="app-icon long-press" draggable="true" aria-label="농장 앱 아이콘" style="background: linear-gradient(135deg, #4caf72, #c7e67e);">🌱</div>
+      </div>
+
+      <div class="panel-row">
+        <div class="demo-panel long-press" draggable="true" aria-label="커스터마이즈 패널 예시">
+          <div class="demo-panel__eyebrow">커스터마이즈 패널</div>
+          <div class="demo-panel__title">외부인력 노동력</div>
+          <div class="demo-panel__text">길게 누른 뒤 이동시키면 패널이 살짝 커지면서 좌우로 흔들립니다.</div>
+          <div class="demo-panel__bar"><span></span></div>
+        </div>
+
+        <div class="demo-panel demo-panel--control long-press" draggable="true" aria-label="제어판 패널 예시">
+          <div class="demo-panel__eyebrow">제어판 패널</div>
+          <div class="demo-panel__title">관정 패널</div>
+          <div class="demo-panel__text">제어 카드도 같은 꾹누름 반응으로 보이는지 실험할 수 있습니다.</div>
+          <div class="demo-panel__bar"><span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const targets = Array.from(document.querySelectorAll('.long-press'));
+
+      const clearState = (el) => {
+        el.classList.remove('is-pressed');
+        el.classList.remove('is-dragging');
+      };
+
+      targets.forEach((el) => {
+        let pressTimer = null;
+
+        const startPress = () => {
+          clearTimeout(pressTimer);
+          pressTimer = setTimeout(() => {
+            el.classList.add('is-pressed');
+          }, 160);
+        };
+
+        const endPress = () => {
+          clearTimeout(pressTimer);
+          if (!el.classList.contains('is-dragging')) {
+            el.classList.remove('is-pressed');
+          }
+        };
+
+        el.addEventListener('pointerdown', startPress);
+        el.addEventListener('pointerup', endPress);
+        el.addEventListener('pointercancel', endPress);
+        el.addEventListener('pointerleave', endPress);
+        el.addEventListener('dragstart', () => {
+          clearTimeout(pressTimer);
+          el.classList.remove('is-pressed');
+          el.classList.add('is-dragging');
+        });
+        el.addEventListener('dragend', () => {
+          clearState(el);
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

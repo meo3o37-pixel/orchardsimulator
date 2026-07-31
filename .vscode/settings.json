@@ -1,0 +1,28 @@
+{
+  "files.encoding": "utf8",
+  "files.autoGuessEncoding": false,
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "[powershell]": {
+    "files.encoding": "utf8"
+  },
+  "terminal.integrated.profiles.windows": {
+    "PowerShell (NoProfile)": {
+      "source": "PowerShell",
+      "args": [
+        "-NoProfile"
+      ]
+    }
+  },
+  "terminal.integrated.defaultProfile.windows": "PowerShell (NoProfile)",
+  "terminal.integrated.env.windows": {
+    "LANG": "ko_KR.UTF-8",
+    "PYTHONUTF8": "1",
+    "PYTHONIOENCODING": "utf-8"
+  },
+  "terminal.integrated.env.linux": {
+    "LANG": "ko_KR.UTF-8",
+    "LC_ALL": "ko_KR.UTF-8"
+  }
+}

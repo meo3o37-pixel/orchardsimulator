@@ -1,0 +1,45 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="28" y1="20" x2="224" y2="232" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F2F7FF"/>
+      <stop offset="1" stop-color="#D8E5FF"/>
+    </linearGradient>
+    <linearGradient id="head" x1="88" y1="52" x2="174" y2="168" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8AA7FF"/>
+      <stop offset="1" stop-color="#5B73D9"/>
+    </linearGradient>
+    <linearGradient id="suit" x1="82" y1="148" x2="180" y2="220" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#26385F"/>
+      <stop offset="1" stop-color="#18243D"/>
+    </linearGradient>
+    <linearGradient id="graph" x1="164" y1="146" x2="204" y2="184" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8DF0B5"/>
+      <stop offset="1" stop-color="#3FA56C"/>
+    </linearGradient>
+  </defs>
+  <circle cx="128" cy="128" r="120" fill="url(#bg)"/>
+  <circle cx="128" cy="128" r="120" fill="#FFFFFF" fill-opacity="0.14"/>
+  <circle cx="128" cy="106" r="50" fill="url(#head)"/>
+  <circle cx="109" cy="101" r="8" fill="#1F2940"/>
+  <circle cx="147" cy="101" r="8" fill="#1F2940"/>
+  <circle cx="112" cy="98" r="2.4" fill="white"/>
+  <circle cx="150" cy="98" r="2.4" fill="white"/>
+  <path d="M116 124C121.747 129.401 134.253 129.401 140 124" stroke="#1F2940" stroke-width="6" stroke-linecap="round"/>
+  <path d="M98 82C104.362 77.1505 113.638 77.1505 120 82" stroke="#1F2940" stroke-width="5" stroke-linecap="round"/>
+  <path d="M136 82C142.362 77.1505 151.638 77.1505 158 82" stroke="#1F2940" stroke-width="5" stroke-linecap="round"/>
+  <path d="M75 202C75 175.49 96.4903 154 123 154H133C159.51 154 181 175.49 181 202V208C181 215.732 174.732 222 167 222H89C81.268 222 75 215.732 75 208V202Z" fill="url(#suit)"/>
+  <path d="M99 154H157L146 221H110L99 154Z" fill="#F7FBFF"/>
+  <path d="M122 154H134L141 176L128 191L115 176L122 154Z" fill="#75A7FF"/>
+  <path d="M109 176L128 191L98 222H82C78.134 222 75 218.866 75 215V202C75 191.644 78.2861 182.055 83.877 174.223L109 176Z" fill="#1E2C49"/>
+  <path d="M147 176L128 191L158 222H174C177.866 222 181 218.866 181 215V202C181 191.644 177.714 182.055 172.123 174.223L147 176Z" fill="#1E2C49"/>
+  <rect x="162" y="142" width="48" height="40" rx="12" fill="#FFFFFF" fill-opacity="0.94"/>
+  <path d="M172 172L182 160L190 166L201 152" stroke="url(#graph)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="172" cy="172" r="4" fill="#4BAA72"/>
+  <circle cx="182" cy="160" r="4" fill="#4BAA72"/>
+  <circle cx="190" cy="166" r="4" fill="#4BAA72"/>
+  <circle cx="201" cy="152" r="4" fill="#4BAA72"/>
+  <path d="M161 188C161 180.82 166.82 175 174 175H198C205.18 175 211 180.82 211 188V190C211 194.418 207.418 198 203 198H169C164.582 198 161 194.418 161 190V188Z" fill="#EEF4FF"/>
+  <path d="M65 70C65 61.7157 71.7157 55 80 55H102C110.284 55 117 61.7157 117 70V84C117 92.2843 110.284 99 102 99H80C71.7157 99 65 92.2843 65 84V70Z" fill="#FFFFFF" fill-opacity="0.8"/>
+  <rect x="78" y="68" width="8" height="18" rx="4" fill="#6A88E8"/>
+  <rect x="90" y="62" width="8" height="24" rx="4" fill="#7F9DFF"/>
+</svg>

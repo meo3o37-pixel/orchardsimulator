@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CSS 적과가위 사과 꼭지 제거</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --work-time: 1700ms;
+      --work-loops: 6;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #f4f1df;
+      font-family: sans-serif;
+    }
+
+    .wrap {
+      display: grid;
+      gap: 24px;
+      justify-items: center;
+    }
+
+    .apple-job {
+      position: relative;
+      width: 520px;
+      height: 260px;
+      overflow: hidden;
+      --apple-x: calc(50% - 44px);
+      --apple-y: 78px;
+      --shears-start-x: -620px;
+      --shears-ready-x: -12px;
+      --shears-cut-x: 8px;
+      --shears-exit-x: -620px;
+    }
+
+    .apple {
+      position: absolute;
+      left: var(--apple-x);
+      top: var(--apple-y);
+      width: 88px;
+      height: 92px;
+      background: radial-gradient(circle at 30% 25%, #ff7478, #eb3038 58%, #b91d25);
+      border-radius: 48% 52% 56% 44% / 55% 55% 45% 45%;
+      box-shadow:
+        inset -10px -13px 0 rgba(120, 0, 0, 0.18),
+        8px 12px 0 rgba(0, 0, 0, 0.08);
+      z-index: 3;
+    }
+
+    .stem {
+      position: absolute;
+      left: 41px;
+      top: -17px;
+      width: 11px;
+      height: 28px;
+      background: linear-gradient(#7b4a22, #3f2411);
+      border-radius: 10px;
+      transform-origin: bottom center;
+      z-index: 5;
+    }
+
+    .leaf {
+      position: absolute;
+      left: 51px;
+      top: -16px;
+      width: 28px;
+      height: 15px;
+      background: linear-gradient(135deg, #83cf4f, #2f8f32);
+      border-radius: 100% 0 100% 0;
+      transform: rotate(-18deg);
+      transform-origin: left bottom;
+      z-index: 4;
+    }
+
+    .apple-shine {
+      position: absolute;
+      left: 21px;
+      top: 20px;
+      width: 17px;
+      height: 26px;
+      background: rgba(255, 255, 255, 0.35);
+      border-radius: 50%;
+      transform: rotate(25deg);
+    }
+
+    .shears-wrap {
+      position: absolute;
+      left: 0;
+      top: 43px;
+      width: 270px;
+      height: 155px;
+      z-index: 20;
+      pointer-events: none;
+      user-select: none;
+      transform: translateX(var(--shears-start-x)) translateY(18px) rotate(-10deg);
+      transform-origin: 260px 80px;
+      filter: drop-shadow(8px 12px 0 rgba(0, 0, 0, 0.13));
+    }
+
+    .css-shears {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 760px;
+      height: 430px;
+      transform: scale(0.34);
+      transform-origin: 0 0;
+    }
+
+    .shears-shadow {
+      position: absolute;
+      left: 145px;
+      top: 290px;
+      width: 430px;
+      height: 48px;
+      background: rgba(0, 0, 0, 0.12);
+      border-radius: 50%;
+      filter: blur(18px);
+      transform: rotate(-13deg);
+      z-index: 0;
+    }
+
+    .shears-tail-ring {
+      position: absolute;
+      left: 53px;
+      top: 170px;
+      width: 44px;
+      height: 72px;
+      border: 7px solid #cfcfcf;
+      border-right-color: #5e5e5e;
+      border-bottom-color: #8c8c8c;
+      border-radius: 50%;
+      transform: rotate(17deg);
+      z-index: 1;
+      box-shadow:
+        inset 4px 2px 0 rgba(255, 255, 255, 0.65),
+        3px 4px 0 rgba(0, 0, 0, 0.2);
+    }
+
+    .shears-tail-ring::after {
+      content: "";
+      position: absolute;
+      left: 8px;
+      top: 9px;
+      width: 17px;
+      height: 43px;
+      border: 4px solid rgba(0, 0, 0, 0.18);
+      border-radius: 50%;
+    }
+
+    .shears-handle {
+      position: absolute;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.42), transparent 23%),
+        linear-gradient(180deg, #ff2e25 0%, #e31817 45%, #9e090b 100%);
+      box-shadow:
+        inset 0 -8px 0 rgba(87, 0, 0, 0.32),
+        inset 0 5px 0 rgba(255, 255, 255, 0.2),
+        0 7px 0 rgba(65, 0, 0, 0.35);
+      z-index: 3;
+    }
+
+    .shears-top-handle {
+      left: 70px;
+      top: 137px;
+      width: 410px;
+      height: 67px;
+      border-radius: 34px 28px 20px 34px;
+      transform-origin: 88% 50%;
+      clip-path: polygon(
+        0% 48%,
+        4% 22%,
+        12% 15%,
+        78% 13%,
+        87% 8%,
+        96% 0%,
+        100% 20%,
+        98% 48%,
+        91% 68%,
+        17% 81%,
+        5% 78%,
+        0% 62%
+      );
+    }
+
+    .shears-top-handle .shears-ridges {
+      position: absolute;
+      left: 86px;
+      top: 10px;
+      width: 268px;
+      height: 26px;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          rgba(95, 0, 0, 0.58) 0 5px,
+          rgba(255, 255, 255, 0.26) 5px 8px,
+          transparent 8px 14px
+        );
+      border-radius: 18px;
+      transform: skewX(-9deg);
+      opacity: 0.85;
+    }
+
+    .shears-top-handle .shears-shine {
+      position: absolute;
+      left: 24px;
+      top: 13px;
+      width: 300px;
+      height: 13px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.05));
+      border-radius: 50%;
+      transform: rotate(-2deg);
+    }
+
+    .shears-bottom-handle {
+      left: 145px;
+      top: 139px;
+      width: 335px;
+      height: 73px;
+      transform-origin: 100% 50%;
+      transform: rotate(-50deg);
+      border-radius: 42px 20px 24px 42px;
+      clip-path: polygon(
+        0% 43%,
+        5% 20%,
+        14% 10%,
+        83% 4%,
+        99% 18%,
+        100% 50%,
+        91% 75%,
+        16% 95%,
+        5% 85%,
+        0% 65%
+      );
+      z-index: 4;
+    }
+
+    .shears-bottom-handle .shears-ridges {
+      position: absolute;
+      left: 84px;
+      top: 35px;
+      width: 205px;
+      height: 25px;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          rgba(80, 0, 0, 0.56) 0 5px,
+          rgba(255, 255, 255, 0.2) 5px 8px,
+          transparent 8px 15px
+        );
+      border-radius: 18px;
+      transform: skewX(-10deg);
+      opacity: 0.85;
+    }
+
+    .shears-bottom-handle .shears-shine {
+      position: absolute;
+      left: 39px;
+      top: 13px;
+      width: 245px;
+      height: 14px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.05));
+      border-radius: 50%;
+      transform: rotate(-4deg);
+    }
+
+    .shears-bottom-handle .shears-end-hole {
+      position: absolute;
+      left: 18px;
+      top: 42px;
+      width: 44px;
+      height: 20px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.35), transparent 35%),
+        linear-gradient(#b90d0e, #760406);
+      box-shadow:
+        inset 0 4px 0 rgba(255, 255, 255, 0.12),
+        inset 0 -4px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    .shears-red-joint-top {
+      position: absolute;
+      left: 392px;
+      top: 119px;
+      width: 96px;
+      height: 79px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.35), transparent 26%),
+        linear-gradient(135deg, #ff2d25, #b2080b 70%);
+      clip-path: polygon(4% 37%, 34% 16%, 55% 0%, 89% 20%, 100% 52%, 78% 82%, 29% 88%, 0% 66%);
+      border-radius: 18px;
+      z-index: 4;
+      box-shadow:
+        inset 0 -7px 0 rgba(80, 0, 0, 0.24),
+        0 5px 0 rgba(0, 0, 0, 0.18);
+    }
+
+    .shears-red-joint-bottom {
+      position: absolute;
+      left: 409px;
+      top: 202px;
+      width: 92px;
+      height: 70px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.3), transparent 28%),
+        linear-gradient(135deg, #ff3027, #b7080b 72%);
+      clip-path: polygon(5% 34%, 42% 5%, 91% 4%, 100% 48%, 75% 88%, 22% 100%, 0% 70%);
+      border-radius: 18px;
+      transform: rotate(-10deg);
+      transform-origin: 70% 10%;
+      z-index: 5;
+      box-shadow:
+        inset 0 -8px 0 rgba(80, 0, 0, 0.24),
+        0 5px 0 rgba(0, 0, 0, 0.18);
+    }
+
+    .shears-head {
+      position: absolute;
+      left: 402px;
+      top: 128px;
+      width: 142px;
+      height: 112px;
+      background: linear-gradient(135deg, #303030 0%, #090909 55%, #1d1d1d 100%);
+      clip-path: polygon(
+        4% 47%,
+        19% 19%,
+        44% 26%,
+        64% 3%,
+        92% 20%,
+        98% 55%,
+        83% 85%,
+        48% 92%,
+        21% 76%
+      );
+      border-radius: 18px;
+      z-index: 5;
+      box-shadow:
+        inset 5px 5px 0 rgba(255, 255, 255, 0.12),
+        inset -7px -8px 0 rgba(0, 0, 0, 0.4);
+    }
+
+    .shears-head::after {
+      content: "";
+      position: absolute;
+      left: 20px;
+      top: 18px;
+      width: 88px;
+      height: 22px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 50%;
+      transform: rotate(17deg);
+    }
+
+    .shears-spring {
+      position: absolute;
+      left: 359px;
+      top: 188px;
+      width: 112px;
+      height: 35px;
+      border-radius: 24px;
+      transform: rotate(67deg);
+      transform-origin: center;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          #f1f1f1 0 7px,
+          #555 7px 10px,
+          #222 10px 13px,
+          #d7d7d7 13px 18px
+        );
+      box-shadow:
+        inset 0 5px 0 rgba(255, 255, 255, 0.55),
+        inset 0 -6px 0 rgba(0, 0, 0, 0.28),
+        0 4px 0 rgba(0, 0, 0, 0.2);
+      z-index: 7;
+    }
+
+    .shears-spring::before,
+    .shears-spring::after {
+      content: "";
+      position: absolute;
+      top: 11px;
+      width: 17px;
+      height: 11px;
+      background: linear-gradient(#dedede, #595959);
+      border-radius: 50%;
+    }
+
+    .shears-spring::before {
+      left: -9px;
+    }
+
+    .shears-spring::after {
+      right: -9px;
+    }
+
+    .shears-blade {
+      position: absolute;
+      transform-origin: 0% 50%;
+      background:
+        linear-gradient(160deg, rgba(255, 255, 255, 0.24), transparent 25%),
+        linear-gradient(180deg, #2b2b2b 0%, #060606 55%, #1c1c1c 100%);
+      box-shadow:
+        inset 0 4px 0 rgba(255, 255, 255, 0.12),
+        inset 0 -5px 0 rgba(0, 0, 0, 0.45),
+        8px 9px 0 rgba(0, 0, 0, 0.18);
+      z-index: 6;
+    }
+
+    .shears-top-blade {
+      left: 456px;
+      top: 123px;
+      width: 266px;
+      height: 70px;
+      transform: rotate(-38deg);
+      clip-path: polygon(
+        0% 50%,
+        96% 0%,
+        100% 8%,
+        43% 78%,
+        25% 100%,
+        0% 72%
+      );
+    }
+
+    .shears-top-blade::before {
+      content: "";
+      position: absolute;
+      left: 58px;
+      top: 22px;
+      width: 180px;
+      height: 5px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+      border-radius: 999px;
+      transform: rotate(-5deg);
+    }
+
+    .shears-top-blade::after {
+      content: "";
+      position: absolute;
+      left: 108px;
+      top: 41px;
+      width: 90px;
+      height: 24px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.06));
+      clip-path: polygon(0 0, 100% 0, 74% 100%, 0 100%);
+      opacity: 0.9;
+    }
+
+    .shears-bottom-blade {
+      left: 462px;
+      top: 170px;
+      width: 310px;
+      height: 58px;
+      transform: rotate(-2deg);
+      clip-path: polygon(
+        0% 25%,
+        98% 0%,
+        100% 14%,
+        16% 100%,
+        0% 73%
+      );
+    }
+
+    .shears-bottom-blade::before {
+      content: "";
+      position: absolute;
+      left: 62px;
+      top: 20px;
+      width: 220px;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+      border-radius: 999px;
+      transform: rotate(-3deg);
+    }
+
+    .shears-inner-cut {
+      position: absolute;
+      left: 458px;
+      top: 160px;
+      width: 136px;
+      height: 48px;
+      background: linear-gradient(135deg, #0d0d0d, #333 45%, #050505);
+      clip-path: polygon(0 18%, 100% 0, 68% 100%, 8% 74%);
+      border-radius: 8px;
+      z-index: 8;
+      box-shadow: inset 4px 4px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .shears-pivot {
+      position: absolute;
+      left: 425px;
+      top: 142px;
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 50% 50%, #101010 0 48%, transparent 50%),
+        linear-gradient(145deg, #3b3b3b, #050505);
+      z-index: 12;
+      box-shadow:
+        inset 5px 5px 0 rgba(255, 255, 255, 0.12),
+        inset -8px -8px 0 rgba(0, 0, 0, 0.6),
+        0 5px 0 rgba(0, 0, 0, 0.32);
+    }
+
+    .shears-pivot::before {
+      content: "";
+      position: absolute;
+      left: 17px;
+      top: 17px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 38% 32%, #ffffff 0 17%, transparent 18%),
+        radial-gradient(circle at 50% 50%, #f7f7f7 0 30%, #9d9d9d 31% 58%, #414141 59% 100%);
+      box-shadow:
+        inset 0 -3px 0 rgba(0, 0, 0, 0.25),
+        0 2px 0 rgba(0, 0, 0, 0.28);
+    }
+
+    .shears-pivot::after {
+      content: "";
+      position: absolute;
+      left: 24px;
+      top: 32px;
+      width: 22px;
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.36);
+      transform: rotate(-18deg);
+    }
+
+    .stem-fall {
+      position: absolute;
+      left: calc(var(--apple-x) + 41px);
+      top: 80px;
+      width: 11px;
+      height: 26px;
+      background: linear-gradient(#7b4a22, #3f2411);
+      border-radius: 10px;
+      opacity: 0;
+      z-index: 8;
+    }
+
+    .particles span {
+      position: absolute;
+      left: calc(var(--apple-x) + 41px);
+      top: 72px;
+      width: 6px;
+      height: 6px;
+      background: #ffd35a;
+      border-radius: 50%;
+      opacity: 0;
+      z-index: 30;
+    }
+
+    .apple-job.is-working .shears-wrap {
+      animation: shearsMove var(--work-time) ease-in-out var(--work-loops) forwards;
+    }
+
+    .apple-job.is-working .shears-top-blade {
+      animation: topBladeCut var(--work-time) ease-in-out var(--work-loops) forwards;
+    }
+
+    .apple-job.is-working .shears-bottom-blade {
+      animation: bottomBladeCut var(--work-time) ease-in-out var(--work-loops) forwards;
+    }
+
+    .apple-job.is-working .shears-bottom-handle {
+      animation: bottomHandlePress var(--work-time) ease-in-out var(--work-loops) forwards;
+    }
+
+    .apple-job.is-working .shears-red-joint-bottom {
+      animation: bottomJointPress var(--work-time) ease-in-out var(--work-loops) forwards;
+    }
+
+    .apple-job.is-working .shears-spring {
+      animation: springPress var(--work-time) ease-in-out var(--work-loops) forwards;
+    }
+
+    .apple-job.is-working .stem {
+      animation: stemRemove var(--work-time) ease-in-out var(--work-loops) forwards;
+    }
+
+    .apple-job.is-working .apple {
+      animation: appleCycle var(--work-time) ease-in-out var(--work-loops) forwards;
+    }
+
+    .apple-job.is-working .leaf {
+      animation: leafRemove var(--work-time) ease-in-out var(--work-loops) forwards;
+    }
+
+    .apple-job.is-working .stem-fall {
+      animation: stemFall var(--work-time) ease-in-out var(--work-loops) forwards;
+    }
+
+    .apple-job.is-working .particles span:nth-child(1) {
+      animation: particleA var(--work-time) ease-in-out var(--work-loops) forwards;
+    }
+
+    .apple-job.is-working .particles span:nth-child(2) {
+      animation: particleB var(--work-time) ease-in-out var(--work-loops) forwards;
+    }
+
+    .apple-job.is-working .particles span:nth-child(3) {
+      animation: particleC var(--work-time) ease-in-out var(--work-loops) forwards;
+    }
+
+    .apple-job.is-done .stem,
+    .apple-job.is-done .leaf,
+    .apple-job.is-done .apple {
+      display: none;
+    }
+
+    button {
+      padding: 12px 22px;
+      border: 0;
+      border-radius: 12px;
+      background: #5b8f2f;
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 5px 0 #3f6421;
+    }
+
+    button:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #3f6421;
+    }
+
+    button:disabled {
+      background: #999;
+      box-shadow: 0 5px 0 #666;
+      cursor: default;
+    }
+
+    @keyframes shearsMove {
+      0% {
+        transform: translateX(var(--shears-start-x)) translateY(18px) rotate(-10deg);
+      }
+
+      36% {
+        transform: translateX(var(--shears-ready-x)) translateY(0) rotate(-10deg);
+      }
+
+      54% {
+        transform: translateX(55px) translateY(-6px) rotate(-5deg);
+      }
+
+      63% {
+        transform: translateX(var(--shears-cut-x)) translateY(-6px) rotate(-14deg) scale(0.985);
+      }
+
+      74% {
+        transform: translateX(48px) translateY(-1px) rotate(-9deg);
+      }
+
+      100% {
+        transform: translateX(var(--shears-exit-x)) translateY(18px) rotate(-10deg);
+      }
+    }
+
+    @keyframes topBladeCut {
+      0%, 56% {
+        transform: rotate(-38deg);
+      }
+
+      61% {
+        transform: rotate(-43deg);
+      }
+
+      67% {
+        transform: rotate(-25deg);
+      }
+
+      76%, 100% {
+        transform: rotate(-38deg);
+      }
+    }
+
+    @keyframes bottomBladeCut {
+      0%, 56% {
+        transform: rotate(-2deg);
+      }
+
+      61% {
+        transform: rotate(2deg);
+      }
+
+      67% {
+        transform: rotate(-14deg);
+      }
+
+      76%, 100% {
+        transform: rotate(-2deg);
+      }
+    }
+
+    @keyframes bottomHandlePress {
+      0%, 56% {
+        transform: rotate(-50deg);
+      }
+
+      61% {
+        transform: rotate(-54deg);
+      }
+
+      67% {
+        transform: rotate(-37deg);
+      }
+
+      76%, 100% {
+        transform: rotate(-50deg);
+      }
+    }
+
+    @keyframes bottomJointPress {
+      0%, 56% {
+        transform: rotate(-10deg);
+      }
+
+      67% {
+        transform: rotate(-2deg) translateY(-5px);
+      }
+
+      76%, 100% {
+        transform: rotate(-10deg);
+      }
+    }
+
+    @keyframes springPress {
+      0%, 56% {
+        transform: rotate(67deg) scaleX(1);
+      }
+
+      67% {
+        transform: rotate(67deg) scaleX(0.66);
+      }
+
+      76%, 100% {
+        transform: rotate(67deg) scaleX(1);
+      }
+    }
+
+    @keyframes stemRemove {
+      0%, 61% {
+        transform: rotate(0deg) translateY(0);
+        opacity: 1;
+      }
+
+      66% {
+        transform: rotate(-24deg) translateY(-2px);
+        opacity: 1;
+      }
+
+      73% {
+        transform: rotate(38deg) translateY(-8px);
+        opacity: 0;
+      }
+
+      100% {
+        transform: rotate(38deg) translateY(-8px);
+        opacity: 0;
+      }
+    }
+
+    @keyframes appleCycle {
+      0% {
+        transform: translateY(-180px) rotate(-12deg) scale(0.94);
+        opacity: 0;
+      }
+
+      16% {
+        transform: translateY(-36px) rotate(-6deg) scale(0.98);
+        opacity: 1;
+      }
+
+      24% {
+        transform: translateY(14px) rotate(5deg) scale(1);
+        opacity: 1;
+      }
+
+      32%, 61% {
+        transform: translateY(0) rotate(0deg) scale(1);
+        opacity: 1;
+      }
+
+      72% {
+        transform: translateY(10px) rotate(6deg) scale(0.995);
+        opacity: 1;
+      }
+
+      88% {
+        transform: translateY(96px) rotate(14deg) scale(0.98);
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(190px) rotate(20deg) scale(0.96);
+        opacity: 0;
+      }
+    }
+
+    @keyframes leafRemove {
+      0%, 61% {
+        transform: rotate(-18deg);
+        opacity: 1;
+      }
+
+      66% {
+        transform: rotate(-38deg);
+        opacity: 1;
+      }
+
+      75% {
+        transform: rotate(12deg);
+        opacity: 0;
+      }
+
+      100% {
+        opacity: 0;
+      }
+    }
+
+    @keyframes stemFall {
+      0%, 68% {
+        opacity: 0;
+        transform: translate(0, 0) rotate(0deg);
+      }
+
+      74% {
+        opacity: 1;
+        transform: translate(0, 0) rotate(20deg);
+      }
+
+      88% {
+        opacity: 1;
+        transform: translate(24px, 56px) rotate(180deg);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translate(36px, 76px) rotate(260deg);
+      }
+    }
+
+    @keyframes particleA {
+      0%, 66% {
+        opacity: 0;
+        transform: translate(0, 0) scale(0.5);
+      }
+
+      72% {
+        opacity: 1;
+        transform: translate(-18px, -12px) scale(1);
+      }
+
+      90%, 100% {
+        opacity: 0;
+        transform: translate(-30px, -24px) scale(0.2);
+      }
+    }
+
+    @keyframes particleB {
+      0%, 66% {
+        opacity: 0;
+        transform: translate(0, 0) scale(0.5);
+      }
+
+      72% {
+        opacity: 1;
+        transform: translate(14px, -16px) scale(1);
+      }
+
+      90%, 100% {
+        opacity: 0;
+        transform: translate(25px, -30px) scale(0.2);
+      }
+    }
+
+    @keyframes particleC {
+      0%, 66% {
+        opacity: 0;
+        transform: translate(0, 0) scale(0.5);
+      }
+
+      72% {
+        opacity: 1;
+        transform: translate(4px, 14px) scale(1);
+      }
+
+      90%, 100% {
+        opacity: 0;
+        transform: translate(10px, 28px) scale(0.2);
+      }
+    }
+
+    @media (max-width: 560px) {
+      .apple-job {
+        transform: scale(0.82);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="apple-job" id="appleJob">
+      <div class="shears-wrap">
+        <div class="css-shears">
+          <div class="shears-shadow"></div>
+          <div class="shears-tail-ring"></div>
+
+          <div class="shears-handle shears-top-handle">
+            <span class="shears-ridges"></span>
+            <span class="shears-shine"></span>
+          </div>
+
+          <div class="shears-handle shears-bottom-handle">
+            <span class="shears-ridges"></span>
+            <span class="shears-shine"></span>
+            <span class="shears-end-hole"></span>
+          </div>
+
+          <div class="shears-red-joint-top"></div>
+          <div class="shears-red-joint-bottom"></div>
+          <div class="shears-spring"></div>
+          <div class="shears-head"></div>
+          <div class="shears-blade shears-top-blade"></div>
+          <div class="shears-blade shears-bottom-blade"></div>
+          <div class="shears-inner-cut"></div>
+          <div class="shears-pivot"></div>
+        </div>
+      </div>
+
+      <div class="apple">
+        <div class="stem"></div>
+        <div class="leaf"></div>
+        <div class="apple-shine"></div>
+      </div>
+
+      <div class="stem-fall"></div>
+
+      <div class="particles">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const appleJob = document.getElementById("appleJob");
+    const WORK_TIME_MS = 1700;
+    const WORK_LOOPS = 6;
+
+    const startWork = () => {
+      appleJob.classList.remove("is-working", "is-done");
+      void appleJob.offsetWidth;
+      appleJob.classList.add("is-working");
+
+      setTimeout(() => {
+        appleJob.classList.remove("is-working");
+        appleJob.classList.add("is-done");
+      }, WORK_TIME_MS * WORK_LOOPS);
+    };
+
+    startWork();
+  </script>
+</body>
+</html>

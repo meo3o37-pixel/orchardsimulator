@@ -1,0 +1,2177 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>사과 선별기</title>
+
+<style>
+body {
+  margin: 0;
+  height: 100vh;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  --metal-edge: #26333a;
+  --metal-dark: #31424a;
+  --metal-mid: #4d6671;
+  --metal-light: #718894;
+  --metal-panel: linear-gradient(180deg, var(--metal-light) 0%, var(--metal-mid) 48%, var(--metal-dark) 100%);
+  --metal-panel-soft: linear-gradient(180deg, #6d848f 0%, #58707b 46%, #3c4f58 100%);
+  --metal-shadow:
+    inset 0 8px 10px rgba(255,255,255,.1),
+    inset 0 -10px 14px rgba(0,0,0,.2),
+    0 10px 18px rgba(0,0,0,.18);
+  background:
+    linear-gradient(#d9f0cf, #c6e6b8);
+  font-family: sans-serif;
+}
+
+.sorter {
+  position: relative;
+  width: 960px;
+  height: 360px;
+  display: grid;
+  place-items: center;
+}
+
+.sorter-controls {
+  position: absolute;
+  left: 50%;
+  top: -8px;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sorter-run-button {
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 22px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff9ef;
+  background:
+    linear-gradient(180deg, #4f8d5f 0%, #3d724a 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    0 10px 18px rgba(35, 66, 43, .18);
+  cursor: pointer;
+}
+
+.sorter-run-button[disabled] {
+  cursor: default;
+  opacity: .7;
+}
+
+.sorter-run-status {
+  min-width: 84px;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(42, 58, 44, .86);
+  text-align: center;
+}
+
+.sorter-progress-panel {
+  position: absolute;
+  left: 330px;
+  top: 338px;
+  width: 486px;
+  z-index: 20;
+  padding: 10px 14px 12px;
+  border: 1px solid rgba(40, 84, 63, 0.18);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(253, 255, 250, 0.98), rgba(244, 250, 241, 0.95));
+  box-shadow: 0 14px 30px rgba(29, 67, 47, 0.08);
+}
+
+.sorter-progress-panel__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  color: rgba(50, 74, 57, 0.84);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.sorter-progress {
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(40, 84, 63, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.24),
+    inset 0 -1px 2px rgba(16, 45, 32, .08);
+}
+
+.sorter-progress__fill {
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, #ffb357 0%, #f07d25 38%, #6bbc5d 72%, #418b4f 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.22),
+    0 0 12px rgba(120, 176, 97, .14);
+  transition: width .12s linear;
+}
+
+.machine {
+  position: relative;
+  width: 860px;
+  height: 230px;
+}
+
+.intake {
+  position: absolute;
+  left: -84px;
+  top: 98px;
+  width: 156px;
+  height: 120px;
+  z-index: 6;
+  filter: drop-shadow(0 18px 22px rgba(34, 54, 62, .22));
+}
+
+.intake__throat {
+  position: absolute;
+  left: 46px;
+  top: 0;
+  width: 40px;
+  height: 22px;
+  --intake-apple-scale-x: 0.415;
+  --intake-apple-scale-y: 0.239;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      #2f2f31 0 8px,
+      #444447 8px 16px,
+      #353538 16px 24px
+    ),
+    linear-gradient(90deg, rgba(255,255,255,.04), rgba(255,255,255,0) 24%, rgba(0,0,0,.22));
+  background-size: 100% 24px, 100% 100%;
+  animation: intakeVerticalBeltMove 1.15s linear infinite;
+  border: 4px solid #2c3337;
+  border-radius: 12px 12px 14px 14px;
+  box-shadow:
+    inset 0 2px 3px rgba(255,255,255,.06),
+    inset 0 -6px 8px rgba(0,0,0,.22);
+  overflow: hidden;
+}
+
+.intake__throat-apples {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.intake__throat .intake-apple {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 10px);
+  margin-left: 0;
+  transform-origin: 50% 50%;
+  animation: intakeAppleRise 1.15s linear infinite;
+}
+
+.intake__throat .intake-apple--2 {
+  animation-delay: 0s;
+}
+
+.intake__throat .intake-apple--3 {
+  animation-delay: -.57s;
+}
+
+.intake__lift {
+  position: absolute;
+  left: 43px;
+  top: 18px;
+  width: 46px;
+  height: 92px;
+  --intake-lift-scale-x: 0.6803;
+  --intake-lift-scale-y: 0.8;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.intake__lift-apples {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.intake__lift .intake-apple {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 16px);
+  margin-left: 0;
+  transform-origin: 50% 50%;
+  opacity: 0;
+}
+
+.intake__lift .intake-apple--2 {
+  animation-delay: -.38s;
+}
+
+.intake__lift .intake-apple--3 {
+  animation-delay: -.76s;
+}
+
+.intake__lift .intake-apple--4 {
+  animation-delay: -1.14s;
+}
+
+.intake__lift .intake-apple--5 {
+  animation-delay: -1.52s;
+}
+
+.intake__lift .intake-apple--6 {
+  animation-delay: -1.9s;
+}
+
+.intake__chamber {
+  position: absolute;
+  left: 28px;
+  top: 16px;
+  width: 76px;
+  height: 50px;
+  --intake-feed-scale-x: 0.577;
+  --intake-feed-scale-y: 0.602;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,0) 28%, rgba(0,0,0,.16) 100%),
+    linear-gradient(180deg, #6a828d 0%, #526771 52%, #40535c 100%);
+  border: 4px solid var(--metal-edge);
+  border-radius: 18px;
+  box-shadow:
+    inset 0 8px 10px rgba(255,255,255,.08),
+    inset 0 -10px 12px rgba(0,0,0,.18),
+    0 8px 14px rgba(0,0,0,.14);
+  overflow: hidden;
+}
+
+.intake__chamber::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 10px;
+  bottom: 10px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      #2f2f31 0 8px,
+      #444447 8px 16px,
+      #353538 16px 24px
+    ),
+    linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0) 24%, rgba(0,0,0,.22));
+  background-size: 24px 100%, 100% 100%;
+  animation: intakeBeltMove 0.68s linear infinite;
+  border: 3px solid #2c3337;
+  border-radius: 10px;
+  box-shadow:
+    inset 0 2px 3px rgba(255,255,255,.06),
+    inset 0 -4px 6px rgba(0,0,0,.2);
+}
+
+.intake__chamber::after {
+  content: "";
+  position: absolute;
+  left: -8px;
+  right: -8px;
+  bottom: -8px;
+  height: 16px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,0) 32%, rgba(0,0,0,.14) 100%),
+    linear-gradient(180deg, #617884 0%, #455963 100%);
+  border: 4px solid var(--metal-edge);
+  border-radius: 12px;
+  z-index: -1;
+}
+
+.intake__chamber-apples {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 10px;
+  bottom: 10px;
+  overflow: hidden;
+  border-radius: 10px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.intake__chamber-apple {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 34px;
+  height: 34px;
+  margin-top: -17px;
+  margin-left: -17px;
+  transform-origin: 50% 50%;
+  opacity: 0;
+}
+
+.intake__chamber-apple--2 {
+  animation-delay: -.36s;
+}
+
+.intake__chamber-apple--3 {
+  animation-delay: -.72s;
+}
+
+.intake__chamber-apple--4 {
+  animation-delay: -1.08s;
+}
+
+.intake__chamber-apple--5 {
+  animation-delay: -1.44s;
+}
+
+.intake__chamber-apple--6 {
+  animation-delay: -1.8s;
+}
+
+.intake__support {
+  position: absolute;
+  left: 44px;
+  top: 60px;
+  width: 44px;
+  height: 22px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,0) 28%, rgba(0,0,0,.16) 100%),
+    linear-gradient(180deg, #617985 0%, #485d67 100%);
+  border: 4px solid var(--metal-edge);
+  border-radius: 12px;
+  box-shadow:
+    inset 0 4px 6px rgba(255,255,255,.08),
+    inset 0 -6px 8px rgba(0,0,0,.14);
+}
+
+.intake__support::before,
+.intake__support::after {
+  content: "";
+  position: absolute;
+  top: 18px;
+  width: 12px;
+  height: 24px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,0) 26%, rgba(0,0,0,.16) 100%),
+    linear-gradient(180deg, #647c87 0%, #465a63 100%);
+  border-radius: 10px 10px 8px 8px;
+  box-shadow:
+    inset 0 4px 6px rgba(255,255,255,.08),
+    inset 0 -6px 8px rgba(0,0,0,.12);
+}
+
+.intake__support::before {
+  left: 2px;
+}
+
+.intake__support::after {
+  right: 2px;
+}
+
+.intake__base {
+  position: absolute;
+  left: 4px;
+  bottom: 0;
+  width: 128px;
+  height: 34px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,0) 36%, rgba(0,0,0,.18) 100%),
+    linear-gradient(180deg, #627a85 0%, #455b66 100%);
+  border: 4px solid var(--metal-edge);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 8px 10px rgba(255,255,255,.08),
+    inset 0 -10px 12px rgba(0,0,0,.2),
+    0 10px 16px rgba(0,0,0,.14);
+}
+
+.intake__base::before {
+  content: "";
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.04));
+}
+
+.sorter-apple-crate {
+  position: absolute;
+  left: -18px;
+  top: 198px;
+  width: 154px;
+  height: 118px;
+  z-index: 1;
+  filter: drop-shadow(0 16px 18px rgba(66, 52, 16, .18));
+}
+
+.sorter-apple-crate__viewport {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+
+.sorter-apple-crate__shadow {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 118px;
+  height: 18px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: radial-gradient(ellipse at center, rgba(116, 72, 10, .34) 0%, rgba(116, 72, 10, .14) 56%, rgba(116, 72, 10, 0) 78%);
+}
+
+.sorter-apple-crate .apple-crate-preview {
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  width: 470px;
+  height: 350px;
+  transform: translateX(-50%) scale(.31);
+  transform-origin: 50% 100%;
+  overflow: visible;
+  --crate-scale: 1;
+  --crate-bg-top: #ffad1f;
+  --crate-bg-mid: #ff9500;
+  --crate-bg-bot: #f27c00;
+  --crate-rib: rgba(230, 110, 0, 0.95);
+  --crate-mesh: rgba(255, 188, 80, 0.9);
+  --crate-inner-top: #ff9c10;
+  --crate-inner-bottom: #ff9300;
+  --crate-top-cap: rgba(255, 190, 80, 0.95);
+  --crate-top-hole: rgba(255, 255, 255, 0.95);
+  --crate-side-frame-a: #f48a00;
+  --crate-side-frame-b: #ffad1f;
+}
+
+.sorter-apple-crate .apple-crate-preview__model {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 460px;
+  height: 340px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: linear-gradient(to bottom, var(--crate-bg-top) 0%, var(--crate-bg-mid) 55%, var(--crate-bg-bot) 100%);
+  box-shadow:
+    inset 0 10px 10px rgba(255,255,255,0.18),
+    inset 0 -8px 12px rgba(0,0,0,0.08),
+    0 12px 25px rgba(0,0,0,0.18);
+}
+
+.sorter-apple-crate .apple-crate-preview__top-cap {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 16px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--crate-top-cap);
+  box-shadow: inset 0 -6px 8px rgba(0,0,0,0.08);
+  z-index: 5;
+}
+
+.sorter-apple-crate .apple-crate-preview__inner-top {
+  position: absolute;
+  left: 28px;
+  right: 28px;
+  top: 26px;
+  height: 62px;
+  border-radius: 10px 10px 18px 18px;
+  background: linear-gradient(to bottom, var(--crate-inner-top), var(--crate-inner-bottom));
+  box-shadow: inset 0 -8px 8px rgba(0, 0, 0, 0.08);
+  z-index: 5;
+}
+
+.sorter-apple-crate .apple-crate-preview__load {
+  position: absolute;
+  left: 30px;
+  right: 30px;
+  top: 34px;
+  height: 108px;
+  overflow: visible;
+  border-radius: 12px 12px 22px 22px;
+  z-index: 1;
+  background: linear-gradient(180deg, rgba(255, 184, 74, 0.1) 0%, rgba(145, 54, 8, 0.1) 100%);
+  box-shadow:
+    inset 0 -16px 18px rgba(128, 48, 8, 0.18),
+    inset 0 10px 10px rgba(255, 214, 164, 0.08);
+}
+
+.sorter-apple-crate .apple-crate-preview__load::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  right: -8px;
+  bottom: -6px;
+  height: 72px;
+  border-radius: 40px 40px 14px 14px;
+  background:
+    radial-gradient(circle at 20px 22px, #ffd4c6 0%, #ff9b7a 24%, #ef643b 48%, #cf351f 72%, #99170f 100%) 0 0 / 44px 44px repeat-x,
+    radial-gradient(circle at 22px 24px, rgba(255, 244, 229, 0.58) 0 4px, transparent 5px) 0 0 / 44px 44px repeat-x;
+  opacity: 0.98;
+}
+
+.sorter-apple-crate .apple-crate-preview__load::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 18px;
+  height: 48px;
+  border-radius: 999px;
+  background: rgba(120, 34, 8, 0.12);
+  filter: blur(8px);
+}
+
+.sorter-apple-crate .apple-crate-preview__inner-fill-clip {
+  position: absolute;
+  left: 32px;
+  right: 32px;
+  top: 118px;
+  height: 124px;
+  overflow: hidden;
+  border-radius: 14px 14px 20px 20px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.sorter-apple-crate .apple-crate-preview__inner-fill {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 100%;
+  pointer-events: none;
+}
+
+.sorter-apple-crate .apple-crate-preview__inner-fill::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 10px;
+  height: 86px;
+  border-radius: 26px 26px 14px 14px;
+  background:
+    radial-gradient(circle at 22px 22px, #ffd4c6 0%, #ff9b7a 24%, #ef643b 48%, #cf351f 72%, #99170f 100%) 0 0 / 42px 42px repeat,
+    radial-gradient(circle at 18px 16px, rgba(255, 242, 230, 0.35) 0 4px, transparent 5px) 0 0 / 42px 42px repeat;
+  opacity: 0.48;
+  filter: saturate(0.94) brightness(0.98);
+}
+
+.sorter-apple-crate .apple-crate-preview__inner-fill::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 2px;
+  height: 76px;
+  border-radius: 999px;
+  background: rgba(110, 34, 10, 0.12);
+  filter: blur(10px);
+}
+
+.sorter-apple-crate .apple-crate-preview__apple {
+  position: absolute;
+  width: var(--size);
+  height: var(--size);
+  left: var(--x);
+  top: var(--y);
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #ffe1d6 0%, #ffab8d 18%, #f86c46 42%, #d54025 68%, #a61e12 100%);
+  box-shadow:
+    inset -7px -8px 0 rgba(123, 25, 15, 0.16),
+    0 10px 14px rgba(126, 38, 12, 0.18);
+}
+
+.sorter-apple-crate .apple-crate-preview__apple::before {
+  content: "";
+  position: absolute;
+  left: calc(50% - 2px);
+  top: -7px;
+  width: 4px;
+  height: 14px;
+  border-radius: 999px;
+  background: #6e4723;
+  transform: rotate(10deg);
+}
+
+.sorter-apple-crate .apple-crate-preview__apple::after {
+  content: "";
+  position: absolute;
+  left: calc(50% + 1px);
+  top: -6px;
+  width: 14px;
+  height: 8px;
+  border-radius: 10px 2px 10px 2px;
+  background: #6ca33d;
+  transform: rotate(-26deg);
+}
+
+.sorter-apple-crate .apple-crate-preview__apple--a { --size: 48px; --x: 6px; --y: 10px; }
+.sorter-apple-crate .apple-crate-preview__apple--b { --size: 54px; --x: 44px; --y: 4px; }
+.sorter-apple-crate .apple-crate-preview__apple--c { --size: 50px; --x: 88px; --y: 14px; }
+.sorter-apple-crate .apple-crate-preview__apple--d { --size: 58px; --x: 128px; --y: 0px; }
+.sorter-apple-crate .apple-crate-preview__apple--e { --size: 52px; --x: 178px; --y: 12px; }
+.sorter-apple-crate .apple-crate-preview__apple--f { --size: 50px; --x: 220px; --y: 6px; }
+.sorter-apple-crate .apple-crate-preview__apple--g { --size: 56px; --x: 260px; --y: 10px; }
+.sorter-apple-crate .apple-crate-preview__apple--h { --size: 52px; --x: 308px; --y: 2px; }
+.sorter-apple-crate .apple-crate-preview__apple--i { --size: 48px; --x: 352px; --y: 14px; }
+.sorter-apple-crate .apple-crate-preview__apple--j { --size: 54px; --x: 388px; --y: 8px; }
+.sorter-apple-crate .apple-crate-preview__apple--k { --size: 46px; --x: 28px; --y: 36px; }
+.sorter-apple-crate .apple-crate-preview__apple--l { --size: 52px; --x: 76px; --y: 42px; }
+.sorter-apple-crate .apple-crate-preview__apple--m { --size: 48px; --x: 132px; --y: 40px; }
+.sorter-apple-crate .apple-crate-preview__apple--n { --size: 54px; --x: 182px; --y: 44px; }
+.sorter-apple-crate .apple-crate-preview__apple--o { --size: 50px; --x: 236px; --y: 38px; }
+.sorter-apple-crate .apple-crate-preview__apple--p { --size: 54px; --x: 290px; --y: 44px; }
+.sorter-apple-crate .apple-crate-preview__apple--q { --size: 50px; --x: 344px; --y: 38px; }
+
+.sorter-apple-crate .apple-crate-preview__handle {
+  position: absolute;
+  top: 36px;
+  width: 54px;
+  height: 22px;
+  border-radius: 6px;
+  background:
+    radial-gradient(circle at 3px 3px, transparent 2px, var(--crate-top-hole) 2.5px, var(--crate-top-hole) 3.2px, transparent 3.3px);
+  background-size: 10px 10px;
+  opacity: 0.82;
+  z-index: 3;
+}
+
+.sorter-apple-crate .apple-crate-preview__handle--1 { left: 68px; transform: translate(-29px, 0); }
+.sorter-apple-crate .apple-crate-preview__handle--2 { left: 130px; transform: translate(-17px, 0); }
+.sorter-apple-crate .apple-crate-preview__handle--3 { left: 202px; width: 74px; }
+.sorter-apple-crate .apple-crate-preview__handle--4 { right: 130px; transform: translate(23px, 0); }
+.sorter-apple-crate .apple-crate-preview__handle--5 { right: 68px; transform: translate(35px, 0); }
+
+.sorter-apple-crate .apple-crate-preview__bar {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  height: 6px;
+  background: var(--crate-rib);
+  border-radius: 4px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  z-index: 4;
+}
+
+.sorter-apple-crate .apple-crate-preview__bar--1 { top: 96px; }
+.sorter-apple-crate .apple-crate-preview__bar--2 { top: 110px; }
+.sorter-apple-crate .apple-crate-preview__bar--3 { top: 124px; }
+
+.sorter-apple-crate .apple-crate-preview__grid-area {
+  position: absolute;
+  left: 22px;
+  right: 22px;
+  top: 92px;
+  bottom: 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.1fr 1fr 1fr;
+  gap: 8px;
+  z-index: 3;
+}
+
+.sorter-apple-crate .apple-crate-preview__col {
+  position: relative;
+  border-left: 4px solid var(--crate-rib);
+  border-right: 4px solid var(--crate-rib);
+  border-radius: 4px;
+}
+
+.sorter-apple-crate .apple-crate-preview__col::before,
+.sorter-apple-crate .apple-crate-preview__col::after {
+  content: "";
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  height: 4px;
+  background: var(--crate-rib);
+}
+
+.sorter-apple-crate .apple-crate-preview__col::before { top: 72px; }
+.sorter-apple-crate .apple-crate-preview__col::after { bottom: 68px; }
+
+.sorter-apple-crate .apple-crate-preview__mesh {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  top: 48px;
+  bottom: 18px;
+  background:
+    repeating-linear-gradient(45deg, var(--crate-mesh) 0 2px, transparent 2px 8px),
+    repeating-linear-gradient(-45deg, var(--crate-mesh) 0 2px, transparent 2px 8px);
+  opacity: 0.55;
+}
+
+.sorter-apple-crate .apple-crate-preview__vline {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--crate-rib);
+}
+
+.sorter-apple-crate .apple-crate-preview__vline--1 { left: 33%; }
+.sorter-apple-crate .apple-crate-preview__vline--2 { left: 66%; }
+
+.sorter-apple-crate .apple-crate-preview__center-panel {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 94px;
+  width: 78px;
+  height: 128px;
+  background: linear-gradient(to bottom, var(--crate-inner-top), var(--crate-inner-bottom));
+  border: 4px solid var(--crate-rib);
+  border-radius: 4px;
+  z-index: 4;
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.16);
+}
+
+.sorter-apple-crate .apple-crate-preview__bottom-row {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 18px;
+  height: 54px;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  z-index: 4;
+}
+
+.sorter-apple-crate .apple-crate-preview__bottom-cell {
+  position: relative;
+  border: 4px solid var(--crate-rib);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.sorter-apple-crate .apple-crate-preview__bottom-cell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(45deg, var(--crate-mesh) 0 2px, transparent 2px 7px),
+    repeating-linear-gradient(-45deg, var(--crate-mesh) 0 2px, transparent 2px 7px);
+  opacity: 0.65;
+}
+
+.sorter-apple-crate .apple-crate-preview__side-frame {
+  position: absolute;
+  top: 64px;
+  bottom: 14px;
+  width: 18px;
+  border-radius: 8px;
+  background: linear-gradient(to right, var(--crate-side-frame-a), var(--crate-side-frame-b), var(--crate-side-frame-a));
+  z-index: 4;
+}
+
+.sorter-apple-crate .apple-crate-preview__side-frame--left { left: 8px; }
+.sorter-apple-crate .apple-crate-preview__side-frame--right { right: 8px; }
+
+.sorter-apple-crate .apple-crate-preview__corner {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border: 5px solid var(--crate-rib);
+  border-top: none;
+  border-left: none;
+  border-radius: 0 0 10px 0;
+  opacity: 0.65;
+  z-index: 4;
+}
+
+.sorter-apple-crate .apple-crate-preview__corner--1 {
+  left: 8px;
+  bottom: 8px;
+  transform: scaleX(-1);
+}
+
+.sorter-apple-crate .apple-crate-preview__corner--2 {
+  right: 8px;
+  bottom: 8px;
+}
+
+.belt {
+  position: absolute;
+  left: 20px;
+  top: 110px;
+  width: 790px;
+  height: 58px;
+  overflow: visible;
+}
+
+.belt::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01) 30%, rgba(0,0,0,.22) 100%),
+    repeating-linear-gradient(
+      90deg,
+      #2f2f31 0 28px,
+      #444447 28px 56px,
+      #353538 56px 84px
+    );
+  background-size: 100% 100%, 84px 100%;
+  animation: beltSurfaceMove 1.1s linear infinite;
+  border: 8px solid #252525;
+  border-radius: 18px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    inset 0 -10px 14px rgba(0,0,0,.24),
+    0 10px 18px rgba(0,0,0,.16);
+  pointer-events: none;
+}
+
+.belt::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.08), transparent 24%, transparent 76%, rgba(0,0,0,.16));
+  pointer-events: none;
+}
+
+@keyframes beltSurfaceMove {
+  from {
+    background-position: 0 0, 0 0;
+  }
+  to {
+    background-position: 0 0, 84px 0;
+  }
+}
+
+@keyframes beltMove {
+  from {
+    transform: translateX(-120px);
+  }
+  to {
+    transform: translateX(120px);
+  }
+}
+
+@keyframes intakeBeltMove {
+  from {
+    background-position: 0 0, 0 0;
+  }
+  to {
+    background-position: 24px 0, 0 0;
+  }
+}
+
+@keyframes intakeVerticalBeltMove {
+  from {
+    background-position: 0 24px, 0 0;
+  }
+  to {
+    background-position: 0 0, 0 0;
+  }
+}
+
+@keyframes intakeAppleRise {
+  0% {
+    transform: translate(-50%, 44px) rotate(-8deg) scale(var(--intake-apple-scale-x), var(--intake-apple-scale-y));
+  }
+
+  100% {
+    transform: translate(-50%, -26px) rotate(8deg) scale(var(--intake-apple-scale-x), var(--intake-apple-scale-y));
+  }
+}
+
+@keyframes intakeLiftRise {
+  0% {
+    transform: translate(-50%, 28px) rotate(-8deg) scale(var(--intake-lift-scale-x), var(--intake-lift-scale-y));
+  }
+
+  100% {
+    transform: translate(-50%, -118px) rotate(8deg) scale(var(--intake-lift-scale-x), var(--intake-lift-scale-y));
+  }
+}
+
+@keyframes intakeAppleFeed {
+  0% {
+    transform: translate(0, 18px) rotate(-12deg) scale(var(--intake-feed-scale-x), var(--intake-feed-scale-y));
+  }
+
+  34% {
+    transform: translate(0, 0) rotate(-4deg) scale(var(--intake-feed-scale-x), var(--intake-feed-scale-y));
+  }
+
+  100% {
+    transform: translate(28px, 0) rotate(12deg) scale(var(--intake-feed-scale-x), var(--intake-feed-scale-y));
+  }
+}
+
+.apple {
+  position: absolute;
+  top: 10px;
+  width: 34px;
+  height: 34px;
+  opacity: 0;
+  z-index: 4;
+}
+
+.intake__lift .intake-apple.is-running {
+  opacity: 1;
+  animation: intakeLiftRise 0.9s linear 1;
+  animation-delay: 0s !important;
+}
+
+.intake__chamber-apple.is-running {
+  opacity: 1;
+  animation: intakeAppleFeed 0.72s linear 1;
+  animation-delay: 0s !important;
+}
+
+.apple.is-running {
+  opacity: 1;
+  animation: appleMove 4.2s linear 1;
+  animation-delay: 0s !important;
+}
+
+.sort-drop-apple.is-running {
+  opacity: 1;
+  animation: dropToCrate 0.88s ease-in 1;
+  animation-delay: 0s !important;
+}
+
+.intake-apple {
+  width: 34px;
+  height: 34px;
+}
+
+.apple,
+.intake-apple,
+.intake__chamber-apple {
+  background:
+    radial-gradient(
+      circle at 30% 25%,
+      #ffb3a0,
+      #d91f1f 65%,
+      #8f1111
+    );
+  border-radius: 50% 55% 48% 52%;
+}
+
+.apple::before,
+.intake-apple::before,
+.intake__chamber-apple::before {
+  content: "";
+  position: absolute;
+  left: 16px;
+  top: -9px;
+  width: 5px;
+  height: 13px;
+  background: #5a3214;
+  border-radius: 5px;
+  transform: rotate(15deg);
+}
+
+.apple::after,
+.intake-apple::after,
+.intake__chamber-apple::after {
+  content: "";
+  position: absolute;
+  left: 21px;
+  top: -7px;
+  width: 13px;
+  height: 8px;
+  background: #4caf50;
+  border-radius: 50% 0 50% 0;
+  transform: rotate(-20deg);
+}
+
+.a1 {
+  left: -40px;
+  animation-delay: 0s;
+}
+
+.a2 {
+  left: -40px;
+  animation-delay: -0.8s;
+}
+
+.a3 {
+  left: -40px;
+  animation-delay: -1.6s;
+}
+
+.a4 {
+  left: -40px;
+  animation-delay: -2.4s;
+}
+
+.a5 {
+  left: -40px;
+  animation-delay: -3.2s;
+}
+
+.a6 {
+  left: -40px;
+  animation-delay: -4s;
+}
+
+.a7 {
+  left: -40px;
+  animation-delay: -4.8s;
+}
+
+.a8 {
+  left: -40px;
+  animation-delay: -5.6s;
+}
+
+.a9 {
+  left: -40px;
+  animation-delay: -2.0s;
+}
+
+.a10 {
+  left: -40px;
+  animation-delay: -4.4s;
+}
+
+.a11 {
+  left: -40px;
+  animation-delay: -1.2s;
+}
+
+.a12 {
+  left: -40px;
+  animation-delay: -2.8s;
+}
+
+.a13 {
+  left: -40px;
+  animation-delay: -3.6s;
+}
+
+@keyframes appleMove {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(860px);
+  }
+}
+
+.scanner {
+  position: absolute;
+  left: 250px;
+  top: 20px;
+  width: 110px;
+  height: 90px;
+  background: var(--metal-panel);
+  border-radius: 16px 16px 8px 8px;
+  border: 6px solid var(--metal-edge);
+  box-shadow:
+    inset 0 10px 12px rgba(255,255,255,.1),
+    inset 0 -10px 16px rgba(0,0,0,.2),
+    0 10px 16px rgba(0,0,0,.16);
+  z-index: 3;
+}
+
+.scanner::before {
+  content: "";
+  position: absolute;
+  left: 38px;
+  top: 18px;
+  width: 34px;
+  height: 20px;
+  background: linear-gradient(180deg, #89ecff 0%, #63daf4 100%);
+  border-radius: 10px;
+  box-shadow:
+    0 0 18px rgba(114,231,255,.55);
+}
+
+.scanner::after {
+  content: "";
+  position: absolute;
+  left: 44px;
+  top: 80px;
+  width: 22px;
+  height: 70px;
+  background: rgba(0, 200, 255, .18);
+  clip-path: polygon(
+    50% 0,
+    0 100%,
+    100% 100%
+  );
+  animation: scan 1s ease-in-out infinite alternate;
+}
+
+@keyframes scan {
+  from {
+    opacity: .25;
+  }
+
+  to {
+    opacity: .75;
+  }
+}
+
+.intake-tunnel {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 138px;
+  height: 94px;
+  z-index: 2;
+}
+
+.intake-tunnel__body {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 112px;
+  height: 62px;
+  background: var(--metal-panel);
+  border: 5px solid var(--metal-edge);
+  border-radius: 12px 12px 10px 10px;
+  box-shadow: var(--metal-shadow);
+}
+
+.intake-tunnel__hood {
+  position: absolute;
+  left: 10px;
+  top: -26px;
+  width: 88px;
+  height: 34px;
+  background: var(--metal-panel-soft);
+  border: 5px solid var(--metal-edge);
+  border-bottom: none;
+  border-radius: 24px 24px 0 0;
+  box-shadow:
+    inset 0 6px 8px rgba(255,255,255,.08),
+    inset 0 -8px 12px rgba(0,0,0,.14);
+}
+
+.intake-tunnel__belt {
+  position: absolute;
+  left: 22px;
+  bottom: 10px;
+  width: 64px;
+  height: 24px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01) 28%, rgba(0,0,0,.22) 100%),
+    repeating-linear-gradient(
+      90deg,
+      #2f2f31 0 8px,
+      #444447 8px 16px,
+      #353538 16px 24px
+    );
+  background-size: 100% 100%, 24px 100%;
+  animation: intakeBeltMove 1.1s linear infinite;
+  border: 4px solid #2b2d31;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.intake-tunnel__belt span {
+  display: none;
+}
+
+.intake-tunnel__column {
+  position: absolute;
+  right: 18px;
+  top: -18px;
+  width: 18px;
+  height: 88px;
+  background: linear-gradient(180deg, #6d848f 0%, #48606a 100%);
+  border: 5px solid var(--metal-edge);
+  border-radius: 10px;
+  box-shadow:
+    inset 0 6px 8px rgba(255,255,255,.08),
+    inset 0 -8px 12px rgba(0,0,0,.14);
+}
+
+.intake-tunnel__leg {
+  position: absolute;
+  bottom: -12px;
+  width: 10px;
+  height: 14px;
+  background: #2a2c2f;
+  border-radius: 4px;
+}
+
+.intake-tunnel__leg--left {
+  left: 18px;
+}
+
+.intake-tunnel__leg--right {
+  left: 78px;
+}
+
+.intake-tunnel::after {
+  content: "";
+  position: absolute;
+  left: 96px;
+  top: 46px;
+  width: 34px;
+  height: 18px;
+  border-radius: 0 8px 8px 0;
+  background:
+    linear-gradient(180deg, #5f7782 0%, #384b54 100%);
+  box-shadow:
+    0 5px 8px rgba(0,0,0,.12);
+}
+
+.sort-pistons {
+  position: absolute;
+  left: 382px;
+  top: 78px;
+  width: 382px;
+  height: 118px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  pointer-events: none;
+}
+
+.sort-piston-rods {
+  position: absolute;
+  left: 382px;
+  top: 78px;
+  width: 382px;
+  height: 118px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  pointer-events: none;
+}
+
+.sort-piston {
+  position: relative;
+  width: 50px;
+  height: 118px;
+  z-index: 3;
+}
+
+.sort-piston-rod-wrap {
+  position: relative;
+  width: 50px;
+  height: 118px;
+  z-index: 3;
+}
+
+.sort-piston::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 10px;
+  width: 22px;
+  height: 66px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,0) 34%, rgba(0,0,0,.18) 100%),
+    linear-gradient(180deg, #5d7580 0%, #445861 100%);
+  border: 4px solid var(--metal-edge);
+  border-radius: 12px;
+  box-shadow:
+    inset 0 4px 6px rgba(255,255,255,.06),
+    inset 0 -6px 8px rgba(0,0,0,.14);
+  z-index: 1;
+}
+
+.sort-piston::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 76px;
+  width: 30px;
+  height: 16px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,0) 32%, rgba(0,0,0,.22) 100%),
+    linear-gradient(180deg, #50656f 0%, #36464d 100%);
+  border: 4px solid #253239;
+  border-radius: 10px;
+  box-shadow:
+    inset 0 3px 4px rgba(255,255,255,.05),
+    inset 0 -4px 6px rgba(0,0,0,.18);
+  z-index: 2;
+}
+
+.sort-piston__head {
+  position: absolute;
+  left: 6px;
+  top: 0;
+  width: 38px;
+  height: 20px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,0) 38%, rgba(0,0,0,.18) 100%),
+    linear-gradient(180deg, #6c848f 0%, #516872 52%, #3a4c55 100%);
+  border: 4px solid var(--metal-edge);
+  border-radius: 12px;
+  box-shadow:
+    inset 0 4px 6px rgba(255,255,255,.08),
+    inset 0 -6px 8px rgba(0,0,0,.14),
+    0 6px 10px rgba(0,0,0,.12);
+  z-index: 1;
+}
+
+.sort-piston-rods .sort-piston__rod {
+  position: absolute;
+  left: 11px;
+  top: 10px;
+  width: 28px;
+  height: 44px;
+  z-index: 0;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,0) 34%, rgba(0,0,0,.18) 100%) bottom center / 100% 18px no-repeat,
+    linear-gradient(180deg, #647b86 0%, #465961 100%) bottom center / 100% 18px no-repeat,
+    linear-gradient(90deg, rgba(255,255,255,.22), transparent 18%, transparent 82%, rgba(0,0,0,.12)) center 6px / 8px calc(100% - 18px) no-repeat,
+    linear-gradient(90deg, #8ea4af 0%, #d7e2e7 48%, #7b919d 100%) center 0 / 8px calc(100% - 12px) no-repeat;
+  border-radius: 10px;
+  box-shadow:
+    0 2px 4px rgba(0,0,0,.12);
+  transform-origin: top center;
+  transform: translateY(0);
+}
+
+.sort-piston-rods .sort-piston__rod.is-running {
+  animation: pistonPush 0.72s ease-in-out 1;
+  animation-delay: 0s !important;
+}
+
+.sort-piston-rods .sort-piston__rod::before {
+  content: none;
+}
+
+.sort-piston-rods .sort-piston__rod::after {
+  content: none;
+}
+
+.sort-piston-rod-wrap:nth-child(2) .sort-piston__rod {
+  animation-delay: .36s;
+}
+
+.sort-piston-rod-wrap:nth-child(3) .sort-piston__rod {
+  animation-delay: .72s;
+}
+
+@keyframes pistonPush {
+  0%,
+  22%,
+  100% {
+    transform: translateY(0);
+  }
+
+  34%,
+  44% {
+    transform: translateY(24px);
+  }
+
+  58% {
+    transform: translateY(4px);
+  }
+}
+
+@keyframes appleMoveToA {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  76% {
+    transform: translate(432px, 0) rotate(6deg);
+  }
+
+  84% {
+    transform: translate(432px, 18px) rotate(16deg);
+  }
+
+  100% {
+    transform: translate(432px, 132px) rotate(34deg);
+  }
+}
+
+@keyframes appleMoveToB {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  78% {
+    transform: translate(598px, 0) rotate(6deg);
+  }
+
+  86% {
+    transform: translate(598px, 18px) rotate(16deg);
+  }
+
+  100% {
+    transform: translate(598px, 132px) rotate(34deg);
+  }
+}
+
+@keyframes appleMoveToProcessing {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  80% {
+    transform: translate(764px, 0) rotate(6deg);
+  }
+
+  88% {
+    transform: translate(764px, 18px) rotate(16deg);
+  }
+
+  100% {
+    transform: translate(764px, 132px) rotate(34deg);
+  }
+}
+
+@keyframes dropToCrate {
+  0% {
+    transform: translate(0, 0) scale(.92);
+  }
+
+  78% {
+    transform: translate(0, 122px) scale(1);
+  }
+
+  100% {
+    transform: translate(0, 138px) scale(.96);
+  }
+}
+
+.catch-crates {
+  position: absolute;
+  left: 330px;
+  top: 208px;
+  width: 486px;
+  display: flex;
+  justify-content: space-between;
+  z-index: 0;
+}
+
+.sort-drop-lanes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.sort-drop-lane {
+  position: absolute;
+  top: 148px;
+  width: 40px;
+  height: 178px;
+}
+
+.sort-drop-lane--a { left: 387px; }
+.sort-drop-lane--b { left: 553px; }
+.sort-drop-lane--processing { left: 719px; }
+
+.sort-drop-apple {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 34px;
+  height: 34px;
+  margin-left: -17px;
+  opacity: 0;
+  transform: translate(0, 0) scale(.92);
+}
+
+.catch-crate {
+  width: 154px;
+  height: 118px;
+  position: relative;
+  border-radius: 0;
+  filter: none;
+  overflow: visible;
+}
+
+.catch-crate::before {
+  content: none;
+}
+
+.catch-crate::after {
+  content: none;
+}
+
+.catch-crate__wall {
+  position: absolute;
+  inset: 0;
+}
+
+.catch-crate__wall::before {
+  content: none;
+}
+
+.catch-crate__wall::after {
+  content: none;
+}
+
+.catch-crate__label {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  top: 44px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  color: #fffef4;
+  font-weight: 800;
+  font-size: 24px;
+  letter-spacing: -.02em;
+  text-shadow: 0 1px 0 rgba(0,0,0,.18);
+  z-index: 4;
+}
+
+.catch-crate .sorter-apple-crate {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 154px;
+  height: 118px;
+  transform: none;
+  filter: drop-shadow(0 16px 18px rgba(66, 52, 16, .18));
+  z-index: 1;
+}
+
+.catch-crate .sorter-apple-crate__shadow {
+  display: block;
+}
+
+.catch-crate .sorter-apple-crate .apple-crate-preview {
+  bottom: 6px;
+  transform: translateX(-50%) scale(.327);
+  --crate-bg-top: var(--crate-top);
+  --crate-bg-mid: var(--crate-mid);
+  --crate-bg-bot: var(--crate-bot);
+  --crate-rib: var(--crate-edge);
+  --crate-mesh: var(--crate-mesh-color);
+  --crate-inner-top: var(--crate-inner-top);
+  --crate-inner-bottom: var(--crate-inner-bottom);
+  --crate-top-cap: var(--crate-top-cap);
+  --crate-top-hole: rgba(255, 255, 255, 0.95);
+  --crate-side-frame-a: var(--crate-side-frame-a);
+  --crate-side-frame-b: var(--crate-side-frame-b);
+}
+
+.catch-crate--a {
+  --crate-top: #ffc24d;
+  --crate-mid: #ffa616;
+  --crate-bot: #f18700;
+  --crate-edge: #dd7800;
+  --crate-mesh-color: rgba(255, 188, 80, 0.9);
+  --crate-inner-top: #ffb128;
+  --crate-inner-bottom: #ff9806;
+  --crate-top-cap: rgba(255, 203, 109, 0.96);
+  --crate-side-frame-a: #f48a00;
+  --crate-side-frame-b: #ffad1f;
+}
+
+.catch-crate--b {
+  --crate-top: #63c567;
+  --crate-mid: #37ad49;
+  --crate-bot: #25863a;
+  --crate-edge: #2d6c31;
+  --crate-mesh-color: rgba(185, 238, 143, 0.86);
+  --crate-inner-top: #56be61;
+  --crate-inner-bottom: #2f9d44;
+  --crate-top-cap: rgba(153, 227, 144, 0.94);
+  --crate-side-frame-a: #2b8f3c;
+  --crate-side-frame-b: #5fc86a;
+}
+
+.catch-crate--processing {
+  --crate-top: #ffc24d;
+  --crate-mid: #ffa616;
+  --crate-bot: #f18700;
+  --crate-edge: #dd7800;
+  --crate-mesh-color: rgba(255, 188, 80, 0.9);
+  --crate-inner-top: #ffb128;
+  --crate-inner-bottom: #ff9806;
+  --crate-top-cap: rgba(255, 203, 109, 0.96);
+  --crate-side-frame-a: #f48a00;
+  --crate-side-frame-b: #ffad1f;
+}
+</style>
+</head>
+
+<body>
+
+<div class="sorter" style="transform: translate(0px, 0px) translate(0px, 0px) translate(0px, 0px) scale(0.8);">
+  <div class="sorter-controls" style="transform: translate(0px, 0px);">
+    <button class="sorter-run-button" type="button">실행</button>
+    <div class="sorter-run-status" style="transform: translate(0px, 0px);">대기</div>
+  </div>
+  <div class="machine" style="transform: translate(0px, 0px) translate(0px, 0px);">
+    <div class="intake" style="transform: translate(0px, 0px) translate(0px, 0px) translate(0px, 23px) translate(0px, -117px) scale(1.47, 1.25) translate(0px, 151px);">
+      <div class="intake__throat" style="transform: translate(0px, 0px) translate(0px, 17px) scale(1.64, 3.35);"></div>
+      <div class="intake__chamber" style="transform: translate(0px, 6px) scale(1.18, 1.33) translate(0px, -58px);">
+        <div class="intake__chamber-apples">
+          <div class="intake__chamber-apple intake__chamber-apple--1" style="opacity: 0; animation: auto ease 0s 1 normal none running none;"></div>
+          <div class="intake__chamber-apple intake__chamber-apple--2" style="opacity: 0; animation: auto ease 0s 1 normal none running none;"></div>
+          <div class="intake__chamber-apple intake__chamber-apple--3" style="opacity: 0; animation: auto ease 0s 1 normal none running none;"></div>
+          <div class="intake__chamber-apple intake__chamber-apple--4" style="opacity: 0; animation: auto ease 0s 1 normal none running none;"></div>
+          <div class="intake__chamber-apple intake__chamber-apple--5" style="opacity: 0; animation: auto ease 0s 1 normal none running none;"></div>
+          <div class="intake__chamber-apple intake__chamber-apple--6" style="opacity: 0; animation: auto ease 0s 1 normal none running none;"></div>
+        </div>
+      </div>
+      <div class="intake__lift">
+        <div class="intake__lift-apples">
+          <div class="intake-apple intake-apple--1" style="opacity: 0; animation: auto ease 0s 1 normal none running none;"></div>
+          <div class="intake-apple intake-apple--2" style="opacity: 0; animation: auto ease 0s 1 normal none running none;"></div>
+          <div class="intake-apple intake-apple--3" style="opacity: 0; animation: auto ease 0s 1 normal none running none;"></div>
+          <div class="intake-apple intake-apple--4" style="opacity: 0; animation: auto ease 0s 1 normal none running none;"></div>
+          <div class="intake-apple intake-apple--5" style="opacity: 0; animation: auto ease 0s 1 normal none running none;"></div>
+          <div class="intake-apple intake-apple--6" style="opacity: 0; animation: auto ease 0s 1 normal none running none;"></div>
+        </div>
+      </div>
+      <div class="intake__support" style="transform: translate(-1px, -71px) scale(2.06, 2.72) translate(0px, 0px); z-index: -1;"></div>
+      <div class="intake__base" style="transform: translate(-1px, 0px);"></div>
+    </div>
+    <div class="sorter-apple-crate" style="transform: translate(0px, -29px) translate(-64px, 99px) translate(-8px, -8px) scale(1.04); z-index: 6;">
+      <div class="sorter-apple-crate__viewport" aria-label="사과상자">
+        <div class="sorter-apple-crate__shadow"></div>
+        <div class="apple-crate-preview apple-crate-preview--yellow">
+          <div class="apple-crate-preview__model">
+            <div class="apple-crate-preview__top-cap" style="z-index: 0;"></div>
+            <div class="apple-crate-preview__inner-top" style="transform: translate(0px, 64px) scale(1.07, 1); z-index: 2;"></div>
+            <div class="apple-crate-preview__load">
+              <div class="apple-crate-preview__apple apple-crate-preview__apple--a" style="z-index: 0;"></div>
+              <div class="apple-crate-preview__apple apple-crate-preview__apple--b" style="z-index: 0;"></div>
+              <div class="apple-crate-preview__apple apple-crate-preview__apple--c" style="z-index: 0;"></div>
+              <div class="apple-crate-preview__apple apple-crate-preview__apple--d"></div>
+              <div class="apple-crate-preview__apple apple-crate-preview__apple--e" style="z-index: 0;"></div>
+              <div class="apple-crate-preview__apple apple-crate-preview__apple--f"></div>
+              <div class="apple-crate-preview__apple apple-crate-preview__apple--g"></div>
+              <div class="apple-crate-preview__apple apple-crate-preview__apple--h"></div>
+              <div class="apple-crate-preview__apple apple-crate-preview__apple--i"></div>
+              <div class="apple-crate-preview__apple apple-crate-preview__apple--k" style="z-index: 0;"></div>
+              <div class="apple-crate-preview__apple apple-crate-preview__apple--l" style="z-index: 0;"></div>
+              <div class="apple-crate-preview__apple apple-crate-preview__apple--m" style="z-index: 0;"></div>
+              <div class="apple-crate-preview__apple apple-crate-preview__apple--n"></div>
+              <div class="apple-crate-preview__apple apple-crate-preview__apple--o" style="z-index: 0;"></div>
+              <div class="apple-crate-preview__apple apple-crate-preview__apple--p" style="z-index: 0;"></div>
+              <div class="apple-crate-preview__apple apple-crate-preview__apple--q" style="z-index: 0;"></div>
+            </div>
+            <div class="apple-crate-preview__inner-fill-clip" style="opacity: 0.76; transform: translate(0px, -12px) translate(0px, -87px) translate(0px, 70px); z-index: -3;">
+              <div class="apple-crate-preview__inner-fill" style="transform: translate(0px, 28px) scale(1.14, 1.24);"></div>
+            </div>
+            <div class="apple-crate-preview__inner-fill-clip" style="opacity: 0.88; transform: translate(0px, 6px) translate(0px, 6px) translate(0px, 47px) scale(1.01, 1.29); z-index: -2;">
+              <div class="apple-crate-preview__inner-fill" style="transform: translate(0px, 66px) scale(1.08, 1.64);"></div>
+            </div>
+            <div class="apple-crate-preview__inner-fill-clip" style="opacity: 0.92; transform: translate(0px, 6px) translate(0px, 70px) scale(1, 0.79) translate(0px, -29px); z-index: -4;">
+              <div class="apple-crate-preview__inner-fill" style="transform: translate(0px, 110px) scale(1.18, 2.02);"></div>
+            </div>
+            <div class="apple-crate-preview__inner-fill-clip" style="opacity: 0.7; transform: translate(0px, -12px) translate(0px, -47px) translate(0px, 18px) scale(0.96, 1.08); z-index: -3;">
+              <div class="apple-crate-preview__inner-fill" style="transform: translate(0px, 42px) scale(1.02, 1.32);"></div>
+            </div>
+            <div class="apple-crate-preview__inner-fill-clip" style="opacity: 0.84; transform: translate(0px, 6px) translate(0px, 41px) scale(0.94, 0.55) translate(0px, 86px) scale(1.04, 1.18); z-index: -10;">
+              <div class="apple-crate-preview__inner-fill" style="transform: translate(0px, 92px) scale(1.12, 1.78);"></div>
+            </div>
+            <div class="apple-crate-preview__handle apple-crate-preview__handle--1" style="z-index: 0; opacity: 0.82;"></div>
+            <div class="apple-crate-preview__handle apple-crate-preview__handle--2" style="z-index: 0; opacity: 0.82;"></div>
+            <div class="apple-crate-preview__handle apple-crate-preview__handle--3" style="z-index: 0; opacity: 0.82;"></div>
+            <div class="apple-crate-preview__handle apple-crate-preview__handle--4" style="z-index: 0; opacity: 0.82;"></div>
+            <div class="apple-crate-preview__handle apple-crate-preview__handle--5" style="z-index: 0; opacity: 0.82;"></div>
+            <div class="apple-crate-preview__bar apple-crate-preview__bar--1"></div>
+            <div class="apple-crate-preview__bar apple-crate-preview__bar--2"></div>
+            <div class="apple-crate-preview__bar apple-crate-preview__bar--3"></div>
+            <div class="apple-crate-preview__grid-area">
+              <div class="apple-crate-preview__col">
+                <div class="apple-crate-preview__vline apple-crate-preview__vline--1"></div>
+                <div class="apple-crate-preview__vline apple-crate-preview__vline--2"></div>
+                <div class="apple-crate-preview__mesh" style="opacity: 0.55;"></div>
+              </div>
+              <div class="apple-crate-preview__col">
+                <div class="apple-crate-preview__vline apple-crate-preview__vline--1"></div>
+                <div class="apple-crate-preview__vline apple-crate-preview__vline--2"></div>
+                <div class="apple-crate-preview__mesh" style="opacity: 0.55;"></div>
+              </div>
+              <div class="apple-crate-preview__col"></div>
+              <div class="apple-crate-preview__col">
+                <div class="apple-crate-preview__vline apple-crate-preview__vline--1"></div>
+                <div class="apple-crate-preview__vline apple-crate-preview__vline--2"></div>
+                <div class="apple-crate-preview__mesh" style="opacity: 0.55;"></div>
+              </div>
+              <div class="apple-crate-preview__col">
+                <div class="apple-crate-preview__vline apple-crate-preview__vline--1"></div>
+                <div class="apple-crate-preview__vline apple-crate-preview__vline--2"></div>
+                <div class="apple-crate-preview__mesh" style="opacity: 0.55;"></div>
+              </div>
+            </div>
+            <div class="apple-crate-preview__center-panel"></div>
+            <div class="apple-crate-preview__bottom-row">
+              <div class="apple-crate-preview__bottom-cell"></div>
+              <div class="apple-crate-preview__bottom-cell"></div>
+              <div class="apple-crate-preview__bottom-cell"></div>
+              <div class="apple-crate-preview__bottom-cell"></div>
+              <div class="apple-crate-preview__bottom-cell"></div>
+              <div class="apple-crate-preview__bottom-cell"></div>
+            </div>
+            <div class="apple-crate-preview__side-frame apple-crate-preview__side-frame--left"></div>
+            <div class="apple-crate-preview__side-frame apple-crate-preview__side-frame--right"></div>
+            <div class="apple-crate-preview__corner apple-crate-preview__corner--1" style="opacity: 0.65;"></div>
+            <div class="apple-crate-preview__corner apple-crate-preview__corner--2" style="opacity: 0.65;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="intake-tunnel" style="transform: translate(0px, 0px) translate(-52px, 82px) translate(29px, 0px) scale(0.81, 1) translate(-70px, 6px) scale(1.64, 1.42);">
+      <div class="intake-tunnel__body" style="transform: translate(0px, 0px);">
+        <div class="intake-tunnel__hood" style="transform: translate(0px, 0px); z-index: -2;"></div>
+        <div class="intake-tunnel__belt" style="transform: translate(0px, 0px);">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <div class="intake-tunnel__leg intake-tunnel__leg--left" style="transform: translate(0px, 0px);"></div>
+        <div class="intake-tunnel__leg intake-tunnel__leg--right"></div>
+      </div>
+      <div class="intake-tunnel__column"></div>
+    </div>
+    <div class="scanner" style="transform: translate(-29px, -6px) translate(35px, 6px) translate(0px, -12px) translate(-192px, 0px);"></div>
+    <div class="sort-pistons" style="transform: translate(0px, 0px);">
+      <div class="sort-piston">
+        <div class="sort-piston__head"></div>
+      </div>
+      <div class="sort-piston">
+        <div class="sort-piston__head"></div>
+      </div>
+      <div class="sort-piston">
+        <div class="sort-piston__head"></div>
+      </div>
+    </div>
+
+    <div class="belt" style="transform: translate(0px, 0px) translate(0px, 0px) translate(0px, 0px);">
+      <div class="apple a1" style="opacity: 0; animation: auto ease 0s 1 normal none running none;"></div>
+      <div class="apple a2" style="opacity: 0; animation: auto ease 0s 1 normal none running none;"></div>
+      <div class="apple a3" style="opacity: 0; animation: auto ease 0s 1 normal none running none;"></div>
+      <div class="apple a4" style="opacity: 0; animation: auto ease 0s 1 normal none running none;"></div>
+      <div class="apple a5" style="opacity: 0; animation: auto ease 0s 1 normal none running none;"></div>
+      <div class="apple a6" style="opacity: 0; animation: auto ease 0s 1 normal none running none;"></div>
+      <div class="apple a7" style="opacity: 0; animation: auto ease 0s 1 normal none running none;"></div>
+      <div class="apple a8" style="opacity: 0; animation: auto ease 0s 1 normal none running none;"></div>
+      <div class="apple a9" style="opacity: 0; animation: auto ease 0s 1 normal none running none;"></div>
+      <div class="apple a10" style="opacity: 0; animation: auto ease 0s 1 normal none running none;"></div>
+      <div class="apple a11" style="opacity: 0; animation: auto ease 0s 1 normal none running none;"></div>
+      <div class="apple a12" style="opacity: 0; animation: auto ease 0s 1 normal none running none;"></div>
+      <div class="apple a13" style="opacity: 0; animation: auto ease 0s 1 normal none running none;"></div>
+    </div>
+
+    <div class="sort-piston-rods" style="transform: translate(0px, 0px);">
+      <div class="sort-piston-rod-wrap">
+        <div class="sort-piston__rod"></div>
+      </div>
+      <div class="sort-piston-rod-wrap">
+        <div class="sort-piston__rod"></div>
+      </div>
+      <div class="sort-piston-rod-wrap">
+        <div class="sort-piston__rod"></div>
+      </div>
+    </div>
+
+    <div class="sort-drop-lanes">
+      <div class="sort-drop-lane sort-drop-lane--a">
+        <div class="sort-drop-apple" style="opacity: 0;"></div>
+      </div>
+      <div class="sort-drop-lane sort-drop-lane--b">
+        <div class="sort-drop-apple" style="opacity: 0;"></div>
+      </div>
+      <div class="sort-drop-lane sort-drop-lane--processing">
+        <div class="sort-drop-apple" style="opacity: 0;"></div>
+      </div>
+    </div>
+
+    <div class="catch-crates" style="transform: translate(0px, 0px);">
+      <div class="catch-crate catch-crate--a">
+        <div class="catch-crate__wall">
+          <div class="sorter-apple-crate">
+            <div class="sorter-apple-crate__viewport" aria-hidden="true">
+              <div class="apple-crate-preview apple-crate-preview--yellow">
+                <div class="apple-crate-preview__model">
+                  <div class="apple-crate-preview__inner-top"></div>
+                  <div class="apple-crate-preview__handle apple-crate-preview__handle--1" style="opacity: 0.82;"></div>
+                  <div class="apple-crate-preview__handle apple-crate-preview__handle--2" style="opacity: 0.82;"></div>
+                  <div class="apple-crate-preview__handle apple-crate-preview__handle--3" style="opacity: 0.82;"></div>
+                  <div class="apple-crate-preview__handle apple-crate-preview__handle--4" style="opacity: 0.82;"></div>
+                  <div class="apple-crate-preview__handle apple-crate-preview__handle--5" style="opacity: 0.82;"></div>
+                  <div class="apple-crate-preview__bar apple-crate-preview__bar--1"></div>
+                  <div class="apple-crate-preview__bar apple-crate-preview__bar--2"></div>
+                  <div class="apple-crate-preview__bar apple-crate-preview__bar--3"></div>
+                  <div class="apple-crate-preview__grid-area">
+                    <div class="apple-crate-preview__col">
+                      <div class="apple-crate-preview__vline apple-crate-preview__vline--1"></div>
+                      <div class="apple-crate-preview__vline apple-crate-preview__vline--2"></div>
+                      <div class="apple-crate-preview__mesh" style="opacity: 0.55;"></div>
+                    </div>
+                    <div class="apple-crate-preview__col">
+                      <div class="apple-crate-preview__vline apple-crate-preview__vline--1"></div>
+                      <div class="apple-crate-preview__vline apple-crate-preview__vline--2"></div>
+                      <div class="apple-crate-preview__mesh" style="opacity: 0.55;"></div>
+                    </div>
+                    <div class="apple-crate-preview__col"></div>
+                    <div class="apple-crate-preview__col">
+                      <div class="apple-crate-preview__vline apple-crate-preview__vline--1"></div>
+                      <div class="apple-crate-preview__vline apple-crate-preview__vline--2"></div>
+                      <div class="apple-crate-preview__mesh" style="opacity: 0.55;"></div>
+                    </div>
+                    <div class="apple-crate-preview__col">
+                      <div class="apple-crate-preview__vline apple-crate-preview__vline--1"></div>
+                      <div class="apple-crate-preview__vline apple-crate-preview__vline--2"></div>
+                      <div class="apple-crate-preview__mesh" style="opacity: 0.55;"></div>
+                    </div>
+                  </div>
+                  <div class="apple-crate-preview__center-panel"></div>
+                  <div class="apple-crate-preview__bottom-row">
+                    <div class="apple-crate-preview__bottom-cell"></div>
+                    <div class="apple-crate-preview__bottom-cell"></div>
+                    <div class="apple-crate-preview__bottom-cell"></div>
+                    <div class="apple-crate-preview__bottom-cell"></div>
+                    <div class="apple-crate-preview__bottom-cell"></div>
+                    <div class="apple-crate-preview__bottom-cell"></div>
+                  </div>
+                  <div class="apple-crate-preview__side-frame apple-crate-preview__side-frame--left"></div>
+                  <div class="apple-crate-preview__side-frame apple-crate-preview__side-frame--right"></div>
+                  <div class="apple-crate-preview__corner apple-crate-preview__corner--1" style="opacity: 0.65;"></div>
+                  <div class="apple-crate-preview__corner apple-crate-preview__corner--2" style="opacity: 0.65;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="catch-crate__label">A급</div>
+      </div>
+      <div class="catch-crate catch-crate--b">
+        <div class="catch-crate__wall">
+          <div class="sorter-apple-crate">
+            <div class="sorter-apple-crate__viewport" aria-hidden="true">
+              <div class="apple-crate-preview apple-crate-preview--green">
+                <div class="apple-crate-preview__model">
+                  <div class="apple-crate-preview__inner-top"></div>
+                  <div class="apple-crate-preview__handle apple-crate-preview__handle--1" style="opacity: 0.82;"></div>
+                  <div class="apple-crate-preview__handle apple-crate-preview__handle--2" style="opacity: 0.82;"></div>
+                  <div class="apple-crate-preview__handle apple-crate-preview__handle--3" style="opacity: 0.82;"></div>
+                  <div class="apple-crate-preview__handle apple-crate-preview__handle--4" style="opacity: 0.82;"></div>
+                  <div class="apple-crate-preview__handle apple-crate-preview__handle--5" style="opacity: 0.82;"></div>
+                  <div class="apple-crate-preview__bar apple-crate-preview__bar--1"></div>
+                  <div class="apple-crate-preview__bar apple-crate-preview__bar--2"></div>
+                  <div class="apple-crate-preview__bar apple-crate-preview__bar--3"></div>
+                  <div class="apple-crate-preview__grid-area">
+                    <div class="apple-crate-preview__col">
+                      <div class="apple-crate-preview__vline apple-crate-preview__vline--1"></div>
+                      <div class="apple-crate-preview__vline apple-crate-preview__vline--2"></div>
+                      <div class="apple-crate-preview__mesh" style="opacity: 0.55;"></div>
+                    </div>
+                    <div class="apple-crate-preview__col">
+                      <div class="apple-crate-preview__vline apple-crate-preview__vline--1"></div>
+                      <div class="apple-crate-preview__vline apple-crate-preview__vline--2"></div>
+                      <div class="apple-crate-preview__mesh" style="opacity: 0.55;"></div>
+                    </div>
+                    <div class="apple-crate-preview__col"></div>
+                    <div class="apple-crate-preview__col">
+                      <div class="apple-crate-preview__vline apple-crate-preview__vline--1"></div>
+                      <div class="apple-crate-preview__vline apple-crate-preview__vline--2"></div>
+                      <div class="apple-crate-preview__mesh" style="opacity: 0.55;"></div>
+                    </div>
+                    <div class="apple-crate-preview__col">
+                      <div class="apple-crate-preview__vline apple-crate-preview__vline--1"></div>
+                      <div class="apple-crate-preview__vline apple-crate-preview__vline--2"></div>
+                      <div class="apple-crate-preview__mesh" style="opacity: 0.55;"></div>
+                    </div>
+                  </div>
+                  <div class="apple-crate-preview__center-panel"></div>
+                  <div class="apple-crate-preview__bottom-row">
+                    <div class="apple-crate-preview__bottom-cell"></div>
+                    <div class="apple-crate-preview__bottom-cell"></div>
+                    <div class="apple-crate-preview__bottom-cell"></div>
+                    <div class="apple-crate-preview__bottom-cell"></div>
+                    <div class="apple-crate-preview__bottom-cell"></div>
+                    <div class="apple-crate-preview__bottom-cell"></div>
+                  </div>
+                  <div class="apple-crate-preview__side-frame apple-crate-preview__side-frame--left"></div>
+                  <div class="apple-crate-preview__side-frame apple-crate-preview__side-frame--right"></div>
+                  <div class="apple-crate-preview__corner apple-crate-preview__corner--1" style="opacity: 0.65;"></div>
+                  <div class="apple-crate-preview__corner apple-crate-preview__corner--2" style="opacity: 0.65;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="catch-crate__label">B급</div>
+      </div>
+      <div class="catch-crate catch-crate--processing">
+        <div class="catch-crate__wall">
+          <div class="sorter-apple-crate">
+            <div class="sorter-apple-crate__viewport" aria-hidden="true">
+              <div class="apple-crate-preview apple-crate-preview--yellow">
+                <div class="apple-crate-preview__model">
+                  <div class="apple-crate-preview__inner-top"></div>
+                  <div class="apple-crate-preview__handle apple-crate-preview__handle--1" style="opacity: 0.82;"></div>
+                  <div class="apple-crate-preview__handle apple-crate-preview__handle--2" style="opacity: 0.82;"></div>
+                  <div class="apple-crate-preview__handle apple-crate-preview__handle--3" style="opacity: 0.82;"></div>
+                  <div class="apple-crate-preview__handle apple-crate-preview__handle--4" style="opacity: 0.82;"></div>
+                  <div class="apple-crate-preview__handle apple-crate-preview__handle--5" style="opacity: 0.82;"></div>
+                  <div class="apple-crate-preview__bar apple-crate-preview__bar--1"></div>
+                  <div class="apple-crate-preview__bar apple-crate-preview__bar--2"></div>
+                  <div class="apple-crate-preview__bar apple-crate-preview__bar--3"></div>
+                  <div class="apple-crate-preview__grid-area">
+                    <div class="apple-crate-preview__col">
+                      <div class="apple-crate-preview__vline apple-crate-preview__vline--1"></div>
+                      <div class="apple-crate-preview__vline apple-crate-preview__vline--2"></div>
+                      <div class="apple-crate-preview__mesh" style="opacity: 0.55;"></div>
+                    </div>
+                    <div class="apple-crate-preview__col">
+                      <div class="apple-crate-preview__vline apple-crate-preview__vline--1"></div>
+                      <div class="apple-crate-preview__vline apple-crate-preview__vline--2"></div>
+                      <div class="apple-crate-preview__mesh" style="opacity: 0.55;"></div>
+                    </div>
+                    <div class="apple-crate-preview__col"></div>
+                    <div class="apple-crate-preview__col">
+                      <div class="apple-crate-preview__vline apple-crate-preview__vline--1"></div>
+                      <div class="apple-crate-preview__vline apple-crate-preview__vline--2"></div>
+                      <div class="apple-crate-preview__mesh" style="opacity: 0.55;"></div>
+                    </div>
+                    <div class="apple-crate-preview__col">
+                      <div class="apple-crate-preview__vline apple-crate-preview__vline--1"></div>
+                      <div class="apple-crate-preview__vline apple-crate-preview__vline--2"></div>
+                      <div class="apple-crate-preview__mesh" style="opacity: 0.55;"></div>
+                    </div>
+                  </div>
+                  <div class="apple-crate-preview__center-panel"></div>
+                  <div class="apple-crate-preview__bottom-row">
+                    <div class="apple-crate-preview__bottom-cell"></div>
+                    <div class="apple-crate-preview__bottom-cell"></div>
+                    <div class="apple-crate-preview__bottom-cell"></div>
+                    <div class="apple-crate-preview__bottom-cell"></div>
+                    <div class="apple-crate-preview__bottom-cell"></div>
+                    <div class="apple-crate-preview__bottom-cell"></div>
+                  </div>
+                  <div class="apple-crate-preview__side-frame apple-crate-preview__side-frame--left"></div>
+                  <div class="apple-crate-preview__side-frame apple-crate-preview__side-frame--right"></div>
+                  <div class="apple-crate-preview__corner apple-crate-preview__corner--1" style="opacity: 0.65;"></div>
+                  <div class="apple-crate-preview__corner apple-crate-preview__corner--2" style="opacity: 0.65;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="catch-crate__label">가공급</div>
+      </div>
+    </div>
+  </div>
+  <div class="sorter-progress-panel" style="transform: translate(-17px, -285px);">
+    <div class="sorter-progress-panel__meta">
+      <span>선별 진행</span>
+      <span>20초</span>
+    </div>
+    <div class="sorter-progress" aria-hidden="true" style="transform: translate(0px, 0px);">
+      <div class="sorter-progress__fill" style="width: 0%; transform: translate(0px, 0px);"></div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+<script>
+(() => {
+  const runButton = document.querySelector('.sorter-run-button');
+  const runStatus = document.querySelector('.sorter-run-status');
+  const progressFill = document.querySelector('.sorter-progress__fill');
+  const liftApples = Array.from(document.querySelectorAll('.intake__lift .intake-apple'));
+  const chamberApples = Array.from(document.querySelectorAll('.intake__chamber-apple'));
+  const beltApples = Array.from(document.querySelectorAll('.belt .apple'));
+  const pistonRods = Array.from(document.querySelectorAll('.sort-piston__rod'));
+
+  const RUN_TOTAL_MS = 20000;
+  const STEP_MS = 360;
+  const timers = [];
+  let running = false;
+  let progressTimer = null;
+  let allowConfirmedRun = false;
+  const equipmentStorageKey = document.body?.dataset?.equipmentStorageKey || '';
+  const beltRoutes = [
+    { animation: 'appleMoveToA', duration: 2500, rodIndex: 0 },
+    { animation: 'appleMoveToB', duration: 3300, rodIndex: 1 },
+    { animation: 'appleMoveToProcessing', duration: 4100, rodIndex: 2 },
+  ];
+
+  const postParentMessage = (type) => {
+    if (!window.parent || window.parent === window || !equipmentStorageKey) return;
+    window.parent.postMessage({
+      type,
+      equipmentStorageKey,
+    }, '*');
+  };
+
+  const clearTimers = () => {
+    while (timers.length) {
+      clearTimeout(timers.pop());
+    }
+  };
+
+  const stopProgress = () => {
+    if (progressTimer) {
+      clearInterval(progressTimer);
+      progressTimer = null;
+    }
+  };
+
+  const startProgress = () => {
+    const startedAt = Date.now();
+    progressFill.style.width = '0%';
+    stopProgress();
+    progressTimer = setInterval(() => {
+      const elapsed = Date.now() - startedAt;
+      const progress = Math.min(elapsed / RUN_TOTAL_MS, 1);
+      progressFill.style.width = `${(progress * 100).toFixed(2)}%`;
+      if (progress >= 1) {
+        stopProgress();
+      }
+    }, 100);
+  };
+
+  const resetApple = (apple) => {
+    if (!apple) return;
+    apple.classList.remove('is-running');
+    apple.style.animation = 'none';
+    apple.style.opacity = '0';
+    apple.style.animationDelay = '0s';
+    void apple.offsetWidth;
+  };
+
+  const pulseApple = (apple, animationName, durationMs) => {
+    if (!apple) return;
+    resetApple(apple);
+    apple.classList.add('is-running');
+    apple.style.opacity = '1';
+    apple.style.animation = `${animationName} ${durationMs}ms linear 1`;
+    timers.push(setTimeout(() => {
+      apple.style.animation = 'none';
+      apple.style.opacity = '0';
+      apple.classList.remove('is-running');
+    }, durationMs));
+  };
+
+  const pulseRod = (rod, durationMs) => {
+    if (!rod) return;
+    rod.classList.remove('is-running');
+    void rod.offsetWidth;
+    rod.classList.add('is-running');
+    timers.push(setTimeout(() => {
+      rod.classList.remove('is-running');
+    }, durationMs));
+  };
+
+  const finishRun = () => {
+    running = false;
+    clearTimers();
+    stopProgress();
+    [...liftApples, ...chamberApples, ...beltApples].forEach((apple) => {
+      apple.style.animation = 'none';
+      apple.style.opacity = '0';
+      apple.classList.remove('is-running');
+    });
+    pistonRods.forEach((rod) => rod.classList.remove('is-running'));
+    progressFill.style.width = '100%';
+    runButton.disabled = false;
+    runButton.textContent = '실행';
+    runStatus.textContent = '대기';
+    timers.push(setTimeout(() => {
+      progressFill.style.width = '0%';
+    }, 500));
+    postParentMessage('facility-storage-sorting-run-complete');
+  };
+
+  runButton.addEventListener('click', (event) => {
+    if (running) return;
+    if (!allowConfirmedRun) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      postParentMessage('facility-storage-sorting-run-request');
+      return;
+    }
+    allowConfirmedRun = false;
+
+    running = true;
+    runButton.disabled = true;
+    runButton.textContent = '작동 중';
+    runStatus.textContent = '20초 진행';
+    progressFill.style.width = '0%';
+    clearTimers();
+    stopProgress();
+    [...liftApples, ...chamberApples, ...beltApples].forEach((apple) => {
+      apple.style.animation = 'none';
+      apple.style.opacity = '0';
+      apple.classList.remove('is-running');
+    });
+    pistonRods.forEach((rod) => rod.classList.remove('is-running'));
+    startProgress();
+
+    const cycleCount = Math.floor((RUN_TOTAL_MS - 2200) / STEP_MS) + 1;
+    let finalCompletionMs = 0;
+
+    for (let i = 0; i < cycleCount; i += 1) {
+      const baseDelay = i * STEP_MS;
+      const liftApple = liftApples[i % liftApples.length];
+      const chamberApple = chamberApples[i % chamberApples.length];
+      const beltApple = beltApples[i % beltApples.length];
+      const route = beltRoutes[i % beltRoutes.length];
+      const rod = pistonRods[route.rodIndex];
+      const beltStartDelay = baseDelay + 900;
+      const beltEndDelay = beltStartDelay + route.duration;
+
+      timers.push(setTimeout(() => {
+        pulseApple(liftApple, 'intakeLiftRise', 900);
+      }, baseDelay));
+
+      timers.push(setTimeout(() => {
+        pulseApple(chamberApple, 'intakeAppleFeed', 720);
+      }, baseDelay + 420));
+
+      timers.push(setTimeout(() => {
+        pulseApple(beltApple, route.animation, route.duration);
+      }, beltStartDelay));
+
+      timers.push(setTimeout(() => {
+        pulseRod(rod, 720);
+      }, beltEndDelay - 260));
+
+      finalCompletionMs = Math.max(finalCompletionMs, beltEndDelay);
+    }
+
+    timers.push(setTimeout(finishRun, finalCompletionMs + 180));
+  });
+
+  window.addEventListener('message', (event) => {
+    const payload = event?.data;
+    if (!payload || String(payload?.type || '') !== 'facility-storage-sorting-run-start') return;
+    if (String(payload?.equipmentStorageKey || '') !== equipmentStorageKey) return;
+    if (running) return;
+    allowConfirmedRun = true;
+    runButton.click();
+  });
+})();
+</script>
+
+</body></html>

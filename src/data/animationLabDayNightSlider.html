@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Day Night Slider Preview</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background: radial-gradient(circle at top, #18233d, #0a0f1d 70%);
+      color: #fff;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      padding: 12px;
+    }
+
+    .app {
+      width: min(430px, 92vw);
+      display: grid;
+      gap: 10px;
+    }
+
+    .card {
+      position: relative;
+      aspect-ratio: 9 / 14;
+      border-radius: 28px;
+      overflow: hidden;
+      background: #111;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.42);
+    }
+
+    .sky,
+    .stars,
+    .glow,
+    .hill-back,
+    .hill-front,
+    .orb,
+    .cloud {
+      position: absolute;
+    }
+
+    .sky,
+    .stars {
+      inset: 0;
+    }
+
+    .sky {
+      transition: background 0.08s linear;
+    }
+
+    .stars {
+      opacity: 0;
+      background-image:
+        radial-gradient(circle at 16% 12%, rgba(255,255,255,0.95) 1px, transparent 1.7px),
+        radial-gradient(circle at 30% 18%, rgba(255,255,255,0.72) 1px, transparent 1.4px),
+        radial-gradient(circle at 71% 17%, rgba(255,255,255,0.88) 1px, transparent 1.7px),
+        radial-gradient(circle at 82% 28%, rgba(255,255,255,0.70) 1px, transparent 1.4px),
+        radial-gradient(circle at 42% 33%, rgba(255,255,255,0.75) 1px, transparent 1.6px),
+        radial-gradient(circle at 19% 45%, rgba(255,255,255,0.80) 1px, transparent 1.6px),
+        radial-gradient(circle at 60% 53%, rgba(255,255,255,0.76) 1px, transparent 1.5px),
+        radial-gradient(circle at 84% 58%, rgba(255,255,255,0.92) 1px, transparent 1.8px),
+        radial-gradient(circle at 12% 71%, rgba(255,255,255,0.66) 1px, transparent 1.4px),
+        radial-gradient(circle at 68% 79%, rgba(255,255,255,0.80) 1px, transparent 1.6px);
+      background-repeat: no-repeat;
+    }
+
+    .orb {
+      width: 58px;
+      height: 58px;
+      transform: translate(-50%, -50%);
+      transform-origin: center;
+    }
+
+    .sun {
+      border-radius: 50%;
+      background: radial-gradient(circle, #fff9d5 0%, #ffe06f 48%, #ffbf37 76%);
+      box-shadow: 0 0 34px rgba(255, 214, 96, 0.88), 0 0 70px rgba(255, 186, 66, 0.45);
+    }
+
+    .moon {
+      overflow: visible;
+      filter: drop-shadow(0 0 10px rgba(255,255,255,0.35));
+    }
+
+    .cloud {
+      background: rgba(255,255,255,0.82);
+      border-radius: 999px;
+      filter: blur(0.5px);
+      transform: translateX(0);
+    }
+
+    .cloud::before,
+    .cloud::after {
+      content: "";
+      position: absolute;
+      background: inherit;
+      border-radius: 50%;
+    }
+
+    .cloud1 {
+      width: 92px;
+      height: 24px;
+      top: 30%;
+      left: 12%;
+    }
+
+    .cloud1::before {
+      width: 30px;
+      height: 30px;
+      top: -12px;
+      left: 12px;
+    }
+
+    .cloud1::after {
+      width: 38px;
+      height: 38px;
+      top: -16px;
+      left: 42px;
+    }
+
+    .cloud2 {
+      width: 108px;
+      height: 26px;
+      top: 52%;
+      right: 9%;
+    }
+
+    .cloud2::before {
+      width: 30px;
+      height: 30px;
+      top: -12px;
+      left: 13px;
+    }
+
+    .cloud2::after {
+      width: 40px;
+      height: 40px;
+      top: -18px;
+      left: 46px;
+    }
+
+    .hill-back,
+    .hill-front {
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      transition: background 0.08s linear;
+    }
+
+    .hill-back {
+      width: 150%;
+      height: 24%;
+      bottom: 8%;
+      background: #346822;
+    }
+
+    .hill-front {
+      width: 184%;
+      height: 28%;
+      bottom: -6%;
+      background: #173916;
+    }
+
+    .controls {
+      display: grid;
+      gap: 10px;
+      padding: 16px 16px 18px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 12px 35px rgba(0,0,0,0.22);
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      color: rgba(255,255,255,0.92);
+    }
+
+    .hint {
+      color: rgba(255,255,255,0.68);
+      font-size: 12px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: #ffd45a;
+      cursor: pointer;
+    }
+
+    
+  </style>
+</head>
+<body>
+  <div
+    class="app"
+    data-animation-lab-tx="0"
+    data-animation-lab-ty="-87"
+    data-animation-lab-scale-x="0.8"
+    data-animation-lab-scale-y="0.8"
+    data-animation-lab-rotate="0"
+  >
+    <div class="card" id="sceneCard">
+      <div class="sky"></div>
+      <div class="stars"></div>
+      <div class="orb sun" aria-hidden="true"></div>
+      <svg class="orb moon" viewBox="0 0 100 100" aria-hidden="true">
+        <path
+          d="M50 5
+             A45 45 0 1 0 50 95
+             A30 45 0 1 1 50 5 Z"
+          fill="#f6f8ff"
+        />
+      </svg>
+      <div class="cloud cloud1"></div>
+      <div class="cloud cloud2"></div>
+      <div class="hill-back"></div>
+      <div class="hill-front"></div>
+    </div>
+
+    <div class="controls">
+      <div class="row">
+        <strong>시간 게이지</strong>
+        <span id="sliderValue">0%</span>
+      </div>
+      <input id="timeSlider" type="range" min="0" max="200" value="0" />
+      <div class="hint">0 해 중앙 → 50 노을 → 100 밤(달 중앙) → 200 반복</div>
+    </div>
+  </div>
+
+  <script>
+    const card = document.getElementById('sceneCard');
+    const slider = document.getElementById('timeSlider');
+    const sliderValue = document.getElementById('sliderValue');
+
+    function lerp(a, b, t) {
+      return a + (b - a) * t;
+    }
+
+    function clamp(v, min, max) {
+      return Math.max(min, Math.min(max, v));
+    }
+
+    function mix(a, b, t) {
+      const r = Math.round(lerp(a[0], b[0], t));
+      const g = Math.round(lerp(a[1], b[1], t));
+      const bl = Math.round(lerp(a[2], b[2], t));
+      return `rgb(${r}, ${g}, ${bl})`;
+    }
+
+    function getPhaseLabel(t) {
+      if (t < 0.20 || t >= 0.80) return '낮';
+      if (t < 0.35 || t >= 0.65) return '노을';
+      return '밤';
+    }
+
+    function gradientAt(t) {
+      const stops = [
+        { at: 0.00, top: [54, 138, 247], mid: [107, 191, 255], bottom: [194, 232, 255] },
+        { at: 0.25, top: [57, 50, 125], mid: [161, 84, 155], bottom: [255, 128, 67] },
+        { at: 0.50, top: [4, 10, 31], mid: [9, 22, 54], bottom: [16, 35, 72] },
+        { at: 0.75, top: [57, 50, 125], mid: [161, 84, 155], bottom: [255, 128, 67] },
+        { at: 1.00, top: [54, 138, 247], mid: [107, 191, 255], bottom: [194, 232, 255] }
+      ];
+
+      let a = stops[0];
+      let b = stops[1];
+      for (let i = 0; i < stops.length - 1; i += 1) {
+        if (t >= stops[i].at && t <= stops[i + 1].at) {
+          a = stops[i];
+          b = stops[i + 1];
+          break;
+        }
+      }
+
+      const denom = b.at - a.at;
+      const localT = denom === 0 ? 0 : (t - a.at) / denom;
+      const top = mix(a.top, b.top, localT);
+      const mid = mix(a.mid, b.mid, localT);
+      const bottom = mix(a.bottom, b.bottom, localT);
+      return `linear-gradient(to bottom, ${top} 0%, ${mid} 56%, ${bottom} 100%)`;
+    }
+
+    function render(t) {
+      if (!(card instanceof HTMLElement)) return;
+
+      const sky = card.querySelector('.sky');
+      const stars = card.querySelector('.stars');
+      const sun = card.querySelector('.sun');
+      const moon = card.querySelector('.moon');
+      const hillBack = card.querySelector('.hill-back');
+      const hillFront = card.querySelector('.hill-front');
+      const clouds = card.querySelectorAll('.cloud');
+
+      if (!sky || !stars || !sun || !moon || !hillBack || !hillFront || clouds.length === 0) {
+        return;
+      }
+
+      const angle = t * Math.PI * 2;
+      const cx = card.clientWidth / 2;
+      const skyCenterY = card.clientHeight * 0.32;
+      const horizonY = card.clientHeight * 0.78;
+      const arcAmplitude = horizonY - skyCenterY;
+      const arcRadiusX = card.clientWidth * 0.34;
+      const sunPath = Math.cos(angle);    // 0/200: center, 50/150: horizon, 100: below
+      const moonPath = -Math.cos(angle);  // 0/200: below, 50/150: horizon, 100: center
+
+      // Arc motion: rise/fall on curved path and set toward right side.
+      const sunX = cx + (Math.sin(angle) * arcRadiusX);
+      const sunY = skyCenterY + (1 - sunPath) * arcAmplitude;
+      const moonX = cx + ((-Math.sin(angle)) * arcRadiusX);
+      const moonY = skyCenterY + (1 - moonPath) * arcAmplitude;
+
+      sun.style.left = `${sunX}px`;
+      sun.style.top = `${sunY}px`;
+      moon.style.left = `${moonX}px`;
+      moon.style.top = `${moonY}px`;
+
+      sky.style.background = gradientAt(t);
+
+      // 0/200: day max, 100: night max
+      const daylight = clamp((Math.cos(angle) + 1) / 2, 0, 1);
+      const night = 1 - daylight;
+      const horizon = 1 - Math.abs(Math.cos(angle));
+
+      const gaugeValue = slider instanceof HTMLInputElement ? Number(slider.value) : Math.round(t * 200);
+      const moonFadeIn = clamp((gaugeValue - 54) / 16, 0, 1);
+      const moonFadeOut = clamp((151 - gaugeValue) / 16, 0, 1);
+      const moonOpacity = moonFadeIn * moonFadeOut;
+
+      // Sun does not fade out. It disappears naturally by moving below the scene.
+      sun.style.opacity = '1';
+      sun.style.visibility = 'visible';
+      // Moon fades in near 54 and fades out again after ~146.
+      moon.style.opacity = String(moonOpacity);
+      moon.style.visibility = 'visible';
+      stars.style.opacity = String(clamp(Math.pow(night, 1.2), 0, 1) * 0.96);
+
+      const dayBack = [52, 104, 34];
+      const nightBack = [18, 46, 18];
+      const dayFront = [23, 57, 22];
+      const nightFront = [10, 28, 12];
+
+      const backColor = mix(nightBack, dayBack, daylight);
+      const frontColor = mix(nightFront, dayFront, daylight);
+
+      hillBack.style.background = backColor;
+      hillFront.style.background = frontColor;
+
+      const cloudLight = Math.round(lerp(120, 255, daylight));
+      clouds.forEach((cloud, i) => {
+        cloud.style.background = `rgba(${cloudLight}, ${cloudLight}, ${cloudLight}, 0.82)`;
+        cloud.style.opacity = String(lerp(0.38, 0.96, daylight));
+        const drift = Math.sin(t * Math.PI * 2 + i * 1.4) * 8;
+        cloud.style.transform = `translateX(${drift}px)`;
+      });
+
+      if (sliderValue instanceof HTMLElement) {
+        sliderValue.textContent = `${Math.round(gaugeValue)}% · ${getPhaseLabel(t)}`;
+      }
+    }
+
+    function updateFromSlider() {
+      const rawValue = slider instanceof HTMLInputElement ? Number(slider.value) : 0;
+      const cycleProgress = ((rawValue % 200) + 200) % 200;
+      const t = clamp(cycleProgress / 200, 0, 1);
+      render(t);
+    }
+
+    function runSmokeTests() {
+      console.assert(card instanceof HTMLElement, 'sceneCard should exist');
+      console.assert(slider instanceof HTMLInputElement, 'timeSlider should exist');
+      console.assert(sliderValue instanceof HTMLElement, 'sliderValue should exist');
+      console.assert(typeof gradientAt(0) === 'string', 'gradientAt should return a string');
+      console.assert(typeof gradientAt(0.5) === 'string', 'gradientAt should work at mid cycle');
+      console.assert(clamp(-1, 0, 1) === 0, 'clamp lower bound failed');
+      console.assert(clamp(2, 0, 1) === 1, 'clamp upper bound failed');
+      console.assert(clamp(0.5, 0, 1) === 0.5, 'clamp identity failed');
+      console.assert(getPhaseLabel(0.05) === '낮', 'phase at 0.05 should be day');
+      console.assert(getPhaseLabel(0.25) === '노을', 'phase at 0.25 should be sunset');
+      console.assert(getPhaseLabel(0.5) === '밤', 'phase at 0.5 should be night');
+      console.assert(getPhaseLabel(0.75) === '노을', 'phase at 0.75 should be sunset');
+
+      render(0);
+      const testSun = card?.querySelector('.sun');
+      const testBack = card?.querySelector('.hill-back');
+      const testFront = card?.querySelector('.hill-front');
+
+      console.assert(testSun instanceof HTMLElement && testSun.style.visibility === 'visible', 'sun should be visible at day center');
+      console.assert(testBack instanceof HTMLElement && testBack.style.background.startsWith('rgb('), 'back hill should receive rgb background');
+      console.assert(testFront instanceof HTMLElement && testFront.style.background.startsWith('rgb('), 'front hill should receive rgb background');
+      console.assert(updateFromSlider.name === 'updateFromSlider', 'updateFromSlider should be a valid function name');
+    }
+
+    if (slider instanceof HTMLInputElement) {
+      slider.addEventListener('input', updateFromSlider);
+    }
+
+    window.addEventListener('resize', updateFromSlider);
+    runSmokeTests();
+    updateFromSlider();
+  </script>
+</body>
+</html>

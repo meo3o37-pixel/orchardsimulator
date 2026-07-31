@@ -1,0 +1,735 @@
+.fieldmap300-map {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  padding: 22px;
+  border-radius: 36px;
+  border: 1px solid rgba(209, 217, 199, 0.78);
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.92), transparent 28%),
+    linear-gradient(180deg, rgba(251, 249, 242, 0.98), rgba(244, 248, 239, 0.95)),
+    rgba(255, 255, 255, 0.92);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 24px 48px rgba(42, 65, 49, 0.1);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 18px;
+  overflow: hidden;
+}
+
+.animation-lab__map-only-preview {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.fieldmap300-map__tuning {
+  position: static;
+  width: 100%;
+  min-width: 0;
+  padding: 16px 14px;
+  border-radius: 24px;
+  border: 1px solid rgba(218, 224, 210, 0.96);
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.96), transparent 24%),
+    linear-gradient(180deg, rgba(250, 247, 239, 0.98), rgba(244, 240, 228, 0.96)),
+    rgba(255, 255, 255, 0.94);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.98),
+    0 16px 34px rgba(47, 66, 48, 0.18);
+}
+
+.fieldmap300-map__tuning-head {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.fieldmap300-map__tuning-copy-wrap {
+  display: grid;
+  gap: 4px;
+}
+
+.fieldmap300-map__tuning-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: #5f6858;
+  letter-spacing: -0.02em;
+}
+
+.fieldmap300-map__tuning-copy {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #73806f;
+}
+
+.fieldmap300-map__tuning-controls {
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.fieldmap300-map__tuning-toggle-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.fieldmap300-map__tuning-toggle {
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(214, 221, 204, 0.94);
+  background: rgba(255, 255, 255, 0.95);
+  color: #4a5e4b;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.fieldmap300-map__tuning-toggle.is-active {
+  border-color: rgba(143, 176, 117, 0.96);
+  background: linear-gradient(180deg, rgba(229, 242, 219, 0.98), rgba(216, 234, 203, 0.94));
+  color: #355b36;
+}
+
+.fieldmap300-map__tuning-toggle:disabled {
+  cursor: default;
+  opacity: 0.48;
+}
+
+.fieldmap300-map__tuning-control {
+  display: grid;
+  gap: 6px;
+}
+
+.fieldmap300-map__tuning-control.is-disabled {
+  opacity: 0.48;
+}
+
+.fieldmap300-map__tuning-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #4a5e4b;
+}
+
+.fieldmap300-map__tuning-row {
+  display: grid;
+  gap: 8px;
+  align-items: start;
+}
+
+.fieldmap300-map__tuning-row input[type="range"] {
+  width: 100%;
+  margin: 0;
+  accent-color: #5c8752;
+}
+
+.fieldmap300-map__tuning-value {
+  width: 96px;
+  min-width: 96px;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(214, 221, 204, 0.94);
+  background: rgba(255, 255, 255, 0.95);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px;
+  align-items: center;
+  justify-self: end;
+}
+
+.fieldmap300-map__tuning-number {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 700;
+  color: #496046;
+  text-align: right;
+  outline: none;
+}
+
+.fieldmap300-map__tuning-number:disabled {
+  cursor: default;
+}
+
+.fieldmap300-map__tuning-number::-webkit-outer-spin-button,
+.fieldmap300-map__tuning-number::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.fieldmap300-map__tuning-unit {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6a7865;
+}
+
+.fieldmap300-map__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: start;
+}
+
+.fieldmap300-map__heading {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.fieldmap300-map__eyebrow {
+  font-size: 12px;
+  font-weight: 800;
+  color: #6d6a5f;
+  letter-spacing: -0.02em;
+}
+
+.fieldmap300-map__title {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.15;
+  color: #2f4336;
+  letter-spacing: -0.05em;
+}
+
+.fieldmap300-map__description {
+  margin: 0;
+  max-width: 720px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #697468;
+}
+
+.fieldmap300-map__meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+
+.fieldmap300-map__summary,
+.fieldmap300-map__mode {
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(214, 221, 204, 0.94);
+  background: rgba(255, 255, 255, 0.95);
+  color: #647060;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.96);
+}
+
+.fieldmap300-map__mode {
+  background: linear-gradient(180deg, rgba(240, 246, 232, 0.96), rgba(233, 241, 223, 0.94));
+  color: #476744;
+  border-color: rgba(195, 209, 182, 0.94);
+}
+
+.fieldmap300-map__mode.is-install {
+  background: linear-gradient(180deg, rgba(230, 243, 221, 0.98), rgba(218, 236, 203, 0.94));
+  color: #355b36;
+  border-color: rgba(170, 196, 153, 0.96);
+}
+
+.fieldmap300-map__stage-shell {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto auto;
+  justify-items: center;
+  align-content: start;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 30px;
+  border: 1px solid rgba(216, 223, 206, 0.92);
+  background:
+    linear-gradient(180deg, rgba(247, 243, 232, 0.92), rgba(238, 236, 224, 0.9)),
+    rgba(255, 255, 255, 0.88);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.94);
+}
+
+.fieldmap300-map__stage {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 1 / 1;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(220, 235, 203, 0.96) 0%, rgba(190, 214, 150, 0.92) 28%, rgba(151, 185, 104, 0.9) 74%, rgba(143, 176, 96, 0.94) 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.36),
+    inset 0 -28px 40px rgba(67, 90, 42, 0.12);
+  cursor: grab;
+}
+
+.fieldmap300-map__stage.is-installing {
+  cursor: crosshair;
+}
+
+.fieldmap300-map__stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at top center, rgba(255, 255, 255, 0.28), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 22%, transparent 76%, rgba(104, 135, 70, 0.12));
+  pointer-events: none;
+}
+
+.fieldmap300-map__stage.is-dragging {
+  cursor: grabbing;
+}
+
+.fieldmap300-map__viewport {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+.fieldmap300-map__grid-shell {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.fieldmap300-map__grid {
+  position: relative;
+  display: grid;
+  gap: 0;
+  border-radius: 26px;
+  overflow: hidden;
+  box-shadow:
+    0 14px 28px rgba(67, 90, 42, 0.16),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+
+.fieldmap300-map__cell {
+  position: relative;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  min-height: 0;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 42%);
+  background-color: #6fbe55;
+  image-rendering: auto;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 -1px 0 rgba(69, 120, 47, 0.12);
+  cursor: pointer;
+}
+
+.fieldmap300-map__cell::after {
+  display: none;
+}
+
+.fieldmap300-map__cell-tree-image {
+  position: absolute;
+  left: calc(50% + var(--fieldmap300-tree-offset-x, 0%));
+  bottom: calc(var(--fieldmap300-tree-bottom, 0%) - var(--fieldmap300-tree-offset-y, 0%));
+  width: 284%;
+  height: 412%;
+  object-fit: contain;
+  object-position: center bottom;
+  opacity: var(--fieldmap300-tree-opacity, 1);
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  backface-visibility: hidden;
+  transform-origin: center bottom;
+  transform:
+    translateX(-50%)
+    rotate(var(--fieldmap300-tree-rotation, 0deg))
+    scale(
+      var(--fieldmap300-tree-scale-x-signed, var(--fieldmap300-tree-scale-x, 1)),
+      var(--fieldmap300-tree-scale-y-signed, var(--fieldmap300-tree-scale-y, 1))
+    )
+    translateZ(0);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.fieldmap300-map__cell-ground-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  object-position: center center;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.fieldmap300-map__cell-tree-image.is-tree-age-1 {
+  --fieldmap300-tree-offset-x: var(--treePainterAge1-offset-x, 0%);
+  --fieldmap300-tree-offset-y: var(--treePainterAge1-offset-y, 0%);
+  --fieldmap300-tree-scale-x: var(--treePainterAge1-scale-x, 1);
+  --fieldmap300-tree-scale-y: var(--treePainterAge1-scale-y, 1);
+  --fieldmap300-tree-rotation: var(--treePainterAge1-rotation, 0deg);
+  --fieldmap300-tree-opacity: var(--treePainterAge1-opacity, 1);
+  --fieldmap300-tree-flip-x: var(--treePainterAge1-flip-x, 1);
+  --fieldmap300-tree-flip-y: var(--treePainterAge1-flip-y, 1);
+}
+
+.fieldmap300-map__cell-tree-image.is-tree-age-2 {
+  --fieldmap300-tree-offset-x: var(--treePainterAge2-offset-x, 0%);
+  --fieldmap300-tree-offset-y: var(--treePainterAge2-offset-y, 0%);
+  --fieldmap300-tree-scale-x: var(--treePainterAge2-scale-x, 1);
+  --fieldmap300-tree-scale-y: var(--treePainterAge2-scale-y, 1);
+  --fieldmap300-tree-rotation: var(--treePainterAge2-rotation, 0deg);
+  --fieldmap300-tree-opacity: var(--treePainterAge2-opacity, 1);
+  --fieldmap300-tree-flip-x: var(--treePainterAge2-flip-x, 1);
+  --fieldmap300-tree-flip-y: var(--treePainterAge2-flip-y, 1);
+}
+
+.fieldmap300-map__cell-tree-image.is-tree-age-3 {
+  --fieldmap300-tree-offset-x: var(--treePainterAge3-offset-x, 0%);
+  --fieldmap300-tree-offset-y: var(--treePainterAge3-offset-y, 0%);
+  --fieldmap300-tree-scale-x: var(--treePainterAge3-scale-x, 1);
+  --fieldmap300-tree-scale-y: var(--treePainterAge3-scale-y, 1);
+  --fieldmap300-tree-rotation: var(--treePainterAge3-rotation, 0deg);
+  --fieldmap300-tree-opacity: var(--treePainterAge3-opacity, 1);
+  --fieldmap300-tree-flip-x: var(--treePainterAge3-flip-x, 1);
+  --fieldmap300-tree-flip-y: var(--treePainterAge3-flip-y, 1);
+}
+
+.fieldmap300-map__cell-tree-image.is-tree-age-4 {
+  --fieldmap300-tree-offset-x: var(--treePainterAge4-offset-x, 0%);
+  --fieldmap300-tree-offset-y: var(--treePainterAge4-offset-y, 0%);
+  --fieldmap300-tree-scale-x: var(--treePainterAge4-scale-x, 1);
+  --fieldmap300-tree-scale-y: var(--treePainterAge4-scale-y, 1);
+  --fieldmap300-tree-rotation: var(--treePainterAge4-rotation, 0deg);
+  --fieldmap300-tree-opacity: var(--treePainterAge4-opacity, 1);
+  --fieldmap300-tree-flip-x: var(--treePainterAge4-flip-x, 1);
+  --fieldmap300-tree-flip-y: var(--treePainterAge4-flip-y, 1);
+}
+
+.fieldmap300-map__cell-tree-image.is-tree-age-5 {
+  --fieldmap300-tree-offset-x: var(--treePainterAge5-offset-x, 0%);
+  --fieldmap300-tree-offset-y: var(--treePainterAge5-offset-y, 0%);
+  --fieldmap300-tree-scale-x: var(--treePainterAge5-scale-x, 1);
+  --fieldmap300-tree-scale-y: var(--treePainterAge5-scale-y, 1);
+  --fieldmap300-tree-rotation: var(--treePainterAge5-rotation, 0deg);
+  --fieldmap300-tree-opacity: var(--treePainterAge5-opacity, 1);
+  --fieldmap300-tree-flip-x: var(--treePainterAge5-flip-x, 1);
+  --fieldmap300-tree-flip-y: var(--treePainterAge5-flip-y, 1);
+}
+
+.fieldmap300-map__cell-tree-image.is-tree-age-6 {
+  --fieldmap300-tree-offset-x: var(--treePainterAge6-offset-x, 0%);
+  --fieldmap300-tree-offset-y: var(--treePainterAge6-offset-y, 0%);
+  --fieldmap300-tree-scale-x: var(--treePainterAge6-scale-x, 1);
+  --fieldmap300-tree-scale-y: var(--treePainterAge6-scale-y, 1);
+  --fieldmap300-tree-rotation: var(--treePainterAge6-rotation, 0deg);
+  --fieldmap300-tree-opacity: var(--treePainterAge6-opacity, 1);
+  --fieldmap300-tree-flip-x: var(--treePainterAge6-flip-x, 1);
+  --fieldmap300-tree-flip-y: var(--treePainterAge6-flip-y, 1);
+}
+
+.fieldmap300-map__cell.is-tree {
+  overflow: visible;
+  z-index: 1;
+}
+
+.fieldmap300-map__cell.is-edge {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 36%);
+  background-color: #6fbe55;
+}
+
+.fieldmap300-map__cell.is-edge::after,
+.fieldmap300-map__cell.is-tree::after,
+.fieldmap300-map__cell.is-facility::after,
+.fieldmap300-map__cell.is-shed::after,
+.fieldmap300-map__cell.is-water::after,
+.fieldmap300-map__cell.is-well::after,
+.fieldmap300-map__cell.is-apron::after {
+  display: none;
+}
+
+.fieldmap300-map__cell.is-winter-ground {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 42%);
+  background-color: #6fbe55;
+}
+
+.fieldmap300-map__cell.is-facility,
+.fieldmap300-map__cell.is-shed,
+.fieldmap300-map__cell.is-water,
+.fieldmap300-map__cell.is-well,
+.fieldmap300-map__cell.is-apron {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 42%);
+  background-color: #6fbe55;
+  image-rendering: auto;
+}
+
+.fieldmap300-map__cell.is-selected {
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.96),
+    inset 0 0 0 4px rgba(59, 98, 58, 0.54);
+  z-index: 2;
+}
+
+.fieldmap300-map__overlay-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.fieldmap300-map__overlay,
+.fieldmap300-map__ghost {
+  position: absolute;
+  border-radius: 0;
+}
+
+.fieldmap300-map__overlay {
+  display: grid;
+  place-items: center;
+  z-index: 4;
+  overflow: visible;
+}
+
+.fieldmap300-map__overlay.is-matching-selection::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(68, 144, 255, 0.96);
+  box-shadow: inset 0 0 0 1px rgba(186, 220, 255, 0.28);
+  pointer-events: none;
+}
+
+.fieldmap300-map__overlay-transform {
+  position: absolute;
+  inset: 0;
+}
+
+.fieldmap300-map__overlay.is-facility,
+.fieldmap300-map__overlay.is-water,
+.fieldmap300-map__overlay.is-well {
+  background: transparent;
+}
+
+.fieldmap300-map__ghost {
+  pointer-events: none;
+  border: 2px solid rgba(68, 122, 60, 0.88);
+  background: rgba(164, 213, 135, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.48);
+  z-index: 5;
+}
+
+.fieldmap300-map__ghost.is-invalid {
+  border-color: rgba(181, 84, 63, 0.9);
+  background: rgba(207, 108, 85, 0.2);
+}
+
+.fieldmap300-map__overlay-art {
+  position: absolute;
+  inset: 2%;
+  display: grid;
+  place-items: center;
+}
+
+.fieldmap300-map__overlay.is-tree .fieldmap300-map__overlay-art {
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: visible;
+}
+
+.fieldmap300-map__overlay.is-tree .fieldmap300-map__overlay-art img {
+  width: 284%;
+  height: 412%;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+.fieldmap300-map__overlay-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.fieldmap300-map__overlay.is-shed .fieldmap300-map__overlay-art img {
+  width: 100%;
+  height: 132%;
+  object-fit: fill;
+  object-position: center center;
+}
+
+.fieldmap300-map__overlay.is-water.is-water-xl .fieldmap300-map__overlay-art img {
+  width: 138%;
+  height: 138%;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+.fieldmap300-map__overlay-art .fieldmap300-install-ui__tree-art {
+  inset: 0;
+}
+
+.fieldmap300-map__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.fieldmap300-map__legend span {
+  padding: 9px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(213, 220, 203, 0.92);
+  background: rgba(255, 255, 255, 0.92);
+  color: #60705f;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.fieldmap300-map__overlay-art--tree-age-1,
+.fieldmap300-map__cell.is-tree-age-1 {
+  --tree-trunk-width: 13%;
+  --tree-trunk-height: 28%;
+  --tree-trunk-bottom: 10%;
+  --tree-leaf-top-size: 36%;
+  --tree-leaf-side-size: 32%;
+  --tree-leaf-bottom-size: 40%;
+  --tree-leaf-top-offset: 24%;
+  --tree-leaf-side-offset: 40%;
+  --tree-leaf-bottom-offset: 48%;
+  --tree-leaf-side-inset: 15%;
+}
+
+.fieldmap300-map__overlay-art--tree-age-2,
+.fieldmap300-map__cell.is-tree-age-2 {
+  --tree-trunk-width: 14%;
+  --tree-trunk-height: 30%;
+  --tree-trunk-bottom: 9%;
+  --tree-leaf-top-size: 39%;
+  --tree-leaf-side-size: 35%;
+  --tree-leaf-bottom-size: 43%;
+  --tree-leaf-top-offset: 21%;
+  --tree-leaf-side-offset: 37%;
+  --tree-leaf-bottom-offset: 45%;
+  --tree-leaf-side-inset: 14%;
+}
+
+.fieldmap300-map__overlay-art--tree-age-3,
+.fieldmap300-map__cell.is-tree-age-3 {
+  --tree-trunk-width: 15%;
+  --tree-trunk-height: 32%;
+  --tree-trunk-bottom: 8%;
+  --tree-leaf-top-size: 42%;
+  --tree-leaf-side-size: 38%;
+  --tree-leaf-bottom-size: 46%;
+  --tree-leaf-top-offset: 18%;
+  --tree-leaf-side-offset: 34%;
+  --tree-leaf-bottom-offset: 42%;
+  --tree-leaf-side-inset: 13%;
+}
+
+.fieldmap300-map__overlay-art--tree-age-4,
+.fieldmap300-map__cell.is-tree-age-4 {
+  --tree-image-bottom: 8%;
+  --tree-trunk-width: 16%;
+  --tree-trunk-height: 34%;
+  --tree-trunk-bottom: 7%;
+  --tree-leaf-top-size: 45%;
+  --tree-leaf-side-size: 41%;
+  --tree-leaf-bottom-size: 49%;
+  --tree-leaf-top-offset: 15%;
+  --tree-leaf-side-offset: 31%;
+  --tree-leaf-bottom-offset: 39%;
+  --tree-leaf-side-inset: 12%;
+}
+
+.fieldmap300-map__overlay-art--tree-age-5,
+.fieldmap300-map__cell.is-tree-age-5 {
+  --tree-image-bottom: 14%;
+  --tree-trunk-width: 17%;
+  --tree-trunk-height: 37%;
+  --tree-trunk-bottom: 6%;
+  --tree-leaf-top-size: 48%;
+  --tree-leaf-side-size: 44%;
+  --tree-leaf-bottom-size: 52%;
+  --tree-leaf-top-offset: 12%;
+  --tree-leaf-side-offset: 28%;
+  --tree-leaf-bottom-offset: 36%;
+  --tree-leaf-side-inset: 11%;
+}
+
+.fieldmap300-map__overlay-art--tree-age-6,
+.fieldmap300-map__cell.is-tree-age-6 {
+  --tree-image-bottom: 20%;
+  --tree-trunk-width: 18%;
+  --tree-trunk-height: 40%;
+  --tree-trunk-bottom: 5%;
+  --tree-leaf-top-size: 51%;
+  --tree-leaf-side-size: 47%;
+  --tree-leaf-bottom-size: 55%;
+  --tree-leaf-top-offset: 10%;
+  --tree-leaf-side-offset: 25%;
+  --tree-leaf-bottom-offset: 33%;
+  --tree-leaf-side-inset: 10%;
+}
+
+@media (max-width: 1180px) {
+  .animation-lab__map-only-preview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .fieldmap300-map {
+    padding: 18px;
+    border-radius: 30px;
+  }
+
+  .fieldmap300-map__header {
+    grid-template-columns: 1fr;
+  }
+
+  .fieldmap300-map__meta {
+    justify-content: flex-start;
+    justify-content: start;
+  }
+}
+
+@media (max-width: 760px) {
+  .animation-lab__map-only-preview {
+    gap: 14px;
+  }
+
+  .fieldmap300-map {
+    padding: 14px;
+    border-radius: 24px;
+  }
+
+  .fieldmap300-map__title {
+    font-size: 22px;
+  }
+
+  .fieldmap300-map__stage-shell {
+    padding: 10px;
+    border-radius: 22px;
+  }
+
+  .fieldmap300-map__stage {
+    width: 100%;
+    border-radius: 18px;
+  }
+}
