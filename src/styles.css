@@ -31140,6 +31140,22 @@ button.small-apc-receiving-queue__item:hover {
   transform: none;
 }
 
+.housing-interior-cooking-appliance-card.is-broken {
+  cursor: default;
+  border-color: rgba(154, 67, 58, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(255, 229, 220, 0.58), rgba(255, 255, 255, 0) 56%),
+    rgba(255, 253, 248, 0.92);
+}
+
+.housing-interior-cooking-appliance-card.is-broken:hover,
+.housing-interior-cooking-appliance-card.is-broken:focus-visible,
+.housing-interior-cooking-appliance-card.is-broken:active {
+  transform: none;
+  box-shadow: none;
+  outline: none;
+}
+
 .housing-interior-cooking-appliance-card__head,
 .housing-interior-cooking-appliance-card__body {
   display: flex;
@@ -32539,12 +32555,13 @@ button.small-apc-receiving-queue__item:hover {
 }
 
 .housing-interior-placeholder-grid--water-source {
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
 }
 
 .housing-interior-placeholder-grid--water-source .housing-interior-placeholder-card--storage-wide,
 .housing-interior-placeholder-grid--boiler .housing-interior-placeholder-card--storage-wide {
-  max-height: min(66vh, 620px);
+  max-height: min(76vh, 720px);
   overflow: auto;
 }
 
@@ -32552,8 +32569,126 @@ button.small-apc-receiving-queue__item:hover {
   grid-template-columns: minmax(0, 1fr);
 }
 
+.housing-interior-water-source-summary-card {
+  display: grid;
+  gap: 12px;
+  min-height: 220px;
+  padding: 16px;
+  border: 1px solid rgba(39, 93, 62, 0.14);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top right, rgba(211, 242, 221, 0.46), rgba(255, 255, 255, 0) 58%),
+    rgba(255, 253, 248, 0.94);
+  color: inherit;
+  text-align: left;
+  box-shadow: 0 14px 32px rgba(39, 93, 62, 0.08);
+}
+
+button.housing-interior-water-source-summary-card {
+  cursor: pointer;
+}
+
+button.housing-interior-water-source-summary-card:hover {
+  border-color: rgba(43, 111, 73, 0.32);
+  transform: translateY(-1px);
+}
+
+.housing-interior-water-source-summary-card--tank {
+  background:
+    radial-gradient(circle at top right, rgba(207, 247, 237, 0.72), rgba(255, 255, 255, 0) 58%),
+    linear-gradient(135deg, rgba(244, 255, 250, 0.96), rgba(255, 253, 248, 0.92));
+}
+
+.housing-interior-water-source-summary-card--bottled {
+  background:
+    radial-gradient(circle at top right, rgba(228, 241, 255, 0.64), rgba(255, 255, 255, 0) 58%),
+    linear-gradient(135deg, rgba(247, 252, 255, 0.96), rgba(255, 253, 248, 0.92));
+}
+
+.housing-interior-water-source-summary-card__hint {
+  color: rgba(33, 76, 53, 0.68);
+  font-size: 0.84rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
 .housing-interior-boiler-slot-card {
+  display: grid;
+  gap: 12px;
   min-height: 180px;
+}
+
+.housing-interior-boiler-slot-card.is-ready {
+  border-color: rgba(54, 127, 86, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(188, 230, 199, 0.44), rgba(255, 255, 255, 0) 58%),
+    linear-gradient(135deg, rgba(249, 255, 246, 0.98), rgba(243, 252, 247, 0.9));
+}
+
+.housing-interior-boiler-slot-card.is-blocked {
+  border-color: rgba(180, 96, 50, 0.26);
+  background:
+    radial-gradient(circle at top right, rgba(255, 207, 162, 0.46), rgba(255, 255, 255, 0) 58%),
+    linear-gradient(135deg, rgba(255, 250, 241, 0.98), rgba(255, 247, 238, 0.9));
+}
+
+.housing-interior-boiler-status-card__summary {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px dashed rgba(39, 93, 62, 0.16);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.housing-interior-boiler-status-card__summary strong {
+  color: #245338;
+  font-size: 1.02rem;
+  font-weight: 900;
+}
+
+.housing-interior-boiler-status-card__summary span {
+  color: #6e7d6d;
+  font-size: 0.84rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.housing-interior-boiler-status-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.housing-interior-boiler-status-item {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(39, 93, 62, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.56);
+}
+
+.housing-interior-boiler-status-item span {
+  color: #7d8c79;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.housing-interior-boiler-status-item strong {
+  min-width: 0;
+  color: #244d36;
+  font-size: 0.94rem;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.housing-interior-boiler-status-item small {
+  color: #71816f;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.35;
 }
 
 .housing-interior-boiler-slot-card.is-installed {
@@ -32561,6 +32696,20 @@ button.small-apc-receiving-queue__item:hover {
   background:
     radial-gradient(circle at top right, rgba(255, 216, 170, 0.42), rgba(255, 255, 255, 0) 58%),
     linear-gradient(135deg, rgba(255, 251, 242, 0.96), rgba(246, 255, 245, 0.86));
+}
+
+.housing-interior-boiler-slot-card.is-installed.is-ready {
+  border-color: rgba(54, 127, 86, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(188, 230, 199, 0.44), rgba(255, 255, 255, 0) 58%),
+    linear-gradient(135deg, rgba(249, 255, 246, 0.98), rgba(243, 252, 247, 0.9));
+}
+
+.housing-interior-boiler-slot-card.is-installed.is-blocked {
+  border-color: rgba(180, 96, 50, 0.26);
+  background:
+    radial-gradient(circle at top right, rgba(255, 207, 162, 0.46), rgba(255, 255, 255, 0) 58%),
+    linear-gradient(135deg, rgba(255, 250, 241, 0.98), rgba(255, 247, 238, 0.9));
 }
 
 .housing-interior-storage-panel {
@@ -32583,6 +32732,12 @@ button.small-apc-receiving-queue__item:hover {
 .housing-interior-storage-tabs .focus-tab {
   min-width: 86px;
   justify-content: center;
+}
+
+@media (max-width: 760px) {
+  .housing-interior-boiler-status-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .housing-interior-placeholder-card--storage-wide,
@@ -32626,6 +32781,17 @@ button.small-apc-receiving-queue__item:hover {
   padding-right: 0;
 }
 
+.confirm-modal--housing-water-tank-detail {
+  width: min(1080px, calc(100vw - 48px));
+  max-height: min(86vh, 820px);
+}
+
+.housing-interior-water-tank-slot-grid--modal {
+  max-height: min(62vh, 560px);
+  overflow: auto;
+  padding-right: 4px;
+}
+
 .housing-interior-water-source-storage-list {
   margin-top: 12px;
   max-height: 110px;
@@ -32646,10 +32812,82 @@ button.small-apc-receiving-queue__item:hover {
 }
 
 .housing-interior-external-water-tank-card.is-installed {
+  min-height: 292px;
   border-color: rgba(65, 172, 147, 0.26);
   background:
     radial-gradient(circle at top right, rgba(207, 247, 237, 0.72), rgba(255, 255, 255, 0) 58%),
     linear-gradient(135deg, rgba(244, 255, 250, 0.96), rgba(255, 253, 248, 0.92));
+}
+
+.housing-interior-external-water-tank-card .housing-interior-appliance-slot-card__head {
+  align-items: flex-start;
+}
+
+.housing-interior-external-water-tank-card .tank-water-readout-badge {
+  margin-left: auto;
+}
+
+.housing-interior-tank-water-visual,
+.housing-interior-tank-water-estimate {
+  margin: 6px auto 0;
+}
+
+.housing-interior-tank-water-visual {
+  grid-template-columns: 44px 128px;
+  gap: 8px 10px;
+  width: min(232px, 100%);
+  min-height: 178px;
+  padding: 12px 14px;
+}
+
+.housing-interior-tank-water-visual .tank-water-visual__tank {
+  height: 88px;
+}
+
+.housing-interior-tank-water-visual .tank-water-visual__scale {
+  font-size: 0.55rem;
+}
+
+.housing-interior-tank-water-visual .tank-water-visual__readout strong {
+  font-size: 1.28rem;
+}
+
+.housing-interior-tank-water-visual .tank-water-visual__readout span {
+  margin-top: 3px;
+  font-size: 0.86rem;
+}
+
+.housing-interior-tank-water-visual .tank-water-visual__readout small,
+.housing-interior-tank-water-visual .tank-water-visual__readout em {
+  margin-top: 3px;
+  font-size: 0.62rem;
+}
+
+.housing-interior-tank-water-estimate {
+  width: min(232px, 100%);
+  min-height: 178px;
+  padding: 12px 14px;
+}
+
+.housing-interior-tank-water-estimate strong {
+  font-size: 1.2rem;
+}
+
+.housing-interior-tank-water-estimate .tank-water-estimate__tank {
+  width: min(128px, 100%);
+  height: 88px;
+  margin-top: 8px;
+}
+
+.housing-interior-tank-water-estimate small {
+  font-size: 0.62rem;
+  line-height: 1.18;
+}
+
+.housing-interior-water-tank-slot-card__actions .tank-water-action-button {
+  min-height: 40px;
+  min-width: 104px;
+  padding: 8px 14px;
 }
 
 .housing-interior-external-water-tank-card .housing-interior-appliance-slot-card__installed {
@@ -32779,6 +33017,13 @@ button.small-apc-receiving-queue__item:hover {
     rgba(255, 253, 248, 0.94);
 }
 
+.housing-interior-appliance-slot-card.is-broken {
+  border-color: rgba(154, 67, 58, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(255, 229, 220, 0.58), rgba(255, 255, 255, 0) 52%),
+    rgba(255, 253, 248, 0.94);
+}
+
 .housing-interior-appliance-slot-card__installed {
   min-height: 86px;
   border-radius: 14px;
@@ -32821,6 +33066,52 @@ button.small-apc-receiving-queue__item:hover {
   font-size: 0.75rem;
   font-weight: 800;
   line-height: 1.25;
+}
+
+.housing-interior-slot-durability {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  justify-self: end;
+  gap: 6px;
+  width: 100%;
+  max-width: 148px;
+  min-height: 18px;
+  padding: 2px 4px;
+  border-radius: 6px;
+  border: 0;
+  background: transparent;
+  font-size: 0.64rem;
+  font-weight: 750;
+  line-height: 1;
+  opacity: 0.68;
+}
+
+.housing-interior-slot-durability span,
+.housing-interior-slot-durability strong {
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: 1;
+}
+
+.housing-interior-slot-durability strong {
+  white-space: nowrap;
+}
+
+.housing-interior-slot-durability.durability--green {
+  color: rgba(33, 76, 53, 0.62);
+}
+
+.housing-interior-storage-item-durability {
+  color: rgba(33, 76, 53, 0.58);
+  font-size: 0.7rem;
+  font-weight: 750;
+  line-height: 1.15;
+}
+
+.housing-interior-storage-item-durability.durability--green {
+  color: rgba(33, 76, 53, 0.58);
 }
 
 .housing-build-furniture-choice {

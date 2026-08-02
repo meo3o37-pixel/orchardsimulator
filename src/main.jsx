@@ -1,9 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import GameBootLoader, { LoadingScreen } from './systems/loading/GameBootLoader.jsx';
+import { registerAssetCacheServiceWorker } from './systems/cache/registerAssetCache';
 import './styles.css';
 
 document.title = '농장 시뮬레이터';
+registerAssetCacheServiceWorker();
 
 const App = React.lazy(() => import('./App.jsx'));
 

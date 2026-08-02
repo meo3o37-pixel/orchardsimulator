@@ -14,6 +14,168 @@ import {
 } from './storageSlotModel';
 import { formatHarvestBoxStateLabel } from './harvestBoxLabel';
 
+const WAREHOUSE_ROWS_VIEW_CACHE_BY_ROWS = new WeakMap();
+const WAREHOUSE_VISIBLE_ROWS_CACHE_BY_ROWS_VIEW = new WeakMap();
+const WAREHOUSE_EMPTY_ROWS = Object.freeze([]);
+const WAREHOUSE_SUBTAB_KEYS = Object.freeze([
+  'harvestContainer',
+  'fuelContainer',
+  'pallet',
+  'waterTank',
+  'pruningTool',
+  'transportTool',
+  'sprayTool',
+  'installTool',
+  'trellisMaterial',
+  'irrigationMaterial',
+  'reflectiveMaterial'
+]);
+const WAREHOUSE_SUBTAB_KEY_SET = new Set(WAREHOUSE_SUBTAB_KEYS);
+const WAREHOUSE_OBJECT_CACHE_IDS = new WeakMap();
+let warehouseObjectCacheIdSeq = 0;
+
+const warehouseObjectCacheIdOf = (value) => {
+  if ((typeof value !== 'object' && typeof value !== 'function') || value === null) return String(value);
+  let id = WAREHOUSE_OBJECT_CACHE_IDS.get(value);
+  if (!id) {
+    warehouseObjectCacheIdSeq += 1;
+    id = `ref-${warehouseObjectCacheIdSeq}`;
+    WAREHOUSE_OBJECT_CACHE_IDS.set(value, id);
+  }
+  return id;
+};
+
+const warehouseCachedMapGetOrSet = (cacheMap, key, buildValue) => {
+  if (cacheMap.has(key)) return cacheMap.get(key);
+  const value = buildValue();
+  cacheMap.set(key, value);
+  return value;
+};
+
+const storageSubTabMatchesWarehouseItem = (tabKeyRaw = '', item = {}) => {
+  const tabKey = String(tabKeyRaw || '');
+  const category = String(item?.category || '');
+  const itemKey = String(item?.key || item?.displayKey || '');
+  const name = String(item?.name || '');
+  const type = String(item?.type || '');
+  const text = `${itemKey} ${name} ${type}`;
+  if (tabKey === 'harvestContainer') {
+    return category === 'container' && /appleContainer|수확|20kg들이|컨테이너/i.test(text);
+  }
+  if (tabKey === 'fuelContainer') {
+    return category === 'container' && /containerCan|말통|연료|경유|휘발유|등유|fuel|jerry/i.test(text);
+  }
+  if (tabKey === 'pallet') {
+    return category === 'container' && /pallet|pallette|파렛트|팔레트/i.test(text);
+  }
+  if (tabKey === 'waterTank') {
+    return category === 'container' && /waterTank|물탱크|생활수/i.test(text);
+  }
+  if (tabKey === 'pruningTool') {
+    return category === 'tool' && /pruning|thinning|전정|적과|가위|톱/i.test(text);
+  }
+  if (tabKey === 'transportTool') {
+    return category === 'tool' && /cart|wheelbarrow|palletJack|ladder|사다리|카트|손수레|팔레트 잭|운반/i.test(text);
+  }
+  if (tabKey === 'sprayTool') {
+    return category === 'tool' && (type === 'spray' || /sprayer|등짐|분무|방제/i.test(text));
+  }
+  if (tabKey === 'installTool') {
+    return category === 'tool' && /sortingParts|reflectiveFilmCoverMachine|brickTongs|부품|도포기|집게/i.test(text);
+  }
+  if (tabKey === 'trellisMaterial') {
+    return category === 'consumableMaterial' && /trellis|stake|scaffold|wire|anchor|binding|training|cableTie|지주|비계|와이어|앙카|결속|유인끈|타이/i.test(text);
+  }
+  if (tabKey === 'irrigationMaterial') {
+    return category === 'consumableMaterial' && /irrigation|drip|sprinkler|관수|점적|스프링클러|살수|노즐|배관/i.test(text);
+  }
+  if (tabKey === 'reflectiveMaterial') {
+    return category === 'consumableMaterial' && /reflective|반사필름/i.test(text);
+  }
+  return false;
+};
+
+const warehouseRowsViewOf = ({
+  facilityStorageRows,
+  facilityStorageTab,
+  facilityStorageFacilityTab,
+  isHarvestStorageItem
+}) => {
+  const rows = Array.isArray(facilityStorageRows) ? facilityStorageRows : WAREHOUSE_EMPTY_ROWS;
+  let cacheByKey = WAREHOUSE_ROWS_VIEW_CACHE_BY_ROWS.get(rows);
+  if (!cacheByKey) {
+    cacheByKey = new Map();
+    WAREHOUSE_ROWS_VIEW_CACHE_BY_ROWS.set(rows, cacheByKey);
+  }
+  const tabKey = String(facilityStorageTab || '');
+  const facilityTabKey = String(facilityStorageFacilityTab || '');
+  const cacheKey = [
+    tabKey,
+    facilityTabKey,
+    warehouseObjectCacheIdOf(isHarvestStorageItem)
+  ].join('|');
+  return warehouseCachedMapGetOrSet(cacheByKey, cacheKey, () => {
+    if (tabKey === 'all') {
+      return rows.filter((item) => String(item?.category || '') !== 'facility' && !item?.isParkedMachineRow);
+    }
+    if (tabKey === 'harvest' || (tabKey === 'facility' && facilityTabKey === 'harvest')) {
+      return rows.filter((item) => isHarvestStorageItem(item));
+    }
+    if (tabKey === 'vehicle') {
+      return rows.filter((item) => Boolean(item?.isParkedMachineRow));
+    }
+    if (tabKey === 'farmInput') {
+      return rows.filter((item) => ['pesticide', 'pollen', 'fertilizer'].includes(String(item?.category || '')));
+    }
+    if (WAREHOUSE_SUBTAB_KEY_SET.has(tabKey)) {
+      return rows.filter((item) => storageSubTabMatchesWarehouseItem(tabKey, item));
+    }
+    return rows.filter((item) => String(item?.category || '') === tabKey);
+  });
+};
+
+const warehouseVisibleRowsOf = ({
+  facilityStorageTab,
+  facilityStorageFacilityTab,
+  facilityStorageHarvestTab,
+  facilityStorageSupportsHarvestPalletSlots,
+  facilityStorageRowsView,
+  facilityStorageHarvestGeneralRows,
+  appleSortingFacilityKeys
+}) => {
+  const tabKey = String(facilityStorageTab || '');
+  const facilityTabKey = String(facilityStorageFacilityTab || '');
+  const harvestTabKey = String(facilityStorageHarvestTab || '');
+  if (tabKey === 'facility') {
+    if (facilityTabKey === 'harvest') {
+      if (facilityStorageSupportsHarvestPalletSlots) return WAREHOUSE_EMPTY_ROWS;
+      return harvestTabKey === 'general' ? facilityStorageHarvestGeneralRows : WAREHOUSE_EMPTY_ROWS;
+    }
+    if (facilityTabKey === 'workbench') return WAREHOUSE_EMPTY_ROWS;
+    if (facilityTabKey !== 'sorting') return WAREHOUSE_EMPTY_ROWS;
+  } else if (tabKey === 'harvest') {
+    if (facilityStorageSupportsHarvestPalletSlots) return WAREHOUSE_EMPTY_ROWS;
+    return harvestTabKey === 'general' ? facilityStorageHarvestGeneralRows : WAREHOUSE_EMPTY_ROWS;
+  } else {
+    return facilityStorageRowsView;
+  }
+
+  const rowsView = Array.isArray(facilityStorageRowsView) ? facilityStorageRowsView : WAREHOUSE_EMPTY_ROWS;
+  let cacheByKey = WAREHOUSE_VISIBLE_ROWS_CACHE_BY_ROWS_VIEW.get(rowsView);
+  if (!cacheByKey) {
+    cacheByKey = new Map();
+    WAREHOUSE_VISIBLE_ROWS_CACHE_BY_ROWS_VIEW.set(rowsView, cacheByKey);
+  }
+  const sortingKeys = Array.isArray(appleSortingFacilityKeys) ? appleSortingFacilityKeys : [];
+  const sortingKey = sortingKeys
+    .map((key) => String(key || ''))
+    .join(',');
+  const cacheKey = `${facilityTabKey}|${sortingKey}`;
+  return warehouseCachedMapGetOrSet(cacheByKey, cacheKey, () => (
+    rowsView.filter((item) => sortingKeys.includes(String(item?.facilityKey || item?.key || '')))
+  ));
+};
+
 export function useWarehouseStorageFacilityTabGuard(
   facilityTabs,
   activeFacilityTab,
@@ -113,69 +275,19 @@ export function useWarehouseStorageViewState({
   facilityStoragePanelSlideArmed,
   facilityStoragePanelSlideDirection
 }) {
-  const storageSubTabMatchesItem = useCallback((tabKeyRaw = '', item = {}) => {
-    const tabKey = String(tabKeyRaw || '');
-    const category = String(item?.category || '');
-    const itemKey = String(item?.key || item?.displayKey || '');
-    const name = String(item?.name || '');
-    const type = String(item?.type || '');
-    const text = `${itemKey} ${name} ${type}`;
-    if (tabKey === 'harvestContainer') {
-      return category === 'container' && /appleContainer|수확|20kg들이|컨테이너/i.test(text);
-    }
-    if (tabKey === 'fuelContainer') {
-      return category === 'container' && /containerCan|말통|연료|경유|휘발유|등유|fuel|jerry/i.test(text);
-    }
-    if (tabKey === 'pallet') {
-      return category === 'container' && /pallet|pallette|파렛트|팔레트/i.test(text);
-    }
-    if (tabKey === 'waterTank') {
-      return category === 'container' && /waterTank|물탱크|생활수/i.test(text);
-    }
-    if (tabKey === 'pruningTool') {
-      return category === 'tool' && /pruning|thinning|전정|적과|가위|톱/i.test(text);
-    }
-    if (tabKey === 'transportTool') {
-      return category === 'tool' && /cart|wheelbarrow|palletJack|ladder|사다리|카트|손수레|팔레트 잭|운반/i.test(text);
-    }
-    if (tabKey === 'sprayTool') {
-      return category === 'tool' && (type === 'spray' || /sprayer|등짐|분무|방제/i.test(text));
-    }
-    if (tabKey === 'installTool') {
-      return category === 'tool' && /sortingParts|reflectiveFilmCoverMachine|brickTongs|부품|도포기|집게/i.test(text);
-    }
-    if (tabKey === 'trellisMaterial') {
-      return category === 'consumableMaterial' && /trellis|stake|scaffold|wire|anchor|binding|training|cableTie|지주|비계|와이어|앙카|결속|유인끈|타이/i.test(text);
-    }
-    if (tabKey === 'irrigationMaterial') {
-      return category === 'consumableMaterial' && /irrigation|drip|sprinkler|관수|점적|스프링클러|살수|노즐|배관/i.test(text);
-    }
-    if (tabKey === 'reflectiveMaterial') {
-      return category === 'consumableMaterial' && /reflective|반사필름/i.test(text);
-    }
-    return false;
-  }, []);
-
   const primaryTabs = useMemo(
     () => facilityStorageTabs.filter(([key]) => String(key || '') !== 'facility'),
     [facilityStorageTabs]
   );
 
   const rowsView = useMemo(
-    () => (
-      facilityStorageTab === 'all'
-        ? facilityStorageRows.filter((item) => String(item?.category || '') !== 'facility' && !item?.isParkedMachineRow)
-        : (facilityStorageTab === 'harvest' || (facilityStorageTab === 'facility' && facilityStorageFacilityTab === 'harvest')
-            ? facilityStorageRows.filter((item) => isHarvestStorageItem(item))
-            : facilityStorageTab === 'vehicle'
-              ? facilityStorageRows.filter((item) => Boolean(item?.isParkedMachineRow))
-            : facilityStorageTab === 'farmInput'
-              ? facilityStorageRows.filter((item) => ['pesticide', 'pollen', 'fertilizer'].includes(String(item?.category || '')))
-              : ['harvestContainer', 'fuelContainer', 'pallet', 'waterTank', 'pruningTool', 'transportTool', 'sprayTool', 'installTool', 'trellisMaterial', 'irrigationMaterial', 'reflectiveMaterial'].includes(String(facilityStorageTab || ''))
-                ? facilityStorageRows.filter((item) => storageSubTabMatchesItem(facilityStorageTab, item))
-                : facilityStorageRows.filter((item) => String(item?.category || '') === facilityStorageTab))
-    ),
-    [facilityStorageFacilityTab, facilityStorageRows, facilityStorageTab, isHarvestStorageItem, storageSubTabMatchesItem]
+    () => warehouseRowsViewOf({
+      facilityStorageRows,
+      facilityStorageTab,
+      facilityStorageFacilityTab,
+      isHarvestStorageItem
+    }),
+    [facilityStorageFacilityTab, facilityStorageRows, facilityStorageTab, isHarvestStorageItem]
   );
 
   const harvestTabs = useMemo(
@@ -281,20 +393,15 @@ export function useWarehouseStorageVisibleRows({
   appleSortingFacilityKeys
 }) {
   return useMemo(() => {
-    if (facilityStorageTab === 'facility') {
-      if (facilityStorageFacilityTab === 'harvest') {
-        if (facilityStorageSupportsHarvestPalletSlots) return [];
-        return facilityStorageHarvestTab === 'general' ? facilityStorageHarvestGeneralRows : [];
-      }
-      if (facilityStorageFacilityTab === 'sorting') {
-        return facilityStorageRowsView.filter((item) => appleSortingFacilityKeys.includes(String(item?.facilityKey || item?.key || '')));
-      }
-      if (facilityStorageFacilityTab === 'workbench') return [];
-      return [];
-    }
-    if (facilityStorageTab !== 'harvest') return facilityStorageRowsView;
-    if (facilityStorageSupportsHarvestPalletSlots) return [];
-    return facilityStorageHarvestTab === 'general' ? facilityStorageHarvestGeneralRows : [];
+    return warehouseVisibleRowsOf({
+      facilityStorageTab,
+      facilityStorageFacilityTab,
+      facilityStorageHarvestTab,
+      facilityStorageSupportsHarvestPalletSlots,
+      facilityStorageRowsView,
+      facilityStorageHarvestGeneralRows,
+      appleSortingFacilityKeys
+    });
   }, [
     appleSortingFacilityKeys,
     facilityStorageFacilityTab,

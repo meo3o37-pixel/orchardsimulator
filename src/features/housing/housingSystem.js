@@ -3,6 +3,7 @@ import { APPLIANCE_ITEMS } from '../../config/items/appliance';
 import { FURNITURE_ITEMS } from '../../config/items/furniture';
 import { CLOTHING_ITEMS } from '../../config/items/clothing';
 import { clamp, monthOf } from '../../utils/common';
+import { FACILITY_MAP } from '../../config/sim/facilityCatalog.js';
 import { seasonKey } from '../../systems/weatherSystem';
 import {
   facilityBuildOptionKeysOfFacility,
@@ -17,6 +18,24 @@ export const housingOptionKeysOfFacility = (facilityKey) => facilityBuildOptionK
 export const housingOptionExtraCost = (facilityKey, optionKeys) => {
   const optionMap = housingOptionMapOfFacility(facilityKey);
   return (optionKeys || []).reduce((sum, key) => sum + (optionMap[key]?.price || 0), 0);
+};
+
+export const housingBoilerInstallationQuoteOf = (facilityKeyRaw = '') => {
+  const facilityKey = String(facilityKeyRaw || '').trim();
+  const facility = FACILITY_MAP?.[facilityKey] || null;
+  const facilityPrice = Math.max(0, Number(facility?.price) || 0);
+  const baseCost = 180000;
+  const proportionalCost = Math.round((facilityPrice * 0.012) / 10000) * 10000;
+  const cost = Math.min(4800000, Math.max(250000, baseCost + proportionalCost));
+  return {
+    facilityKey,
+    facilityName: String(facility?.name || '하우징'),
+    facilityPrice,
+    baseCost,
+    proportionalCost,
+    cost,
+    detail: '하우징 규모·배관 거리·배기 작업 난이도를 반영한 보일러 설치 신청 비용'
+  };
 };
 
 export const HOUSING_APPLIANCE_SLOT_DEFS = Object.freeze([
@@ -1117,7 +1136,7 @@ export const housingFacilityLivingQualityInfoOf = (facilityKeyRaw = '', facility
   return {
     facilityKey,
     facilityName: String(facilityNameRaw || ''),
-    adjust: Math.max(30, Math.round(Number(quality.adjust) || 0)),
+    adjust: Math.max(0, Math.round(Number(quality.adjust) || 0)),
     label: String(quality.label || '기본 주거성'),
     detail: String(quality.detail || '생활여건 기준점')
   };
@@ -1565,7 +1584,8 @@ export const housingSleepQualityInfoOf = ({
 } = {}) => {
   const temp = Number(indoorInfo?.temperatureC);
   const stability = clamp(Number(indoorInfo?.stability) || 0, 0, 0.95);
-  const housingAdjust = Math.round((Math.max(30, Number(facilityQualityInfo?.adjust) || 30) - 30) * 0.32);
+  const housingQualityScore = clamp(Math.round(Number(facilityQualityInfo?.adjust) || 0), 0, 100);
+  const housingAdjust = clamp(Math.round((housingQualityScore - 44) * 0.44), -12, 24);
   const powerAdjust = powerInfo?.tone === 'off' ? -14 : 3;
   const hvacAdjust = indoorInfo?.activeHvacMode && indoorInfo.activeHvacMode !== 'off' && indoorInfo.activeHvacMode !== 'idle' ? 5 : 0;
   const fanAdjust = Math.round(Number(fanInfo?.adjust) || 0);

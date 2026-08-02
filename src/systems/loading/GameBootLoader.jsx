@@ -9,7 +9,15 @@ import {
 import mainMenuImage from '../../assets/images/main-menu.png';
 import loadingOrchardBackground from '../../assets/images/loading-orchard-background.png';
 
-const percentLabel = (ratio) => `${Math.round(Math.max(0, Math.min(1, Number(ratio) || 0)) * 100)}%`;
+const clampProgress = (ratio, max = 1) => Math.max(0, Math.min(max, Number(ratio) || 0));
+const percentLabel = (ratio) => `${Math.round(clampProgress(ratio) * 100)}%`;
+const nextPaint = () => new Promise((resolve) => {
+  if (typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') {
+    setTimeout(resolve, 0);
+    return;
+  }
+  window.requestAnimationFrame(() => setTimeout(resolve, 0));
+});
 
 const shellStyle = {
   minHeight: '100vh',
@@ -90,7 +98,7 @@ function OrchardLoadingMark() {
 }
 
 export function LoadingScreen({ progress = 0, label = '게임 준비 중', detail = '필수 리소스를 확인하고 있습니다.' }) {
-  const safeProgress = Math.max(0, Math.min(1, Number(progress) || 0));
+  const safeProgress = clampProgress(progress);
   const barStyle = useMemo(() => ({
     width: percentLabel(safeProgress)
   }), [safeProgress]);
@@ -133,7 +141,7 @@ export function LoadingScreen({ progress = 0, label = '게임 준비 중', detai
             />
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', color: '#bbcaad', fontSize: 12 }}>
-            <span>리소스 준비</span>
+            <span>{safeProgress >= 1 ? '준비 완료' : '진행 상황'}</span>
             <strong style={{ color: '#fff7df' }}>{percentLabel(safeProgress)}</strong>
           </div>
         </div>
@@ -210,32 +218,59 @@ export default function GameBootLoader({ children }) {
     ready: false,
     progress: 0,
     label: bootPhase?.label || '기본 화면 준비',
-    detail: '필수 리소스를 확인하고 있습니다.'
+    detail: '필수 리소스 목록을 확인하고 있습니다.'
   }));
 
   useEffect(() => {
     if (cacheConsent === 'pending') return undefined;
     if (cacheConsent === 'declined') {
       setBootState({
-        ready: true,
-        progress: 1,
+        ready: false,
+        progress: 0.96,
         label: bootPhase?.label || '기본 화면 준비',
-        detail: '필요한 리소스는 화면을 열 때 불러옵니다.'
+        detail: '필요한 리소스는 화면을 열 때 불러오도록 설정했습니다.'
+      });
+      nextPaint().then(() => {
+        setBootState((prev) => ({ ...prev, ready: true, progress: 1, detail: '화면을 여는 중입니다.' }));
       });
       return undefined;
     }
     let cancelled = false;
+    setBootState((prev) => ({
+      ...prev,
+      progress: 0.03,
+      detail: '필수 리소스 목록을 확인하고 있습니다.'
+    }));
     preloadLoadingPhase('boot', {
       force: true,
-      onProgress: ({ completed, total, current }) => {
+      onProgress: ({ completed, total, current, result }) => {
         if (cancelled) return;
+        const safeTotal = Math.max(0, Number(total) || 0);
+        const safeCompleted = Math.max(0, Number(completed) || 0);
+        const ratio = safeTotal > 0 ? safeCompleted / safeTotal : 1;
+        const progress = 0.08 + (clampProgress(ratio, 1) * 0.84);
+        const currentLabel = current?.label ? String(current.label) : '필수 리소스';
+        const countLabel = safeTotal > 0 ? ` (${Math.min(safeCompleted + (result ? 0 : 1), safeTotal)}/${safeTotal})` : '';
+        const statusLabel = result
+          ? (result.status === 'failed' ? '확인 실패, 나중에 재시도' : '확인 완료')
+          : '불러오는 중';
         setBootState((prev) => ({
           ...prev,
-          progress: total > 0 ? completed / total : 1,
-          detail: current?.label ? `${current.label} 불러오는 중` : '필수 리소스를 확인하고 있습니다.'
+          progress,
+          detail: `${currentLabel} ${statusLabel}${countLabel}`
         }));
       }
-    }).then((summary) => {
+    }).then(async (summary) => {
+      if (cancelled) return;
+      setBootState({
+        ready: false,
+        progress: 0.97,
+        label: bootPhase?.label || '기본 화면 준비',
+        detail: summary.failed > 0
+          ? `일부 리소스는 나중에 다시 불러옵니다. (${summary.failed}개)`
+          : '필수 리소스 확인 완료. 화면을 구성하고 있습니다.'
+      });
+      await nextPaint();
       if (cancelled) return;
       setBootState({
         ready: true,

@@ -10,7 +10,7 @@ export const FURNITURE_ITEMS = [
     weightKg: 14,
     furnitureSize: '싱글',
     material: '스틸 프레임',
-    sleepQualityBonus: 4
+    sleepQualityBonus: 6
   },
   {
     key: 'singleBedBasic',
@@ -23,7 +23,7 @@ export const FURNITURE_ITEMS = [
     weightKg: 38,
     furnitureSize: '싱글',
     material: '목재 프레임',
-    sleepQualityBonus: 8
+    sleepQualityBonus: 12
   },
   {
     key: 'superSingleBed',
@@ -36,7 +36,7 @@ export const FURNITURE_ITEMS = [
     weightKg: 46,
     furnitureSize: '슈퍼싱글',
     material: '목재 프레임',
-    sleepQualityBonus: 12
+    sleepQualityBonus: 17
   },
   {
     key: 'doubleBedBasic',
@@ -49,7 +49,7 @@ export const FURNITURE_ITEMS = [
     weightKg: 62,
     furnitureSize: '더블',
     material: '목재 프레임',
-    sleepQualityBonus: 16
+    sleepQualityBonus: 22
   },
   {
     key: 'premiumMattressBed',
@@ -62,7 +62,7 @@ export const FURNITURE_ITEMS = [
     weightKg: 78,
     furnitureSize: '퀸',
     material: '패브릭 프레임',
-    sleepQualityBonus: 24
+    sleepQualityBonus: 32
   },
   {
     key: 'foldingTable800',
@@ -275,9 +275,9 @@ export const FURNITURE_ITEMS = [
   {
     key: 'kitchenSpoon',
     type: 'kitchenware',
-    name: '수저',
+    name: '스테인리스 수저',
     price: 1800,
-    desc: '밥과 국물 식사에 쓰는 기본 수저',
+    desc: '밥과 국물 식사에 쓰는 기본 스테인리스 수저',
     unit: '개',
     durable: true,
     weightKg: 0.04,
@@ -285,11 +285,35 @@ export const FURNITURE_ITEMS = [
     reusable: true
   },
   {
+    key: 'kitchenSpoonWood',
+    type: 'kitchenware',
+    name: '나무 수저',
+    price: 2600,
+    desc: '뜨거운 국밥과 찌개를 먹을 때 손에 열이 덜 가는 나무 수저',
+    unit: '개',
+    durable: true,
+    weightKg: 0.035,
+    kitchenwareRole: 'spoon',
+    reusable: true
+  },
+  {
+    key: 'kitchenSpoonPremium',
+    type: 'kitchenware',
+    name: '고급 수저',
+    price: 5200,
+    desc: '두께감이 있어 오래 쓰기 좋은 고급 수저',
+    unit: '개',
+    durable: true,
+    weightKg: 0.055,
+    kitchenwareRole: 'spoon',
+    reusable: true
+  },
+  {
     key: 'kitchenFork',
     type: 'kitchenware',
-    name: '포크',
+    name: '스테인리스 포크',
     price: 1600,
-    desc: '샐러드와 빵식, 돈까스에 쓰는 포크',
+    desc: '샐러드와 빵식, 돈까스에 쓰는 기본 포크',
     unit: '개',
     durable: true,
     weightKg: 0.04,
@@ -297,11 +321,35 @@ export const FURNITURE_ITEMS = [
     reusable: true
   },
   {
+    key: 'kitchenForkDessert',
+    type: 'kitchenware',
+    name: '디저트 포크',
+    price: 1400,
+    desc: '빵식과 간단한 과일, 샐러드에 쓰기 좋은 작은 포크',
+    unit: '개',
+    durable: true,
+    weightKg: 0.03,
+    kitchenwareRole: 'fork',
+    reusable: true
+  },
+  {
+    key: 'kitchenForkHeavy',
+    type: 'kitchenware',
+    name: '튼튼한 포크',
+    price: 3600,
+    desc: '돈까스와 두툼한 반찬을 먹을 때 쓰기 좋은 튼튼한 포크',
+    unit: '개',
+    durable: true,
+    weightKg: 0.06,
+    kitchenwareRole: 'fork',
+    reusable: true
+  },
+  {
     key: 'kitchenChopsticks',
     type: 'kitchenware',
-    name: '젓가락',
+    name: '스테인리스 젓가락',
     price: 1200,
-    desc: '면류와 볶음 반찬에 쓰는 젓가락',
+    desc: '면류와 볶음 반찬에 쓰는 기본 젓가락',
     unit: '개',
     durable: true,
     weightKg: 0.03,
@@ -309,11 +357,35 @@ export const FURNITURE_ITEMS = [
     reusable: true
   },
   {
+    key: 'kitchenChopsticksWood',
+    type: 'kitchenware',
+    name: '나무 젓가락',
+    price: 1700,
+    desc: '면과 반찬을 집기 편한 가벼운 나무 젓가락',
+    unit: '개',
+    durable: true,
+    weightKg: 0.02,
+    kitchenwareRole: 'chopsticks',
+    reusable: true
+  },
+  {
+    key: 'kitchenChopsticksGrip',
+    type: 'kitchenware',
+    name: '미끄럼방지 젓가락',
+    price: 3200,
+    desc: '면류와 볶음류를 집기 좋게 끝부분 처리가 된 젓가락',
+    unit: '개',
+    durable: true,
+    weightKg: 0.035,
+    kitchenwareRole: 'chopsticks',
+    reusable: true
+  },
+  {
     key: 'kitchenCup',
     type: 'kitchenware',
-    name: '컵',
+    name: '유리컵',
     price: 2500,
-    desc: '물, 차, 커피를 마실 때 쓰는 컵',
+    desc: '물, 차, 주스를 마실 때 쓰는 기본 유리컵',
     unit: '개',
     durable: true,
     weightKg: 0.25,
@@ -321,11 +393,35 @@ export const FURNITURE_ITEMS = [
     reusable: true
   },
   {
+    key: 'kitchenCupMug',
+    type: 'kitchenware',
+    name: '머그컵',
+    price: 4200,
+    desc: '커피와 따뜻한 차를 마실 때 쓰는 머그컵',
+    unit: '개',
+    durable: true,
+    weightKg: 0.32,
+    kitchenwareRole: 'cup',
+    reusable: true
+  },
+  {
+    key: 'kitchenCupTumbler',
+    type: 'kitchenware',
+    name: '스테인리스 텀블러',
+    price: 9800,
+    desc: '음료를 오래 들고 마시기 좋은 뚜껑 있는 텀블러',
+    unit: '개',
+    durable: true,
+    weightKg: 0.38,
+    kitchenwareRole: 'cup',
+    reusable: true
+  },
+  {
     key: 'kitchenBowl',
     type: 'kitchenware',
-    name: '그릇',
+    name: '밥그릇',
     price: 3200,
-    desc: '밥, 국밥, 라면, 볶음밥을 담는 기본 그릇',
+    desc: '밥과 덮밥을 담는 기본 그릇',
     unit: '개',
     durable: true,
     weightKg: 0.42,
@@ -333,11 +429,35 @@ export const FURNITURE_ITEMS = [
     reusable: true
   },
   {
+    key: 'kitchenBowlSoup',
+    type: 'kitchenware',
+    name: '국그릇',
+    price: 3800,
+    desc: '국밥, 찌개, 라면처럼 국물이 있는 음식을 담는 깊은 그릇',
+    unit: '개',
+    durable: true,
+    weightKg: 0.48,
+    kitchenwareRole: 'bowl',
+    reusable: true
+  },
+  {
+    key: 'kitchenBowlPlate',
+    type: 'kitchenware',
+    name: '접시',
+    price: 3000,
+    desc: '돈까스, 토스트, 부침처럼 넓게 담는 음식에 쓰는 접시',
+    unit: '개',
+    durable: true,
+    weightKg: 0.45,
+    kitchenwareRole: 'bowl',
+    reusable: true
+  },
+  {
     key: 'kitchenCookingPot',
     type: 'kitchenware',
-    name: '냄비',
+    name: '양은 냄비',
     price: 18000,
-    desc: '라면, 찌개, 국밥, 우동을 끓이는 조리도구',
+    desc: '라면과 간단한 국물을 빨리 끓이는 가벼운 냄비',
     unit: '개',
     durable: true,
     weightKg: 1.2,
@@ -345,14 +465,62 @@ export const FURNITURE_ITEMS = [
     reusable: true
   },
   {
+    key: 'kitchenCookingPotStainless',
+    type: 'kitchenware',
+    name: '스테인리스 냄비',
+    price: 32000,
+    desc: '찌개, 국밥, 우동을 안정적으로 끓이는 기본 조리 냄비',
+    unit: '개',
+    durable: true,
+    weightKg: 1.8,
+    kitchenwareRole: 'pot',
+    reusable: true
+  },
+  {
+    key: 'kitchenCookingPotStock',
+    type: 'kitchenware',
+    name: '깊은 곰솥',
+    price: 56000,
+    desc: '국물 요리와 여러 인분 조리에 쓰기 좋은 깊은 냄비',
+    unit: '개',
+    durable: true,
+    weightKg: 3.1,
+    kitchenwareRole: 'pot',
+    reusable: true
+  },
+  {
     key: 'kitchenFryingPan',
     type: 'kitchenware',
-    name: '후라이팬',
+    name: '알루미늄 후라이팬',
     price: 16000,
-    desc: '볶음밥, 구이, 부침, 토스트를 조리하는 팬',
+    desc: '볶음밥, 구이, 토스트를 빠르게 조리하는 가벼운 팬',
     unit: '개',
     durable: true,
     weightKg: 0.9,
+    kitchenwareRole: 'pan',
+    reusable: true
+  },
+  {
+    key: 'kitchenFryingPanNonstick',
+    type: 'kitchenware',
+    name: '코팅 후라이팬',
+    price: 28000,
+    desc: '부침과 볶음 요리가 눌어붙기 덜한 코팅 팬',
+    unit: '개',
+    durable: true,
+    weightKg: 1.1,
+    kitchenwareRole: 'pan',
+    reusable: true
+  },
+  {
+    key: 'kitchenFryingPanIron',
+    type: 'kitchenware',
+    name: '무쇠 후라이팬',
+    price: 52000,
+    desc: '구이와 볶음 요리에 열을 오래 잡아주는 무거운 팬',
+    unit: '개',
+    durable: true,
+    weightKg: 2.4,
     kitchenwareRole: 'pan',
     reusable: true
   },
@@ -368,6 +536,28 @@ export const FURNITURE_ITEMS = [
     disposable: true
   },
   {
+    key: 'disposableSpoonWood',
+    type: 'kitchenware',
+    name: '나무 일회용 수저',
+    price: 120,
+    desc: '뜨거운 국물에도 쓰기 좋은 나무 일회용 수저',
+    unit: '개',
+    weightKg: 0.009,
+    kitchenwareRole: 'spoon',
+    disposable: true
+  },
+  {
+    key: 'disposableSpoonThick',
+    type: 'kitchenware',
+    name: '튼튼한 일회용 수저',
+    price: 160,
+    desc: '덮밥과 국밥을 먹을 때 잘 휘지 않는 일회용 수저',
+    unit: '개',
+    weightKg: 0.012,
+    kitchenwareRole: 'spoon',
+    disposable: true
+  },
+  {
     key: 'disposableFork',
     type: 'kitchenware',
     name: '일회용 포크',
@@ -375,6 +565,28 @@ export const FURNITURE_ITEMS = [
     desc: '샐러드와 빵식에 쓰는 일회용 포크',
     unit: '개',
     weightKg: 0.008,
+    kitchenwareRole: 'fork',
+    disposable: true
+  },
+  {
+    key: 'disposableForkWood',
+    type: 'kitchenware',
+    name: '나무 일회용 포크',
+    price: 110,
+    desc: '빵식과 샐러드에 쓰는 나무 일회용 포크',
+    unit: '개',
+    weightKg: 0.009,
+    kitchenwareRole: 'fork',
+    disposable: true
+  },
+  {
+    key: 'disposableForkThick',
+    type: 'kitchenware',
+    name: '튼튼한 일회용 포크',
+    price: 150,
+    desc: '돈까스와 두툼한 반찬을 먹을 때 잘 휘지 않는 일회용 포크',
+    unit: '개',
+    weightKg: 0.012,
     kitchenwareRole: 'fork',
     disposable: true
   },
@@ -390,6 +602,28 @@ export const FURNITURE_ITEMS = [
     disposable: true
   },
   {
+    key: 'disposableChopsticksBamboo',
+    type: 'kitchenware',
+    name: '대나무 일회용 젓가락',
+    price: 90,
+    desc: '면류와 볶음류를 집기 좋은 대나무 일회용 젓가락',
+    unit: '개',
+    weightKg: 0.011,
+    kitchenwareRole: 'chopsticks',
+    disposable: true
+  },
+  {
+    key: 'disposableChopsticksWrapped',
+    type: 'kitchenware',
+    name: '포장 일회용 젓가락',
+    price: 130,
+    desc: '개별 포장되어 보관하기 좋은 일회용 젓가락',
+    unit: '개',
+    weightKg: 0.012,
+    kitchenwareRole: 'chopsticks',
+    disposable: true
+  },
+  {
     key: 'disposableCup',
     type: 'kitchenware',
     name: '일회용 컵',
@@ -401,6 +635,28 @@ export const FURNITURE_ITEMS = [
     disposable: true
   },
   {
+    key: 'disposableCupPaper',
+    type: 'kitchenware',
+    name: '종이컵',
+    price: 70,
+    desc: '차와 커피 한 잔을 마실 때 쓰는 종이컵',
+    unit: '개',
+    weightKg: 0.005,
+    kitchenwareRole: 'cup',
+    disposable: true
+  },
+  {
+    key: 'disposableCupLarge',
+    type: 'kitchenware',
+    name: '큰 일회용 컵',
+    price: 110,
+    desc: '물과 음료를 넉넉히 담는 큰 일회용 컵',
+    unit: '개',
+    weightKg: 0.01,
+    kitchenwareRole: 'cup',
+    disposable: true
+  },
+  {
     key: 'disposableBowl',
     type: 'kitchenware',
     name: '일회용 그릇',
@@ -408,6 +664,28 @@ export const FURNITURE_ITEMS = [
     desc: '밥, 국밥, 라면을 담는 일회용 그릇',
     unit: '개',
     weightKg: 0.018,
+    kitchenwareRole: 'bowl',
+    disposable: true
+  },
+  {
+    key: 'disposableBowlDeep',
+    type: 'kitchenware',
+    name: '깊은 일회용 그릇',
+    price: 180,
+    desc: '국밥, 라면, 찌개를 담기 좋은 깊은 일회용 그릇',
+    unit: '개',
+    weightKg: 0.024,
+    kitchenwareRole: 'bowl',
+    disposable: true
+  },
+  {
+    key: 'disposableBowlPlate',
+    type: 'kitchenware',
+    name: '일회용 접시',
+    price: 150,
+    desc: '토스트, 돈까스, 부침류를 담기 좋은 일회용 접시',
+    unit: '개',
+    weightKg: 0.022,
     kitchenwareRole: 'bowl',
     disposable: true
   }

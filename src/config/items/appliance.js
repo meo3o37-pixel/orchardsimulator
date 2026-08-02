@@ -499,7 +499,7 @@ export const APPLIANCE_ITEMS = [
     heatingAreaPyeong: 16,
     outputKw: 20,
     hotWaterLitersPerMin: 10,
-    fuelKgPerDay: 2.1,
+    fuelLitersPerDay: 4.0,
     gasSafetyCheckRequired: true,
     exhaustRequired: true,
     dailyPowerKwh: 0.32

@@ -1,4 +1,5 @@
 import { LOADING_ASSET_PHASES, POST_BOOT_PRELOAD_PHASES } from './assetManifest';
+import { cacheAssetUrlsInServiceWorker } from '../cache/registerAssetCache';
 
 const assetPreloadCache = new Map();
 const phasePreloadCache = new Map();
@@ -175,6 +176,9 @@ const preloadOneAsset = (asset, options = {}) => {
   )
     .then((result) => {
       clearAssetPreloadFailure(src);
+      if (result?.status === 'loaded') {
+        cacheAssetUrlsInServiceWorker([src]).catch(() => {});
+      }
       return result;
     })
     .catch((error) => {
