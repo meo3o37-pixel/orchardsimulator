@@ -38,6 +38,7 @@ const CHAT_EVENT_MESSAGE = 'orchard:chat_message';
 const CHAT_EVENT_DELETE = 'orchard:chat_delete';
 const CHAT_EVENT_ERROR = 'orchard:chat_error';
 const DEFAULT_LM_STUDIO_BASE_URL = 'http://192.168.0.4:1234';
+const JSON_TEMP_FILE_MAX_AGE_MS = 10 * 60 * 1000;
 let LM_STUDIO_BASE_URL = DEFAULT_LM_STUDIO_BASE_URL;
 let LM_STUDIO_CHAT_API_URL = `${LM_STUDIO_BASE_URL}/v1/chat/completions`;
 let LM_STUDIO_MODELS_API_URL = `${LM_STUDIO_BASE_URL}/v1/models`;
@@ -591,11 +592,41 @@ const deleteChatMessageById = async (messageId) => {
   return true;
 };
 
+const cleanupJsonTempFiles = async (filePath) => {
+  const dirPath = path.dirname(filePath);
+  const tempPrefix = `${path.basename(filePath)}.tmp-`;
+  let entries = [];
+  try {
+    entries = await fs.readdir(dirPath, { withFileTypes: true });
+  } catch {
+    return;
+  }
+  const now = Date.now();
+  await Promise.all(entries
+    .filter((entry) => entry.isFile() && entry.name.startsWith(tempPrefix))
+    .map(async (entry) => {
+      const tempPath = path.join(dirPath, entry.name);
+      try {
+        const stat = await fs.stat(tempPath);
+        if (now - stat.mtimeMs < JSON_TEMP_FILE_MAX_AGE_MS) return;
+        await fs.rm(tempPath, { force: true });
+      } catch {
+        // Best-effort cleanup; the save itself should not fail because of temp cleanup.
+      }
+    }));
+};
+
 const writeJsonFile = async (filePath, value) => {
   await fs.mkdir(path.dirname(filePath), { recursive: true });
+  await cleanupJsonTempFiles(filePath);
   const tempPath = `${filePath}.tmp-${process.pid}-${Date.now()}-${randomBytes(4).toString('hex')}`;
-  await fs.writeFile(tempPath, JSON.stringify(value, null, 2), 'utf8');
-  await fs.rename(tempPath, filePath);
+  try {
+    await fs.writeFile(tempPath, JSON.stringify(value), 'utf8');
+    await fs.rename(tempPath, filePath);
+  } catch (error) {
+    await fs.rm(tempPath, { force: true }).catch(() => {});
+    throw error;
+  }
 };
 
 const sanitizeUpdatePlanTable = (rawTable) => {
@@ -2392,6 +2423,33 @@ const animationLabPresetSavePlugin = () => ({
   }
 });
 
+const orchardAssetCacheManifestPlugin = () => ({
+  name: 'orchard-asset-cache-manifest',
+  apply: 'build',
+  async writeBundle(options, bundle) {
+    const outDir = path.resolve(options.dir || path.join(PROJECT_ROOT, 'dist'));
+    const urls = [];
+    Object.values(bundle || {}).forEach((entry) => {
+      const fileName = String(entry?.fileName || '');
+      if (!fileName) return;
+      const normalizedFileName = fileName.replace(/\\/g, '/');
+      const ext = path.extname(normalizedFileName).toLowerCase();
+      const isScriptOrStyle = ext === '.js' || ext === '.css';
+      if (!isScriptOrStyle) return;
+      urls.push(`/${normalizedFileName}`);
+    });
+    urls.unshift('/', '/index.html', '/og-main-menu.jpg');
+    const uniqueUrls = [...new Set(urls)];
+    const manifestSource = [
+      'self.__ORCHARD_PRECACHE_MANIFEST = ',
+      JSON.stringify(uniqueUrls, null, 2),
+      ';',
+      ''
+    ].join('');
+    await fs.writeFile(path.join(outDir, 'orchard-asset-manifest.js'), manifestSource, 'utf8');
+  }
+});
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   LM_STUDIO_BASE_URL = String(env.LM_STUDIO_BASE_URL || DEFAULT_LM_STUDIO_BASE_URL).trim() || DEFAULT_LM_STUDIO_BASE_URL;
@@ -2415,6 +2473,6 @@ export default defineConfig(({ mode }) => {
         interval: 300
       }
     },
-    plugins: [animationLabPresetSavePlugin()]
+    plugins: [animationLabPresetSavePlugin(), orchardAssetCacheManifestPlugin()]
   };
 });

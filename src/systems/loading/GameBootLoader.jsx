@@ -6,6 +6,7 @@ import {
   schedulePostBootPreload,
   setAssetCacheDownloadConsent
 } from './preloadAssets';
+import { RECOMMENDED_PRELOAD_PHASES } from './assetManifest';
 import mainMenuImage from '../../assets/images/main-menu.png';
 import loadingOrchardBackground from '../../assets/images/loading-orchard-background.png';
 
@@ -18,6 +19,11 @@ const nextPaint = () => new Promise((resolve) => {
   }
   window.requestAnimationFrame(() => setTimeout(resolve, 0));
 });
+
+const getLoadingPhaseAssetCount = (phaseKey) => {
+  const phase = getLoadingPhase(phaseKey);
+  return Array.isArray(phase?.assets) ? phase.assets.length : 0;
+};
 
 const shellStyle = {
   minHeight: '100vh',
@@ -69,6 +75,24 @@ const buttonBaseStyle = {
   cursor: 'pointer',
   letterSpacing: 0
 };
+
+const cacheConnectionGuides = Object.freeze([
+  {
+    title: '느린 인터넷 / 모바일 핫스팟',
+    detail: '미리 받기 추천. 첫 실행은 더 기다리지만, 게임 중 화면 전환 끊김이 줄어듭니다.',
+    accent: '#f0ca69'
+  },
+  {
+    title: '일반 와이파이',
+    detail: '미리 받기 권장. 지도, 과수원, 창고, 시설 이미지를 먼저 준비합니다.',
+    accent: '#9fcf7a'
+  },
+  {
+    title: '빠른 유선 / 저장공간 부족',
+    detail: '그때그때 받아도 됩니다. 대신 처음 여는 화면에서는 잠깐 기다릴 수 있습니다.',
+    accent: '#9bc6e8'
+  }
+]);
 
 function OrchardLoadingMark() {
   return (
@@ -176,8 +200,35 @@ function CacheConsentScreen({ onAccept, onDecline }) {
             lineHeight: 1.55
           }}
         >
-          <div>동의하면 필수 리소스를 먼저 받고, 나머지는 게임 중 백그라운드로 조금씩 받아둡니다.</div>
+          <div>동의하면 약 337MB의 권장 리소스를 메인 메뉴 전에 먼저 받아둡니다.</div>
           <div>동의하지 않아도 게임은 실행됩니다. 대신 처음 여는 화면에서 리소스를 그때그때 받을 수 있습니다.</div>
+        </div>
+        <div
+          style={{
+            display: 'grid',
+            gap: 8,
+            color: '#dce7d1',
+            fontSize: 13,
+            lineHeight: 1.5
+          }}
+        >
+          {cacheConnectionGuides.map((guide) => (
+            <div
+              key={guide.title}
+              style={{
+                display: 'grid',
+                gap: 3,
+                padding: '10px 12px',
+                borderRadius: 8,
+                background: 'rgba(255, 255, 255, 0.06)',
+                border: '1px solid rgba(226, 214, 176, 0.16)',
+                borderLeft: `4px solid ${guide.accent}`
+              }}
+            >
+              <strong style={{ color: '#fff7df', fontSize: 13 }}>{guide.title}</strong>
+              <span>{guide.detail}</span>
+            </div>
+          ))}
         </div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           <button
@@ -241,34 +292,75 @@ export default function GameBootLoader({ children }) {
       progress: 0.03,
       detail: '필수 리소스 목록을 확인하고 있습니다.'
     }));
-    preloadLoadingPhase('boot', {
-      force: true,
-      onProgress: ({ completed, total, current, result }) => {
+    const runBootPreload = async () => {
+      let failedCount = 0;
+      const recommendedPhaseKeys = RECOMMENDED_PRELOAD_PHASES.filter((phaseKey) => getLoadingPhase(phaseKey));
+      const recommendedTotal = recommendedPhaseKeys.reduce((sum, phaseKey) => sum + getLoadingPhaseAssetCount(phaseKey), 0);
+      let recommendedCompleted = 0;
+
+      const bootSummary = await preloadLoadingPhase('boot', {
+        force: true,
+        onProgress: ({ completed, total, current, result }) => {
+          if (cancelled) return;
+          const safeTotal = Math.max(0, Number(total) || 0);
+          const safeCompleted = Math.max(0, Number(completed) || 0);
+          const ratio = safeTotal > 0 ? safeCompleted / safeTotal : 1;
+          const progress = 0.06 + (clampProgress(ratio, 1) * 0.3);
+          const currentLabel = current?.label ? String(current.label) : '필수 리소스';
+          const countLabel = safeTotal > 0 ? ` (${Math.min(safeCompleted + (result ? 0 : 1), safeTotal)}/${safeTotal})` : '';
+          const statusLabel = result
+            ? (result.status === 'failed' ? '확인 실패, 나중에 재시도' : '확인 완료')
+            : '불러오는 중';
+          setBootState((prev) => ({
+            ...prev,
+            progress,
+            detail: `${currentLabel} ${statusLabel}${countLabel}`
+          }));
+        }
+      });
+      failedCount += Math.max(0, Number(bootSummary.failed) || 0);
+
+      for (const phaseKey of recommendedPhaseKeys) {
         if (cancelled) return;
-        const safeTotal = Math.max(0, Number(total) || 0);
-        const safeCompleted = Math.max(0, Number(completed) || 0);
-        const ratio = safeTotal > 0 ? safeCompleted / safeTotal : 1;
-        const progress = 0.08 + (clampProgress(ratio, 1) * 0.84);
-        const currentLabel = current?.label ? String(current.label) : '필수 리소스';
-        const countLabel = safeTotal > 0 ? ` (${Math.min(safeCompleted + (result ? 0 : 1), safeTotal)}/${safeTotal})` : '';
-        const statusLabel = result
-          ? (result.status === 'failed' ? '확인 실패, 나중에 재시도' : '확인 완료')
-          : '불러오는 중';
-        setBootState((prev) => ({
-          ...prev,
-          progress,
-          detail: `${currentLabel} ${statusLabel}${countLabel}`
-        }));
+        const phase = getLoadingPhase(phaseKey);
+        const phaseTotal = getLoadingPhaseAssetCount(phaseKey);
+        const phaseLabel = phase?.label || '권장 리소스';
+
+        const phaseSummary = await preloadLoadingPhase(phaseKey, {
+          timeoutMs: 10000,
+          onProgress: ({ completed, total, current, result }) => {
+            if (cancelled) return;
+            const safeTotal = Math.max(0, Number(total) || 0);
+            const safeCompleted = Math.max(0, Number(completed) || 0);
+            const activeDone = result ? safeCompleted : Math.min(safeCompleted + 1, safeTotal);
+            const overallDone = recommendedCompleted + activeDone;
+            const ratio = recommendedTotal > 0 ? overallDone / recommendedTotal : 1;
+            const progress = 0.4 + (clampProgress(ratio, 1) * 0.56);
+            const currentLabel = current?.label ? String(current.label) : phaseLabel;
+            const countLabel = safeTotal > 0 ? ` (${Math.min(activeDone, safeTotal)}/${safeTotal})` : '';
+            const statusLabel = result
+              ? (result.status === 'cached' ? '이미 준비됨' : (result.status === 'failed' ? '확인 실패, 나중에 재시도' : '확인 완료'))
+              : '미리 받는 중';
+            setBootState({
+              ready: false,
+              progress,
+              label: phaseLabel,
+              detail: `${currentLabel} ${statusLabel}${countLabel}`
+            });
+          }
+        });
+        recommendedCompleted += phaseTotal;
+        failedCount += Math.max(0, Number(phaseSummary.failed) || 0);
       }
-    }).then(async (summary) => {
+
       if (cancelled) return;
       setBootState({
         ready: false,
-        progress: 0.97,
+        progress: 0.98,
         label: bootPhase?.label || '기본 화면 준비',
-        detail: summary.failed > 0
-          ? `일부 리소스는 나중에 다시 불러옵니다. (${summary.failed}개)`
-          : '필수 리소스 확인 완료. 화면을 구성하고 있습니다.'
+        detail: failedCount > 0
+          ? `일부 리소스는 나중에 다시 불러옵니다. (${failedCount}개)`
+          : '권장 리소스까지 확인 완료. 화면을 구성하고 있습니다.'
       });
       await nextPaint();
       if (cancelled) return;
@@ -276,10 +368,23 @@ export default function GameBootLoader({ children }) {
         ready: true,
         progress: 1,
         label: bootPhase?.label || '기본 화면 준비',
-        detail: summary.failed > 0
-          ? `일부 리소스는 나중에 다시 불러옵니다. (${summary.failed}개)`
+        detail: failedCount > 0
+          ? `일부 리소스는 나중에 다시 불러옵니다. (${failedCount}개)`
           : '준비 완료'
       });
+    };
+
+    runBootPreload().catch(async () => {
+      if (cancelled) return;
+      setBootState({
+        ready: false,
+        progress: 0.98,
+        label: bootPhase?.label || '기본 화면 준비',
+        detail: '일부 리소스 확인에 실패해 게임 화면에서 다시 불러옵니다.'
+      });
+      await nextPaint();
+      if (cancelled) return;
+      setBootState((prev) => ({ ...prev, ready: true, progress: 1 }));
     });
     return () => {
       cancelled = true;

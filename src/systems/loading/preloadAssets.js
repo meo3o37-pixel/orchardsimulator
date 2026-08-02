@@ -4,7 +4,7 @@ import { cacheAssetUrlsInServiceWorker } from '../cache/registerAssetCache';
 const assetPreloadCache = new Map();
 const phasePreloadCache = new Map();
 const DEFAULT_TIMEOUT_MS = 12000;
-const ASSET_CACHE_VERSION = '2026-08-01-asset-cache-v2';
+const ASSET_CACHE_VERSION = '2026-08-02-asset-cache-v3';
 const CACHE_DOWNLOAD_CONSENT_STORAGE_KEY = 'orchard_asset_cache_download_consent_v1';
 const ASSET_CACHE_VERSION_STORAGE_KEY = 'orchard_asset_cache_version_v1';
 const FAILED_ASSET_PRELOAD_STORAGE_KEY = 'orchard_failed_asset_preloads_v1';
@@ -348,8 +348,17 @@ export const preloadLoadingPhase = (phaseKey, options = {}) => {
     });
   }
   const cacheKey = String(phaseKey || '');
-  if (!options.force && !options.onProgress && isLoadingPhasePreloaded(cacheKey)) {
-    return Promise.resolve(completedPhaseSummaryOf(cacheKey));
+  if (!options.force && isLoadingPhasePreloaded(cacheKey)) {
+    const summary = completedPhaseSummaryOf(cacheKey);
+    if (typeof options.onProgress === 'function') {
+      options.onProgress({
+        completed: summary.total,
+        total: summary.total,
+        current: null,
+        result: { status: 'cached' }
+      });
+    }
+    return Promise.resolve(summary);
   }
   if (!options.onProgress && phasePreloadCache.has(cacheKey)) {
     return phasePreloadCache.get(cacheKey);

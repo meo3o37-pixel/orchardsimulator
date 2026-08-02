@@ -20572,6 +20572,7 @@ export default function App() {
   const [devAutoPageReloadEnabled, setDevAutoPageReloadEnabled] = useState(() => readDevAutoPageReloadEnabled());
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
   const [autoRestoreViewEnabled, setAutoRestoreViewEnabled] = useState(true);
+  const remoteSaveQueueRef = useRef({ inFlight: false, queued: null });
   const [lastRestorableSaveSlot, setLastRestorableSaveSlot] = useState(null);
   const [lastRestorableViewState, setLastRestorableViewState] = useState(() => sanitizeLastViewStatePreference({}));
   const [townMarkerSavedPositions, setTownMarkerSavedPositions] = useState(() => createDefaultSettlementMarkerPositions());
@@ -42526,11 +42527,13 @@ body { display: flex !important; align-items: center !important; justify-content
   }, []);
   useEffect(() => {
     if (!authSession?.token) {
+      remoteSaveQueueRef.current = { inFlight: false, queued: null };
       setRemoteSaveSyncHandler(null);
       return undefined;
     }
-    setRemoteSaveSyncHandler((slot, key, gamePayload) => {
-      void fetch('/__auth/save-slot', {
+    let cancelled = false;
+    const postRemoteSave = async ({ slot, key, gamePayload }) => {
+      const response = await fetch('/__auth/save-slot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json; charset=utf-8' },
         body: JSON.stringify({
@@ -42539,22 +42542,37 @@ body { display: flex !important; align-items: center !important; justify-content
           slotKey: key,
           game: gamePayload
         })
-      })
-        .then(async (response) => {
-          if (response.ok || response.status !== 401) return;
-          let data = {};
-          try {
-            data = await response.json();
-          } catch {
-            data = {};
-          }
-          if (String(data?.error || '').includes('invalid_session')) {
-            handleInvalidSession(invalidSessionMessageOf(data?.reason));
-          }
-        })
-        .catch(() => {});
+      });
+      if (cancelled || response.ok || response.status !== 401) return;
+      let data = {};
+      try {
+        data = await response.json();
+      } catch {
+        data = {};
+      }
+      if (String(data?.error || '').includes('invalid_session')) {
+        handleInvalidSession(invalidSessionMessageOf(data?.reason));
+      }
+    };
+    const flushRemoteSaveQueue = () => {
+      const queue = remoteSaveQueueRef.current;
+      if (cancelled || queue.inFlight || !queue.queued) return;
+      const request = queue.queued;
+      queue.queued = null;
+      queue.inFlight = true;
+      void postRemoteSave(request)
+        .catch(() => {})
+        .finally(() => {
+          queue.inFlight = false;
+          flushRemoteSaveQueue();
+        });
+    };
+    setRemoteSaveSyncHandler((slot, key, gamePayload) => {
+      remoteSaveQueueRef.current.queued = { slot, key, gamePayload };
+      flushRemoteSaveQueue();
     });
     return () => {
+      cancelled = true;
       setRemoteSaveSyncHandler(null);
     };
   }, [authSession?.token]);

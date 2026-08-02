@@ -27,7 +27,7 @@ const itemImagesByPath = import.meta.glob('../../assets/images/아이템/**/*.{p
   import: 'default'
 });
 
-const vehicleImagesByPath = import.meta.glob('../../assets/images/차량/**/*.{png,jpg,jpeg,webp,avif}', {
+const vehicleImagesByPath = import.meta.glob('../../assets/images/자동차실루엣/**/*.{png,jpg,jpeg,webp,avif}', {
   eager: true,
   import: 'default'
 });
@@ -156,4 +156,6 @@ export const LOADING_ASSET_PHASES = Object.freeze({
   })
 });
 
-export const POST_BOOT_PRELOAD_PHASES = Object.freeze(['menuAudio', 'map', 'field', 'warehouse']);
+export const RECOMMENDED_PRELOAD_PHASES = Object.freeze(['menuAudio', 'map', 'field', 'warehouse', 'vehicle', 'facility']);
+
+export const POST_BOOT_PRELOAD_PHASES = Object.freeze(['fieldSeasonal']);

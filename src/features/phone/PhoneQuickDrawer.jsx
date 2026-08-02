@@ -1,5 +1,12 @@
 import React from 'react';
 import { PLAYER_ILLNESS_DEFS } from '../health/playerConditionSystem';
+import { RECOMMENDED_PRELOAD_PHASES } from '../../systems/loading/assetManifest';
+import {
+  getIncompleteLoadingPhaseKeys,
+  getLoadingPhase,
+  preloadLoadingPhase,
+  setAssetCacheDownloadConsent
+} from '../../systems/loading/preloadAssets';
 
 export const PHONE_HOME_APPS = [
   ['은행', 'bank', '💳'],
@@ -40,6 +47,7 @@ const PHONE_APP_LOADING_META = Object.freeze({
   'apple-helper-chat': { label: '박사님', icon: '🍎', detail: '대화 내용을 정리하는 중', tone: 'warm' },
   placeholder: { label: '앱', icon: '📱', detail: '앱을 실행하는 중', tone: 'slate' }
 });
+const PHONE_RECOMMENDED_CACHE_SIZE_MB = 337;
 const PHONE_RECENT_EXTRA_APP_META = Object.freeze({
   messages: ['문자', 'messages', '💬'],
   contacts: ['연락처', 'contacts', '📇'],
@@ -707,6 +715,11 @@ export default function PhoneQuickDrawer({
   const [settingsPlayerNameMessage, setSettingsPlayerNameMessage] = React.useState('');
   const [settingsFarmNameDraft, setSettingsFarmNameDraft] = React.useState(String(game?.farmName || ''));
   const [settingsFarmNameMessage, setSettingsFarmNameMessage] = React.useState('');
+  const [settingsCacheDownloadState, setSettingsCacheDownloadState] = React.useState({
+    status: 'checking',
+    progress: 0,
+    message: '권장 리소스 상태를 확인하고 있습니다.'
+  });
   const [devLanguageModelPanelOpen, setDevLanguageModelPanelOpen] = React.useState(false);
   const [selectedMessageThread, setSelectedMessageThread] = React.useState(null);
   const [lockNotificationSwipeOffsetById, setLockNotificationSwipeOffsetById] = React.useState({});
@@ -764,6 +777,95 @@ export default function PhoneQuickDrawer({
     setSettingsFarmNameDraft(String(game?.farmName || ''));
     setSettingsFarmNameMessage('');
   }, [game?.farmName, game?.playerName, phoneOpenedApp]);
+  const refreshSettingsCacheDownloadState = React.useCallback(() => {
+    const phaseKeys = RECOMMENDED_PRELOAD_PHASES.filter((phaseKey) => getLoadingPhase(phaseKey));
+    const incompleteKeys = getIncompleteLoadingPhaseKeys(phaseKeys);
+    if (!phaseKeys.length) {
+      setSettingsCacheDownloadState({
+        status: 'unavailable',
+        progress: 0,
+        message: '받을 수 있는 권장 리소스 목록이 없습니다.'
+      });
+      return;
+    }
+    if (!incompleteKeys.length) {
+      setSettingsCacheDownloadState({
+        status: 'ready',
+        progress: 1,
+        message: '권장 리소스가 준비되어 있습니다.'
+      });
+      return;
+    }
+    setSettingsCacheDownloadState({
+      status: 'idle',
+      progress: 0,
+      message: `${incompleteKeys.length}개 묶음을 받으면 화면 전환 끊김을 줄일 수 있습니다.`
+    });
+  }, []);
+  React.useEffect(() => {
+    if (phoneOpenedApp !== 'settings') return;
+    refreshSettingsCacheDownloadState();
+  }, [phoneOpenedApp, refreshSettingsCacheDownloadState]);
+  const downloadRecommendedCacheFromSettings = React.useCallback(async () => {
+    if (settingsCacheDownloadState.status === 'running') return;
+    const phaseKeys = getIncompleteLoadingPhaseKeys(
+      RECOMMENDED_PRELOAD_PHASES.filter((phaseKey) => getLoadingPhase(phaseKey))
+    );
+    if (!phaseKeys.length) {
+      refreshSettingsCacheDownloadState();
+      return;
+    }
+
+    setAssetCacheDownloadConsent(true);
+    const totalAssets = phaseKeys.reduce((sum, phaseKey) => {
+      const assets = getLoadingPhase(phaseKey)?.assets;
+      return sum + (Array.isArray(assets) ? assets.length : 0);
+    }, 0);
+    let completedBeforePhase = 0;
+    let failedCount = 0;
+
+    setSettingsCacheDownloadState({
+      status: 'running',
+      progress: 0.01,
+      message: '권장 리소스 다운로드를 시작합니다.'
+    });
+
+    for (const phaseKey of phaseKeys) {
+      const phase = getLoadingPhase(phaseKey);
+      const assets = Array.isArray(phase?.assets) ? phase.assets : [];
+      const phaseTotal = assets.length;
+      const phaseLabel = phase?.label || '권장 리소스';
+      const summary = await preloadLoadingPhase(phaseKey, {
+        timeoutMs: 10000,
+        onProgress: ({ completed, total, current, result }) => {
+          const safeTotal = Math.max(0, Number(total) || 0);
+          const safeCompleted = Math.max(0, Number(completed) || 0);
+          const activeDone = result ? safeCompleted : Math.min(safeCompleted + 1, safeTotal);
+          const overallDone = completedBeforePhase + activeDone;
+          const progress = totalAssets > 0 ? overallDone / totalAssets : 1;
+          const statusLabel = result
+            ? (result.status === 'cached' ? '이미 준비됨' : (result.status === 'failed' ? '실패, 나중에 재시도' : '확인 완료'))
+            : '받는 중';
+          const countLabel = safeTotal > 0 ? ` (${Math.min(activeDone, safeTotal)}/${safeTotal})` : '';
+          setSettingsCacheDownloadState({
+            status: 'running',
+            progress,
+            message: `${current?.label || phaseLabel} ${statusLabel}${countLabel}`
+          });
+        }
+      });
+      completedBeforePhase += phaseTotal;
+      failedCount += Math.max(0, Number(summary.failed) || 0);
+    }
+
+    setSettingsCacheDownloadState({
+      status: failedCount > 0 ? 'failed' : 'ready',
+      progress: 1,
+      message: failedCount > 0
+        ? `일부 리소스 ${failedCount}개는 실패했습니다. 다시 받기를 눌러 재시도할 수 있습니다.`
+        : '권장 리소스가 준비되어 있습니다.'
+    });
+  }, [refreshSettingsCacheDownloadState, settingsCacheDownloadState.status]);
   React.useEffect(() => {
     if (helperChatLoadingHintTimerRef.current) {
       clearTimeout(helperChatLoadingHintTimerRef.current);
@@ -3097,6 +3199,37 @@ export default function PhoneQuickDrawer({
                       <div className="phone-galaxy-settings-app__hint">
                         자동저장이 켜진 상태에서 새로고침하면 마지막 저장 슬롯과 보던 화면을 다시 엽니다.
                       </div>
+                      <div className="phone-galaxy-settings-app__row">
+                        <span>원활한 게임 진행 리소스</span>
+                        <button
+                          type="button"
+                          className={`phone-galaxy-settings-app__mini-btn ${settingsCacheDownloadState.status === 'ready' ? 'is-on' : ''}`.trim()}
+                          disabled={settingsCacheDownloadState.status === 'running'}
+                          onClick={downloadRecommendedCacheFromSettings}
+                        >
+                          {settingsCacheDownloadState.status === 'running'
+                            ? '받는 중...'
+                            : (settingsCacheDownloadState.status === 'ready' ? '다시 확인' : '권장 리소스 받기')}
+                        </button>
+                      </div>
+                      <div className="phone-galaxy-settings-app__hint">
+                        약 {PHONE_RECOMMENDED_CACHE_SIZE_MB}MB를 받아 지도, 과수원, 창고, 차량, 시설 화면 전환 끊김을 줄입니다.
+                      </div>
+                      <div className="phone-galaxy-settings-app__hint" role="status" aria-live="polite">
+                        {settingsCacheDownloadState.message}
+                      </div>
+                      {settingsCacheDownloadState.status === 'running' ? (
+                        <div
+                          className="phone-galaxy-settings-app__cache-progress"
+                          aria-label={`권장 리소스 다운로드 ${Math.round(Math.max(0, Math.min(1, Number(settingsCacheDownloadState.progress) || 0)) * 100)}%`}
+                        >
+                          <span
+                            style={{
+                              width: `${Math.round(Math.max(0, Math.min(1, Number(settingsCacheDownloadState.progress) || 0)) * 100)}%`
+                            }}
+                          />
+                        </div>
+                      ) : null}
                     </div>
                     {canUseDevMode ? (
                       <div className="phone-galaxy-settings-app__section">
