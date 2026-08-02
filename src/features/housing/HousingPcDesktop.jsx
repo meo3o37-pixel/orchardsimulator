@@ -143,6 +143,7 @@ export default function HousingPcDesktop({
   appContents = {},
   onSave = null,
   onLoad = null,
+  onRequestMainMenu = null,
 }) {
   const [openAppKeys, setOpenAppKeys] = React.useState([]);
   const [activeAppKey, setActiveAppKey] = React.useState('');
@@ -183,6 +184,16 @@ export default function HousingPcDesktop({
     focusApp(normalizedAppKey);
     setStartMenuOpen(false);
     setDesktopMenu(null);
+  };
+
+  const requestPowerMainMenu = () => {
+    setStartMenuOpen(false);
+    setDesktopMenu(null);
+    const confirmed = typeof window === 'undefined'
+      ? true
+      : window.confirm('메인메뉴로 가시겠습니까?');
+    if (!confirmed) return;
+    onRequestMainMenu?.();
   };
 
   const closeApp = (appKey = '') => {
@@ -519,7 +530,7 @@ export default function HousingPcDesktop({
               </div>
               <div className="housing-pc-start-menu__footer">
                 <span>로컬 세션</span>
-                <button type="button" onClick={() => setStartMenuOpen(false)}>전원</button>
+                <button type="button" onClick={requestPowerMainMenu}>전원</button>
               </div>
             </div>
           ) : null}

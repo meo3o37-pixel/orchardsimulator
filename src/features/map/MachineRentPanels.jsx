@@ -352,6 +352,9 @@ export function UsedCarDealerPanel({
             const itemCategory = String(item?.type || '') === 'passenger' ? 'passenger' : 'transport';
             const toolImageSrc = toolImageSrcOf?.(String(item?.key || '')) || '';
             const durability = Math.max(0, Math.min(100, Number(offer.durability) || 0));
+            const durabilityEstimateMin = Math.max(0, Math.min(100, Number(offer.durabilityEstimateMin) || Math.max(0, durability - 5)));
+            const durabilityEstimateMax = Math.max(durabilityEstimateMin, Math.min(100, Number(offer.durabilityEstimateMax) || Math.min(100, durability + 5)));
+            const durabilityEstimateRange = Math.max(1, durabilityEstimateMax - durabilityEstimateMin);
             const durabilityClass = durabilityToneClass(durability);
             const currentQty = Math.max(0, Number(inventory?.[item.key]) || 0);
             const reachMaxQty = Boolean(item?.maxQty && currentQty >= item.maxQty);
@@ -374,9 +377,9 @@ export function UsedCarDealerPanel({
                 <div className="option-card__meta">{itemCategory === 'transport' ? `적재함 ${offer.cargoBedScore} / 하부 ${offer.frameRustScore}` : `실내 ${offer.interiorScore} / 타이어 ${offer.tireScore}`}</div>
                 {offer.dealerMemo ? <div className="meter__hint">{offer.dealerMemo}</div> : null}
                 <div className="option-card__meta">{`신차 ${won(offer.basePrice)} · 중고 ${won(offer.price)} (${offer.discountPct}% 감가)`}</div>
-                <div className="option-card__meta">{`초기 내구도 ${durability.toFixed(1)}%`}</div>
+                <div className="option-card__meta">{`예상 내구도 ${durabilityEstimateMin.toFixed(0)}~${durabilityEstimateMax.toFixed(0)}%`}</div>
                 <div className={`storage-card__durability-gauge ${durabilityClass}`}>
-                  <span style={{ width: `${durability.toFixed(1)}%` }} />
+                  <span style={{ marginLeft: `${durabilityEstimateMin.toFixed(1)}%`, width: `${durabilityEstimateRange.toFixed(1)}%` }} />
                 </div>
                 <div className="footer-actions" style={{ marginTop: 10 }}>
                   <button

@@ -277,6 +277,28 @@ export default function MapShopItemCard({
           ) : null}
         </>
       ) : null}
+      {itemCategory === 'appliance' && String(item.type || '') === 'boiler' ? (
+        <>
+          {String(item.boilerType || '') ? (
+            <div className="option-card__meta">{`종류 ${String(item.boilerType)}`}</div>
+          ) : null}
+          {String(item.fuelLabel || '') ? (
+            <div className="option-card__meta">{`연료 ${String(item.fuelLabel)}`}</div>
+          ) : null}
+          {Number(item.heatingAreaPyeong) > 0 ? (
+            <div className="option-card__meta">{`난방면적 ${Number(item.heatingAreaPyeong).toLocaleString()}평형`}</div>
+          ) : null}
+          {Number(item.outputKw) > 0 ? (
+            <div className="option-card__meta">{`출력 ${Number(item.outputKw).toLocaleString()}kW`}</div>
+          ) : null}
+          {Number(item.hotWaterLitersPerMin) > 0 ? (
+            <div className="option-card__meta">{`온수 ${Number(item.hotWaterLitersPerMin).toLocaleString()}L/분`}</div>
+          ) : null}
+          {item.exhaustRequired ? (
+            <div className="option-card__meta">연통/배기 필요</div>
+          ) : null}
+        </>
+      ) : null}
       {itemCategory === 'appliance' && String(item.type || '') === 'inductionCooktop' ? (
         <>
           {Number(item.burnerCount) > 0 ? (

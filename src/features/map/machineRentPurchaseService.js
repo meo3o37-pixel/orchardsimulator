@@ -56,6 +56,7 @@ export function buildFinalizedMachinePurchaseState(prev, options) {
       shopKey: tempStorageShopKey,
       sourceKind: tempStorageSourceKind,
       qty: 1,
+      instanceId: nextInstanceId,
       purchaseOverride: {
         name: displayName,
         optionKey: purchaseOptionKey

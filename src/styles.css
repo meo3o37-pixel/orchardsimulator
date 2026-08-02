@@ -2801,6 +2801,35 @@ button {
   min-height: 68px;
 }
 
+.shop-cart-item--has-image {
+  position: relative;
+  padding-left: 62px;
+  min-height: 68px;
+}
+
+.shop-cart-item__thumb {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(35, 80, 60, 0.12);
+  overflow: hidden;
+}
+
+.shop-cart-item__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
 .shop-cart-item__head {
   display: flex;
   align-items: center;
@@ -2939,6 +2968,59 @@ button {
   background: linear-gradient(180deg, rgba(216, 234, 209, 0.92), rgba(245, 236, 218, 0.92));
   border-color: rgba(40, 84, 63, 0.28);
   box-shadow: 0 16px 30px rgba(40, 84, 63, 0.12);
+}
+
+.confirm-modal--vehicle-plate-selection {
+  width: min(620px, calc(100vw - 28px));
+}
+
+.vehicle-plate-selection-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.vehicle-plate-option-card {
+  position: relative;
+  min-height: 118px;
+  padding: 18px 18px 40px;
+  cursor: pointer;
+}
+
+.vehicle-plate-option-card.is-selected {
+  border-color: rgba(39, 126, 82, 0.82);
+  background:
+    linear-gradient(135deg, rgba(224, 248, 235, 0.98), rgba(255, 252, 246, 0.96));
+  box-shadow:
+    0 0 0 3px rgba(54, 156, 103, 0.18),
+    0 14px 28px rgba(31, 92, 64, 0.18);
+}
+
+.vehicle-plate-option-card.is-selected::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(39, 126, 82, 0.42);
+  border-radius: 16px;
+  pointer-events: none;
+}
+
+.vehicle-plate-option-card.is-selected .option-card__row strong {
+  color: #1f6f49;
+}
+
+.vehicle-plate-option-card__badge {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  min-height: 24px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #2f7b54;
+  color: #fffaf0;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.2;
+  box-shadow: 0 8px 18px rgba(47, 123, 84, 0.22);
 }
 
 .option-card--cold-storage {
@@ -10811,6 +10893,114 @@ button {
   box-shadow: 0 0 14px rgba(58, 186, 108, 0.24);
 }
 
+.phone-galaxy-health-app__symptoms {
+  margin: 0 12px 10px;
+  display: grid;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.phone-galaxy-health-app__section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 2px;
+}
+
+.phone-galaxy-health-app__section-title span {
+  color: rgba(31, 72, 55, 0.74);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.phone-galaxy-health-app__section-title strong {
+  color: #225b43;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.phone-galaxy-health-app__symptom-card,
+.phone-galaxy-health-app__symptom-empty {
+  border-radius: 14px;
+  border: 1px solid rgba(53, 116, 82, 0.13);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(95, 199, 137, 0.12), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(246, 251, 247, 0.78));
+  box-shadow:
+    0 8px 18px rgba(25, 67, 47, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86);
+}
+
+.phone-galaxy-health-app__symptom-card {
+  min-height: 74px;
+  padding: 10px 12px;
+  display: grid;
+  gap: 4px;
+}
+
+.phone-galaxy-health-app__symptom-card.is-undiagnosed {
+  border-color: rgba(177, 111, 47, 0.2);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 189, 82, 0.16), transparent 42%),
+    linear-gradient(180deg, rgba(255, 252, 244, 0.95), rgba(252, 245, 231, 0.78));
+}
+
+.phone-galaxy-health-app__symptom-card > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.phone-galaxy-health-app__symptom-card span {
+  min-width: 0;
+  color: #225b43;
+  font-size: 0.78rem;
+  font-weight: 950;
+  line-height: 1.2;
+}
+
+.phone-galaxy-health-app__symptom-card em {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 4px 7px;
+  background: rgba(35, 113, 76, 0.1);
+  color: #267150;
+  font-size: 0.58rem;
+  font-style: normal;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.phone-galaxy-health-app__symptom-card.is-undiagnosed em {
+  background: rgba(177, 111, 47, 0.12);
+  color: #9a632b;
+}
+
+.phone-galaxy-health-app__symptom-card strong {
+  color: rgba(31, 72, 55, 0.84);
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.28;
+}
+
+.phone-galaxy-health-app__symptom-card small,
+.phone-galaxy-health-app__symptom-empty {
+  color: rgba(31, 72, 55, 0.58);
+  font-size: 0.66rem;
+  font-weight: 760;
+  line-height: 1.32;
+}
+
+.phone-galaxy-health-app__symptom-empty {
+  min-height: 54px;
+  padding: 12px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
 .phone-galaxy-health-app__stats {
   min-height: 0;
   overflow: auto;
@@ -11675,6 +11865,29 @@ button {
   z-index: 1;
 }
 
+.confirm-modal--transport-purchase {
+  width: min(620px, calc(100vw - 28px));
+}
+
+.transport-purchase-option-tabs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: 8px;
+  overflow: visible;
+  white-space: normal;
+}
+
+.transport-purchase-option-tabs .focus-tab {
+  width: 100%;
+  min-height: 38px;
+  padding: 7px 10px;
+  border-radius: 14px;
+  white-space: normal;
+  line-height: 1.18;
+  text-align: center;
+  word-break: keep-all;
+}
+
 .focus-tab:hover {
   transform: translateY(-1px);
   box-shadow: 0 6px 14px rgba(40, 84, 63, 0.08);
@@ -11916,10 +12129,59 @@ button {
   gap: 12px;
 }
 
+.warehouse-storage-tabs-scroll-shell {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 34px;
+  align-items: center;
+  gap: 6px;
+}
+
 .warehouse-storage-tabs-bar__main {
   flex: 1;
   min-width: 0;
   margin: 0;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  padding: 0 2px;
+}
+
+.warehouse-storage-tabs-bar__main::-webkit-scrollbar {
+  display: none;
+}
+
+.warehouse-storage-tabs-bar__main .focus-tab {
+  flex: 0 0 auto;
+}
+
+.warehouse-storage-tabs-scroll-btn {
+  width: 34px;
+  height: 40px;
+  border: 1px solid rgba(40, 84, 63, 0.18);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 253, 247, 0.96), rgba(243, 238, 226, 0.95));
+  color: #2a5f46;
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 8px 16px rgba(40, 84, 63, 0.08);
+  cursor: pointer;
+}
+
+.warehouse-storage-tabs-scroll-btn:hover {
+  border-color: rgba(40, 84, 63, 0.34);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 250, 0.98), rgba(237, 246, 240, 0.96));
+}
+
+.warehouse-storage-tabs-scroll-btn:active {
+  transform: translateY(1px);
 }
 
 .warehouse-storage-tabs-bar__facility-shortcut {
@@ -27867,6 +28129,10 @@ button.small-apc-receiving-queue__item:hover {
   margin: 0;
 }
 
+.map-transfer-cargo-row.shop-cart-item--has-image {
+  padding-left: 62px;
+}
+
 .map-transfer-cargo-row--selectable {
   width: 100%;
   text-align: left;
@@ -29713,6 +29979,27 @@ button.small-apc-receiving-queue__item:hover {
     linear-gradient(180deg, rgba(255, 255, 250, 0.94), rgba(222, 237, 219, 0.72));
 }
 
+.housing-interior-temperature-panel__detail-button {
+  min-height: 24px;
+  padding: 0 8px;
+  border: 1px solid rgba(58, 103, 74, 0.22);
+  border-radius: 7px;
+  background: rgba(255, 255, 248, 0.64);
+  color: #2b6147;
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow:
+    0 4px 10px rgba(31, 67, 46, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.74);
+}
+
+.housing-interior-temperature-panel__detail-button:hover {
+  background: rgba(242, 250, 235, 0.86);
+  border-color: rgba(47, 111, 74, 0.34);
+}
+
 .housing-interior-temperature-panel__label,
 .housing-interior-temperature-panel__state,
 .housing-interior-temperature-panel small {
@@ -29855,6 +30142,7 @@ button.small-apc-receiving-queue__item:hover {
 }
 
 .housing-interior-overlay.is-night .housing-interior-living-panel__detail-button,
+.housing-interior-overlay.is-night .housing-interior-temperature-panel__detail-button,
 .housing-interior-overlay.is-night .housing-interior-temperature-panel__hvac-button {
   color: #dff2e7;
   border-color: rgba(201, 229, 219, 0.24);
@@ -30670,12 +30958,12 @@ button.small-apc-receiving-queue__item:hover {
 }
 
 .housing-interior-placeholder-item-list.housing-interior-recipe-grid {
-  --housing-recipe-card-height: 116px;
+  --housing-recipe-card-height: 176px;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   grid-auto-rows: var(--housing-recipe-card-height);
   gap: 10px;
-  max-height: calc((var(--housing-recipe-card-height) * 3) + (10px * 2));
+  max-height: calc((var(--housing-recipe-card-height) * 2) + 10px);
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 4px;
@@ -30688,9 +30976,33 @@ button.small-apc-receiving-queue__item:hover {
   align-items: stretch;
   flex-direction: column;
   justify-content: flex-start;
-  gap: 10px;
+  gap: 8px;
   padding: 12px;
   cursor: pointer;
+}
+
+.housing-interior-recipe-card__image {
+  width: 100%;
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(250, 248, 240, 0.78), rgba(242, 247, 238, 0.72));
+}
+
+.housing-interior-recipe-card__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.housing-interior-recipe-card__image span {
+  color: rgba(62, 91, 72, 0.54);
+  font-size: 0.74rem;
+  font-weight: 800;
 }
 
 .housing-interior-recipe-card:hover,
@@ -30702,21 +31014,57 @@ button.small-apc-receiving-queue__item:hover {
     inset 0 0 0 1px rgba(255, 255, 255, 0.72);
 }
 
+.housing-interior-recipe-card.is-unavailable {
+  border-color: rgba(122, 126, 118, 0.2);
+  background: rgba(241, 241, 236, 0.66);
+  box-shadow: none;
+  color: rgba(87, 93, 86, 0.58);
+}
+
+.housing-interior-recipe-card.is-unavailable .housing-interior-recipe-card__image {
+  background: linear-gradient(180deg, rgba(236, 236, 231, 0.76), rgba(228, 231, 226, 0.68));
+}
+
+.housing-interior-recipe-card.is-unavailable .housing-interior-recipe-card__image img {
+  opacity: 0.38;
+  filter: grayscale(1) saturate(0.55);
+}
+
+.housing-interior-recipe-card.is-unavailable .housing-interior-placeholder-item__meta > span {
+  color: rgba(76, 84, 76, 0.58);
+}
+
+.housing-interior-recipe-card.is-unavailable:hover,
+.housing-interior-recipe-card.is-unavailable:focus-visible {
+  border-color: rgba(122, 126, 118, 0.24);
+  box-shadow: none;
+}
+
+.housing-interior-recipe-card.is-unavailable.is-selected {
+  border-color: rgba(122, 126, 118, 0.32);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.58);
+}
+
 .housing-interior-recipe-card:focus-visible {
   outline: 2px solid rgba(43, 111, 73, 0.42);
   outline-offset: 2px;
 }
 
 .housing-interior-recipe-card .housing-interior-placeholder-item__meta {
-  align-items: flex-start;
+  align-items: center;
   flex-direction: column;
-  justify-content: flex-start;
-  gap: 7px;
+  justify-content: center;
+  gap: 4px;
+  min-height: 22px;
 }
 
 .housing-interior-recipe-card .housing-interior-placeholder-item__meta > span {
   width: 100%;
   font-size: 0.92rem;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .housing-interior-prep-card .housing-interior-placeholder-item__meta > strong {
@@ -30775,6 +31123,21 @@ button.small-apc-receiving-queue__item:hover {
 
 .housing-interior-cooking-appliance-card.is-installed:active {
   transform: translateY(0) scale(0.985);
+}
+
+.housing-interior-cooking-appliance-card.is-cooking {
+  cursor: default;
+  border-color: rgba(47, 226, 144, 0.66);
+  box-shadow:
+    0 0 0 2px rgba(126, 255, 190, 0.28),
+    0 0 18px rgba(47, 226, 144, 0.28),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.82);
+}
+
+.housing-interior-cooking-appliance-card.is-cooking:hover,
+.housing-interior-cooking-appliance-card.is-cooking:focus-visible,
+.housing-interior-cooking-appliance-card.is-cooking:active {
+  transform: none;
 }
 
 .housing-interior-cooking-appliance-card__head,
@@ -30840,6 +31203,35 @@ button.small-apc-receiving-queue__item:hover {
   border-radius: 12px;
   border: 1px dashed rgba(71, 109, 86, 0.18);
   background: rgba(255, 255, 255, 0.42);
+}
+
+.housing-interior-cooking-appliance-card__gauge {
+  width: 100%;
+  height: 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(47, 111, 74, 0.12);
+  background: rgba(229, 239, 230, 0.82);
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(26, 58, 39, 0.12);
+}
+
+.housing-interior-cooking-appliance-card__gauge span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, #2fdf90, #8effc2);
+  box-shadow:
+    0 0 10px rgba(47, 226, 144, 0.56),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.34);
+  transition: width 260ms linear;
+}
+
+.housing-interior-cooking-appliance-card__collect-button {
+  width: 100%;
+  min-height: 34px;
+  margin-top: 2px;
+  border-radius: 10px;
 }
 
 .housing-interior-meal-plate-section {
@@ -31156,16 +31548,17 @@ button.small-apc-receiving-queue__item:hover {
 }
 
 .confirm-modal--housing-cooking-appliance {
-  width: min(680px, calc(100vw - 36px));
+  width: min(920px, calc(100vw - 36px));
 }
 
 .housing-interior-cookable-prep-list {
   display: grid;
-  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
   max-height: min(430px, calc(100vh - 260px));
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 4px 4px 4px 0;
+  padding: 4px 6px 4px 0;
   scrollbar-gutter: stable;
 }
 
@@ -31173,8 +31566,9 @@ button.small-apc-receiving-queue__item:hover {
   width: 100%;
   min-width: 0;
   display: grid;
-  gap: 8px;
-  padding: 14px 16px;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+  padding: 10px;
   border-radius: 14px;
   border: 1px solid rgba(71, 109, 86, 0.16);
   background:
@@ -31184,10 +31578,12 @@ button.small-apc-receiving-queue__item:hover {
   text-align: left;
   font: inherit;
   cursor: pointer;
+  min-height: 214px;
   transition:
     transform 160ms cubic-bezier(0.22, 0.8, 0.24, 1),
     border-color 160ms ease,
-    box-shadow 160ms ease;
+    box-shadow 160ms ease,
+    min-height 220ms ease;
 }
 
 .housing-interior-cookable-prep-card:hover,
@@ -31204,26 +31600,430 @@ button.small-apc-receiving-queue__item:hover {
   transform: translateY(0) scale(0.985);
 }
 
-.housing-interior-cookable-prep-card > div,
-.housing-interior-cookable-prep-card > small {
+.housing-interior-cookable-prep-card.is-expanded {
+  grid-column: span 2;
+  grid-template-columns: 174px minmax(0, 1fr);
+  grid-template-rows: 174px auto;
+  align-items: start;
+  min-height: 260px;
+  border-color: rgba(47, 226, 144, 0.86);
+  box-shadow:
+    0 0 0 2px rgba(126, 255, 190, 0.42),
+    0 0 18px rgba(47, 226, 144, 0.36),
+    0 16px 28px rgba(38, 84, 59, 0.14),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.86);
+  cursor: default;
+  animation:
+    housingPrepCardExpandInline 220ms cubic-bezier(0.22, 0.8, 0.24, 1),
+    housingPrepSelectedNeon 1.8s ease-in-out infinite;
+}
+
+.housing-interior-cookable-prep-card.is-expanded.is-collapsing {
+  pointer-events: none;
+  animation: housingPrepCardCollapseInline 220ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.housing-interior-cookable-prep-card.is-selected {
+  border-color: rgba(47, 226, 144, 0.72);
+  box-shadow:
+    0 0 0 2px rgba(126, 255, 190, 0.28),
+    0 14px 24px rgba(38, 84, 59, 0.14),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.84);
+}
+
+.housing-interior-cookable-prep-card.is-selected.is-deselecting {
+  pointer-events: none;
+  animation: housingPrepCardDeselect 180ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.housing-interior-cookable-prep-card.is-expanded:active {
+  transform: none;
+}
+
+.housing-interior-cookable-prep-card.is-expanded .housing-interior-cookable-prep-card__image {
+  grid-column: 1;
+  grid-row: 1;
+  width: 174px;
+  height: 174px;
+  aspect-ratio: auto;
+}
+
+.housing-interior-cookable-prep-card.is-expanded .housing-interior-cookable-prep-card__body {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.housing-interior-cookable-prep-card__image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  border: 1px solid rgba(71, 109, 86, 0.12);
+  background: rgba(255, 255, 255, 0.64);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: rgba(33, 76, 53, 0.58);
+  font-size: 2rem;
+}
+
+.housing-interior-cookable-prep-card__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 8px;
+}
+
+.housing-interior-cookable-prep-card__body {
   min-width: 0;
+  display: grid;
+  gap: 4px;
+  align-content: start;
 }
 
 .housing-interior-cookable-prep-card strong {
   display: block;
   color: #214c35;
+  font-size: 0.92rem;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.housing-interior-cookable-prep-card em {
+  width: fit-content;
+  border-radius: 999px;
+  background: rgba(43, 111, 73, 0.1);
+  color: #2f704c;
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 900;
+  line-height: 1;
+  padding: 5px 7px;
+}
+
+.housing-interior-cookable-prep-card__body > span,
+.housing-interior-cookable-prep-card small {
+  color: rgba(42, 74, 55, 0.62);
+  font-size: 0.78rem;
+  font-weight: 760;
+  line-height: 1.35;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+
+.housing-interior-cookable-prep-card__body > span {
+  -webkit-line-clamp: 2;
+}
+
+.housing-interior-cookable-prep-card small {
+  -webkit-line-clamp: 2;
+}
+
+.housing-interior-cookable-prep-card__quantity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  min-height: 34px;
+  margin-top: 2px;
+  padding: 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(71, 109, 86, 0.14);
+  background: rgba(255, 255, 255, 0.66);
+}
+
+.housing-interior-cookable-prep-card__quantity .button {
+  width: 30px;
+  min-width: 30px;
+  height: 28px;
+  min-height: 28px;
+  padding: 0;
+  border-radius: 999px;
+  justify-content: center;
+}
+
+.housing-interior-cookable-prep-card__quantity span {
+  min-width: 54px;
+  color: #214c35;
+  font-size: 0.78rem;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.housing-interior-cookable-prep-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 40px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(71, 109, 86, 0.14);
+  background: rgba(243, 247, 239, 0.62);
+  color: rgba(42, 74, 55, 0.72);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.housing-interior-cookable-prep-summary span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.housing-interior-cookable-prep-summary strong {
+  flex: 0 0 auto;
+  color: #214c35;
+  font-size: 0.82rem;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.housing-interior-cookable-prep-card__water-options {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.housing-interior-cookable-prep-card__rice-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: 10px;
+}
+
+.housing-interior-cookable-prep-card__rice-capacity {
+  color: rgba(33, 76, 53, 0.72);
+  font-size: 0.78rem;
   font-weight: 900;
 }
 
-.housing-interior-cookable-prep-card span,
-.housing-interior-cookable-prep-card small {
+.housing-interior-cookable-prep-card__rice-number {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: rgba(33, 76, 53, 0.78);
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.housing-interior-cookable-prep-card__rice-number input {
+  min-width: 0;
+  height: 36px;
+  border: 1px solid rgba(71, 109, 86, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.86);
+  color: #164a31;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 950;
+  text-align: center;
+}
+
+.housing-interior-cookable-prep-card__rice-number input:focus {
+  border-color: rgba(47, 226, 144, 0.72);
+  box-shadow: 0 0 0 3px rgba(126, 255, 190, 0.22);
+  outline: none;
+}
+
+.housing-interior-cookable-prep-card.is-expanded .housing-interior-cookable-prep-card__rice-controls {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: stretch;
+  margin-top: 0;
+  padding-left: 4px;
+  animation: housingPrepWaterOptionsSlideIn 220ms cubic-bezier(0.22, 0.8, 0.24, 1);
+}
+
+.housing-interior-cookable-prep-card.is-expanded.is-collapsing .housing-interior-cookable-prep-card__rice-controls {
+  animation: housingPrepWaterOptionsSlideOut 180ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.housing-interior-cookable-prep-card__rice-amounts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.housing-interior-cookable-prep-card__rice-amount {
+  min-width: 0;
+  min-height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(71, 109, 86, 0.16);
+  background: rgba(255, 255, 255, 0.76);
+  color: rgba(33, 76, 53, 0.82);
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.housing-interior-cookable-prep-card__rice-amount:hover,
+.housing-interior-cookable-prep-card__rice-amount:focus-visible {
+  border-color: rgba(43, 111, 73, 0.36);
+  box-shadow: 0 7px 14px rgba(38, 84, 59, 0.1);
+  outline: none;
+}
+
+.housing-interior-cookable-prep-card__rice-amount.is-selected {
+  border-color: rgba(47, 226, 144, 0.86);
+  background: rgba(220, 255, 238, 0.9);
+  color: #155f39;
+  box-shadow:
+    0 0 0 2px rgba(126, 255, 190, 0.32),
+    0 0 13px rgba(47, 226, 144, 0.36);
+}
+
+.housing-interior-cookable-prep-card__rice-amount:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.housing-interior-cookable-prep-card__water-option {
+  min-width: 0;
+  min-height: 62px;
+  border-radius: 10px;
+  border: 1px solid rgba(71, 109, 86, 0.16);
+  background: rgba(255, 255, 255, 0.72);
+  color: #214c35;
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  padding: 9px;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.housing-interior-cookable-prep-card__water-option:hover,
+.housing-interior-cookable-prep-card__water-option:focus-visible {
+  border-color: rgba(43, 111, 73, 0.36);
+  box-shadow: 0 8px 16px rgba(38, 84, 59, 0.1);
+  outline: none;
+}
+
+.housing-interior-cookable-prep-card__water-option.is-selected {
+  border-color: rgba(47, 226, 144, 0.78);
+  background: rgba(220, 255, 238, 0.82);
+  box-shadow:
+    0 0 0 2px rgba(126, 255, 190, 0.24),
+    0 8px 18px rgba(47, 226, 144, 0.18);
+}
+
+.housing-interior-cookable-prep-card__water-option:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.housing-interior-cookable-prep-card__water-option strong,
+.housing-interior-cookable-prep-card__water-option span {
+  min-width: 0;
+}
+
+.housing-interior-cookable-prep-card__water-option span {
   color: rgba(42, 74, 55, 0.62);
-  font-size: 0.82rem;
+  font-size: 0.72rem;
   font-weight: 760;
-  line-height: 1.35;
+  line-height: 1.25;
+}
+
+@keyframes housingPrepCardExpandInline {
+  from {
+    clip-path: inset(0 46% 0 0 round 14px);
+  }
+  to {
+    clip-path: inset(0 0 0 0 round 14px);
+  }
+}
+
+@keyframes housingPrepCardCollapseInline {
+  from {
+    opacity: 1;
+    clip-path: inset(0 0 0 0 round 14px);
+  }
+  to {
+    opacity: 0.82;
+    clip-path: inset(0 46% 0 0 round 14px);
+  }
+}
+
+@keyframes housingPrepCardDeselect {
+  from {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow:
+      0 0 0 2px rgba(126, 255, 190, 0.28),
+      0 14px 24px rgba(38, 84, 59, 0.14),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.84);
+  }
+  to {
+    opacity: 0.78;
+    transform: scale(0.97);
+    box-shadow:
+      0 0 0 0 rgba(126, 255, 190, 0),
+      0 6px 14px rgba(38, 84, 59, 0.08),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+  }
+}
+
+@keyframes housingPrepWaterOptionsSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes housingPrepWaterOptionsSlideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+}
+
+@keyframes housingPrepSelectedNeon {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 2px rgba(126, 255, 190, 0.34),
+      0 0 16px rgba(47, 226, 144, 0.3),
+      0 16px 28px rgba(38, 84, 59, 0.14),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.86);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px rgba(126, 255, 190, 0.58),
+      0 0 24px rgba(47, 226, 144, 0.48),
+      0 18px 30px rgba(38, 84, 59, 0.16),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.92);
+  }
 }
 
 .housing-interior-cookable-prep-empty {
+  grid-column: 1 / -1;
   min-height: 112px;
   border-radius: 14px;
   border: 1px dashed rgba(71, 109, 86, 0.2);
@@ -31235,10 +32035,53 @@ button.small-apc-receiving-queue__item:hover {
   font-weight: 850;
 }
 
+@media (max-width: 860px) {
+  .housing-interior-cookable-prep-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .housing-interior-cookable-prep-card.is-expanded {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 520px) {
+  .housing-interior-cookable-prep-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .housing-interior-cookable-prep-card.is-expanded {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+  }
+
+  .housing-interior-cookable-prep-card.is-expanded .housing-interior-cookable-prep-card__image,
+  .housing-interior-cookable-prep-card.is-expanded .housing-interior-cookable-prep-card__body,
+  .housing-interior-cookable-prep-card.is-expanded .housing-interior-cookable-prep-card__rice-controls {
+    grid-column: 1;
+  }
+
+  .housing-interior-cookable-prep-card.is-expanded .housing-interior-cookable-prep-card__image {
+    grid-row: 1;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+
+  .housing-interior-cookable-prep-card.is-expanded .housing-interior-cookable-prep-card__body {
+    grid-row: 2;
+  }
+
+  .housing-interior-cookable-prep-card.is-expanded .housing-interior-cookable-prep-card__rice-controls {
+    grid-row: 3;
+    padding-left: 0;
+  }
+}
+
 .housing-interior-recipe-detail {
   display: grid;
-  grid-template-columns: minmax(160px, 0.42fr) minmax(0, 1fr);
-  gap: 14px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
   padding: 12px;
   border-radius: 14px;
   border: 1px solid rgba(71, 109, 86, 0.14);
@@ -31246,16 +32089,25 @@ button.small-apc-receiving-queue__item:hover {
 }
 
 .housing-interior-recipe-detail__image {
-  min-height: 132px;
+  min-height: 220px;
   border-radius: 12px;
-  border: 1px dashed rgba(71, 109, 86, 0.28);
+  border: 1px solid rgba(71, 109, 86, 0.14);
   background:
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.94), rgba(245, 250, 241, 0.64) 68%),
     linear-gradient(135deg, rgba(232, 244, 231, 0.72), rgba(255, 252, 246, 0.82));
   display: grid;
   place-items: center;
+  overflow: hidden;
   color: rgba(33, 76, 53, 0.68);
   font-size: 0.9rem;
   font-weight: 850;
+}
+
+.housing-interior-recipe-detail__image img {
+  width: min(72%, 360px);
+  max-height: 202px;
+  object-fit: contain;
+  display: block;
 }
 
 .housing-interior-recipe-detail__body {
@@ -31263,6 +32115,7 @@ button.small-apc-receiving-queue__item:hover {
   display: flex;
   flex-direction: column;
   gap: 9px;
+  padding: 10px 4px 2px;
 }
 
 .housing-interior-recipe-detail__head {
@@ -31532,12 +32385,19 @@ button.small-apc-receiving-queue__item:hover {
 .housing-interior-fridge-source-picker__tabs .focus-tab {
   min-width: 0;
   flex: 1 1 0;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 4px;
   padding-inline: 9px;
 }
 
-.housing-interior-fridge-source-picker__tabs .focus-tab span {
+.housing-interior-fridge-source-picker__tabs .focus-tab__label {
+  min-width: 0;
+  line-height: 1;
+}
+
+.housing-interior-fridge-source-picker__tabs .focus-tab__count {
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
@@ -31549,9 +32409,11 @@ button.small-apc-receiving-queue__item:hover {
   font-size: 0.7rem;
   font-weight: 900;
   line-height: 1;
+  flex: 0 0 auto;
+  transform: translateY(-1px);
 }
 
-.housing-interior-fridge-source-picker__tabs .focus-tab.is-active span {
+.housing-interior-fridge-source-picker__tabs .focus-tab.is-active .focus-tab__count {
   background: rgba(255, 255, 255, 0.22);
   color: #ffffff;
 }
@@ -31676,6 +32538,31 @@ button.small-apc-receiving-queue__item:hover {
   padding-bottom: 12px;
 }
 
+.housing-interior-placeholder-grid--water-source {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.housing-interior-placeholder-grid--water-source .housing-interior-placeholder-card--storage-wide,
+.housing-interior-placeholder-grid--boiler .housing-interior-placeholder-card--storage-wide {
+  max-height: min(66vh, 620px);
+  overflow: auto;
+}
+
+.housing-interior-placeholder-grid--boiler {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.housing-interior-boiler-slot-card {
+  min-height: 180px;
+}
+
+.housing-interior-boiler-slot-card.is-installed {
+  border-color: rgba(170, 91, 46, 0.2);
+  background:
+    radial-gradient(circle at top right, rgba(255, 216, 170, 0.42), rgba(255, 255, 255, 0) 58%),
+    linear-gradient(135deg, rgba(255, 251, 242, 0.96), rgba(246, 255, 245, 0.86));
+}
+
 .housing-interior-storage-panel {
   display: flex;
   flex-direction: column;
@@ -31723,6 +32610,66 @@ button.small-apc-receiving-queue__item:hover {
   padding-inline: 0;
 }
 
+.housing-interior-placeholder-card--storage-wide .housing-interior-placeholder-move-button {
+  min-width: 34px;
+  width: 34px;
+  min-height: 34px;
+  padding-inline: 0;
+}
+
+.housing-interior-water-tank-slot-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: stretch;
+  overflow: visible;
+  padding-right: 0;
+}
+
+.housing-interior-water-source-storage-list {
+  margin-top: 12px;
+  max-height: 110px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.housing-interior-water-tank-slot-card {
+  min-height: 184px;
+  height: auto;
+}
+
+.housing-interior-external-water-tank-card {
+  border-color: rgba(67, 120, 88, 0.22);
+  background:
+    radial-gradient(circle at top right, rgba(210, 241, 252, 0.5), rgba(255, 255, 255, 0) 56%),
+    rgba(255, 253, 248, 0.94);
+}
+
+.housing-interior-external-water-tank-card.is-installed {
+  border-color: rgba(65, 172, 147, 0.26);
+  background:
+    radial-gradient(circle at top right, rgba(207, 247, 237, 0.72), rgba(255, 255, 255, 0) 58%),
+    linear-gradient(135deg, rgba(244, 255, 250, 0.96), rgba(255, 253, 248, 0.92));
+}
+
+.housing-interior-external-water-tank-card .housing-interior-appliance-slot-card__installed {
+  min-height: 86px;
+  padding-block: 12px;
+}
+
+.housing-interior-water-tank-slot-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+}
+
+.housing-interior-water-tank-slot-card__actions .button {
+  min-height: 32px;
+  padding: 7px 10px;
+}
+
 .housing-interior-placeholder-grid--appliance-slots {
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
@@ -31737,6 +32684,18 @@ button.small-apc-receiving-queue__item:hover {
 
 .housing-interior-placeholder-grid--furniture-slots {
   grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  align-content: start;
+  max-height: calc((182px * 2) + 14px + 16px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  padding-bottom: 16px;
+  scrollbar-gutter: stable;
+}
+
+.housing-interior-placeholder-grid--clothing-slots {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   align-content: start;
   max-height: calc((182px * 2) + 14px + 16px);
@@ -31763,6 +32722,13 @@ button.small-apc-receiving-queue__item:hover {
 .housing-interior-appliance-slot-card__head {
   display: grid;
   gap: 0;
+}
+
+.housing-interior-appliance-slot-card__head small {
+  color: rgba(33, 76, 53, 0.58);
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.25;
 }
 
 .housing-interior-appliance-slot-card__head strong {
@@ -31848,6 +32814,13 @@ button.small-apc-receiving-queue__item:hover {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+
+.housing-interior-appliance-slot-card__installed small {
+  color: rgba(33, 76, 53, 0.58);
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1.25;
 }
 
 .housing-build-furniture-choice {
@@ -32305,7 +33278,8 @@ button.small-apc-receiving-queue__item:hover {
 
 @media (max-width: 900px) {
   .housing-interior-placeholder-grid--appliance-slots,
-  .housing-interior-placeholder-grid--furniture-slots {
+  .housing-interior-placeholder-grid--furniture-slots,
+  .housing-interior-placeholder-grid--clothing-slots {
     grid-template-columns: minmax(0, 1fr);
     max-height: calc((182px * 2) + 14px + 16px);
   }
@@ -32602,6 +33576,7 @@ button.small-apc-receiving-queue__item:hover {
 
 .housing-interior-placeholder-item__meta {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
@@ -32624,6 +33599,26 @@ button.small-apc-receiving-queue__item:hover {
   color: #214c35;
   font-size: 0.92rem;
   white-space: nowrap;
+}
+
+.housing-interior-food-expiry {
+  flex: 1 0 100%;
+  color: rgba(62, 92, 72, 0.72);
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.15;
+}
+
+.housing-interior-food-expiry.is-watch {
+  color: #796329;
+}
+
+.housing-interior-food-expiry.is-soon {
+  color: #a65d24;
+}
+
+.housing-interior-food-expiry.is-expired {
+  color: #b23b32;
 }
 
 .housing-interior-placeholder-move-button {
@@ -32970,6 +33965,140 @@ button.small-apc-receiving-queue__item:hover {
     inset 0 1px 0 rgba(255, 255, 255, 0.24);
 }
 
+.housing-interior-hvac-device-groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.housing-interior-hvac-device-group {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(71, 109, 86, 0.14);
+  border-radius: 16px;
+  background: rgba(255, 255, 251, 0.48);
+}
+
+.housing-interior-hvac-device-group__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.housing-interior-hvac-device-group__head strong {
+  color: #244d38;
+  font-size: 0.92rem;
+  font-weight: 950;
+}
+
+.housing-interior-hvac-device-group__head span {
+  color: rgba(52, 69, 51, 0.62);
+  font-size: 0.76rem;
+  font-weight: 850;
+  text-align: right;
+  word-break: keep-all;
+}
+
+.housing-interior-hvac-device-list {
+  display: grid;
+  gap: 8px;
+}
+
+.housing-interior-hvac-device-card {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  min-height: 58px;
+  padding: 8px 10px;
+  border: 1px solid rgba(71, 109, 86, 0.16);
+  border-radius: 14px;
+  color: #294d39;
+  text-align: left;
+  background: rgba(255, 255, 251, 0.7);
+  cursor: pointer;
+}
+
+.housing-interior-hvac-device-card.is-selected {
+  border-color: rgba(51, 125, 86, 0.44);
+  background: linear-gradient(135deg, rgba(226, 246, 235, 0.9), rgba(244, 250, 238, 0.82));
+  box-shadow: 0 8px 18px rgba(46, 101, 71, 0.12);
+}
+
+.housing-interior-hvac-device-card img,
+.housing-interior-hvac-device-card__icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid rgba(71, 109, 86, 0.14);
+  background: rgba(255, 255, 255, 0.78);
+  object-fit: contain;
+}
+
+.housing-interior-hvac-device-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.housing-interior-hvac-device-card span {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.housing-interior-hvac-device-card strong,
+.housing-interior-hvac-device-card small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.housing-interior-hvac-device-card strong {
+  font-size: 0.86rem;
+  font-weight: 950;
+}
+
+.housing-interior-hvac-device-card small {
+  color: rgba(52, 69, 51, 0.62);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.housing-interior-hvac-device-card em {
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: rgba(43, 73, 54, 0.72);
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 950;
+  background: rgba(236, 241, 230, 0.82);
+}
+
+.housing-interior-hvac-device-card.is-selected em {
+  color: #fff;
+  background: rgba(56, 119, 84, 0.92);
+}
+
+.housing-interior-hvac-device-empty {
+  display: flex;
+  align-items: center;
+  min-height: 54px;
+  padding: 10px 12px;
+  border: 1px dashed rgba(72, 103, 77, 0.2);
+  border-radius: 14px;
+  color: rgba(52, 69, 51, 0.64);
+  font-size: 0.8rem;
+  font-weight: 850;
+  background: rgba(255, 255, 251, 0.38);
+}
+
 .housing-interior-hvac-target {
   display: grid;
   grid-template-columns: 48px minmax(90px, 1fr) 48px;
@@ -33105,6 +34234,58 @@ button.small-apc-receiving-queue__item:hover {
   font-size: 17px;
   font-weight: 900;
   line-height: 1.25;
+}
+
+.confirm-modal--housing-indoor-temperature {
+  width: min(680px, calc(100vw - 34px));
+}
+
+.housing-interior-temperature-detail-panel {
+  margin-top: 14px;
+}
+
+.housing-interior-temperature-detail-context {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.housing-interior-temperature-detail-context > div {
+  min-height: 64px;
+  padding: 10px 12px;
+  border: 1px solid rgba(50, 92, 67, 0.12);
+  border-radius: 12px;
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  background:
+    linear-gradient(145deg, rgba(248, 253, 243, 0.82), rgba(235, 244, 232, 0.56)),
+    rgba(255, 255, 250, 0.45);
+}
+
+.housing-interior-temperature-detail-context span {
+  color: #718478;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.housing-interior-temperature-detail-context strong {
+  color: #28543f;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+@media (max-width: 720px) {
+  .housing-interior-temperature-detail-context {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
+  .housing-interior-temperature-detail-context {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .housing-interior-day-advance-panel {
@@ -34374,7 +35555,8 @@ button.small-apc-receiving-queue__item:hover {
   }
 
   .housing-interior-hvac-summary,
-  .housing-interior-hvac-modes {
+  .housing-interior-hvac-modes,
+  .housing-interior-hvac-device-groups {
     grid-template-columns: 1fr;
   }
 
@@ -34515,6 +35697,27 @@ button.small-apc-receiving-queue__item:hover {
   background: rgba(246, 252, 246, 0.96);
   color: #1f5d45;
   border-color: rgba(56, 136, 86, 0.2);
+}
+
+.confirm-modal--warehouse-storage-left .warehouse-storage-tabs-bar__main .focus-tab.focus-tab--active,
+.confirm-modal--warehouse-storage-left .warehouse-storage-harvest-subtabs .focus-tab.focus-tab--active,
+.confirm-modal--warehouse-storage-left .warehouse-storage-tabs-bar__facility-shortcut.focus-tab--active,
+.confirm-modal--warehouse-storage-left.is-green-warehouse .warehouse-storage-tabs-bar__main .focus-tab.focus-tab--active,
+.confirm-modal--warehouse-storage-left.is-green-warehouse .warehouse-storage-harvest-subtabs .focus-tab.focus-tab--active,
+.confirm-modal--warehouse-storage-left.is-green-warehouse .warehouse-storage-tabs-bar__facility-shortcut.focus-tab--active {
+  color: #ffffff;
+  border-color: rgba(31, 118, 72, 0.78);
+  background: linear-gradient(180deg, rgba(58, 132, 86, 0.98), rgba(35, 103, 68, 0.98));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 9px 18px rgba(31, 91, 60, 0.18);
+}
+
+.confirm-modal--warehouse-storage-left .focus-tab.focus-tab--active .warehouse-tab-label__icon,
+.confirm-modal--warehouse-storage-left.is-green-warehouse .focus-tab.focus-tab--active .warehouse-tab-label__icon {
+  background: rgba(239, 250, 243, 0.98);
+  color: #236744;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
 }
 
 .confirm-modal--warehouse-storage-left.is-cold-storage {
@@ -38049,6 +39252,13 @@ button.small-apc-receiving-queue__item:hover {
   opacity: 0.72;
 }
 
+.map-temp-storage-card-grid .map-temp-storage-card--vehicle-pickup {
+  cursor: default;
+  border-color: rgba(47, 123, 84, 0.26);
+  background:
+    linear-gradient(180deg, rgba(255, 254, 249, 0.96), rgba(239, 248, 241, 0.9));
+}
+
 .map-temp-storage-card-grid .shop-tool-card--has-image {
   padding-right: 88px;
   padding-bottom: 92px;
@@ -38068,6 +39278,22 @@ button.small-apc-receiving-queue__item:hover {
   padding-right: 52px;
   word-break: keep-all;
   line-height: 1.3;
+}
+
+.map-temp-storage-card__release-button {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  min-height: 38px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  z-index: 2;
+}
+
+.map-temp-storage-card--vehicle-pickup.shop-tool-card--has-image .map-temp-storage-card__release-button {
+  right: 96px;
 }
 
 .map-temp-storage-actions {
@@ -38172,6 +39398,37 @@ button.small-apc-receiving-queue__item:hover {
   justify-content: space-between;
   gap: 12px;
   padding: 8px 14px;
+}
+
+.warehouse-storage-modal-list__row--with-thumb {
+  min-height: 64px;
+}
+
+.warehouse-storage-modal-list__item-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.warehouse-storage-modal-list__item-thumb {
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(53, 96, 72, 0.14);
+  border-radius: 10px;
+  background: rgba(248, 252, 246, 0.88);
+  box-shadow: 0 5px 14px rgba(31, 58, 43, 0.08);
+  overflow: hidden;
+}
+
+.warehouse-storage-modal-list__item-thumb img {
+  max-width: 42px;
+  max-height: 42px;
+  object-fit: contain;
+  display: block;
 }
 
 .warehouse-storage-carrier-cargo-row__actions {

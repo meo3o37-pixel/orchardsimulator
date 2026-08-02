@@ -522,6 +522,15 @@ export const FOOD_MART_ITEMS = [
     weightKg: 1.2
   },
   {
+    key: 'foodGreenTeaBag50Pack',
+    name: '녹차 티백 50입',
+    price: 6200,
+    desc: '커피포트에 뜨거운 물을 부어 우려 마시는 녹차 티백',
+    unit: '상자',
+    subgroup: 'drink',
+    weightKg: 0.12
+  },
+  {
     key: 'foodSoySauce18L',
     name: '진간장 1.8L',
     price: 9800,

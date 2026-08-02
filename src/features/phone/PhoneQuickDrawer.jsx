@@ -1,4 +1,5 @@
 import React from 'react';
+import { PLAYER_ILLNESS_DEFS } from '../health/playerConditionSystem';
 
 export const PHONE_HOME_APPS = [
   ['은행', 'bank', '💳'],
@@ -92,6 +93,7 @@ export default function PhoneQuickDrawer({
   phoneMoneyText,
   phoneHealthGaugeValue,
   phoneSelfLaborValue,
+  playerIllnesses = {},
   audioMenuBgmVolume,
   setAudioMenuBgmVolume,
   audioWeatherBgmVolume,
@@ -220,6 +222,34 @@ export default function PhoneQuickDrawer({
   const [phoneCalendarTitleDraft, setPhoneCalendarTitleDraft] = React.useState('');
   const [phoneCalendarMessage, setPhoneCalendarMessage] = React.useState('');
   const [phoneBagModalOpen, setPhoneBagModalOpen] = React.useState(false);
+  const phoneIllnessRows = React.useMemo(() => (
+    Object.entries(playerIllnesses && typeof playerIllnesses === 'object' ? playerIllnesses : {})
+      .map(([keyRaw, entry]) => {
+        const key = String(keyRaw || '');
+        const def = PLAYER_ILLNESS_DEFS[key] || {};
+        const severity = Math.max(1, Math.min(3, Math.floor(Number(entry?.severity) || 1)));
+        const remainingDays = Math.max(0, Math.floor(Number(entry?.remainingDays) || 0));
+        if (!key || remainingDays <= 0) return null;
+        const diagnosed = Boolean(entry?.diagnosed);
+        const symptoms = Array.isArray(def.symptoms) ? def.symptoms : [];
+        const symptomIndex = symptoms.length ? Math.min(symptoms.length - 1, Math.max(0, severity - 1)) : 0;
+        const symptomText = symptoms[symptomIndex] || '몸이 평소와 다릅니다.';
+        return {
+          key,
+          diagnosed,
+          title: diagnosed ? (def.label || key) : '미진단 증상',
+          badge: diagnosed ? '진단완료' : '진단 필요',
+          symptomText,
+          detail: diagnosed
+            ? `${remainingDays}일 남음 · 건강 -${((Number(def.dailyHealthLoss) || 0.4) * severity).toFixed(1)}/일`
+            : `${symptomText} · ${remainingDays}일 남음`,
+          severity,
+          remainingDays
+        };
+      })
+      .filter(Boolean)
+  ), [playerIllnesses]);
+  const phoneUndiagnosedIllnessCount = phoneIllnessRows.filter((row) => !row.diagnosed).length;
   const helperContacts = React.useMemo(() => {
     if (!phoneHelperContacts || typeof phoneHelperContacts !== 'object') return [];
     return Object.entries(phoneHelperContacts).map(([key, contact], index) => ({
@@ -2682,11 +2712,42 @@ export default function PhoneQuickDrawer({
                     </div>
                     <div className="phone-galaxy-health-app__hero">
                       <div className="phone-galaxy-health-app__hero-value">{`${Math.round(Number(phoneHealthGaugeValue) || 0)}/100`}</div>
-                      <div className="phone-galaxy-health-app__hero-label">현재 컨디션 양호</div>
-                      <div className="phone-galaxy-health-app__hero-date">{`${phoneDateText} · 농장 작업 가능 상태`}</div>
+                      <div className="phone-galaxy-health-app__hero-label">
+                        {phoneIllnessRows.length ? `${phoneIllnessRows.length}개 증상 관찰 중` : '현재 컨디션 양호'}
+                      </div>
+                      <div className="phone-galaxy-health-app__hero-date">
+                        {phoneUndiagnosedIllnessCount > 0
+                          ? `${phoneDateText} · 병원 진단 필요`
+                          : `${phoneDateText} · 농장 작업 가능 상태`}
+                      </div>
                     </div>
                     <div className="phone-galaxy-health-app__meter">
                       <span style={{ width: `${Math.max(0, Math.min(100, Number(phoneHealthGaugeValue) || 0))}%` }} />
+                    </div>
+                    <div className="phone-galaxy-health-app__symptoms">
+                      <div className="phone-galaxy-health-app__section-title">
+                        <span>증상 기록</span>
+                        <strong>{phoneIllnessRows.length ? `${phoneIllnessRows.length}건` : '없음'}</strong>
+                      </div>
+                      {phoneIllnessRows.length ? (
+                        phoneIllnessRows.map((row) => (
+                          <div
+                            key={`phone-health-illness-${row.key}`}
+                            className={`phone-galaxy-health-app__symptom-card ${row.diagnosed ? 'is-diagnosed' : 'is-undiagnosed'}`.trim()}
+                          >
+                            <div>
+                              <span>{row.title}</span>
+                              <em>{row.badge}</em>
+                            </div>
+                            <strong>{row.diagnosed ? row.symptomText : row.symptomText}</strong>
+                            <small>{row.detail}</small>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="phone-galaxy-health-app__symptom-empty">
+                          현재 기록된 증상이 없습니다.
+                        </div>
+                      )}
                     </div>
                     <div className="phone-galaxy-health-app__stats">
                       <div>

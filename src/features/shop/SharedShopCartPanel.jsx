@@ -24,7 +24,8 @@ export default function SharedShopCartPanel({
   openShopCartCardPayModal,
   removeShopCartItem,
   clearShopCart,
-  reopenMapTransferStep
+  reopenMapTransferStep,
+  toolImageSrcOf
 }) {
   const hasPaidEntries = shopCartEntries.some((entry) => Boolean(entry?.paid));
   const canReopenTransferStep = hasPaidEntries && !shopCartUnpaidEntries.length && !mapShopIsPaymentShifted;
@@ -60,12 +61,18 @@ export default function SharedShopCartPanel({
             const showMoveToCarrierBtn = paid && mapShopIsPaymentShifted;
             const showRemoveBtn = !paid;
             const canMoveToCarrier = Boolean(mapTransferSelectedCarrier);
+            const itemImageSrc = toolImageSrcOf?.(itemKey) || '';
 
             return (
               <div
                 key={`cart-${entryKey}`}
-                className={`shop-cart-item ${showMoveToCarrierBtn ? 'shop-cart-item--with-move' : ''}`.trim()}
+                className={`shop-cart-item ${showMoveToCarrierBtn ? 'shop-cart-item--with-move' : ''} ${itemImageSrc ? 'shop-cart-item--has-image' : ''}`.trim()}
               >
+                {itemImageSrc ? (
+                  <div className="shop-cart-item__thumb" aria-hidden="true">
+                    <img src={itemImageSrc} alt="" loading="lazy" />
+                  </div>
+                ) : null}
                 <div className="shop-cart-item__head">
                   <strong>{finalName}</strong>
                   <div className="shop-cart-item__actions">

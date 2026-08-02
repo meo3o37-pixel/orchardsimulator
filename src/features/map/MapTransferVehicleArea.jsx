@@ -44,7 +44,8 @@ export default function MapTransferVehicleArea({
   fuelKioskAvailableCanOptions,
   fuelKioskBorrowedCan,
   fuelKioskCanKey,
-  stageFuelCanToKiosk
+  stageFuelCanToKiosk,
+  toolImageSrcOf
 }) {
   if (!mapTransferParkedCarrierRows.length) {
     return (
@@ -112,6 +113,7 @@ export default function MapTransferVehicleArea({
                 fuelKioskCanKey={fuelKioskCanKey}
                 stageFuelCanToKiosk={stageFuelCanToKiosk}
                 setFuelKioskDirectTargetCarrierId={setFuelKioskDirectTargetCarrierId}
+                toolImageSrcOf={toolImageSrcOf}
               />
             </div>
           ) : (

@@ -53,6 +53,7 @@ export default function MapTransferPlaceholderModal({
   fuelKioskBorrowedCan,
   fuelKioskCanKey,
   stageFuelCanToKiosk,
+  toolImageSrcOf,
   setMapShopExitAnimating,
   returnToMapShop,
   closeMapLocationModal
@@ -144,6 +145,7 @@ export default function MapTransferPlaceholderModal({
         fuelKioskBorrowedCan={fuelKioskBorrowedCan}
         fuelKioskCanKey={fuelKioskCanKey}
         stageFuelCanToKiosk={stageFuelCanToKiosk}
+        toolImageSrcOf={toolImageSrcOf}
       />
       <MapTransferFooterActions
         mapTransferSelectedCarrier={mapTransferSelectedCarrier}

@@ -93,6 +93,7 @@ export default function WarehouseSelectedCarrierPanel({
   unloadLoadedMachineFromCarrier,
   setSelectedCarrierId,
   closeFacilityStorageModal,
+  toolImageSrcOf,
 }) {
   const selectedCarrierId = String(selectedCarrier?.id || '');
   const isPersonalCarrier = selectedCarrierId === personalCarrierId;
@@ -316,13 +317,21 @@ export default function WarehouseSelectedCarrierPanel({
                       </div>
                     );
                   }
+                  const itemImageSrc = String(toolImageSrcOf?.(row.itemKey) || '');
                   return (
-                    <div key={`carrier-cargo-${rowKey}`} className="warehouse-storage-modal-list__row">
-                      <div style={{ display: 'grid', gap: 2 }}>
-                        <strong>{row.label || itemNameByKey[row.itemKey] || row.itemKey}</strong>
-                        <span className="storage-card__meta">
-                          {`무게 ${weightKg > 0 ? `${weightKg}kg/${unit}` : '-'}${weightKg > 0 ? ` · 총 ${(weightKg * Math.max(0, Number(row.qty) || 0)).toFixed(1)}kg` : ''}${durable && Number.isFinite(Number(durability)) ? ` · 내구도 ${Number(durability).toFixed(1)}%` : ''}`}
-                        </span>
+                    <div key={`carrier-cargo-${rowKey}`} className={`warehouse-storage-modal-list__row warehouse-storage-modal-list__row--with-thumb ${itemImageSrc ? 'has-item-image' : ''}`.trim()}>
+                      <div className="warehouse-storage-modal-list__item-main">
+                        {itemImageSrc ? (
+                          <div className="warehouse-storage-modal-list__item-thumb" aria-hidden="true">
+                            <img src={itemImageSrc} alt="" loading="lazy" />
+                          </div>
+                        ) : null}
+                        <div style={{ display: 'grid', gap: 2 }}>
+                          <strong>{row.label || itemNameByKey[row.itemKey] || row.itemKey}</strong>
+                          <span className="storage-card__meta">
+                            {`무게 ${weightKg > 0 ? `${weightKg}kg/${unit}` : '-'}${weightKg > 0 ? ` · 총 ${(weightKg * Math.max(0, Number(row.qty) || 0)).toFixed(1)}kg` : ''}${durable && Number.isFinite(Number(durability)) ? ` · 내구도 ${Number(durability).toFixed(1)}%` : ''}`}
+                          </span>
+                        </div>
                       </div>
                       <div className="warehouse-storage-carrier-cargo-row__actions">
                         {!carrierOnlyMode && Boolean(activeFacilityStorageKey) ? (

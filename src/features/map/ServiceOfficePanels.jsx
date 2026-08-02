@@ -974,6 +974,89 @@ export function ConstructionOfficePanel({
   );
 }
 
+export function ConstructionOfficeAdminPanel({
+  className = 'confirm-modal confirm-modal--labor-office',
+  money = 0,
+  selectedField = null,
+  day = 1,
+  won = (value) => `${value}`,
+  longDate = (value) => `${value}일`,
+  waterworksCost = 0,
+  waterworksDistanceKm = 0,
+  waterworksHasRoadDistance = false,
+  waterworksBuildDays = 3,
+  onApplyWaterworks,
+  onBack,
+  onClose
+}) {
+  const owned = Boolean(selectedField?.owned);
+  const connected = Boolean(selectedField?.housingMunicipalWaterConnected);
+  const readyDay = Math.max(0, Number(selectedField?.housingMunicipalWaterReadyDay) || 0);
+  const pending = !connected && readyDay > Number(day || 0);
+  const canApply = owned && !connected && !pending && Number(money) >= Number(waterworksCost || 0);
+  const statusText = connected
+    ? '상하수도 연결 완료'
+    : pending
+      ? `공사중 · 완료예정 ${longDate(readyDay)}`
+      : owned
+        ? '신청 가능'
+        : '보유 토지 선택 필요';
+  const blockReason = !owned
+    ? '상하수도 공사를 신청할 보유 토지를 선택해 주세요.'
+    : connected
+      ? '이미 상하수도 인입이 완료된 토지입니다.'
+      : pending
+        ? '이미 상하수도 인입 공사가 진행 중입니다.'
+        : Number(money) < Number(waterworksCost || 0)
+          ? '자금이 부족합니다.'
+          : '';
+
+  return (
+    <div className={className}>
+      <div className="panel__header">
+        <div>
+          <div className="panel__eyebrow">사무실</div>
+          <h2>상하수도 인입 신청</h2>
+        </div>
+        <div className="summary-chip"><span>보유 자금</span><strong>{won(money)}</strong></div>
+      </div>
+      <div className="option-grid" style={{ marginTop: 14 }}>
+        <article className="option-card">
+          <div className="option-card__row">
+            <strong>상하수도 인입 공사</strong>
+            <span>{won(waterworksCost)}</span>
+          </div>
+          <div className="option-card__meta">
+            집 생활수와 조리수에 안정적인 상수도를 연결하고 배수관을 함께 정비합니다. 완료 후 생활수질은 95/100으로 유지됩니다.
+          </div>
+          <div className="option-card__meta">
+            공사비 산정: 기본 500만원 + 도로/상수관 접근거리 가산
+            {waterworksHasRoadDistance ? ` · 도로까지 약 ${Number(waterworksDistanceKm || 0).toFixed(2)}km` : ''}
+          </div>
+          <div className="option-card__meta">공사 기간: {waterworksBuildDays}일</div>
+          <div className="option-card__meta">대상 토지: {owned ? selectedField.name : '없음'}</div>
+          <div className="option-card__meta">상태: {statusText}</div>
+          <div className="footer-actions" style={{ marginTop: 10 }}>
+            <button
+              type="button"
+              className="button button--ghost day-transition-animate-button"
+              disabled={!canApply}
+              title={blockReason}
+              onClick={onApplyWaterworks}
+            >
+              신청
+            </button>
+          </div>
+        </article>
+      </div>
+      <div className="footer-actions" style={{ marginTop: 14 }}>
+        <button className="button button--ghost warehouse-storage-footer-button" onClick={onBack}>뒤로</button>
+        <button className="button button--ghost warehouse-storage-footer-button" onClick={onClose}>나가기</button>
+      </div>
+    </div>
+  );
+}
+
 export function TownOfficeColdStorageConsultingPanel({
   className = 'confirm-modal confirm-modal--labor-office',
   rows = [],
@@ -4401,8 +4484,10 @@ export function ConstructionOfficeOverlay({
   closing = false,
   pickupPanel = null,
   constructionPanel = null,
+  officePanel = null,
   onOpenShop,
   onOpenPickup,
+  onOpenOffice,
   onBack,
   onClose
 }) {
@@ -4414,12 +4499,17 @@ export function ConstructionOfficeOverlay({
         pickupPanel
       ) : view === 'shop' ? (
         constructionPanel
+      ) : view === 'office' ? (
+        officePanel
       ) : (
         <MapEntryModal
           className={`confirm-modal confirm-modal--map-shop-entry ${closing ? 'is-closing' : ''}`.trim()}
           title={title}
           actions={[
             { key: 'shop', label: '시설견적', onClick: onOpenShop },
+            ...(officePanel && typeof onOpenOffice === 'function'
+              ? [{ key: 'office', label: '사무실', onClick: onOpenOffice }]
+              : []),
             { key: 'pickup', label: '물품 임시보관소', onClick: onOpenPickup }
           ]}
           onBack={onBack}

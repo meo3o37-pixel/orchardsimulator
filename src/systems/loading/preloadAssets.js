@@ -3,10 +3,11 @@ import { LOADING_ASSET_PHASES, POST_BOOT_PRELOAD_PHASES } from './assetManifest'
 const assetPreloadCache = new Map();
 const phasePreloadCache = new Map();
 const DEFAULT_TIMEOUT_MS = 12000;
-const ASSET_CACHE_VERSION = '2026-07-31-asset-cache-v1';
+const ASSET_CACHE_VERSION = '2026-08-01-asset-cache-v2';
 const CACHE_DOWNLOAD_CONSENT_STORAGE_KEY = 'orchard_asset_cache_download_consent_v1';
 const ASSET_CACHE_VERSION_STORAGE_KEY = 'orchard_asset_cache_version_v1';
 const FAILED_ASSET_PRELOAD_STORAGE_KEY = 'orchard_failed_asset_preloads_v1';
+const PHASE_PRELOAD_STATUS_STORAGE_KEY = 'orchard_phase_preload_status_v1';
 
 const wait = (ms) => new Promise((resolve) => {
   setTimeout(resolve, Math.max(0, Number(ms) || 0));
@@ -80,6 +81,64 @@ const writeFailedAssetRecords = (records) => {
   }
 };
 
+const readPhasePreloadStatusRecords = () => {
+  if (typeof window === 'undefined') return {};
+  try {
+    const raw = window.localStorage.getItem(PHASE_PRELOAD_STATUS_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+    return Object.fromEntries(
+      Object.entries(parsed).filter(([, record]) => record?.version === ASSET_CACHE_VERSION)
+    );
+  } catch {
+    return {};
+  }
+};
+
+const writePhasePreloadStatusRecords = (records) => {
+  if (typeof window === 'undefined') return;
+  try {
+    const entries = Object.entries(records || {}).filter(([phaseKey]) => phaseKey);
+    if (!entries.length) {
+      window.localStorage.removeItem(PHASE_PRELOAD_STATUS_STORAGE_KEY);
+      return;
+    }
+    window.localStorage.setItem(PHASE_PRELOAD_STATUS_STORAGE_KEY, JSON.stringify(Object.fromEntries(entries)));
+  } catch {
+    // Storage can be unavailable in private or restricted browser modes.
+  }
+};
+
+const phaseAssetCountOf = (phaseKey) => {
+  const phase = LOADING_ASSET_PHASES[phaseKey];
+  return Array.isArray(phase?.assets) ? phase.assets.length : 0;
+};
+
+const markLoadingPhaseComplete = (phaseKey, summary = {}) => {
+  const key = String(phaseKey || '');
+  if (!key) return;
+  const total = phaseAssetCountOf(key);
+  if (Number(summary.failed) > 0) return;
+  if (total > 0 && Number(summary.loaded) < total) return;
+  const records = readPhasePreloadStatusRecords();
+  records[key] = {
+    phaseKey: key,
+    version: ASSET_CACHE_VERSION,
+    total,
+    completedAt: Date.now()
+  };
+  writePhasePreloadStatusRecords(records);
+};
+
+const clearLoadingPhaseComplete = (phaseKey) => {
+  const key = String(phaseKey || '');
+  if (!key) return;
+  const records = readPhasePreloadStatusRecords();
+  if (!records[key]) return;
+  delete records[key];
+  writePhasePreloadStatusRecords(records);
+};
+
 const recordAssetPreloadFailure = (src, error) => {
   if (!src) return;
   const records = readFailedAssetRecords();
@@ -138,6 +197,36 @@ export const getAssetCacheVersion = () => ASSET_CACHE_VERSION;
 export const getFailedAssetPreloadRecords = () => readFailedAssetRecords();
 
 export const clearFailedAssetPreloadRecords = () => writeFailedAssetRecords({});
+
+export const getLoadingPhasePreloadStatusRecords = () => readPhasePreloadStatusRecords();
+
+export const isLoadingPhasePreloaded = (phaseKey) => {
+  const key = String(phaseKey || '');
+  const record = readPhasePreloadStatusRecords()[key];
+  if (!record || record.version !== ASSET_CACHE_VERSION) return false;
+  return Number(record.total) === phaseAssetCountOf(key);
+};
+
+export const getIncompleteLoadingPhaseKeys = (phaseKeys = []) => {
+  const keys = Array.isArray(phaseKeys) ? phaseKeys : [phaseKeys];
+  return keys.filter((phaseKey) => {
+    const key = String(phaseKey || '');
+    return key && !isLoadingPhasePreloaded(key);
+  });
+};
+
+const completedPhaseSummaryOf = (phaseKey) => {
+  const total = phaseAssetCountOf(phaseKey);
+  const phase = LOADING_ASSET_PHASES[phaseKey];
+  return {
+    total,
+    loaded: total,
+    failed: 0,
+    skipped: 0,
+    cached: true,
+    results: (phase?.assets || []).map((asset) => ({ src: asset.src, status: 'cached' }))
+  };
+};
 
 const getAssetTypeFromSrc = (src) => {
   const cleanSrc = String(src || '').split('?')[0].toLowerCase();
@@ -255,12 +344,22 @@ export const preloadLoadingPhase = (phaseKey, options = {}) => {
     });
   }
   const cacheKey = String(phaseKey || '');
+  if (!options.force && !options.onProgress && isLoadingPhasePreloaded(cacheKey)) {
+    return Promise.resolve(completedPhaseSummaryOf(cacheKey));
+  }
   if (!options.onProgress && phasePreloadCache.has(cacheKey)) {
     return phasePreloadCache.get(cacheKey);
   }
   const promise = preloadAssets(phase.assets, {
     concurrency: phase.concurrency,
     ...options
+  }).then((summary) => {
+    if (summary?.failed > 0) {
+      clearLoadingPhaseComplete(cacheKey);
+    } else if (options.force || hasAssetCacheDownloadConsent()) {
+      markLoadingPhaseComplete(cacheKey, summary);
+    }
+    return summary;
   });
   if (!options.onProgress) {
     phasePreloadCache.set(cacheKey, promise);
@@ -304,9 +403,19 @@ export const preloadLoadingPhaseWithProgress = (phaseKey, options = {}) => {
       results: phase.assets.map((asset) => ({ src: asset.src, status: 'skipped' }))
     });
   }
+  if (!options.force && isLoadingPhasePreloaded(phaseKey)) {
+    return Promise.resolve(completedPhaseSummaryOf(phaseKey));
+  }
   return preloadAssets(phase.assets, {
     concurrency: phase.concurrency,
     ...options
+  }).then((summary) => {
+    if (summary?.failed > 0) {
+      clearLoadingPhaseComplete(phaseKey);
+    } else if (options.force || hasAssetCacheDownloadConsent()) {
+      markLoadingPhaseComplete(phaseKey, summary);
+    }
+    return summary;
   });
 };
 

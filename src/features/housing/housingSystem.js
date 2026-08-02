@@ -30,7 +30,9 @@ export const HOUSING_APPLIANCE_SLOT_DEFS = Object.freeze([
   { key: 'waterPurifier', type: 'waterPurifier', icon: '💧', label: '정수기 자리', hint: '생활용 식수 공급 가전 설치 공간' },
   { key: 'electricKettle', type: 'electricKettle', icon: '☕', label: '커피포트 자리', hint: '온수와 간단 음료 준비 가전 설치 공간' },
   { key: 'fan', type: 'fan', icon: '🌀', label: '선풍기 자리', hint: '실내 공기 순환 가전 설치 공간' },
-  { key: 'heatingMat', type: 'heatingMat', icon: '🔥', label: '전기장판 자리', hint: '동절기 보온 가전 설치 공간' },
+  { key: 'heatingMat', type: 'heatingMat', icon: '🔥', label: '온열 매트 자리', hint: '침구 보온용 매트 설치 공간' },
+  { key: 'heater', type: 'heater', icon: '🌡️', label: '난방기구 자리', hint: '실내 난방 보조 가전 설치 공간' },
+  { key: 'boiler', type: 'boiler', icon: '♨️', label: '보일러 자리', hint: '난방수와 온수 공급 설비 설치 공간' },
   { key: 'inductionCooktop', type: 'inductionCooktop', icon: '♨️', label: '인덕션 자리', hint: '전기 조리 가전 설치 공간' }
 ]);
 
@@ -44,13 +46,58 @@ export const HOUSING_FURNITURE_SLOT_DEFS = Object.freeze([
 
 export const HOUSING_CLOTHING_SLOT_DEFS = Object.freeze([
   { key: 'head', type: 'head', icon: '⛑️', label: '머리', hint: '안전모나 모자를 착용하는 자리' },
-  { key: 'outerwear', type: 'outerwear', icon: '🧥', label: '작업복', hint: '작업복, 방수자켓, 방한복을 착용하는 자리' },
-  { key: 'vest', type: 'vest', icon: '🦺', label: '조끼', hint: '안전조끼를 착용하는 자리' },
-  { key: 'gloves', type: 'gloves', icon: '🧤', label: '장갑', hint: '목장갑이나 고무장갑을 착용하는 자리' },
-  { key: 'shoes', type: 'shoes', icon: '🥾', label: '신발', hint: '작업화나 장화를 착용하는 자리' },
-  { key: 'face', type: 'face', icon: '😷', label: '마스크', hint: '방진마스크를 착용하는 자리' },
-  { key: 'eyes', type: 'eyes', icon: '🥽', label: '눈 보호구', hint: '보안경을 착용하는 자리' }
+  { key: 'face', type: 'face', icon: '😷', label: '얼굴', hint: '마스크나 보안경을 착용하는 자리' },
+  { key: 'upper', type: 'upper', icon: '🧥', label: '상의', hint: '작업복 상의, 방수자켓, 방한복, 안전조끼를 착용하는 자리' },
+  { key: 'lower', type: 'lower', icon: '👖', label: '하의', hint: '작업복 하의나 방수·방한 바지를 착용하는 자리' },
+  { key: 'hands', type: 'hands', icon: '🧤', label: '손', hint: '목장갑이나 고무장갑을 착용하는 자리' },
+  { key: 'feet', type: 'feet', icon: '🥾', label: '발', hint: '작업화나 장화를 착용하는 자리' }
 ]);
+
+const LEGACY_CLOTHING_SLOT_KEY_BY_TYPE = Object.freeze({
+  outerwear: 'upper',
+  vest: 'upper',
+  gloves: 'hands',
+  shoes: 'feet',
+  eyes: 'face'
+});
+
+const HOUSING_WATER_TANK_SLOT_COUNT_BY_FACILITY = Object.freeze({
+  farmHut6Basic: 1,
+  farmHut6Insulated: 1,
+  farmContainer40Office: 1,
+  panelHouse9: 1,
+  lightWood12: 1,
+  modular15Value: 1,
+  mobileHome13: 1,
+  steelOfficeLounge: 1,
+  dualContainerLinked: 2,
+  modular25Standard: 2,
+  woodHouse30: 2,
+  smartFarmResidence: 2,
+  premiumCountry35: 3,
+  hanokHybrid28: 2,
+  passiveHouse30: 3,
+  villaFarm40: 3,
+  estateFarm55: 4
+});
+
+export const housingWaterTankSlotCountOfFacility = (facilityKeyRaw = '') => {
+  const facilityKey = String(facilityKeyRaw || '');
+  if (!facilityKey) return 0;
+  if (Object.prototype.hasOwnProperty.call(HOUSING_WATER_TANK_SLOT_COUNT_BY_FACILITY, facilityKey)) {
+    return Math.max(0, Math.floor(Number(HOUSING_WATER_TANK_SLOT_COUNT_BY_FACILITY[facilityKey]) || 0));
+  }
+  return 1;
+};
+
+export const housingWaterTankSlotDefsOfFacility = (facilityKeyRaw = '') => (
+  Array.from({ length: housingWaterTankSlotCountOfFacility(facilityKeyRaw) }, (_, index) => ({
+    key: `tank${index + 1}`,
+    icon: '💧',
+    label: `물탱크 ${index + 1}`,
+    hint: '생활수 저장용 소형 물탱크 설치 공간'
+  }))
+);
 
 const HOUSING_DEFAULT_APPLIANCES_BY_FACILITY = Object.freeze({
   sandwichPanelDorm4: {
@@ -434,12 +481,16 @@ export const normalizeHousingClothingEquipments = (raw = {}) => {
   const source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
   const next = {};
   Object.entries(source).forEach(([slotKeyRaw, itemKeyRaw]) => {
-    const slotKey = String(slotKeyRaw || '');
     const itemKey = String(itemKeyRaw || '');
-    const slot = HOUSING_CLOTHING_SLOT_BY_KEY[slotKey];
     const item = CLOTHING_ITEM_BY_KEY[itemKey];
+    if (!item) return;
+    const slotKey = String(slotKeyRaw || '');
+    const resolvedSlotKey = HOUSING_CLOTHING_SLOT_BY_KEY[slotKey]
+      ? slotKey
+      : String(LEGACY_CLOTHING_SLOT_KEY_BY_TYPE[slotKey] || '');
+    const slot = HOUSING_CLOTHING_SLOT_BY_KEY[resolvedSlotKey];
     if (!slot || !item || String(item?.type || '') !== String(slot.type || '')) return;
-    next[slotKey] = itemKey;
+    next[resolvedSlotKey] = itemKey;
   });
   return next;
 };
@@ -453,6 +504,19 @@ export const normalizeHousingClothingStorageByItemKey = (raw = {}) => {
     const qty = Math.max(0, Math.floor(Number(qtyRaw) || 0));
     if (!item || qty <= 0) return;
     next[itemKey] = Math.max(0, Math.floor(Number(next[itemKey]) || 0)) + qty;
+  });
+  return next;
+};
+
+export const normalizeHousingWaterTankInstallations = (raw = {}, facilityKeyRaw = '') => {
+  const source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+  const slotKeySet = new Set(housingWaterTankSlotDefsOfFacility(facilityKeyRaw).map((slot) => String(slot.key || '')));
+  const next = {};
+  Object.entries(source).forEach(([slotKeyRaw, itemKeyRaw]) => {
+    const slotKey = String(slotKeyRaw || '');
+    const itemKey = String(itemKeyRaw || '');
+    if (!slotKeySet.has(slotKey) || !itemKey) return;
+    next[slotKey] = itemKey;
   });
   return next;
 };
@@ -598,18 +662,51 @@ export const normalizeHousingFoodStorageByItemKey = (rawCargo = {}) => {
 };
 
 const HOUSING_FOOD_SHELF_LIFE_BY_ITEM_KEY = Object.freeze({
+  foodWater2L: { room: 180, fridge: 180, freezer: 0 },
+  foodSportsDrink15L: { room: 120, fridge: 120, freezer: 0 },
+  foodCanCoffee: { room: 180, fridge: 180, freezer: 0 },
+  foodCupRamen: { room: 180, fridge: 180, freezer: 0 },
+  foodBagRamen5Pack: { room: 180, fridge: 180, freezer: 0 },
+  foodBagRamenSingle: { room: 180, fridge: 180, freezer: 0 },
+  foodRamenSpicy5Pack: { room: 180, fridge: 180, freezer: 0 },
+  foodRamenSpicySingle: { room: 180, fridge: 180, freezer: 0 },
+  foodRamenMild5Pack: { room: 180, fridge: 180, freezer: 0 },
+  foodRamenMildSingle: { room: 180, fridge: 180, freezer: 0 },
+  foodJjajangRamen4Pack: { room: 180, fridge: 180, freezer: 0 },
+  foodJjajangRamenSingle: { room: 180, fridge: 180, freezer: 0 },
+  foodInstantRice210g: { room: 180, fridge: 180, freezer: 0 },
+  foodInstantRice210g3Pack: { room: 180, fridge: 180, freezer: 0 },
+  foodInstantRice210g6Pack: { room: 180, fridge: 180, freezer: 0 },
+  foodInstantSoupSeaweed: { room: 180, fridge: 180, freezer: 0 },
+  foodCreamSoupPack: { room: 180, fridge: 180, freezer: 0 },
+  foodCreamSoupSingle: { room: 180, fridge: 180, freezer: 0 },
+  foodPastaSpaghetti500g: { room: 365, fridge: 365, freezer: 0 },
+  foodCereal500g: { room: 180, fridge: 180, freezer: 0 },
+  foodSeaweed16Pack: { room: 180, fridge: 180, freezer: 0 },
+  foodCrackerBox: { room: 120, fridge: 120, freezer: 0 },
+  foodChocolatePie12Pack: { room: 60, fridge: 60, freezer: 0 },
+  foodPotatoChips: { room: 90, fridge: 90, freezer: 0 },
+  foodPeanutSnack: { room: 90, fridge: 90, freezer: 0 },
+  foodChocoBar4Pack: { room: 90, fridge: 90, freezer: 0 },
+  foodJellySnack: { room: 180, fridge: 180, freezer: 0 },
   foodTriangleGimbap: { room: 1, fridge: 1, freezer: 0 },
   foodLunchBox: { room: 1, fridge: 1, freezer: 0 },
   foodKimbapRoll: { room: 1, fridge: 1, freezer: 0 },
   foodHotdog: { room: 1, fridge: 2, freezer: 0 },
   foodHamburger: { room: 1, fridge: 2, freezer: 0 },
+  foodBreadLoaf: { room: 3, fridge: 5, freezer: 21 },
+  foodBagel4Pack: { room: 3, fridge: 5, freezer: 21 },
   foodMilk1L: { room: 1, fridge: 5, freezer: 0 },
   foodBananaMilk: { room: 1, fridge: 4, freezer: 0 },
+  foodMilkCoffee500ml: { room: 1, fridge: 5, freezer: 0 },
   foodYogurt4Pack: { room: 1, fridge: 10, freezer: 0 },
   foodEgg30Pack: { room: 10, fridge: 30, freezer: 0 },
+  foodRice10kg: { room: 180, fridge: 180, freezer: 0 },
   foodTofu300g: { room: 1, fridge: 5, freezer: 14 },
   foodBeanSprouts500g: { room: 1, fridge: 4, freezer: 0 },
   foodPorkFront600g: { room: 1, fridge: 3, freezer: 45 },
+  foodSpam200g: { room: 365, fridge: 365, freezer: 0 },
+  foodTunaCan150g: { room: 365, fridge: 365, freezer: 0 },
   foodSausagePack: { room: 2, fridge: 14, freezer: 30 },
   foodFishCake300g: { room: 1, fridge: 7, freezer: 30 },
   foodFrozenPorkCutlet: { room: 1, fridge: 3, freezer: 60 },
@@ -629,10 +726,35 @@ const HOUSING_FOOD_SHELF_LIFE_BY_ITEM_KEY = Object.freeze({
   foodOnion1kg: { room: 20, fridge: 30, freezer: 60 },
   foodPotato1kg: { room: 21, fridge: 30, freezer: 0 },
   foodSweetPotato1kg: { room: 14, fridge: 21, freezer: 0 },
+  foodStrawberryJam500g: { room: 180, fridge: 180, freezer: 0 },
+  foodSaladDressing250ml: { room: 90, fridge: 90, freezer: 0 },
   foodKingOysterMushroom400g: { room: 1, fridge: 7, freezer: 30 },
   foodOysterMushroom300g: { room: 1, fridge: 5, freezer: 30 },
   foodShiitakeMushroom200g: { room: 2, fridge: 7, freezer: 30 },
-  foodApple4Pack: { room: 7, fridge: 21, freezer: 0 }
+  foodApple4Pack: { room: 7, fridge: 21, freezer: 0 },
+  foodBanana1Hand: { room: 4, fridge: 6, freezer: 0 },
+  foodMandarin1kg: { room: 7, fridge: 21, freezer: 0 },
+  foodSikhye15L: { room: 90, fridge: 90, freezer: 0 },
+  foodOrangeJuice15L: { room: 90, fridge: 90, freezer: 0 },
+  foodCola15L: { room: 180, fridge: 180, freezer: 0 },
+  foodCider15L: { room: 180, fridge: 180, freezer: 0 },
+  foodGreenTea500ml: { room: 120, fridge: 120, freezer: 0 },
+  foodBarleyTea15L: { room: 120, fridge: 120, freezer: 0 },
+  foodEnergyDrink250ml: { room: 180, fridge: 180, freezer: 0 },
+  foodTomatoJuice15L: { room: 90, fridge: 90, freezer: 0 },
+  foodMixCoffee100Pack: { room: 365, fridge: 365, freezer: 0 },
+  foodGreenTeaBag50Pack: { room: 365, fridge: 365, freezer: 0 },
+  foodSoySauce18L: { room: 365, fridge: 365, freezer: 0 },
+  foodCookingOil18L: { room: 180, fridge: 180, freezer: 0 },
+  foodFlour1kg: { room: 180, fridge: 180, freezer: 0 },
+  foodSugar3kg: { room: 365, fridge: 365, freezer: 0 },
+  foodSalt1kg: { room: 365, fridge: 365, freezer: 0 },
+  foodMincedGarlic500g: { room: 14, fridge: 45, freezer: 90 },
+  foodRedPepperPowder500g: { room: 180, fridge: 365, freezer: 0 },
+  foodRedPepperPaste500g: { room: 180, fridge: 365, freezer: 0 },
+  foodSoybeanPaste500g: { room: 180, fridge: 365, freezer: 0 },
+  foodSesameOil320ml: { room: 180, fridge: 180, freezer: 0 },
+  foodMayonnaise500g: { room: 90, fridge: 180, freezer: 0 }
 });
 
 const HOUSING_FOOD_DEFAULT_SHELF_LIFE_BY_SUBGROUP = Object.freeze({
@@ -641,6 +763,7 @@ const HOUSING_FOOD_DEFAULT_SHELF_LIFE_BY_SUBGROUP = Object.freeze({
   frozen: { room: 1, fridge: 3, freezer: 45 },
   drink: { room: 7, fridge: 14, freezer: 0 },
   bulk: { room: 60, fridge: 90, freezer: 0 },
+  cooked: { room: 1, fridge: 3, freezer: 14 },
   living: { room: 0, fridge: 0, freezer: 0 }
 });
 
@@ -840,12 +963,12 @@ export const expireHousingFoodStorageBatchesForField = ({
     {
       storageKey: 'housingFoodStorageByFacilityKey',
       batchKey: 'housingFoodStorageBatchesByFacilityKey',
-      label: '냉장고'
+      label: '냉장실'
     },
     {
       storageKey: 'housingFreezerFoodStorageByFacilityKey',
       batchKey: 'housingFreezerFoodStorageBatchesByFacilityKey',
-      label: '냉동고'
+      label: '냉동실'
     }
   ];
   let nextField = field;
@@ -1014,15 +1137,53 @@ const HOUSING_THERMAL_OPTION_EFFECTS = {
 };
 
 const HOUSING_HVAC_MODES = ['off', 'heating', 'cooling', 'auto'];
-export const DEFAULT_HOUSING_HVAC_SETTING = Object.freeze({ mode: 'off', targetTemperatureC: 21 });
+const HOUSING_HVAC_COOLING_TYPES = new Set(['airConditioner', 'fan']);
+const HOUSING_HVAC_HEATING_TYPES = new Set(['heater']);
+export const DEFAULT_HOUSING_HVAC_SETTING = Object.freeze({
+  mode: 'off',
+  targetTemperatureC: 21,
+  deviceSelectionEnabled: false,
+  selectedCoolingKeys: Object.freeze([]),
+  selectedHeatingKeys: Object.freeze([])
+});
+
+const normalizeHvacSelectedKeys = (rawKeys = [], allowedTypes = new Set()) => {
+  const source = Array.isArray(rawKeys) ? rawKeys : [];
+  const seen = new Set();
+  const next = [];
+  source.forEach((keyRaw) => {
+    const key = String(keyRaw || '').trim();
+    const item = APPLIANCE_ITEM_BY_KEY[key];
+    if (!key || seen.has(key) || !item || !allowedTypes.has(String(item.type || ''))) return;
+    seen.add(key);
+    next.push(key);
+  });
+  return next;
+};
 
 export const normalizeHousingHvacSetting = (raw = {}) => {
   const source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
   const mode = HOUSING_HVAC_MODES.includes(String(source.mode || '')) ? String(source.mode) : 'off';
+  const deviceSelectionEnabled = Boolean(
+    source.deviceSelectionEnabled
+    || Object.prototype.hasOwnProperty.call(source, 'selectedCoolingKeys')
+    || Object.prototype.hasOwnProperty.call(source, 'selectedHeatingKeys')
+  );
   return {
     mode,
-    targetTemperatureC: clamp(Math.round(Number(source.targetTemperatureC) || 21), 16, 28)
+    targetTemperatureC: clamp(Math.round(Number(source.targetTemperatureC) || 21), 16, 28),
+    deviceSelectionEnabled,
+    selectedCoolingKeys: normalizeHvacSelectedKeys(source.selectedCoolingKeys, HOUSING_HVAC_COOLING_TYPES),
+    selectedHeatingKeys: normalizeHvacSelectedKeys(source.selectedHeatingKeys, HOUSING_HVAC_HEATING_TYPES)
   };
+};
+
+export const housingHvacSettingIsDefault = (settingRaw = {}) => {
+  const setting = normalizeHousingHvacSetting(settingRaw);
+  return setting.mode === DEFAULT_HOUSING_HVAC_SETTING.mode
+    && setting.targetTemperatureC === DEFAULT_HOUSING_HVAC_SETTING.targetTemperatureC
+    && setting.selectedCoolingKeys.length === 0
+    && setting.selectedHeatingKeys.length === 0;
 };
 
 export const DEFAULT_HOUSING_FRIDGE_SETTING = Object.freeze({ fridgeTempC: 4, freezerTempC: -18 });
@@ -1052,34 +1213,249 @@ export const housingHvacModeLabel = (modeRaw = 'off') => ({
   auto: '자동 공조'
 }[String(modeRaw || 'off')] || '공조 꺼짐');
 
+const housingHvacApplianceRowsOf = (itemKeysRaw = [], allowedTypes = new Set()) => (
+  normalizeHvacSelectedKeys(itemKeysRaw, allowedTypes)
+    .map((key) => APPLIANCE_ITEM_BY_KEY[key])
+    .filter(Boolean)
+);
+
+const housingHvacCoolingPowerOf = (itemRows = []) => {
+  const rawPower = itemRows.reduce((sum, item) => {
+    const type = String(item?.type || '');
+    if (type === 'airConditioner') {
+      return sum + 0.22 + (Math.max(0, Number(item.coolingCapacityKw) || 0) * 0.105);
+    }
+    if (type === 'fan') {
+      const bladeInch = Math.max(0, Number(item.bladeInch) || 0);
+      const speedSteps = Math.max(0, Number(item.speedSteps) || 0);
+      const isCirculator = String(item.fanType || '').includes('서큘레이터');
+      return sum + 0.08 + (bladeInch * 0.006) + (speedSteps * 0.012) + (isCirculator ? 0.05 : 0);
+    }
+    return sum;
+  }, 0);
+  return clamp(rawPower, 0, 0.9);
+};
+
+const housingHvacHeatingPowerOf = (itemRows = []) => {
+  const rawPower = itemRows.reduce((sum, item) => {
+    const outputWatts = Math.max(0, Number(item.outputWatts) || 0);
+    const heatingArea = Math.max(0, Number(item.heatingAreaPyeong) || 0);
+    return sum + 0.18 + (outputWatts / 4200) + (heatingArea * 0.035);
+  }, 0);
+  return clamp(rawPower, 0, 0.9);
+};
+
+const housingHvacApplianceLabelOf = (rows = [], fallback = '') => {
+  if (!rows.length) return fallback;
+  if (rows.length === 1) return String(rows[0]?.name || fallback);
+  return `${String(rows[0]?.name || fallback)} 외 ${rows.length - 1}대`;
+};
+
 export const housingIndoorComfortLabel = (temperatureC) => {
   const temp = Number(temperatureC);
   if (!Number.isFinite(temp)) return '🌡️ 측정 대기';
-  if (temp <= 5) return '🥶 한기 있음';
-  if (temp <= 12) return '🧥 쌀쌀함';
-  if (temp <= 25) return '🌿 쾌적';
+  if (temp <= -10) return '☠️ 실내 동사 위험';
+  if (temp <= 0) return '🚨 생활공간 불가';
+  if (temp <= 4) return '🧊 저체온 생명위험';
+  if (temp <= 9) return '🥶 저체온 위험';
+  if (temp <= 14) return '❄️ 장기 생활 부적합';
+  if (temp <= 17) return '🧥 옷 껴입고 임시 생활';
+  if (temp <= 20) return '🌱 생활 가능 최저권';
+  if (temp <= 24) return '🌿 안전 쾌적';
+  if (temp <= 27) return '☀️ 약간 더움';
   if (temp <= 30) return '🌤️ 다소 더움';
-  return '🔥 무더움';
+  if (temp <= 33) return '🔥 더움';
+  return '♨️ 무더움';
+};
+
+export const housingIndoorHealthInfoOf = (indoorInfo = null) => {
+  const temp = Number(indoorInfo?.temperatureC);
+  if (!Number.isFinite(temp)) {
+    return {
+      delta: 0,
+      label: '건강 영향 없음',
+      detail: '실내온도 측정값 없음',
+      tone: 'zero'
+    };
+  }
+  const result = temp <= -10
+    ? { delta: -7.0, label: '동사 위험', detail: '하루 건강도 -7.0 · 난방 없이 수면 시 생명위험', tone: 'minus' }
+    : temp <= 0
+      ? { delta: -5.5, label: '생활공간 불가', detail: '하루 건강도 -5.5 · 물이 얼고 장시간 체류가 위험', tone: 'minus' }
+      : temp <= 4
+        ? { delta: -4.0, label: '저체온 생명위험', detail: '하루 건강도 -4.0 · 수면 중 저체온증 가능', tone: 'minus' }
+        : temp <= 9
+          ? { delta: -2.6, label: '상당히 위험', detail: '하루 건강도 -2.6 · 잠잘 때 체온 저하 위험', tone: 'minus' }
+          : temp <= 14
+            ? { delta: -1.4, label: '장기 생활 부적합', detail: '하루 건강도 -1.4 · 혈압·호흡기 부담 증가', tone: 'minus' }
+            : temp <= 17
+              ? { delta: -0.6, label: '추위 부담', detail: '하루 건강도 -0.6 · 옷을 껴입어야 임시 생활 가능', tone: 'minus' }
+              : temp <= 27
+                ? { delta: 0, label: '건강 영향 없음', detail: '하루 건강도 변화 없음 · 생활 가능한 온도권', tone: 'zero' }
+                : temp <= 30
+                  ? { delta: -0.2, label: '더위 부담', detail: '하루 건강도 -0.2 · 수분 관리 필요', tone: 'minus' }
+                  : temp <= 33
+                    ? { delta: -0.5, label: '고온 부담', detail: '하루 건강도 -0.5 · 열피로 위험 증가', tone: 'minus' }
+                    : { delta: -0.9, label: '폭염 부담', detail: '하루 건강도 -0.9 · 냉방 또는 환기 필요', tone: 'minus' };
+  return {
+    ...result,
+    delta: Math.round(result.delta * 10) / 10
+  };
+};
+
+export const housingIndoorHealthDeltaOf = (indoorInfo = null) => (
+  Math.round((Number(housingIndoorHealthInfoOf(indoorInfo).delta) || 0) * 10) / 10
+);
+
+export const housingIndoorIllnessRiskInfoOf = (indoorInfo = null) => {
+  const temp = Number(indoorInfo?.temperatureC);
+  if (!Number.isFinite(temp)) {
+    return {
+      coldRisk: 0,
+      heatRisk: 0,
+      totalRisk: 0,
+      label: '질병 유발 없음',
+      detail: '실내온도 측정값 없음',
+      tone: 'zero'
+    };
+  }
+  const coldRisk = temp <= -10 ? 0.35
+    : temp <= 0 ? 0.3
+      : temp <= 4 ? 0.24
+        : temp <= 9 ? 0.16
+          : temp <= 14 ? 0.08
+            : temp <= 17 ? 0.03
+              : 0;
+  const heatRisk = temp >= 34 ? 0.05
+    : temp >= 31 ? 0.03
+      : temp >= 28 ? 0.012
+        : 0;
+  const totalRisk = clamp(coldRisk + heatRisk, 0, 0.4);
+  const label = coldRisk > 0
+    ? (coldRisk >= 0.24 ? '저체온·감기 위험 매우 높음' : (coldRisk >= 0.08 ? '감기 위험 높음' : '감기 위험 있음'))
+    : heatRisk > 0
+      ? (heatRisk >= 0.03 ? '탈수 위험 높음' : '탈수 위험 있음')
+      : '질병 유발 없음';
+  const detail = coldRisk > 0
+    ? `감기 기운 발생 확률 +${Math.round(coldRisk * 1000) / 10}%/일`
+    : heatRisk > 0
+      ? `탈수 기운 발생 확률 +${Math.round(heatRisk * 1000) / 10}%/일`
+      : '온도성 질병 추가 확률 없음';
+  return {
+    coldRisk,
+    heatRisk,
+    totalRisk,
+    label,
+    detail,
+    tone: totalRisk > 0 ? 'minus' : 'zero'
+  };
+};
+
+export const housingIndoorLivingScoreBreakdownOf = (indoorInfo = null) => {
+  const temp = Number(indoorInfo?.temperatureC);
+  if (!Number.isFinite(temp)) {
+    return {
+      temperatureAdjust: 0,
+      activeHvacBonus: 0,
+      total: 0,
+      temperatureLabel: '측정 대기',
+      temperatureDetail: '실내온도 측정값 없음',
+      hvacLabel: '공조 보정 없음',
+      hvacDetail: '공조 미작동'
+    };
+  }
+  const temperatureAdjust = temp >= 18 && temp <= 24 ? 10
+    : temp >= 15 && temp <= 27 ? 4
+      : temp >= 10 && temp <= 30 ? -6
+        : temp >= 5 && temp <= 33 ? -16
+          : temp >= 1 && temp <= 36 ? -28
+            : -45;
+  const activeHvacMode = String(indoorInfo?.activeHvacMode || 'off');
+  const activeHvacBonus = activeHvacMode !== 'off' && activeHvacMode !== 'idle' ? 3 : 0;
+  const temperatureLabel = temperatureAdjust >= 10 ? '쾌적 온도권'
+    : temperatureAdjust >= 4 ? '임시 생활 온도권'
+      : temperatureAdjust >= -6 ? '장기 생활 부적합'
+        : temperatureAdjust >= -16 ? '저체온 위험 온도권'
+          : temperatureAdjust >= -28 ? '생활공간 불가 온도권'
+            : '생명 위험 온도권';
+  return {
+    temperatureAdjust,
+    activeHvacBonus,
+    total: temperatureAdjust + activeHvacBonus,
+    temperatureLabel,
+    temperatureDetail: `${Math.round(temp)}°C · ${housingIndoorComfortLabel(temp)}`,
+    hvacLabel: activeHvacBonus > 0 ? '공조 작동 중' : '공조 보정 없음',
+    hvacDetail: activeHvacBonus > 0
+      ? `${indoorInfo?.activeHvacLabel || housingHvacModeLabel(activeHvacMode)} 생활여건 +3`
+      : '꺼짐 또는 목표온도 도달 대기'
+  };
 };
 
 export const housingIndoorLivingScoreAdjustmentOf = (indoorInfo = null) => {
+  return Number(housingIndoorLivingScoreBreakdownOf(indoorInfo).total) || 0;
+};
+
+export const housingFanSleepQualityInfoOf = ({
+  fanItem = null,
+  indoorInfo = null,
+  powerInfo = null
+} = {}) => {
   const temp = Number(indoorInfo?.temperatureC);
-  if (!Number.isFinite(temp)) return 0;
-  const temperatureAdjust = temp >= 18 && temp <= 24 ? 10
-    : temp >= 15 && temp <= 27 ? 6
-      : temp >= 12 && temp <= 30 ? 2
-        : temp >= 6 && temp <= 33 ? -4
-          : temp >= 0 && temp <= 36 ? -10
-            : -18;
-  const activeHvacMode = String(indoorInfo?.activeHvacMode || 'off');
-  const activeHvacBonus = activeHvacMode !== 'off' && activeHvacMode !== 'idle' ? 3 : 0;
-  return temperatureAdjust + activeHvacBonus;
+  const hasFan = String(fanItem?.type || '') === 'fan';
+  if (!hasFan) {
+    const noFanAdjust = Number.isFinite(temp)
+      ? (temp >= 30 ? -6 : (temp >= 26 ? -4 : (temp >= 24 ? -2 : 0)))
+      : 0;
+    return {
+      hasFan: false,
+      label: '선풍기 없음',
+      detail: noFanAdjust < 0 ? '더운 밤 공기순환 부족' : '선풍기 보정 없음',
+      qualityScore: 0,
+      adjust: noFanAdjust
+    };
+  }
+  if (powerInfo?.tone === 'off') {
+    return {
+      hasFan: true,
+      label: String(fanItem?.name || '선풍기'),
+      detail: '실내 전기 OFF로 선풍기 미작동',
+      qualityScore: 0,
+      adjust: 0
+    };
+  }
+  const bladeInch = Math.max(0, Number(fanItem?.bladeInch) || 0);
+  const speedSteps = Math.max(0, Number(fanItem?.speedSteps) || 0);
+  const isCirculator = String(fanItem?.fanType || '').includes('서큘레이터');
+  const qualityScore = clamp(Math.round(
+    2
+    + (Math.max(0, bladeInch - 8) * 0.35)
+    + (speedSteps * 0.45)
+    + (fanItem?.oscillation ? 1 : 0)
+    + (isCirculator ? 2 : 0)
+  ), 2, 10);
+  const adjust = Number.isFinite(temp)
+    ? (temp >= 30
+      ? clamp(Math.round(qualityScore * 0.9), 2, 8)
+      : temp >= 26
+        ? clamp(Math.round(qualityScore * 0.65), 1, 6)
+        : temp >= 23
+          ? clamp(Math.round(qualityScore * 0.35), 1, 3)
+          : 0)
+    : 0;
+  return {
+    hasFan: true,
+    label: String(fanItem?.name || '선풍기'),
+    detail: adjust > 0 ? `풍량 품질 ${qualityScore}/10 · 더운 밤 공기순환` : `풍량 품질 ${qualityScore}/10`,
+    qualityScore,
+    adjust
+  };
 };
 
 export const housingIndoorTemperatureInfoOf = ({
   facilityKey = '',
   optionKeys = [],
   hvacSetting = DEFAULT_HOUSING_HVAC_SETTING,
+  installedApplianceKeys = [],
   outdoorTemperatureC = 15,
   day = 1
 } = {}) => {
@@ -1103,30 +1479,55 @@ export const housingIndoorTemperatureInfoOf = ({
     - (((Number(profile.summerCooling) || 0) + effectTotal.summerCooling) * summerWeight);
   const comfortTarget = season === 'summer' ? 24 : (season === 'winter' ? 20 : 21);
   const safeHvac = normalizeHousingHvacSetting(hvacSetting);
+  const installedKeySet = new Set((Array.isArray(installedApplianceKeys) ? installedApplianceKeys : []).map((key) => String(key || '')).filter(Boolean));
+  const filteredCoolingKeys = safeHvac.selectedCoolingKeys.filter((key) => installedKeySet.size <= 0 || installedKeySet.has(key));
+  const filteredHeatingKeys = safeHvac.selectedHeatingKeys.filter((key) => installedKeySet.size <= 0 || installedKeySet.has(key));
+  const legacyGenericHvac = safeHvac.mode !== 'off'
+    && !safeHvac.deviceSelectionEnabled
+    && safeHvac.selectedCoolingKeys.length === 0
+    && safeHvac.selectedHeatingKeys.length === 0;
+  const coolingRows = housingHvacApplianceRowsOf(filteredCoolingKeys, HOUSING_HVAC_COOLING_TYPES);
+  const heatingRows = housingHvacApplianceRowsOf(filteredHeatingKeys, HOUSING_HVAC_HEATING_TYPES);
   const hasPremiumHvac = optionEffects.some((effect) => effect === HOUSING_THERMAL_OPTION_EFFECTS.hvacPremium);
   const hasHeatRecovery = optionEffects.some((effect) => effect === HOUSING_THERMAL_OPTION_EFFECTS.heatRecovery);
-  const hvacPower = hasPremiumHvac ? 0.78 : 0.46;
+  const genericHvacPower = hasPremiumHvac ? 0.78 : 0.46;
+  const coolingPower = coolingRows.length ? housingHvacCoolingPowerOf(coolingRows) : (legacyGenericHvac ? genericHvacPower : 0);
+  const heatingPower = heatingRows.length ? housingHvacHeatingPowerOf(heatingRows) : (legacyGenericHvac ? genericHvacPower : 0);
   const hvacEfficiency = clamp(0.62 + (stability * 0.3) + (hasHeatRecovery ? 0.08 : 0), 0.45, 0.95);
   const passiveIndoor = seasonalAdjusted + ((comfortTarget - seasonalAdjusted) * stability * 0.35);
   const activeHvacMode = (() => {
+    if (safeHvac.mode === 'heating') return heatingPower > 0 ? 'heating' : 'idle';
+    if (safeHvac.mode === 'cooling') return coolingPower > 0 ? 'cooling' : 'idle';
     if (safeHvac.mode === 'auto') {
-      if (passiveIndoor < safeHvac.targetTemperatureC - 1) return 'heating';
-      if (passiveIndoor > safeHvac.targetTemperatureC + 1) return 'cooling';
+      if (passiveIndoor < safeHvac.targetTemperatureC - 1 && heatingPower > 0) return 'heating';
+      if (passiveIndoor > safeHvac.targetTemperatureC + 1 && coolingPower > 0) return 'cooling';
       return 'idle';
     }
     return safeHvac.mode;
   })();
   const hvacAdjusted = (() => {
     if (activeHvacMode === 'heating' && passiveIndoor < safeHvac.targetTemperatureC) {
-      return passiveIndoor + ((safeHvac.targetTemperatureC - passiveIndoor) * hvacPower * hvacEfficiency);
+      return passiveIndoor + ((safeHvac.targetTemperatureC - passiveIndoor) * heatingPower * hvacEfficiency);
     }
     if (activeHvacMode === 'cooling' && passiveIndoor > safeHvac.targetTemperatureC) {
-      return passiveIndoor - ((passiveIndoor - safeHvac.targetTemperatureC) * hvacPower * hvacEfficiency);
+      return passiveIndoor - ((passiveIndoor - safeHvac.targetTemperatureC) * coolingPower * hvacEfficiency);
     }
     return passiveIndoor;
   })();
-  const roundedIndoor = clamp(Math.round(hvacAdjusted), -10, 38);
+  const roundedIndoor = clamp(Math.round(hvacAdjusted), -18, 38);
   const appliedLabels = optionEffects.map((effect) => effect.label).filter(Boolean);
+  const activeHvacLabel = activeHvacMode === 'idle'
+    ? '대기'
+    : (activeHvacMode === 'cooling'
+      ? housingHvacApplianceLabelOf(coolingRows, housingHvacModeLabel(activeHvacMode))
+      : (activeHvacMode === 'heating'
+        ? housingHvacApplianceLabelOf(heatingRows, housingHvacModeLabel(activeHvacMode))
+        : housingHvacModeLabel(activeHvacMode)));
+  const livingScoreBreakdown = housingIndoorLivingScoreBreakdownOf({
+    temperatureC: roundedIndoor,
+    activeHvacMode,
+    activeHvacLabel
+  });
   return {
     temperatureC: roundedIndoor,
     label: housingIndoorComfortLabel(roundedIndoor),
@@ -1137,9 +1538,20 @@ export const housingIndoorTemperatureInfoOf = ({
     hvacMode: safeHvac.mode,
     hvacModeLabel: housingHvacModeLabel(safeHvac.mode),
     activeHvacMode,
-    activeHvacLabel: activeHvacMode === 'idle' ? '대기' : housingHvacModeLabel(activeHvacMode),
+    activeHvacLabel,
     targetTemperatureC: safeHvac.targetTemperatureC,
-    hasPremiumHvac
+    selectedCoolingKeys: filteredCoolingKeys,
+    selectedHeatingKeys: filteredHeatingKeys,
+    coolingApplianceLabel: housingHvacApplianceLabelOf(coolingRows, '냉방 기구 없음'),
+    heatingApplianceLabel: housingHvacApplianceLabelOf(heatingRows, '난방 기구 없음'),
+    hasPremiumHvac,
+    passiveTemperatureC: Math.round(passiveIndoor),
+    seasonalAdjustedTemperatureC: Math.round(seasonalAdjusted),
+    stabilityPercent: Math.round(stability * 100),
+    hvacPowerPercent: Math.round((activeHvacMode === 'heating' ? heatingPower : (activeHvacMode === 'cooling' ? coolingPower : Math.max(heatingPower, coolingPower))) * hvacEfficiency * 100),
+    livingScoreBreakdown,
+    healthInfo: housingIndoorHealthInfoOf({ temperatureC: roundedIndoor }),
+    illnessRiskInfo: housingIndoorIllnessRiskInfoOf({ temperatureC: roundedIndoor })
   };
 };
 
@@ -1147,6 +1559,7 @@ export const housingSleepQualityInfoOf = ({
   indoorInfo = null,
   facilityQualityInfo = null,
   powerInfo = null,
+  fanInfo = null,
   weatherName = '',
   bedAdjust = 8
 } = {}) => {
@@ -1155,6 +1568,7 @@ export const housingSleepQualityInfoOf = ({
   const housingAdjust = Math.round((Math.max(30, Number(facilityQualityInfo?.adjust) || 30) - 30) * 0.32);
   const powerAdjust = powerInfo?.tone === 'off' ? -14 : 3;
   const hvacAdjust = indoorInfo?.activeHvacMode && indoorInfo.activeHvacMode !== 'off' && indoorInfo.activeHvacMode !== 'idle' ? 5 : 0;
+  const fanAdjust = Math.round(Number(fanInfo?.adjust) || 0);
   const weatherText = String(weatherName || '');
   const weatherAdjust = /강풍|태풍|폭우|호우|대설|폭설|한파/.test(weatherText)
     ? -8
@@ -1166,10 +1580,11 @@ export const housingSleepQualityInfoOf = ({
   const temperatureAdjust = Number.isFinite(temp)
     ? (temp >= 18 && temp <= 22 ? 18
       : temp >= 16 && temp <= 24 ? 12
-        : temp >= 13 && temp <= 27 ? 5
-          : temp >= 8 && temp <= 30 ? -8
-            : temp >= 2 && temp <= 33 ? -16
-              : -26)
+        : temp >= 15 && temp <= 27 ? 4
+          : temp >= 10 && temp <= 30 ? -14
+            : temp >= 5 && temp <= 33 ? -30
+              : temp >= 1 && temp <= 36 ? -44
+                : -58)
     : 0;
   const baseScore = 38;
   const stabilityAdjust = Math.round(stability * 10);
@@ -1182,6 +1597,7 @@ export const housingSleepQualityInfoOf = ({
     + temperatureAdjust
     + powerAdjust
     + hvacAdjust
+    + fanAdjust
     + weatherAdjust
   ), 0, 100);
   const label = normalized >= 92 ? '최상'
@@ -1198,6 +1614,7 @@ export const housingSleepQualityInfoOf = ({
     score: normalized,
     label,
     reason,
+    fanInfo,
     factors: {
       base: baseScore,
       housing: housingAdjust,
@@ -1205,6 +1622,7 @@ export const housingSleepQualityInfoOf = ({
       temperature: temperatureAdjust,
       power: powerAdjust,
       hvac: hvacAdjust,
+      fan: fanAdjust,
       weather: weatherAdjust,
       stability: stabilityAdjust
     }
@@ -1270,6 +1688,7 @@ const HOUSING_LIFE_SUPPLY_EXPLICIT_DAYS_BY_ITEM_KEY = {
   foodGreenTea500ml: { foodDays: 0.06 },
   foodBarleyTea15L: { foodDays: 0.12 },
   foodMixCoffee100Pack: { foodDays: 0.5 },
+  foodGreenTeaBag50Pack: { foodDays: 0.25 },
   foodSoySauce18L: { foodDays: 0.7 },
   foodCookingOil18L: { foodDays: 0.9 },
   foodFlour1kg: { foodDays: 1.4 },
@@ -1321,6 +1740,7 @@ const HOUSING_LIFE_SUPPLY_DAILY_CONSUME_QTY_BY_ITEM_KEY = {
   foodSoybeanPaste500g: 0.08,
   foodSesameOil320ml: 0.08,
   foodMixCoffee100Pack: 0.08,
+  foodGreenTeaBag50Pack: 0.08,
   foodEgg30Pack: 0.18,
   foodSlicedCheese20: 0.18,
   foodBreadLoaf: 0.25,
@@ -1356,6 +1776,36 @@ FOOD_MART_META_BY_KEY.housingCookedRiceBowl = {
   unit: '공기',
   subgroup: 'cooked'
 };
+FOOD_MART_META_BY_KEY.housingWaterCup = {
+  key: 'housingWaterCup',
+  name: '물 한컵',
+  unit: '컵',
+  subgroup: 'drink'
+};
+FOOD_MART_META_BY_KEY.housingHotWaterCup = {
+  key: 'housingHotWaterCup',
+  name: '온수 한컵',
+  unit: '컵',
+  subgroup: 'drink'
+};
+FOOD_MART_META_BY_KEY.housingMixCoffeeCup = {
+  key: 'housingMixCoffeeCup',
+  name: '믹스커피 한잔',
+  unit: '잔',
+  subgroup: 'drink'
+};
+FOOD_MART_META_BY_KEY.housingGreenTeaCup = {
+  key: 'housingGreenTeaCup',
+  name: '녹차 한잔',
+  unit: '잔',
+  subgroup: 'drink'
+};
+FOOD_MART_META_BY_KEY.housingFilledWaterBottle = {
+  key: 'housingFilledWaterBottle',
+  name: '채운 물병',
+  unit: '병',
+  subgroup: 'drink'
+};
 
 export const HOUSING_MEAL_RECIPE_CATEGORY_TABS = Object.freeze([
   ['rice', '🍚 밥류'],
@@ -1371,6 +1821,57 @@ const HOUSING_MEAL_RECIPE_CATEGORY_LABEL_BY_KEY = HOUSING_MEAL_RECIPE_CATEGORY_T
 }, {});
 
 export const HOUSING_MEAL_PREP_DEFS = Object.freeze([
+  {
+    key: 'housingCookedRiceBowl',
+    name: '지어진밥',
+    desc: '전기밥솥으로 지어둔 기본 밥',
+    ingredients: { foodRice10kg: 0.025 },
+    outputItemKey: 'housingCookedRiceBowl',
+    outputQty: 3
+  },
+  {
+    key: 'housingWaterCup',
+    name: '물 한컵',
+    desc: '정수기에서 바로 받아둔 마실 물',
+    ingredients: {},
+    waterOnly: true,
+    outputItemKey: 'housingWaterCup',
+    outputQty: 1
+  },
+  {
+    key: 'housingFilledWaterBottle',
+    name: '물병 채우기',
+    desc: '정수기 물을 물병에 채워 보관',
+    ingredients: {},
+    waterOnly: true,
+    outputItemKey: 'housingFilledWaterBottle',
+    outputQty: 1
+  },
+  {
+    key: 'housingHotWaterCup',
+    name: '온수 한컵',
+    desc: '커피포트로 끓여둔 뜨거운 물',
+    ingredients: {},
+    waterOnly: true,
+    outputItemKey: 'housingHotWaterCup',
+    outputQty: 1
+  },
+  {
+    key: 'preparedMixCoffee',
+    name: '믹스커피 타기',
+    desc: '믹스커피 한 봉에 뜨거운 물을 부어 타 둡니다.',
+    ingredients: { foodMixCoffee100Pack: 0.01 },
+    outputItemKey: 'housingMixCoffeeCup',
+    outputQty: 1
+  },
+  {
+    key: 'preparedGreenTea',
+    name: '녹차 우리기',
+    desc: '녹차 티백 한 개에 뜨거운 물을 부어 우려 둡니다.',
+    ingredients: { foodGreenTeaBag50Pack: 0.02 },
+    outputItemKey: 'housingGreenTeaCup',
+    outputQty: 1
+  },
   {
     key: 'preparedCupRamen',
     name: '끓인 컵라면',
@@ -1531,6 +2032,12 @@ export const HOUSING_MEAL_PREP_BY_KEY = HOUSING_MEAL_PREP_DEFS.reduce((acc, prep
 export const HOUSING_DAILY_LIVING_WATER_LITERS = 50;
 
 const HOUSING_MEAL_PREP_WATER_LITERS_BY_KEY = Object.freeze({
+  housingCookedRiceBowl: 0.35,
+  housingWaterCup: 0.2,
+  housingFilledWaterBottle: 1,
+  housingHotWaterCup: 0.25,
+  preparedMixCoffee: 0.18,
+  preparedGreenTea: 0.18,
   preparedCupRamen: 0.35,
   boiledBagRamen: 0.55,
   boiledSpicyRamen: 0.55,
@@ -2216,6 +2723,8 @@ const HOUSING_MEAL_RECIPE_PORTION_UNIT_BY_ITEM_KEY = Object.freeze({
   foodFrozenPizza: { amount: 1, unit: '판', name: '냉동피자' },
   foodCreamSoupSingle: { amount: 1, unit: '개', name: '컵스프' },
   foodCreamSoupPack: { amount: 3, unit: '개', name: '컵스프' },
+  foodMixCoffee100Pack: { amount: 100, unit: '봉', name: '믹스커피' },
+  foodGreenTeaBag50Pack: { amount: 50, unit: '개', name: '녹차 티백' },
   foodRicePorridgeAbalone: { amount: 1, unit: '팩', name: '전복죽' },
   foodRicePorridgeVegetable: { amount: 1, unit: '팩', name: '야채죽' },
   foodCupRiceBeefSoup: { amount: 1, unit: '개', name: '컵국밥' }
@@ -2303,6 +2812,7 @@ export const buildHousingMealRecipeRows = (fridgeStorageRaw = {}) => {
       ...recipe,
       category: String(recipe.category || 'rice'),
       categoryLabel: HOUSING_MEAL_RECIPE_CATEGORY_LABEL_BY_KEY[String(recipe.category || '')] || '기타',
+      mealEffect: housingMealEffectOf(recipe.key),
       waterLiters: housingMealWaterLitersOf(recipe),
       ingredients,
       canCook: ingredients.length > 0 && ingredients.every((ingredient) => ingredient.ok)
@@ -2370,9 +2880,10 @@ export const buildHousingMealPrepRows = (fridgeStorageRaw = {}, freezerStorageRa
     return {
       ...prep,
       type: 'prep',
+      mealEffect: housingMealEffectOf(prep.key),
       waterLiters: housingMealWaterLitersOf(prep),
       ingredients,
-      canCook: ingredients.length > 0 && ingredients.every((ingredient) => ingredient.ok)
+      canCook: (ingredients.length > 0 || prep.waterOnly) && ingredients.every((ingredient) => ingredient.ok)
     };
   });
 };
@@ -2418,8 +2929,120 @@ export const housingMealCookConsumeQtyOf = (itemKeyRaw = '') => {
 
 export const HOUSING_MEAL_LIMIT_BY_PHASE = Object.freeze({ day: 2, night: 1 });
 export const HOUSING_DAILY_MEAL_TARGET = HOUSING_MEAL_LIMIT_BY_PHASE.day + HOUSING_MEAL_LIMIT_BY_PHASE.night;
-export const HOUSING_MEAL_LABOR_RECOVERY = 18;
+export const HOUSING_MEAL_LABOR_RECOVERY = 15;
 export const HOUSING_MEAL_COOLDOWN_MS = 3 * 60 * 1000;
+
+const HOUSING_MEAL_EFFECT_BY_KEY = Object.freeze({
+  preparedCupRamen: { health: 0, labor: 8, satisfaction: 1, satisfactionDays: 1 },
+  boiledBagRamen: { health: 0, labor: 9, satisfaction: 1, satisfactionDays: 1 },
+  boiledSpicyRamen: { health: 0, labor: 10, satisfaction: 1, satisfactionDays: 1 },
+  boiledMildRamen: { health: 0, labor: 8, satisfaction: 1, satisfactionDays: 1 },
+  boiledJjajangRamen: { health: 0, labor: 9, satisfaction: 1, satisfactionDays: 1 },
+  heatedInstantRice: { health: 0.015, labor: 6, satisfaction: 0, satisfactionDays: 0 },
+  heatedTriangleGimbap: { health: 0, labor: 7, satisfaction: 1, satisfactionDays: 1 },
+  heatedKimbapRoll: { health: 0.025, labor: 9, satisfaction: 1, satisfactionDays: 1 },
+  heatedLunchBox: { health: 0.03, labor: 11, satisfaction: 1, satisfactionDays: 1 },
+  heatedHotdog: { health: 0, labor: 9, satisfaction: 1, satisfactionDays: 1 },
+  heatedHamburger: { health: 0, labor: 11, satisfaction: 1, satisfactionDays: 1 },
+  heatedInstantSeaweedSoup: { health: 0.05, labor: 7, satisfaction: 1, satisfactionDays: 2 },
+  heatedInstantYukgaejang: { health: 0.03, labor: 10, satisfaction: 1, satisfactionDays: 2 },
+  steamedFrozenDumpling: { health: 0, labor: 10, satisfaction: 1, satisfactionDays: 1 },
+  heatedFrozenPorkCutlet: { health: 0, labor: 12, satisfaction: 1, satisfactionDays: 1 },
+  heatedFrozenPizza: { health: 0, labor: 12, satisfaction: 1, satisfactionDays: 1 },
+  boiledColdNoodle: { health: 0.015, labor: 9, satisfaction: 1, satisfactionDays: 1 },
+  preparedCreamSoup: { health: 0, labor: 6, satisfaction: 1, satisfactionDays: 1 },
+  heatedFrozenFriedRice: { health: 0, labor: 11, satisfaction: 1, satisfactionDays: 1 },
+  heatedFrozenPasta: { health: 0, labor: 11, satisfaction: 1, satisfactionDays: 1 },
+  heatedFrozenTteokbokki: { health: 0, labor: 10, satisfaction: 1, satisfactionDays: 1 },
+  boiledFrozenUdon: { health: 0.02, labor: 10, satisfaction: 1, satisfactionDays: 1 },
+  heatedPorridgeAbalone: { health: 0.06, labor: 9, satisfaction: 1, satisfactionDays: 2 },
+  heatedPorridgeVegetable: { health: 0.06, labor: 8, satisfaction: 1, satisfactionDays: 2 },
+  preparedCupRiceSoup: { health: 0.03, labor: 11, satisfaction: 1, satisfactionDays: 2 },
+
+  eggRiceBreakfast: { health: 0.09, labor: 10, satisfaction: 1, satisfactionDays: 2 },
+  bibimbap: { health: 0.15, labor: 12, satisfaction: 2, satisfactionDays: 4 },
+  porkKimchiStew: { health: 0.12, labor: 13, satisfaction: 2, satisfactionDays: 3 },
+  doenjangStewSet: { health: 0.14, labor: 11, satisfaction: 2, satisfactionDays: 4 },
+  ramenWithEgg: { health: 0.025, labor: 11, satisfaction: 1, satisfactionDays: 1 },
+  friedRice: { health: 0.12, labor: 11, satisfaction: 1, satisfactionDays: 3 },
+  curryRice: { health: 0.11, labor: 12, satisfaction: 1, satisfactionDays: 3 },
+  sausageBreadPlate: { health: 0.04, labor: 12, satisfaction: 1, satisfactionDays: 2 },
+  spamKimchiFriedRice: { health: 0.03, labor: 13, satisfaction: 1, satisfactionDays: 2 },
+  tunaMayoRiceBowl: { health: 0.06, labor: 12, satisfaction: 1, satisfactionDays: 2 },
+  beanSproutSoupSet: { health: 0.15, labor: 11, satisfaction: 2, satisfactionDays: 4 },
+  porkGochujangStirFry: { health: 0.09, labor: 15, satisfaction: 2, satisfactionDays: 3 },
+  tofuKimchiPlate: { health: 0.12, labor: 12, satisfaction: 2, satisfactionDays: 3 },
+  fishCakeUdon: { health: 0.05, labor: 11, satisfaction: 1, satisfactionDays: 2 },
+  jjajangRice: { health: 0.04, labor: 13, satisfaction: 1, satisfactionDays: 2 },
+  cabbageEggToast: { health: 0.1, labor: 10, satisfaction: 1, satisfactionDays: 3 },
+  bagelCheeseBreakfast: { health: 0.08, labor: 12, satisfaction: 2, satisfactionDays: 3 },
+  dumplingRamenPot: { health: 0.03, labor: 14, satisfaction: 2, satisfactionDays: 2 },
+  porkPotatoStew: { health: 0.13, labor: 14, satisfaction: 2, satisfactionDays: 4 },
+  porkDoenjangStewSet: { health: 0.14, labor: 14, satisfaction: 2, satisfactionDays: 4 },
+  kimchiPorkStirFrySet: { health: 0.09, labor: 15, satisfaction: 2, satisfactionDays: 4 },
+  porkCurryRice: { health: 0.09, labor: 15, satisfaction: 2, satisfactionDays: 3 },
+  porkCutletRiceSet: { health: 0.05, labor: 15, satisfaction: 2, satisfactionDays: 3 },
+  sausageVegStirFrySet: { health: 0.07, labor: 13, satisfaction: 1, satisfactionDays: 3 },
+  budaeStewSet: { health: 0.04, labor: 15, satisfaction: 2, satisfactionDays: 3 },
+  dumplingRiceSoup: { health: 0.09, labor: 13, satisfaction: 2, satisfactionDays: 3 },
+  porkStirFryUdon: { health: 0.07, labor: 14, satisfaction: 1, satisfactionDays: 2 },
+  kimchiTunaFriedRice: { health: 0.07, labor: 13, satisfaction: 1, satisfactionDays: 3 },
+  spamMayoRiceBowl: { health: 0.025, labor: 14, satisfaction: 1, satisfactionDays: 2 },
+  fishCakeStirFrySet: { health: 0.05, labor: 11, satisfaction: 1, satisfactionDays: 2 },
+  tofuEggPanSet: { health: 0.14, labor: 11, satisfaction: 2, satisfactionDays: 4 },
+  mushroomTofuRiceBowl: { health: 0.16, labor: 12, satisfaction: 2, satisfactionDays: 4 },
+  shiitakeBeanSproutRice: { health: 0.17, labor: 11, satisfaction: 2, satisfactionDays: 4 },
+  kingOysterMushroomSteakSet: { health: 0.16, labor: 9, satisfaction: 2, satisfactionDays: 4 },
+  mushroomVegetableFriedRice: { health: 0.15, labor: 12, satisfaction: 2, satisfactionDays: 4 },
+  tunaKimchiStew: { health: 0.11, labor: 13, satisfaction: 2, satisfactionDays: 3 },
+  eggDropRiceSoup: { health: 0.12, labor: 11, satisfaction: 1, satisfactionDays: 3 },
+  curryUdon: { health: 0.08, labor: 12, satisfaction: 1, satisfactionDays: 2 },
+  mushroomDoenjangStew: { health: 0.18, labor: 11, satisfaction: 2, satisfactionDays: 5 },
+  mushroomCurryRice: { health: 0.15, labor: 12, satisfaction: 2, satisfactionDays: 4 },
+  mushroomStirFryUdon: { health: 0.13, labor: 12, satisfaction: 2, satisfactionDays: 3 },
+  potatoSoyBraisedSet: { health: 0.12, labor: 9, satisfaction: 1, satisfactionDays: 3 },
+  cabbageTofuStirFrySet: { health: 0.16, labor: 10, satisfaction: 2, satisfactionDays: 4 },
+  beanSproutBibimbap: { health: 0.17, labor: 11, satisfaction: 2, satisfactionDays: 4 },
+  kimchiTofuRiceSoup: { health: 0.16, labor: 12, satisfaction: 2, satisfactionDays: 4 },
+  potatoCarrotFriedRice: { health: 0.11, labor: 11, satisfaction: 1, satisfactionDays: 3 },
+  mushroomSesameBibimbap: { health: 0.18, labor: 12, satisfaction: 2, satisfactionDays: 5 },
+  lettuceTomatoSalad: { health: 0.2, labor: 7, satisfaction: 2, satisfactionDays: 5 },
+  tofuSaladBowl: { health: 0.2, labor: 8, satisfaction: 2, satisfactionDays: 5 },
+  potatoEggSalad: { health: 0.15, labor: 10, satisfaction: 2, satisfactionDays: 4 },
+  sweetPotatoSalad: { health: 0.16, labor: 9, satisfaction: 2, satisfactionDays: 4 },
+  cucumberBibimbap: { health: 0.17, labor: 11, satisfaction: 2, satisfactionDays: 4 },
+  tunaMayoToast: { health: 0.06, labor: 11, satisfaction: 1, satisfactionDays: 2 }
+});
+
+export const housingMealEffectOf = (mealKeyRaw = '') => {
+  const effect = HOUSING_MEAL_EFFECT_BY_KEY[String(mealKeyRaw || '')] || {};
+  return {
+    health: Math.max(0, Number(effect.health) || 0),
+    labor: Math.max(0, Math.min(15, Number(effect.labor) || 0)),
+    satisfaction: Math.max(0, Math.floor(Number(effect.satisfaction) || 0)),
+    satisfactionDays: Math.max(0, Math.floor(Number(effect.satisfactionDays) || 0))
+  };
+};
+
+export const housingMealSatisfactionBuffInfoOf = (buffsRaw = [], dayRaw = 1) => {
+  const day = Math.max(1, Math.floor(Number(dayRaw) || 1));
+  const activeBuffs = (Array.isArray(buffsRaw) ? buffsRaw : [])
+    .map((buff) => ({
+      value: Math.max(0, Math.floor(Number(buff?.value) || 0)),
+      startDay: Math.max(1, Math.floor(Number(buff?.startDay) || day)),
+      endDay: Math.max(1, Math.floor(Number(buff?.endDay) || 0)),
+      mealKey: String(buff?.mealKey || '')
+    }))
+    .filter((buff) => buff.value > 0 && buff.endDay >= day);
+  const total = Math.min(3, activeBuffs.reduce((sum, buff) => sum + buff.value, 0));
+  const maxEndDay = activeBuffs.reduce((max, buff) => Math.max(max, buff.endDay), day);
+  return {
+    value: total,
+    activeBuffs,
+    remainingDays: total > 0 ? Math.max(1, maxEndDay - day + 1) : 0,
+    detail: total > 0 ? `식사 만족도 +${total} · ${Math.max(1, maxEndDay - day + 1)}일 남음` : ''
+  };
+};
 
 export const normalizeHousingMealUsage = (raw = {}, dayRaw = 1) => {
   const safeDay = Math.max(1, Math.floor(Number(dayRaw) || 1));
@@ -2582,7 +3205,7 @@ export const consumeHousingDailyLifeSupplyForField = ({
     const amountText = consumeQty >= 1
       ? `${Math.round(consumeQty * 100) / 100}${unit}`
       : `${Math.round(consumeQty * 100)}%`;
-    logs.push(`${field?.name || '필지'} ${facilityKey} 냉장고 생필품 소비: ${itemName} ${amountText}`);
+    logs.push(`${field?.name || '필지'} ${facilityKey} 냉장실 생필품 소비: ${itemName} ${amountText}`);
   });
   if (!changed) return { field, logs };
   return {
@@ -2674,11 +3297,13 @@ export const housingLivingConditionInfoOf = ({
   indoorInfo = null,
   lifeSupplyInfo = null,
   facilityQualityInfo = null,
-  internetInfo = null
+  internetInfo = null,
+  satisfactionBuffInfo = null
 } = {}) => {
   const powerPenalty = powerInfo?.tone === 'off' ? 18 : 0;
   const powerAdjust = -powerPenalty;
-  const hvacAdjust = housingIndoorLivingScoreAdjustmentOf(indoorInfo);
+  const indoorBreakdown = indoorInfo?.livingScoreBreakdown || housingIndoorLivingScoreBreakdownOf(indoorInfo);
+  const hvacAdjust = Number(indoorBreakdown.total) || 0;
   const facilityAdjust = Math.max(30, Math.round(Number(facilityQualityInfo?.adjust) || 0));
   const lifeSupplyBreakdown = housingLifeSupplyScoreBreakdownOf(lifeSupplyInfo);
   const lifeSupplyAdjust = lifeSupplyBreakdown.total;
@@ -2687,8 +3312,9 @@ export const housingLivingConditionInfoOf = ({
   const internetAdjust = hasInternet
     ? (powerInfo?.tone === 'off' ? 0 : 4)
     : (internetPending ? 0 : -4);
+  const satisfactionAdjust = Math.max(0, Math.min(3, Math.floor(Number(satisfactionBuffInfo?.value) || 0)));
   const baseScore = 0;
-  const nextScore = clamp(Math.round(baseScore + facilityAdjust + powerAdjust + hvacAdjust + lifeSupplyAdjust + internetAdjust), 0, 100);
+  const nextScore = clamp(Math.round(baseScore + facilityAdjust + powerAdjust + hvacAdjust + lifeSupplyAdjust + internetAdjust + satisfactionAdjust), 0, 100);
   const nextLabel = nextScore >= 95 ? '최상'
     : nextScore >= 88 ? '매우 좋음'
       : nextScore >= 80 ? '좋음'
@@ -2702,9 +3328,9 @@ export const housingLivingConditionInfoOf = ({
   const supplyDetail = lifeSupplyInfo?.detail || '';
   const nextDetail = powerInfo?.tone === 'off'
     ? (supplyDetail ? `${supplyDetail} · 실내 전기 확인` : '실내 전기 확인 필요')
-    : (supplyDetail || (indoorInfo?.activeHvacMode && indoorInfo.activeHvacMode !== 'off'
+    : (satisfactionBuffInfo?.detail || supplyDetail || (indoorInfo?.activeHvacMode && indoorInfo.activeHvacMode !== 'off'
         ? `${indoorInfo.activeHvacLabel} 반영`
-        : '냉장고/실내 전기/실내상태 확인'));
+        : '냉장실/실내 전기/실내상태 확인'));
   const nextTone = nextScore >= 80 ? 'good'
     : nextScore >= 60 ? 'normal'
       : nextScore >= 40 ? 'warn'
@@ -2717,15 +3343,17 @@ export const housingLivingConditionInfoOf = ({
     lifeSupplyInfo,
     facilityQualityInfo,
     internetInfo,
+    indoorBreakdown,
     scoreFactors: {
       base: baseScore,
       housing: facilityAdjust,
       food: lifeSupplyBreakdown.foodAdjust,
       essential: lifeSupplyBreakdown.essentialAdjust,
+      satisfaction: satisfactionAdjust,
       power: powerAdjust,
       internet: internetAdjust,
       hvac: hvacAdjust,
-      total: facilityAdjust + powerAdjust + hvacAdjust + lifeSupplyAdjust + internetAdjust
+      total: facilityAdjust + powerAdjust + hvacAdjust + lifeSupplyAdjust + internetAdjust + satisfactionAdjust
     }
   };
 };

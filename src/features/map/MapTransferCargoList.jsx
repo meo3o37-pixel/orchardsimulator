@@ -24,8 +24,19 @@ export default function MapTransferCargoList({
   fuelKioskBorrowedCan,
   fuelKioskCanKey,
   stageFuelCanToKiosk,
-  setFuelKioskDirectTargetCarrierId
+  setFuelKioskDirectTargetCarrierId,
+  toolImageSrcOf
 }) {
+  const renderItemThumb = (itemKeyRaw) => {
+    const imageSrc = toolImageSrcOf?.(String(itemKeyRaw || '')) || '';
+    if (!imageSrc) return null;
+    return (
+      <div className="shop-cart-item__thumb map-transfer-cargo-row__thumb" aria-hidden="true">
+        <img src={imageSrc} alt="" loading="lazy" />
+      </div>
+    );
+  };
+
   return (
     <>
       {mapTransferSelectedCarrierCargoRows.flatMap((row, rowIndex) => {
@@ -42,8 +53,10 @@ export default function MapTransferCargoList({
             const entryUnit = String(entryMeta?.unit || unit || '개');
             const entryWeightKg = Math.max(0, Number(entryMeta?.weightKg) || 0);
             const canReturnToCart = Math.max(0, Number(entryMeta?.price) || 0) > 0;
+            const entryImageSrc = toolImageSrcOf?.(String(entry.itemKey || '')) || '';
             return (
-              <div key={`map-transfer-cargo-row-${entry.rowKey || entry.itemKey}`} className="shop-cart-item shop-cart-item--with-move map-transfer-cargo-row">
+              <div key={`map-transfer-cargo-row-${entry.rowKey || entry.itemKey}`} className={`shop-cart-item shop-cart-item--with-move map-transfer-cargo-row ${entryImageSrc ? 'shop-cart-item--has-image' : ''}`.trim()}>
+                {renderItemThumb(entry.itemKey)}
                 <div className="shop-cart-item__head">
                   <strong>{entry.label || itemNameByKey?.[entry.itemKey] || entry.itemKey}</strong>
                   <div className="shop-cart-item__actions">
@@ -177,7 +190,8 @@ export default function MapTransferCargoList({
             return displayRows
               .filter((entry) => Math.max(0, Number(entry?.qty) || 0) > 0)
               .map((entry) => (
-                <div key={`map-transfer-cargo-row-${entry.id}`} className="shop-cart-item shop-cart-item--with-move map-transfer-cargo-row">
+                <div key={`map-transfer-cargo-row-${entry.id}`} className={`shop-cart-item shop-cart-item--with-move map-transfer-cargo-row ${toolImageSrcOf?.(itemKey) ? 'shop-cart-item--has-image' : ''}`.trim()}>
+                  {renderItemThumb(itemKey)}
                   <div className="shop-cart-item__head">
                     <strong>{entry.label}</strong>
                   </div>
@@ -186,8 +200,10 @@ export default function MapTransferCargoList({
               ));
           }
           if (qty <= 0) return [];
+          const itemImageSrc = toolImageSrcOf?.(itemKey) || '';
           return (
-            <div key={`map-transfer-cargo-row-${itemKey}__all`} className="shop-cart-item shop-cart-item--with-move map-transfer-cargo-row">
+            <div key={`map-transfer-cargo-row-${itemKey}__all`} className={`shop-cart-item shop-cart-item--with-move map-transfer-cargo-row ${itemImageSrc ? 'shop-cart-item--has-image' : ''}`.trim()}>
+              {renderItemThumb(itemKey)}
               <div className="shop-cart-item__head">
                 <strong>{itemName}</strong>
               </div>
@@ -245,18 +261,20 @@ export default function MapTransferCargoList({
         return displayRows.map((entry) => {
           const isCanSelectable = Boolean(isFuelCanDirectSelectMode && entry.selectable);
           const isCanSelected = isCanSelectable && fuelKioskCanKey === entry.optionKey;
+          const itemImageSrc = toolImageSrcOf?.(itemKey) || '';
           if (isCanSelectable) {
             return (
               <button
                 key={`map-transfer-cargo-row-${entry.id}`}
                 type="button"
-                className={`shop-cart-item shop-cart-item--with-move map-transfer-cargo-row map-transfer-cargo-row--selectable ${isCanSelected ? 'is-active' : ''}`.trim()}
+                className={`shop-cart-item shop-cart-item--with-move map-transfer-cargo-row map-transfer-cargo-row--selectable ${isCanSelected ? 'is-active' : ''} ${itemImageSrc ? 'shop-cart-item--has-image' : ''}`.trim()}
                 onClick={() => {
                   stageFuelCanToKiosk(entry.optionKey, itemKey);
                   setFuelKioskDirectTargetCarrierId('');
                 }}
                 title="주유할 말통으로 선택"
               >
+                {renderItemThumb(itemKey)}
                 <div className="shop-cart-item__head">
                   <strong>{entry.label}</strong>
                 </div>
@@ -265,7 +283,8 @@ export default function MapTransferCargoList({
             );
           }
           return (
-            <div key={`map-transfer-cargo-row-${entry.id}`} className="shop-cart-item shop-cart-item--with-move map-transfer-cargo-row">
+            <div key={`map-transfer-cargo-row-${entry.id}`} className={`shop-cart-item shop-cart-item--with-move map-transfer-cargo-row ${itemImageSrc ? 'shop-cart-item--has-image' : ''}`.trim()}>
+              {renderItemThumb(itemKey)}
               <div className="shop-cart-item__head">
                 <strong>{entry.label}</strong>
               </div>

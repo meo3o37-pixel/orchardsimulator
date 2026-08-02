@@ -7,6 +7,8 @@ export const SMALL_APC_LOADING_PARKING_SLOT_COUNT = 4;
 export const SMALL_APC_LOADING_PARKING_KEY = 'smallApc:loading';
 export const SMALL_APC_SHIPPING_PARKING_SLOT_COUNT = 4;
 export const SMALL_APC_SHIPPING_PARKING_KEY = 'smallApc:shipping';
+export const USED_CAR_DEALER_SHIPPING_PARKING_SLOT_COUNT = 8;
+export const USED_CAR_DEALER_SHIPPING_PARKING_KEY = 'usedCarDealer:shipping';
 
 export const SMALL_APC_LOADING_ASSIGNMENT_PENDING = 'assignmentPending';
 export const SMALL_APC_LOADING_WAITING = 'waiting';
@@ -39,6 +41,7 @@ export const townMarkerParkingStorageKeyOf = (destinationKeyRaw = '', zoneRaw = 
   const zone = String(zoneRaw || 'general');
   if (destinationKey === 'smallApc' && zone === 'loading') return SMALL_APC_LOADING_PARKING_KEY;
   if (destinationKey === 'smallApc' && zone === 'shipping') return SMALL_APC_SHIPPING_PARKING_KEY;
+  if (destinationKey === 'usedCarDealer' && zone === 'shipping') return USED_CAR_DEALER_SHIPPING_PARKING_KEY;
   return destinationKey;
 };
 
@@ -54,6 +57,12 @@ export const townMarkerParkingZoneOptionsOf = (
       { key: 'shipping', label: '출고 주차칸', slotPrefix: 'S', slotHeading: '출고 주차칸', slotCount: SMALL_APC_SHIPPING_PARKING_SLOT_COUNT }
     ];
   }
+  if (destinationKey === 'usedCarDealer') {
+    return [
+      { key: 'general', label: '일반 주차장', slotPrefix: 'P', slotHeading: '일반 주차장', slotCount: defaultTownMarkerParkingSlotCount },
+      { key: 'shipping', label: '출고 주차장', slotPrefix: 'S', slotHeading: '출고 주차장', slotCount: USED_CAR_DEALER_SHIPPING_PARKING_SLOT_COUNT }
+    ];
+  }
   return [
     { key: 'general', label: '주차칸', slotPrefix: 'P', slotHeading: '주차칸', slotCount: defaultTownMarkerParkingSlotCount }
   ];
@@ -67,6 +76,7 @@ export const townMarkerParkingSlotCountOf = (
   const storageKey = townMarkerParkingStorageKeyOf(destinationKeyRaw, zoneRaw);
   if (storageKey === SMALL_APC_LOADING_PARKING_KEY) return SMALL_APC_LOADING_PARKING_SLOT_COUNT;
   if (storageKey === SMALL_APC_SHIPPING_PARKING_KEY) return SMALL_APC_SHIPPING_PARKING_SLOT_COUNT;
+  if (storageKey === USED_CAR_DEALER_SHIPPING_PARKING_KEY) return USED_CAR_DEALER_SHIPPING_PARKING_SLOT_COUNT;
   if (String(destinationKeyRaw || '') === 'smallApc' || storageKey === 'smallApc') return SMALL_APC_PARKING_SLOT_COUNT;
   return defaultTownMarkerParkingSlotCount;
 };
@@ -82,6 +92,8 @@ export const townMarkerParkingSlotPrefixOf = (
 
 export const destinationLabelForParkingArea = (destinationKeyRaw = '', zoneRaw = 'general') => {
   const destinationLabel = String(destinationKeyRaw || '') === 'smallApc' ? '소형 APC' : '';
+  if (String(destinationKeyRaw || '') === USED_CAR_DEALER_SHIPPING_PARKING_KEY) return '자동차 대리점 출고';
+  if (String(destinationKeyRaw || '') === 'usedCarDealer' && String(zoneRaw || 'general') === 'shipping') return '자동차 대리점 출고';
   if (!destinationLabel) return '방문지 주차';
   if (String(zoneRaw || 'general') === 'loading') return `${destinationLabel} 하차`;
   if (String(zoneRaw || 'general') === 'shipping') return `${destinationLabel} 출고`;

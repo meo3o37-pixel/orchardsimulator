@@ -58,6 +58,29 @@ const valuesWherePathIncludes = (modules = {}, keywords = []) => (
 const centerMapImages = valuesWherePathIncludes(mapImagesByPath, ['전체지도', '마을', '소도시']);
 const starterTreeImages = valuesWherePathIncludes(treeImagesByPath, ['1년생/주간', '1년생\\주간', '봄 1년생', '여름 1년생']);
 const commonWeatherImages = valuesWherePathIncludes(weatherImagesByPath, ['청명', '맑음', '비살짝', '비 오는', '흐린']);
+const seasonalTreeImages = valuesWherePathIncludes(treeImagesByPath, [
+  '주간 날씨',
+  '밤 날씨',
+  '3년생이상/주간',
+  '3년생이상\\주간',
+  '3년생이상/밤',
+  '3년생이상\\밤',
+  '겨울 1년생',
+  '가을 1년생',
+  '겨울 2년생',
+  '가을 2년생'
+]);
+const seasonalWeatherImages = valuesWherePathIncludes(weatherImagesByPath, [
+  '봄',
+  '여름',
+  '가을',
+  '겨울',
+  '비',
+  '눈',
+  '황사',
+  '흐린',
+  '폭염'
+]);
 const commonItemImages = valuesWherePathIncludes(itemImagesByPath, ['팔레트', '맨손이미지', '사과', '컨테이너']);
 
 export const LOADING_ASSET_PHASES = Object.freeze({
@@ -97,6 +120,16 @@ export const LOADING_ASSET_PHASES = Object.freeze({
       type: 'image',
       src,
       label: `과수원 ${idx + 1}`
+    })))
+  }),
+  fieldSeasonal: Object.freeze({
+    label: '계절/날씨 과수원 이미지',
+    blocking: false,
+    concurrency: 2,
+    assets: Object.freeze(uniq([...seasonalTreeImages, ...seasonalWeatherImages]).map((src, idx) => ({
+      type: 'image',
+      src,
+      label: `계절 과수원 ${idx + 1}`
     })))
   }),
   warehouse: Object.freeze({

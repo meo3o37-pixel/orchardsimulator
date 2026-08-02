@@ -24,6 +24,24 @@ export const CONTAINER_ITEMS = [
     "weightKg": 1.7
   },
   {
+    "key": "livingWaterTank300L",
+    "name": "생활수 소형 물탱크 300L",
+    "price": 95000,
+    "desc": "하우징 생활수 임시 저장용 300L 소형 물탱크",
+    "unit": "개",
+    "weightKg": 18,
+    "waterTankLiters": 300
+  },
+  {
+    "key": "livingWaterTank500L",
+    "name": "생활수 중형 물탱크 500L",
+    "price": 145000,
+    "desc": "하우징 생활수 임시 저장용 500L 중형 물탱크",
+    "unit": "개",
+    "weightKg": 26,
+    "waterTankLiters": 500
+  },
+  {
     "key": "appleContainerYellow20kg",
     "name": "노란색 20kg들이 컨테이너",
     "price": 14500,

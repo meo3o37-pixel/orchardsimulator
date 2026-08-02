@@ -149,7 +149,7 @@ export const buildCurrentRestorableViewState = (state = {}, config = {}) => sani
 export const getRestorableViewLoadingPhaseKeys = (viewRaw = {}, config = {}) => {
   const view = sanitizeLastViewStatePreference(viewRaw, config);
   if (view.screen !== 'game') return [];
-  const keys = new Set(['field']);
+  const keys = new Set(['field', 'fieldSeasonal']);
   const tab = String(view.tab || 'farm');
   const focusTab = String(view.focusTab || 'manage');
   const mapLocationKey = String(view.mapLocationModal?.key || '');

@@ -36,11 +36,23 @@ export const PLAYER_ILLNESS_DEFS = Object.freeze({
     baseDays: 3,
     dailyHealthLoss: 0.6
   },
+  severeCold: {
+    label: '몸살감기',
+    symptoms: ['열감과 오한이 번갈아 옴', '기침이 깊어지고 온몸이 쑤심', '머리가 무겁고 식은땀이 남', '목 통증과 근육통이 같이 옴'],
+    baseDays: 4,
+    dailyHealthLoss: 1.1
+  },
   overwork: {
     label: '몸살 기운',
     symptoms: ['근육통과 몸 무거움', '팔다리가 쑤심', '잠을 자도 피로가 남음', '식은땀과 무기력함'],
     baseDays: 2,
     dailyHealthLoss: 0.7
+  },
+  exhaustion: {
+    label: '과로성 탈진',
+    symptoms: ['몸에 힘이 빠지고 식은땀이 남', '일어나면 어지럽고 다리가 후들거림', '가슴이 답답하고 집중이 끊김', '잠을 자도 회복이 거의 안 됨'],
+    baseDays: 3,
+    dailyHealthLoss: 1.2
   },
   dehydration: {
     label: '탈수 기운',
@@ -48,11 +60,23 @@ export const PLAYER_ILLNESS_DEFS = Object.freeze({
     baseDays: 2,
     dailyHealthLoss: 0.5
   },
+  heatExhaustion: {
+    label: '열탈진',
+    symptoms: ['심한 갈증과 어지럼', '식은땀이 나고 몸에 힘이 빠짐', '두통과 메스꺼움이 같이 옴', '더위에 서 있기 힘듦'],
+    baseDays: 3,
+    dailyHealthLoss: 1.3
+  },
   pesticideHeadache: {
     label: '약제 두통',
     symptoms: ['두통과 메스꺼움', '눈 따가움과 울렁거림', '목 안쪽이 칼칼함', '피부 따가움과 어지러움'],
     baseDays: 2,
     dailyHealthLoss: 0.6
+  },
+  pesticidePoisoning: {
+    label: '약제 중독 의심',
+    symptoms: ['두통과 구역감이 심해짐', '어지럽고 눈이 따가움', '목과 가슴이 답답함', '피부 따가움과 메스꺼움이 지속됨'],
+    baseDays: 4,
+    dailyHealthLoss: 1.4
   },
   stomachUpset: {
     label: '위장불량',
@@ -60,11 +84,23 @@ export const PLAYER_ILLNESS_DEFS = Object.freeze({
     baseDays: 2,
     dailyHealthLoss: 0.4
   },
+  acuteGastritis: {
+    label: '급성 위염',
+    symptoms: ['속쓰림과 메스꺼움이 심함', '명치가 묵직하고 식욕이 떨어짐', '배가 콕콕 아프고 울렁거림', '먹으면 속이 바로 불편해짐'],
+    baseDays: 3,
+    dailyHealthLoss: 0.9
+  },
   wristAche: {
     label: '손목 통증',
     symptoms: ['손목 욱신거림', '손가락 힘이 잘 안 들어감', '손목을 돌리면 뻐근함'],
     baseDays: 2,
     dailyHealthLoss: 0.35
+  },
+  wristTendonitis: {
+    label: '손목 건초염',
+    symptoms: ['손목을 굽히면 찌릿함', '손가락 힘이 잘 안 들어감', '물건을 들 때 손목이 아픔', '손목 주변이 붓고 욱신거림'],
+    baseDays: 5,
+    dailyHealthLoss: 0.75
   },
   backAche: {
     label: '허리 통증',
@@ -72,11 +108,23 @@ export const PLAYER_ILLNESS_DEFS = Object.freeze({
     baseDays: 3,
     dailyHealthLoss: 0.45
   },
+  lumbarStrain: {
+    label: '급성 요통',
+    symptoms: ['허리를 펴기 힘듦', '숙일 때 허리가 찌릿함', '오래 서 있으면 통증이 올라옴', '다리까지 묵직하게 당김'],
+    baseDays: 5,
+    dailyHealthLoss: 0.9
+  },
   sleepDebt: {
     label: '수면부족',
     symptoms: ['눈이 무겁고 멍함', '집중이 잘 안 됨', '계속 하품이 남', '몸이 느리게 반응함'],
     baseDays: 2,
     dailyHealthLoss: 0.35
+  },
+  insomnia: {
+    label: '불면 상태',
+    symptoms: ['잠들기 어렵고 머리가 맑지 않음', '밤새 뒤척여 몸이 무거움', '낮에도 멍하고 예민함', '피로가 풀리지 않고 누적됨'],
+    baseDays: 4,
+    dailyHealthLoss: 0.8
   }
 });
 
@@ -203,10 +251,63 @@ const decayConditions = (raw = {}, defs = {}) => {
   return next;
 };
 
+const PLAYER_ILLNESS_PROGRESSION_DEFS = Object.freeze({
+  cold: { nextKey: 'severeCold', baseRisk: 0.04, healthRisk: 0.025, coldRisk: 0.08 },
+  overwork: { nextKey: 'exhaustion', baseRisk: 0.035, laborRisk: 0.06, healthRisk: 0.025 },
+  dehydration: { nextKey: 'heatExhaustion', baseRisk: 0.035, heatRisk: 0.07, laborRisk: 0.02 },
+  pesticideHeadache: { nextKey: 'pesticidePoisoning', baseRisk: 0.035, injuryKey: 'chemicalExposure', injuryRisk: 0.08 },
+  stomachUpset: { nextKey: 'acuteGastritis', baseRisk: 0.025, healthRisk: 0.02 },
+  wristAche: { nextKey: 'wristTendonitis', baseRisk: 0.025, injuryKey: 'handCut', injuryRisk: 0.035, laborRisk: 0.015 },
+  backAche: { nextKey: 'lumbarStrain', baseRisk: 0.03, injuryKey: 'backStrain', injuryRisk: 0.055, laborRisk: 0.02 },
+  sleepDebt: { nextKey: 'insomnia', baseRisk: 0.03, laborRisk: 0.045, healthRisk: 0.02 }
+});
+
+const progressPlayerIllnesses = ({
+  illnesses = {},
+  injuries = {},
+  health = 100,
+  remainingSelfLabor = 100,
+  indoorColdRisk = 0,
+  indoorHeatRisk = 0,
+  random = Math.random
+} = {}) => {
+  const nextIllnesses = { ...(illnesses || {}) };
+  const logs = [];
+  Object.entries(PLAYER_ILLNESS_PROGRESSION_DEFS).forEach(([sourceKey, rule]) => {
+    const sourceEntry = nextIllnesses[sourceKey];
+    const targetKey = String(rule.nextKey || '');
+    const targetDef = PLAYER_ILLNESS_DEFS[targetKey];
+    if (!sourceEntry || !targetDef || nextIllnesses[targetKey]) return;
+    const severity = Math.max(1, Number(sourceEntry.severity) || 1);
+    const risk = clampValue(
+      Number(rule.baseRisk) || 0
+        + (severity >= 2 ? 0.025 : 0)
+        + (Number(health) <= 45 ? (Number(rule.healthRisk) || 0) : 0)
+        + (Number(remainingSelfLabor) <= 8 ? (Number(rule.laborRisk) || 0) : 0)
+        + (rule.injuryKey && injuries?.[rule.injuryKey] ? (Number(rule.injuryRisk) || 0) : 0)
+        + ((Number(rule.coldRisk) || 0) * clampValue(Number(indoorColdRisk) || 0, 0, 0.4))
+        + ((Number(rule.heatRisk) || 0) * clampValue(Number(indoorHeatRisk) || 0, 0, 0.4)),
+      0,
+      0.22
+    );
+    if ((Number(random()) || 0) >= risk) return;
+    const nextSeverity = clampValue(Math.floor(severity + 1), 1, 3);
+    delete nextIllnesses[sourceKey];
+    nextIllnesses[targetKey] = {
+      severity: nextSeverity,
+      remainingDays: Math.max(1, Math.floor(Number(targetDef.baseDays) || 2) + nextSeverity - 1),
+      diagnosed: false
+    };
+    logs.push(`증상 악화: ${PLAYER_ILLNESS_DEFS[sourceKey]?.label || sourceKey}이 ${targetDef.label}으로 번진 것 같습니다. 병원 진단이 필요합니다.`);
+  });
+  return { illnesses: nextIllnesses, logs };
+};
+
 export const rollDailyPlayerConditions = ({
   gameState = null,
   weatherName = '',
   temperatureC = 15,
+  indoorInfo = null,
   remainingSelfLabor = 100,
   random = Math.random
 } = {}) => {
@@ -232,10 +333,27 @@ export const rollDailyPlayerConditions = ({
   const weatherText = String(weatherName || '');
   const isWet = /비|소나기|폭우|눈|우천|장마/.test(weatherText);
   const temp = Number(temperatureC) || 15;
+  const indoorIllnessRiskInfo = indoorInfo?.illnessRiskInfo || {};
+  const indoorColdRisk = Math.max(0, Number(indoorIllnessRiskInfo.coldRisk) || 0);
+  const indoorHeatRisk = Math.max(0, Number(indoorIllnessRiskInfo.heatRisk) || 0);
+  const progressedIllnessResult = progressPlayerIllnesses({
+    illnesses: nextIllnesses,
+    injuries: nextInjuries,
+    health: gameState?.health,
+    remainingSelfLabor,
+    indoorColdRisk,
+    indoorHeatRisk,
+    random
+  });
+  Object.keys(nextIllnesses).forEach((key) => {
+    if (!progressedIllnessResult.illnesses[key]) delete nextIllnesses[key];
+  });
+  Object.assign(nextIllnesses, progressedIllnessResult.illnesses);
+  logs.push(...progressedIllnessResult.logs);
   const candidates = [
-    { key: 'cold', risk: (isWet ? 0.035 : 0) + (temp <= 3 ? 0.025 : 0) },
+    { key: 'cold', risk: (isWet ? 0.035 : 0) + (temp <= 3 ? 0.025 : 0) + indoorColdRisk },
     { key: 'overwork', risk: Number(remainingSelfLabor) <= 5 ? 0.045 : (Number(remainingSelfLabor) <= 15 ? 0.02 : 0) },
-    { key: 'dehydration', risk: temp >= 30 ? 0.025 : 0 },
+    { key: 'dehydration', risk: (temp >= 30 ? 0.025 : 0) + indoorHeatRisk },
     { key: 'pesticideHeadache', risk: nextInjuries.chemicalExposure ? 0.05 : 0 },
     { key: 'wristAche', risk: nextInjuries.handCut || Number(remainingSelfLabor) <= 12 ? 0.012 : 0 },
     { key: 'backAche', risk: nextInjuries.backStrain ? 0.045 : 0 },
@@ -243,7 +361,8 @@ export const rollDailyPlayerConditions = ({
     { key: 'sleepDebt', risk: Number(remainingSelfLabor) <= 0 ? 0.018 : 0 },
   ];
   candidates.forEach((candidate) => {
-    if (nextIllnesses[candidate.key] || candidate.risk <= 0) return;
+    const progressedKey = PLAYER_ILLNESS_PROGRESSION_DEFS[candidate.key]?.nextKey || '';
+    if (nextIllnesses[candidate.key] || (progressedKey && nextIllnesses[progressedKey]) || candidate.risk <= 0) return;
     if ((Number(random()) || 0) >= candidate.risk) return;
     const def = PLAYER_ILLNESS_DEFS[candidate.key];
     nextIllnesses[candidate.key] = { severity: 1, remainingDays: def.baseDays, diagnosed: false };

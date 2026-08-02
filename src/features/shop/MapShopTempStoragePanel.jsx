@@ -10,6 +10,7 @@ export default function MapShopTempStoragePanel({
   day,
   toolImageSrcOf,
   moveTempStorageEntryToSelectedCarrier,
+  moveTempStorageVehicleToCurrentParking,
   longDate,
   goBackMapLocationModal,
   closeMapLocationModal,
@@ -37,21 +38,29 @@ export default function MapShopTempStoragePanel({
               const isAppleCrateVisualItem = String(itemCategory || '') === 'container'
                 && /appleContainer/i.test(itemKey);
               const shouldPreferMountedSprayerImage = String(itemCategory || '') === 'machine' && String(row?.item?.type || '') === 'spray';
-              const toolImageSrc = ['tool', 'machine', 'transport', 'passenger'].includes(String(itemCategory || '')) || isPalletVisualItem
-                ? toolImageSrcOf(itemKey, { preferMountedSprayer: shouldPreferMountedSprayerImage })
-                : '';
+              const isVehiclePickupItem = String(itemCategory || '') === 'machine'
+                && ['transport', 'passenger'].includes(String(row?.item?.type || ''))
+                && Boolean(row?.instanceId);
+              const toolImageSrc = toolImageSrcOf?.(itemKey, { preferMountedSprayer: shouldPreferMountedSprayerImage }) || '';
               const crateTone = /green/i.test(itemKey) ? 'green' : 'yellow';
               return (
                 <div
                   key={`map-temp-storage-${row.id}`}
-                  className={`option-card map-temp-storage-card ${toolImageSrc || isAppleCrateVisualItem ? 'shop-tool-card--has-image' : ''} ${!mapTransferSelectedCarrier ? 'is-disabled' : ''}`.trim()}
+                  className={`option-card map-temp-storage-card ${isVehiclePickupItem ? 'map-temp-storage-card--vehicle-pickup' : ''} ${toolImageSrc || isAppleCrateVisualItem ? 'shop-tool-card--has-image' : ''} ${!isVehiclePickupItem && !mapTransferSelectedCarrier ? 'is-disabled' : ''}`.trim()}
                   role="button"
                   tabIndex={0}
-                  title={!mapTransferSelectedCarrier ? '적재할 차량을 먼저 선택해 주세요.' : '눌러서 적재함에 담기'}
-                  onClick={() => moveTempStorageEntryToSelectedCarrier(row.id)}
+                  title={isVehiclePickupItem ? '주차장으로 출고할 차량입니다.' : (!mapTransferSelectedCarrier ? '적재할 차량을 먼저 선택해 주세요.' : '눌러서 적재함에 담기')}
+                  onClick={() => {
+                    if (isVehiclePickupItem) return;
+                    moveTempStorageEntryToSelectedCarrier(row.id);
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
+                      if (isVehiclePickupItem) {
+                        moveTempStorageVehicleToCurrentParking?.(row.id);
+                        return;
+                      }
                       moveTempStorageEntryToSelectedCarrier(row.id);
                     }
                   }}
@@ -113,10 +122,25 @@ export default function MapShopTempStoragePanel({
                   <div className="storage-card__head">
                     <strong>{itemName}</strong>
                   </div>
+                  {isVehiclePickupItem ? (
+                    <div className="storage-card__meta">출고 대기 차량</div>
+                  ) : null}
                   {weightKg > 0 ? (
                     <div className="storage-card__meta">{`무게 ${Number(weightKg).toLocaleString()}kg`}</div>
                   ) : null}
                   <div className="storage-card__meta">{`만료 ${longDate(row.expireDay)} (${remainDays}일 남음)`}</div>
+                  {isVehiclePickupItem ? (
+                    <button
+                      type="button"
+                      className="button button--primary map-temp-storage-card__release-button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        moveTempStorageVehicleToCurrentParking?.(row.id);
+                      }}
+                    >
+                      주차장으로 출고
+                    </button>
+                  ) : null}
                 </div>
               );
             })}

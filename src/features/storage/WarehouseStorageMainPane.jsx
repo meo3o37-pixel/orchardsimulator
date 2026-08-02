@@ -34,6 +34,13 @@ export default function WarehouseStorageMainPane({
   onBack,
   onClose,
 }) {
+  const primaryTabsRef = React.useRef(null);
+  const scrollPrimaryTabs = React.useCallback((direction) => {
+    const el = primaryTabsRef.current;
+    if (!el) return;
+    const distance = Math.max(160, Math.floor(el.clientWidth * 0.72));
+    el.scrollBy({ left: distance * direction, behavior: 'smooth' });
+  }, []);
   const usagePctValue = Math.max(0, Math.min(100, Number.parseFloat(String(usagePctText || '')) || 0));
   const usageGaugeColorPct = Math.max(10, Math.min(100, usagePctValue || 0));
   const usageGaugeHue = 145 - (((usageGaugeColorPct - 10) / 90) * 137);
@@ -61,18 +68,38 @@ export default function WarehouseStorageMainPane({
           {!hideTabs ? (
             <>
               <div className="warehouse-storage-tabs-bar" style={{ marginTop: 10 }}>
-                <div className="focus-tabs warehouse-storage-tabs-bar__main">
-                  {primaryTabs.map((tab) => (
-                    <button
-                      key={tab.key}
-                      className={`focus-tab focus-tab--farm-main-animate ${activeTab === tab.key ? 'focus-tab--active' : ''}`.trim()}
-                      disabled={interactionLocked}
-                      title={interactionLocked ? interactionLockedReason : ''}
-                      onClick={() => onSelectPrimaryTab(tab.key)}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
+                <div className="warehouse-storage-tabs-scroll-shell">
+                  <button
+                    type="button"
+                    className="warehouse-storage-tabs-scroll-btn warehouse-storage-tabs-scroll-btn--prev"
+                    onClick={() => scrollPrimaryTabs(-1)}
+                    aria-label="왼쪽 탭 보기"
+                    title="왼쪽 탭 보기"
+                  >
+                    {'<'}
+                  </button>
+                  <div ref={primaryTabsRef} className="focus-tabs warehouse-storage-tabs-bar__main">
+                    {primaryTabs.map((tab) => (
+                      <button
+                        key={tab.key}
+                        className={`focus-tab focus-tab--farm-main-animate ${activeTab === tab.key ? 'focus-tab--active' : ''}`.trim()}
+                        disabled={interactionLocked}
+                        title={interactionLocked ? interactionLockedReason : ''}
+                        onClick={() => onSelectPrimaryTab(tab.key)}
+                      >
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    className="warehouse-storage-tabs-scroll-btn warehouse-storage-tabs-scroll-btn--next"
+                    onClick={() => scrollPrimaryTabs(1)}
+                    aria-label="오른쪽 탭 보기"
+                    title="오른쪽 탭 보기"
+                  >
+                    {'>'}
+                  </button>
                 </div>
                 {showFacilityShortcut ? (
                   <button

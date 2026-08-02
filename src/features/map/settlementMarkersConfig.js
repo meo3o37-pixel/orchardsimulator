@@ -1,4 +1,4 @@
-import { SMALL_APC_LOADING_PARKING_KEY, SMALL_APC_SHIPPING_PARKING_KEY } from './smallApcUtils';
+import { SMALL_APC_LOADING_PARKING_KEY, SMALL_APC_SHIPPING_PARKING_KEY, USED_CAR_DEALER_SHIPPING_PARKING_KEY } from './smallApcUtils';
 
 export const TOWN_MARKER_PARKING_SLOT_COUNT = 4;
 
@@ -70,9 +70,6 @@ export const SMALL_CITY_SETTLEMENT_PARKING_KEYS = Object.freeze([
 ]);
 
 export const SMALL_CITY_DOUBLE_PARKING_EXCLUDED_KEYS = Object.freeze([
-  'fuelStation',
-  'foodMart',
-  'farmMart',
 ]);
 
 export const buildSettlementParkingStorageKeys = (extraStorageKeys = []) => (
@@ -85,6 +82,7 @@ export const buildSettlementParkingStorageKeys = (extraStorageKeys = []) => (
 export const SETTLEMENT_PARKING_STORAGE_KEYS = buildSettlementParkingStorageKeys([
   SMALL_APC_LOADING_PARKING_KEY,
   SMALL_APC_SHIPPING_PARKING_KEY,
+  USED_CAR_DEALER_SHIPPING_PARKING_KEY,
 ]);
 
 export const resolveCurrentSettlementParkingKeys = ({
