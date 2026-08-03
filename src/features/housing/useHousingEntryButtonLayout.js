@@ -16,6 +16,8 @@ export default function useHousingEntryButtonLayout({
   normalizePosition = normalizeHousingEntryButtonPosition,
   positionPreferenceKey = 'housingEntryButtonPosition',
   dragEnabledPreferenceKey = 'housingEntryButtonDragEnabled',
+  defaultPositionSaveEndpoint = '',
+  localStorageKey = '',
   alertLabel = '하우징 버튼 위치',
   logLabel = 'housing_button_layout',
 } = {}) {
@@ -47,12 +49,32 @@ export default function useHousingEntryButtonLayout({
     if (typeof setSavedPosition === 'function') setSavedPosition(normalizedPosition);
     if (typeof setDraftPosition === 'function') setDraftPosition(normalizedPosition);
     if (typeof setDragEnabled === 'function') setDragEnabled(false);
+    if (localStorageKey && typeof window !== 'undefined') {
+      try {
+        window.localStorage?.setItem(localStorageKey, JSON.stringify(normalizedPosition));
+      } catch {}
+    }
     if (!authToken) {
       window.alert(`로그인된 계정이 없어 현재 접속에서만 반영됩니다. 계정 공통으로 쓰려면 로그인 상태에서 ${alertLabel}를 고정해 주세요.`);
       return;
     }
+    if (defaultPositionSaveEndpoint) {
+      void fetch(defaultPositionSaveEndpoint, {
+        method: 'POST',
+        keepalive: true,
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: JSON.stringify({
+          token: authToken,
+          position: normalizedPosition
+        })
+      }).catch((error) => {
+        console.error(`${logLabel}_default_position_save_failed`, error);
+        window.alert(`${alertLabel} 기본 위치를 코드에 저장하지 못했습니다. 다시 시도해 주세요.`);
+      });
+    }
     void fetch('/__auth/preferences', {
       method: 'POST',
+      keepalive: true,
       headers: { 'Content-Type': 'application/json; charset=utf-8' },
       body: JSON.stringify({
         token: authToken,
@@ -65,7 +87,7 @@ export default function useHousingEntryButtonLayout({
       console.error(`${logLabel}_preference_save_failed`, error);
       window.alert(`${alertLabel}를 계정 설정에 저장하지 못했습니다. 다시 시도해 주세요.`);
     });
-  }, [alertLabel, authToken, draftPosition, dragEnabledPreferenceKey, logLabel, normalizePosition, positionPreferenceKey, setDraftPosition, setDragEnabled, setSavedPosition]);
+  }, [alertLabel, authToken, defaultPositionSaveEndpoint, draftPosition, dragEnabledPreferenceKey, localStorageKey, logLabel, normalizePosition, positionPreferenceKey, setDraftPosition, setDragEnabled, setSavedPosition]);
 
   const startDrag = useCallback((event) => {
     if (!dragEnabled) return;

@@ -8,6 +8,7 @@ const PROJECT_ROOT = path.resolve(process.cwd());
 const PROJECT_INDEX_HTML = path.join(PROJECT_ROOT, 'index.html');
 const ANIMATION_LAB_PRESET_FILE = path.resolve(process.cwd(), 'src/data/animationLabPresets.js');
 const ANIMATION_LAB_DATA_DIR = path.resolve(process.cwd(), 'src/data');
+const HOUSING_UI_SYSTEM_FILE = path.resolve(process.cwd(), 'src/features/housing/housingUiSystem.js');
 const EXTERNAL_MAP_DATA_FILE = path.resolve(process.cwd(), 'src/data/external-map-data.json');
 const FIELD_MAP_300_SAVED_PRESET_FILE = path.resolve(process.cwd(), 'src/features/fieldMap300/fieldMap300SavedPreset.json');
 const FIELD_MAP_300_FACILITY_CATALOG_OVERRIDE_FILE = path.resolve(process.cwd(), 'src/features/fieldMap300/fieldMap300FacilityCatalogOverrides.json');
@@ -677,6 +678,39 @@ const sanitizeUpdatePlanEntries = (rawEntries) => {
   }).filter((entry) => entry.date || entry.title || entry.items.length || entry.table);
 };
 const isUpdatePlanAdminSession = (session) => UPDATE_PLAN_ADMIN_USERNAMES.has(String(session?.username || '').trim().toLowerCase());
+const sanitizePercentPosition = (raw = {}) => {
+  const x = Number(raw?.xPercent);
+  const y = Number(raw?.yPercent);
+  return {
+    xPercent: Number(Math.max(12, Math.min(88, Number.isFinite(x) ? x : 61.5)).toFixed(2)),
+    yPercent: Number(Math.max(18, Math.min(90, Number.isFinite(y) ? y : 43.5)).toFixed(2))
+  };
+};
+const replaceHousingDefaultPosition = (source = '', constName = '', position = {}) => {
+  const safeConstName = String(constName || '').trim();
+  if (!safeConstName) return null;
+  const pattern = new RegExp(
+    `(export\\s+const\\s+${safeConstName}\\s*=\\s*Object\\.freeze\\(\\{\\s*\\r?\\n\\s*xPercent:\\s*)([-0-9.]+)(,\\s*\\r?\\n\\s*yPercent:\\s*)([-0-9.]+)(,\\s*\\r?\\n\\}\\);)`,
+    'm'
+  );
+  if (!pattern.test(source)) return null;
+  return source.replace(pattern, (_match, start, _oldX, middle, _oldY, end) => (
+    `${start}${position.xPercent}${middle}${position.yPercent}${end}`
+  ));
+};
+const saveHousingExitButtonDefaultPosition = async (positionRaw = {}) => {
+  const position = sanitizePercentPosition(positionRaw);
+  const source = await fs.readFile(HOUSING_UI_SYSTEM_FILE, 'utf8');
+  const nextSource = replaceHousingDefaultPosition(source, 'DEFAULT_HOUSING_EXIT_BUTTON_POSITION', position);
+  if (!nextSource) {
+    return { ok: false, error: 'default_position_not_found', position };
+  }
+  if (nextSource === source) {
+    return { ok: true, unchanged: true, position };
+  }
+  await fs.writeFile(HOUSING_UI_SYSTEM_FILE, nextSource, 'utf8');
+  return { ok: true, position };
+};
 
 const normalizeUsername = (value) => String(value || '').trim();
 const isValidUsername = (value) => /^[0-9A-Za-z_가-힣-]{3,24}$/.test(String(value || '').trim());
@@ -1724,6 +1758,29 @@ const animationLabPresetSavePlugin = () => ({
             preferences: saveState.preferences
           });
           sendJson(200, { ok: true, preferences: saveState.preferences });
+          return;
+        }
+
+        if (routePath === '/__dev/housing-exit-button-default') {
+          if (req.method !== 'POST') {
+            sendJson(405, { ok: false, error: 'method_not_allowed' });
+            return;
+          }
+          const session = getSessionFromRequest(req);
+          if (!session) {
+            sendJson(401, buildInvalidSessionPayload(req.__body?.token));
+            return;
+          }
+          if (!isUpdatePlanAdminSession(session)) {
+            sendJson(403, { ok: false, error: 'forbidden', detail: 'admin_only' });
+            return;
+          }
+          const result = await saveHousingExitButtonDefaultPosition(req.__body?.position || {});
+          if (!result.ok) {
+            sendJson(400, result);
+            return;
+          }
+          sendJson(200, result);
           return;
         }
 

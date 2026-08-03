@@ -67,19 +67,28 @@ export const HOUSING_FURNITURE_SLOT_DEFS = Object.freeze([
 
 export const HOUSING_CLOTHING_SLOT_DEFS = Object.freeze([
   { key: 'head', type: 'head', icon: '⛑️', label: '머리', hint: '안전모나 모자를 착용하는 자리' },
-  { key: 'face', type: 'face', icon: '😷', label: '얼굴', hint: '마스크나 보안경을 착용하는 자리' },
-  { key: 'upper', type: 'upper', icon: '🧥', label: '상의', hint: '작업복 상의, 방수자켓, 방한복, 안전조끼를 착용하는 자리' },
+  { key: 'eyes', type: 'eyes', icon: '🥽', label: '눈', hint: '보안경처럼 눈을 보호하는 장비를 착용하는 자리' },
+  { key: 'face', type: 'face', icon: '😷', label: '얼굴', hint: '마스크나 안면보호구를 착용하는 자리' },
+  { key: 'ears', type: 'ears', icon: '🎧', label: '귀', hint: '소음 작업용 귀덮개를 착용하는 자리' },
+  { key: 'upper', type: 'upper', icon: '🧥', label: '상의', hint: '작업복 상의, 방수자켓, 방한복을 착용하는 자리' },
+  { key: 'vest', type: 'vest', icon: '🦺', label: '조끼', hint: '안전조끼처럼 상의 위에 덧입는 장비를 착용하는 자리' },
+  { key: 'bag', type: 'bag', icon: '🎒', label: '가방', hint: '작업용 허리색이나 백팩을 착용하는 자리' },
   { key: 'lower', type: 'lower', icon: '👖', label: '하의', hint: '작업복 하의나 방수·방한 바지를 착용하는 자리' },
+  { key: 'arms', type: 'arms', icon: '💪', label: '팔', hint: '팔토시처럼 팔을 보호하는 장비를 착용하는 자리' },
   { key: 'hands', type: 'hands', icon: '🧤', label: '손', hint: '목장갑이나 고무장갑을 착용하는 자리' },
+  { key: 'waist', type: 'waist', icon: '🩻', label: '허리', hint: '허리보호대처럼 허리 부담을 줄이는 장비를 착용하는 자리' },
+  { key: 'knees', type: 'knees', icon: '🦵', label: '무릎', hint: '무릎보호대를 착용하는 자리' },
   { key: 'feet', type: 'feet', icon: '🥾', label: '발', hint: '작업화나 장화를 착용하는 자리' }
 ]);
 
 const LEGACY_CLOTHING_SLOT_KEY_BY_TYPE = Object.freeze({
   outerwear: 'upper',
-  vest: 'upper',
+  vest: 'vest',
+  backpack: 'bag',
+  bag: 'bag',
   gloves: 'hands',
   shoes: 'feet',
-  eyes: 'face'
+  eyes: 'eyes'
 });
 
 const HOUSING_WATER_TANK_SLOT_COUNT_BY_FACILITY = Object.freeze({
@@ -773,6 +782,11 @@ export const normalizeHousingClothingEquipments = (raw = {}) => {
       ? slotKey
       : String(LEGACY_CLOTHING_SLOT_KEY_BY_TYPE[slotKey] || '');
     const slot = HOUSING_CLOTHING_SLOT_BY_KEY[resolvedSlotKey];
+    const itemTypeSlot = HOUSING_CLOTHING_SLOT_DEFS.find((entry) => String(entry?.type || '') === String(item?.type || ''));
+    if (slot && item && String(item?.type || '') !== String(slot.type || '') && itemTypeSlot) {
+      next[itemTypeSlot.key] = itemKey;
+      return;
+    }
     if (!slot || !item || String(item?.type || '') !== String(slot.type || '')) return;
     next[resolvedSlotKey] = itemKey;
   });

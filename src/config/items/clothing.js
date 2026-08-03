@@ -122,7 +122,7 @@ export const CLOTHING_ITEMS = [
   },
   {
     key: 'safetyGoggles',
-    type: 'face',
+    type: 'eyes',
     name: '보안경',
     price: 9000,
     desc: '가지치기와 세척 작업 중 눈을 보호하는 투명 보안경.',
@@ -144,7 +144,7 @@ export const CLOTHING_ITEMS = [
   },
   {
     key: 'reflectiveSafetyVest',
-    type: 'upper',
+    type: 'vest',
     name: '안전조끼',
     price: 12000,
     desc: '해질녘 작업과 차량 이동 구역에서 눈에 잘 띄는 반사 조끼.',
@@ -166,7 +166,7 @@ export const CLOTHING_ITEMS = [
   },
   {
     key: 'coolArmSleeves',
-    type: 'hands',
+    type: 'arms',
     name: '쿨토시',
     price: 6500,
     desc: '팔 햇빛 노출을 줄이고 땀을 빨리 말리는 여름 작업용 쿨토시.',
@@ -232,7 +232,7 @@ export const CLOTHING_ITEMS = [
   },
   {
     key: 'earProtectionMuffs',
-    type: 'head',
+    type: 'ears',
     name: '귀덮개',
     price: 16000,
     desc: '예초기와 파쇄기처럼 소음이 큰 장비를 쓸 때 귀를 보호하는 방음 귀덮개.',
@@ -243,7 +243,7 @@ export const CLOTHING_ITEMS = [
   },
   {
     key: 'kneePads',
-    type: 'lower',
+    type: 'knees',
     name: '무릎보호대',
     price: 11000,
     desc: '묘목 관리와 낮은 자세 작업 때 무릎 압박과 쓸림을 줄이는 보호대.',
@@ -254,7 +254,7 @@ export const CLOTHING_ITEMS = [
   },
   {
     key: 'backSupportBelt',
-    type: 'upper',
+    type: 'waist',
     name: '허리보호대',
     price: 24000,
     desc: '상자 운반과 장시간 작업 때 허리 부담을 줄이는 작업용 허리보호대.',
@@ -262,5 +262,71 @@ export const CLOTHING_ITEMS = [
     durable: true,
     weightKg: 0.35,
     protection: { back: 3, upperBody: 1 }
+  },
+  {
+    key: 'farmWaistToolBag',
+    type: 'bag',
+    name: '작업용 허리색',
+    price: 18000,
+    desc: '전지가위, 장갑, 소형 공구를 몸에 가까이 보관하는 농작업용 허리 가방.',
+    unit: '개',
+    durable: true,
+    weightKg: 0.45,
+    protection: { carry: 1, back: 1 }
+  },
+  {
+    key: 'farmDayBackpack',
+    type: 'bag',
+    name: '농장 작업 백팩',
+    price: 34000,
+    desc: '물병, 도시락, 예비 보호구를 넣어 다니는 하루 작업용 백팩.',
+    unit: '개',
+    durable: true,
+    weightKg: 0.9,
+    protection: { carry: 2, weather: 1 }
+  },
+  {
+    key: 'orchardToolBackpack',
+    type: 'bag',
+    name: '과수원 공구 백팩',
+    price: 48000,
+    desc: '전지가위와 결속끈, 작은 부품을 나눠 넣는 과수원 작업용 공구 백팩.',
+    unit: '개',
+    durable: true,
+    weightKg: 1.15,
+    protection: { carry: 3, back: 1 }
+  },
+  {
+    key: 'waterproofFieldBag',
+    type: 'bag',
+    name: '방수 필드백',
+    price: 42000,
+    desc: '비 오는 날과 세척 작업 후에도 소지품 젖음을 줄이는 롤탑 방수 가방.',
+    unit: '개',
+    durable: true,
+    weightKg: 0.82,
+    protection: { carry: 2, water: 3 }
+  },
+  {
+    key: 'harvestSupportSlingBag',
+    type: 'bag',
+    name: '수확 보조 슬링백',
+    price: 26000,
+    desc: '수확표, 장갑, 작은 공구를 빠르게 꺼내기 쉬운 가벼운 슬링백.',
+    unit: '개',
+    durable: true,
+    weightKg: 0.52,
+    protection: { carry: 2, mobility: 1 }
+  },
+  {
+    key: 'spraySupportBackpack',
+    type: 'bag',
+    name: '방제 보조 백팩',
+    price: 56000,
+    desc: '방제 작업 전후 예비 필터와 보호구를 분리 보관하는 밀폐형 보조 백팩.',
+    unit: '개',
+    durable: true,
+    weightKg: 1.05,
+    protection: { carry: 2, chemical: 1, splash: 1 }
   }
 ];

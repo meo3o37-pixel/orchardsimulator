@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
   color-scheme: only light;
@@ -17,6 +17,7 @@
   --scrollbar-thumb-hover: linear-gradient(180deg, rgba(255, 251, 242, 0.99), rgba(232, 239, 218, 0.99));
   --scrollbar-thumb-border: rgba(78, 115, 91, 0.5);
 }
+
 
 * {
   box-sizing: border-box;
@@ -30780,62 +30781,87 @@ button.small-apc-receiving-queue__item:hover {
 
 .housing-interior-breaker-switch__rail {
   position: relative;
-  width: 28px;
-  height: 38px;
-  min-height: 38px;
-  border: 1px solid rgba(0, 0, 0, 0.74);
-  border-radius: 999px;
+  width: 30px;
+  height: 50px;
+  min-height: 50px;
+  border: 1px solid rgba(6, 8, 8, 0.82);
+  border-radius: 11px;
   background:
-    radial-gradient(circle at 48% 22%, rgba(255, 255, 255, 0.28), transparent 34%),
-    linear-gradient(180deg, #3f4542 0%, #202523 48%, #090b0b 100%),
-    #171a19;
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04), transparent 22%, transparent 78%, rgba(0, 0, 0, 0.28)),
+    #080b0d;
   box-shadow:
-    0 8px 11px rgba(0, 0, 0, 0.32),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
-    inset 0 -6px 9px rgba(0, 0, 0, 0.32);
-  transform-origin: center center;
-  transition:
-    transform 240ms cubic-bezier(0.2, 0.9, 0.2, 1.08),
-    background 180ms ease,
-    box-shadow 180ms ease;
+    inset 0 9px 13px rgba(0, 0, 0, 0.72),
+    inset 0 -4px 7px rgba(255, 255, 255, 0.035),
+    0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .housing-interior-breaker-switch__lever {
   position: absolute;
-  left: 50%;
-  top: 50%;
-  right: auto;
-  width: 2px;
-  height: 20px;
-  border: 0;
-  border-radius: 999px;
+  left: 4px;
+  right: 4px;
+  width: auto;
+  height: 28px;
+  border: 1px solid rgba(6, 8, 8, 0.86);
+  border-radius: 9px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.36), rgba(255, 255, 255, 0.08));
+    radial-gradient(circle at 45% 20%, rgba(255, 255, 255, 0.22), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.15), transparent 16%, transparent 60%, rgba(0, 0, 0, 0.34)),
+    linear-gradient(90deg, #484f4b, #242927 18%, #363c39 50%, #191d1b 82%, #3b423f);
   box-shadow:
-    0 0 4px rgba(255, 255, 255, 0.12);
+    0 7px 9px rgba(0, 0, 0, 0.46),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -4px 7px rgba(0, 0, 0, 0.34);
   transform-origin: center center;
-  transform: translate(-50%, -50%);
-  transition: none;
+  transition:
+    top 260ms cubic-bezier(0.18, 1.45, 0.32, 1),
+    transform 260ms cubic-bezier(0.18, 1.45, 0.32, 1),
+    box-shadow 180ms ease,
+    filter 180ms ease;
 }
 
-.housing-interior-power-panel.is-on .housing-interior-breaker-switch__rail {
-  transform: translateY(-12px);
-  box-shadow:
-    0 10px 13px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
-    inset 0 -7px 10px rgba(0, 0, 0, 0.3);
-}
-
-.housing-interior-power-panel.is-off .housing-interior-breaker-switch__rail {
-  transform: translateY(12px);
+.housing-interior-breaker-switch__lever::before {
+  content: '';
+  position: absolute;
+  inset: 7px 6px;
+  border-radius: 5px;
   background:
-    radial-gradient(circle at 48% 22%, rgba(255, 255, 255, 0.2), transparent 34%),
-    linear-gradient(180deg, #333735 0%, #191d1b 52%, #070808 100%),
-    #111313;
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.18) 0 2px, rgba(255, 255, 255, 0.04) 2px 5px),
+    linear-gradient(180deg, #262c29, #474e4a);
   box-shadow:
-    0 5px 9px rgba(0, 0, 0, 0.34),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    inset 0 -7px 10px rgba(0, 0, 0, 0.36);
+    inset 0 2px 4px rgba(0, 0, 0, 0.5),
+    0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.housing-interior-breaker-switch__lever::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  width: 13px;
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateX(-50%);
+}
+
+.housing-interior-power-panel.is-on .housing-interior-breaker-switch__lever {
+  top: -7px;
+  transform: translateY(0);
+  box-shadow:
+    0 10px 11px rgba(0, 0, 0, 0.42),
+    0 0 12px rgba(58, 175, 109, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.23),
+    inset 0 -4px 7px rgba(0, 0, 0, 0.34);
+}
+
+.housing-interior-power-panel.is-off .housing-interior-breaker-switch__lever {
+  top: 27px;
+  transform: translateY(0);
+  filter: brightness(0.9);
+  box-shadow:
+    0 5px 8px rgba(0, 0, 0, 0.44),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -5px 8px rgba(0, 0, 0, 0.38);
 }
 
 .housing-interior-breaker-circuit-list {
@@ -32256,9 +32282,9 @@ button.small-apc-receiving-queue__item:hover {
 
 .housing-interior-cook-setup-panel {
   display: grid;
-  gap: 8px;
+  gap: 4px;
   margin: 4px 0 10px;
-  padding: 10px;
+  padding: 8px 10px 10px;
   border: 1px solid rgba(71, 109, 86, 0.13);
   border-radius: 12px;
   background:
@@ -32326,14 +32352,14 @@ button.small-apc-receiving-queue__item:hover {
   gap: var(--cook-setup-card-gap);
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 2px 2px 8px;
+  padding: 0 2px 8px;
   scrollbar-gutter: stable;
   scroll-snap-type: x proximity;
 }
 
 .housing-interior-cook-setup-card-row .housing-interior-cook-appliance-option {
   grid-template-columns: 18px 36px minmax(0, 1fr);
-  min-height: 74px;
+  min-height: 96px;
   gap: 8px;
   padding: 8px;
   scroll-snap-align: start;
@@ -32342,7 +32368,7 @@ button.small-apc-receiving-queue__item:hover {
 .housing-interior-cook-setup-card-row .housing-interior-serving-container-empty {
   display: grid;
   place-items: center;
-  min-height: 74px;
+  min-height: 96px;
   padding: 10px 12px;
   line-height: 1.35;
   scroll-snap-align: start;
@@ -34110,10 +34136,40 @@ button.small-apc-receiving-queue__item:hover {
 
 .housing-interior-placeholder-card--storage-wide > .housing-interior-placeholder-card__title-row {
   flex-wrap: nowrap;
+  min-height: 40px;
 }
 
 .housing-interior-placeholder-card--storage-wide > .housing-interior-placeholder-card__title-row > strong {
   flex: 0 0 auto;
+}
+
+.housing-interior-storage-title-heading {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 auto;
+}
+
+.housing-interior-storage-title-heading > strong {
+  flex: 0 0 auto;
+}
+
+.housing-interior-placeholder-grid--storage .housing-interior-placeholder-card--bag > .housing-interior-placeholder-card__title-row {
+  flex-wrap: nowrap;
+  min-height: 40px;
+}
+
+.housing-interior-placeholder-grid--storage .housing-interior-placeholder-card--bag .housing-interior-fridge-source-heading {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.housing-interior-placeholder-grid--storage .housing-interior-placeholder-card--bag .housing-interior-fridge-source-heading > strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .housing-interior-storage-capacity-badge {
@@ -34165,6 +34221,10 @@ button.small-apc-receiving-queue__item:hover {
   border-radius: inherit;
   background: linear-gradient(90deg, #7eb18a, #d2a85d);
   box-shadow: 0 0 10px rgba(126, 177, 138, 0.34);
+}
+
+.housing-interior-storage-capacity-badge--source {
+  flex: 0 0 auto;
 }
 
 .housing-interior-storage-detail-button {
@@ -34235,6 +34295,23 @@ button.small-apc-receiving-queue__item:hover {
   text-align: center;
 }
 
+.housing-interior-storage-item-tabs--source {
+  gap: 5px;
+  padding-bottom: 6px;
+}
+
+.housing-interior-storage-item-tabs--source .housing-interior-storage-item-tab {
+  min-height: 30px;
+  padding: 6px 8px;
+  font-size: 0.72rem;
+}
+
+.housing-interior-storage-item-tabs--source .housing-interior-storage-item-tab strong {
+  min-width: 16px;
+  padding-inline: 4px;
+  font-size: 0.64rem;
+}
+
 .housing-interior-storage-filter-empty {
   display: grid;
   place-items: center;
@@ -34244,6 +34321,10 @@ button.small-apc-receiving-queue__item:hover {
   color: rgba(54, 83, 64, 0.68);
   font-size: 0.82rem;
   font-weight: 800;
+}
+
+.housing-interior-placeholder-item-list--bag .housing-interior-storage-filter-empty {
+  grid-column: 1 / -1;
 }
 
 .housing-storage-detail-view {
@@ -34303,9 +34384,9 @@ button.small-apc-receiving-queue__item:hover {
 }
 
 .housing-storage-detail-list {
-  --housing-storage-detail-card-height: 168px;
+  --housing-storage-detail-card-height: 196px;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
   align-items: stretch;
   gap: 10px;
   min-height: 0;
@@ -34317,9 +34398,10 @@ button.small-apc-receiving-queue__item:hover {
 .housing-storage-detail-row {
   display: grid;
   grid-template-columns: 42px minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
   gap: 9px;
   align-items: start;
+  align-content: start;
   min-height: var(--housing-storage-detail-card-height);
   padding: 10px;
   border-radius: 14px;
@@ -34397,14 +34479,19 @@ button.small-apc-receiving-queue__item:hover {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .housing-storage-detail-row__stats {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(92px, 1fr));
   gap: 6px;
+  margin-top: 2px;
 }
 
 .housing-storage-detail-row__stats > span {
@@ -34416,6 +34503,11 @@ button.small-apc-receiving-queue__item:hover {
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.58);
   border: 1px solid rgba(71, 109, 86, 0.09);
+}
+
+.housing-storage-detail-row__stats strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .housing-storage-detail-empty {
@@ -35741,13 +35833,13 @@ button.small-apc-receiving-queue__item:hover {
 
 .housing-interior-prepared-meal-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 10px;
 }
 
 .housing-interior-prepared-meal-card {
-  min-height: 112px;
-  padding: 12px;
+  min-height: 178px;
+  padding: 8px 10px 10px;
   border-radius: 12px;
   background:
     radial-gradient(circle at 14% 12%, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0) 38%),
@@ -35756,63 +35848,73 @@ button.small-apc-receiving-queue__item:hover {
   box-shadow:
     0 10px 22px rgba(38, 84, 59, 0.06),
     inset 0 0 0 1px rgba(255, 255, 255, 0.64);
-  display: grid;
-  grid-template-columns: 58px minmax(0, 1fr) 72px;
-  align-items: stretch;
-  justify-content: initial;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+  gap: 4px;
 }
 
 .housing-interior-prepared-meal-card__thumb {
-  width: 58px;
-  height: 58px;
-  flex-basis: 58px;
-  border-radius: 12px;
-  background:
-    radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.96), rgba(244, 249, 241, 0.68) 72%);
+  width: 124px;
+  height: 116px;
+  flex: 0 0 116px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+.housing-interior-prepared-meal-card__thumb > img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .housing-interior-prepared-meal-card__meta {
-  min-height: 58px;
+  width: 100%;
+  min-height: 0;
   flex-direction: column;
   flex-wrap: nowrap;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  gap: 6px 10px;
+  gap: 3px;
+  flex: 0 0 auto;
+}
+
+.housing-interior-prepared-meal-card__actions {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: -2px;
 }
 
 .housing-interior-placeholder-item__meta > .housing-interior-prepared-meal-card__name {
   width: 100%;
   flex: 0 1 auto;
-  font-size: 0.92rem;
+  font-size: 0.78rem;
   font-weight: 900;
   color: #315f46;
-}
-
-.housing-interior-prepared-meal-card__actions {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 8px;
-}
-
-.housing-interior-prepared-meal-card__actions > strong {
-  color: #214c35;
-  font-size: 0.92rem;
-  font-weight: 900;
-  line-height: 1;
-  white-space: nowrap;
+  text-align: center;
 }
 
 .housing-interior-prepared-meal-card__button {
-  width: 58px;
-  min-width: 58px;
-  min-height: 34px;
-  border-radius: 999px;
+  width: 52px;
+  min-width: 52px;
+  min-height: 28px;
+  border-radius: 8px;
+  padding: 5px 10px;
+  background: rgba(255, 253, 247, 0.94);
+  box-shadow:
+    0 6px 14px rgba(33, 54, 42, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.72);
 }
 
 .housing-interior-prepared-meal-empty {
+  grid-column: 1 / -1;
   min-height: 96px;
   border-radius: 12px;
   border: 1px dashed rgba(71, 109, 86, 0.16);
@@ -35822,6 +35924,18 @@ button.small-apc-receiving-queue__item:hover {
   place-items: center;
   font-size: 0.88rem;
   font-weight: 850;
+}
+
+@media (max-width: 980px) {
+  .housing-interior-prepared-meal-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .housing-interior-prepared-meal-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .housing-interior-placeholder-move-actions {
@@ -52863,5 +52977,49 @@ button.small-apc-receiving-queue__item:hover {
 @media (max-width: 760px) {
   .facility-storage-harvest-detail-card__metric-card--full {
     grid-column: auto;
+  }
+}
+
+.housing-interior-placeholder-grid--breaker {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.housing-interior-breaker-card:has(.housing-breaker-direct) {
+  display: block;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.housing-breaker-direct {
+  display: block;
+  width: min(1040px, 100%);
+  height: min(680px, 72vh);
+  margin: 0 auto;
+  padding: 0;
+  border: 0;
+  border-radius: 24px;
+  background: transparent;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.housing-breaker-direct:disabled {
+  cursor: default;
+}
+
+.housing-breaker-direct__frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 760px) {
+  .housing-breaker-direct {
+    height: 520px;
   }
 }

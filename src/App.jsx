@@ -93,6 +93,7 @@ import COLD_STORAGE_OUTDOOR_IMAGE from './assets/images/시설/저온저장고/�
 import PANEL_COOLING_BLOWER_IMAGE from './assets/images/시설/저온저장고/냉풍기.png';
 import PANEL_COOLING_OUTDOOR_IMAGE from './assets/images/시설/저온저장고/실외기.png';
 import MANUAL_CARRY_IMAGE from './assets/images/아이템/맨손이미지.png';
+import PERSONAL_CARRY_IMAGE from './assets/images/개인소지품.png';
 import DISASSEMBLED_SORTING_MACHINE_IMAGE from './assets/images/아이템/분해된 선별기.png';
 import APPLE_SORTING_RULES_MARKDOWN from '../docs/apple-sorting-rules.md?raw';
 import HARVEST_PALLET_MOVE_RULES_MARKDOWN from '../docs/harvest-pallet-move-rules.md?raw';
@@ -4705,10 +4706,17 @@ const applyHousingInstalledNaturalWear = (prev = {}) => {
 const HOME_LIVING_CLOTHING_TABS = Object.freeze([
   ['all', '🧥 전체'],
   ['head', '⛑️ 머리'],
+  ['eyes', '🥽 눈'],
   ['face', '😷 얼굴'],
+  ['ears', '🎧 귀'],
   ['upper', '🧥 상의'],
+  ['vest', '🦺 조끼'],
+  ['bag', '🎒 가방'],
   ['lower', '👖 하의'],
+  ['arms', '💪 팔'],
   ['hands', '🧤 손'],
+  ['waist', '🩻 허리'],
+  ['knees', '🦵 무릎'],
   ['feet', '🥾 발']
 ]);
 
@@ -5506,7 +5514,7 @@ const MACHINE_PARKING_IMAGE_SRC_CACHE = new Map();
 const machineImageSrcOfParkingState = (machine, gameState) => {
   if (!machine) return '';
   if (String(machine?.id || '') === MAP_TRANSFER_PERSONAL_CARRIER_ID || String(machine?.machineKey || '') === 'personalCarry') {
-    return new URL('./assets/images/개인소지품.png', import.meta.url).href;
+    return PERSONAL_CARRY_IMAGE;
   }
   const machineKey = String(machine?.machineKey || machine?.item?.key || '');
   const attachmentMode = ssAttachmentModeOfGameState(gameState, String(machine?.id || ''));
@@ -13195,6 +13203,18 @@ const sanitizeAccountPreferences = (raw = {}) => (
   sanitizeAccountPreferencesFromModule(raw, AUTO_RESTORE_VIEW_CONFIG)
 );
 const DEV_AUTO_PAGE_RELOAD_STORAGE_KEY = 'orchard_dev_auto_page_reload';
+const HOUSING_EXIT_BUTTON_POSITION_STORAGE_KEY = 'orchard_housing_exit_button_position';
+const readLocalHousingExitButtonPosition = () => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(HOUSING_EXIT_BUTTON_POSITION_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(String(raw));
+    return normalizeHousingExitButtonPosition(parsed);
+  } catch {
+    return null;
+  }
+};
 const readDevAutoPageReloadEnabled = () => {
   if (typeof window === 'undefined') return true;
   try {
@@ -18241,6 +18261,7 @@ const ANIMATION_LAB_PRESET_SAVE_TARGET_BY_KEY = Object.freeze({
   nextDayTransition: { type: 'inline', constName: 'ANIMATION_LAB_NEXT_DAY_HTML' },
   dayNightSlider: { type: 'raw', sourceFile: 'src/data/animationLabDayNightSlider.html' },
   appLongPress: { type: 'raw', sourceFile: 'src/data/animationLabAppLongPress.html' },
+  industrialControlPanel: { type: 'raw', sourceFile: 'src/data/animationLabIndustrialControlPanel.html' },
   cardPayment: { type: 'raw', sourceFile: 'src/data/animationLabCardPayment.html' },
   cardPaymentNew: { type: 'raw', sourceFile: 'src/data/animationLabCardPaymentNew.html' },
   bankTransfer: { type: 'inline', constName: 'ANIMATION_LAB_BANK_TRANSFER_HTML' },
@@ -20938,7 +20959,7 @@ export default function App() {
   const [townMarkerCoordsLocked, setTownMarkerCoordsLocked] = useState(true);
   const [townMarkerLayoutSavedAtDay, setTownMarkerLayoutSavedAtDay] = useState(0);
   const [housingEntryButtonSavedPosition, setHousingEntryButtonSavedPosition] = useState(DEFAULT_HOUSING_ENTRY_BUTTON_POSITION);
-  const [housingExitButtonSavedPosition, setHousingExitButtonSavedPosition] = useState(DEFAULT_HOUSING_EXIT_BUTTON_POSITION);
+  const [housingExitButtonSavedPosition, setHousingExitButtonSavedPosition] = useState(() => readLocalHousingExitButtonPosition() || DEFAULT_HOUSING_EXIT_BUTTON_POSITION);
   const [housingEntryButtonDragEnabled, setHousingEntryButtonDragEnabled] = useState(false);
   const [farmNameDraft, setFarmNameDraft] = useState('과수 타이쿤');
   const [playerNameDraft, setPlayerNameDraft] = useState('청년 농부');
@@ -21455,7 +21476,7 @@ export default function App() {
   const [housingDoorAnimationModal, setHousingDoorAnimationModal] = useState(null);
   const [warehouseDoorAnimationModal, setWarehouseDoorAnimationModal] = useState(null);
   const [housingEntryButtonDraftPosition, setHousingEntryButtonDraftPosition] = useState(DEFAULT_HOUSING_ENTRY_BUTTON_POSITION);
-  const [housingExitButtonDraftPosition, setHousingExitButtonDraftPosition] = useState(DEFAULT_HOUSING_EXIT_BUTTON_POSITION);
+  const [housingExitButtonDraftPosition, setHousingExitButtonDraftPosition] = useState(() => readLocalHousingExitButtonPosition() || DEFAULT_HOUSING_EXIT_BUTTON_POSITION);
   const [pendingFacilityDemolition, setPendingFacilityDemolition] = useState(null);
   const [landFacilityDetailModal, setLandFacilityDetailModal] = useState({ open: false, facilityKey: '', unitIndex: 0, isTankUnitCard: false });
   const [pendingLaborConfirm, setPendingLaborConfirm] = useState(null);
@@ -22699,6 +22720,8 @@ body { display: flex !important; align-items: center !important; justify-content
     normalizePosition: normalizeHousingExitButtonPosition,
     positionPreferenceKey: 'housingExitButtonPosition',
     dragEnabledPreferenceKey: 'housingEntryButtonDragEnabled',
+    defaultPositionSaveEndpoint: '/__dev/housing-exit-button-default',
+    localStorageKey: HOUSING_EXIT_BUTTON_POSITION_STORAGE_KEY,
     alertLabel: '하우징 나가기 버튼 위치',
     logLabel: 'housing_exit_button_layout',
   });
@@ -28620,7 +28643,7 @@ body { display: flex !important; align-items: center !important; justify-content
         const machine = instanceId ? resolveMachineInstanceById(instanceId) : null;
         if (!machine) return null;
         const payloadKg = Math.max(0, Number(machine?.item?.payloadKg) || Number(machine?.payloadKg) || 0);
-        if (payloadKg <= 0) return null;
+        if (payloadKg <= 0 || isForkliftMachineLike(machine)) return null;
         const carrierId = String(machine?.id || '');
         const cargoByKey = normalizeCargoByItemKey(game?.vehicleCargoByInstance?.[carrierId] || {});
         const items = Object.entries(cargoByKey)
@@ -28768,13 +28791,21 @@ body { display: flex !important; align-items: center !important; justify-content
       '',
       { type: 'carrier', carrierId: MAP_TRANSFER_PERSONAL_CARRIER_ID }
     );
+    const storageSourceUsedKgOfItems = (items = []) => (
+      (Array.isArray(items) ? items : []).reduce((sum, item) => (
+        sum + (Math.max(0, Number(item?.qty) || 0) * Math.max(0, Number(item?.weightKg) || 0))
+      ), 0)
+    );
+    const bagUsedKg = storageSourceUsedKgOfItems(bagItems);
     const bagRow = {
       sourceType: 'carrier',
       sourceKey: MAP_TRANSFER_PERSONAL_CARRIER_ID,
       sourceName: '개인소지품',
       sourceDetail: bagItems.length ? `현재 들고 있는 짐 · ${bagItems.length}종` : '현재 들고 있는 짐 없음',
-      sourceImageSrc: '',
+      sourceImageSrc: PERSONAL_CARRY_IMAGE,
       sourceIcon: '🧺',
+      usedKg: bagUsedKg,
+      capacityKg: MAP_TRANSFER_PERSONAL_PAYLOAD_KG,
       items: bagItems
     };
     const fridgeItems = buildStorageItemRows(selectedField?.housingFoodStorageByFacilityKey?.[housingFacilityKey] || {});
@@ -28808,6 +28839,8 @@ body { display: flex !important; align-items: center !important; justify-content
           facilityKey,
           { type: 'warehouse', fieldId, facilityKey }
         );
+        const capacityKg = Math.max(0, storageCapacityKgTotalOfFieldFacility(selectedField, facilityKey));
+        const usedKg = storageSourceUsedKgOfItems(items);
         return {
           sourceType: 'warehouse',
           sourceKey: facilityKey,
@@ -28815,6 +28848,8 @@ body { display: flex !important; align-items: center !important; justify-content
           sourceDetail: items.length ? `현재 토지 창고 · ${items.length}종` : '현재 토지 창고 · 보관품 없음',
           sourceImageSrc: constructionFacilityImageSrcOf(facilityKey),
           sourceIcon: '🏚️',
+          usedKg,
+          capacityKg,
           items
         };
       })
@@ -28824,7 +28859,7 @@ body { display: flex !important; align-items: center !important; justify-content
         const machine = instanceId ? resolveMachineInstanceById(instanceId) : null;
         if (!machine) return null;
         const payloadKg = Math.max(0, Number(machine?.item?.payloadKg) || Number(machine?.payloadKg) || 0);
-        if (payloadKg <= 0) return null;
+        if (payloadKg <= 0 || isForkliftMachineLike(machine)) return null;
         const carrierId = String(machine?.id || '');
         if (!carrierId) return null;
         const items = buildStorageItemRows(
@@ -28840,6 +28875,8 @@ body { display: flex !important; align-items: center !important; justify-content
           sourceDetail: items.length ? `주차 ${idx + 1}번 · 차량 적재함 · ${items.length}종` : `주차 ${idx + 1}번 · 차량 적재함 비어있음`,
           sourceImageSrc: machineImageSrcOfParkingState(machine, game),
           sourceIcon: '🚗',
+          usedKg: carrierCargoUsedKgByInstance(game, carrierId),
+          capacityKg: payloadKg,
           items
         };
       })
@@ -29312,7 +29349,7 @@ body { display: flex !important; align-items: center !important; justify-content
         .filter((row) => row?.itemKey && row?.type);
     });
     return [
-      ...buildRows(housingInteriorBagRows, 'carrier', MAP_TRANSFER_PERSONAL_CARRIER_ID, '개인소지품', '현재 들고 있는 개인 소지품', '', '🧳'),
+      ...buildRows(housingInteriorBagRows, 'carrier', MAP_TRANSFER_PERSONAL_CARRIER_ID, '개인소지품', '현재 들고 있는 개인 소지품', PERSONAL_CARRY_IMAGE, '🧳'),
       ...vehicleSourceRows,
       ...fieldFacilitySourceRows
     ];
@@ -29626,7 +29663,27 @@ body { display: flex !important; align-items: center !important; justify-content
     });
     const fridgeStorageMap = normalizeHousingFoodStorageByItemKey(selectedField?.housingFoodStorageByFacilityKey?.[facilityKey] || {});
     const freezerStorageMap = normalizeHousingFoodStorageByItemKey(selectedField?.housingFreezerFoodStorageByFacilityKey?.[facilityKey] || {});
-    const plateOptionRows = buildHousingMealPlateOptionRows(fridgeStorageMap);
+    const rawPlateOptionRows = buildHousingMealPlateOptionRows(fridgeStorageMap);
+    const plateOptionRows = Object.fromEntries(
+      Object.entries(rawPlateOptionRows || {}).map(([slotKey, rows]) => [
+        slotKey,
+        (Array.isArray(rows) ? rows : []).map((option) => {
+          const firstIngredientKey = Array.isArray(option?.ingredients)
+            ? String(option.ingredients[0]?.itemKey || '')
+            : Object.keys(option?.ingredients || {})[0] || '';
+          return {
+            ...option,
+            imageSrc: String(
+              option?.imageSrc
+              || findItemImageSrcByKeywords([option?.name])
+              || toolImageSrcOf(String(option?.key || ''))
+              || toolImageSrcOf(firstIngredientKey)
+              || ''
+            )
+          };
+        })
+      ])
+    );
     const availableWaterLiters = Math.max(0, Number(housingWaterInfo?.availableLiters) || 0);
     const applyWaterAvailability = (row) => {
       const waterLiters = Math.max(0, Number(row?.waterLiters) || 0);
@@ -58280,7 +58337,7 @@ const requestRepairEquipment = (itemKey) => {
     setShopCartByKey(inflateRestorableShopCartByKey(preferences.shopCartByKey || preferencesRaw?.shopCartByKey || {}));
     setAccountPhoneHelperChatMessages(normalizeAppleHelperChatThreads({}));
     setHousingEntryButtonSavedPosition(preferences.housingEntryButtonPosition);
-    setHousingExitButtonSavedPosition(preferences.housingExitButtonPosition);
+    setHousingExitButtonSavedPosition(readLocalHousingExitButtonPosition() || preferences.housingExitButtonPosition);
     setHousingEntryButtonDragEnabled(preferences.housingEntryButtonDragEnabled);
     setTownMarkerSavedPositions(normalizeTownMarkerPreferencePositions(preferences.townMarkerPositions || {}));
     setTownMarkerCoordsLocked(preferences.townMarkerCoordsLocked !== false);
@@ -58303,7 +58360,7 @@ const requestRepairEquipment = (itemKey) => {
     setTownMarkerLayoutSavedAtDay(0);
     setShopCartByKey({});
     setHousingEntryButtonSavedPosition(DEFAULT_HOUSING_ENTRY_BUTTON_POSITION);
-    setHousingExitButtonSavedPosition(DEFAULT_HOUSING_EXIT_BUTTON_POSITION);
+    setHousingExitButtonSavedPosition(readLocalHousingExitButtonPosition() || DEFAULT_HOUSING_EXIT_BUTTON_POSITION);
     setHousingEntryButtonDragEnabled(false);
     setAuthModalOpen(false);
     setAuthStatus({ ...AUTH_EMPTY_STATUS });
