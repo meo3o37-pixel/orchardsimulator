@@ -257,10 +257,10 @@ const loadAuthSessionStore = () => {
       if (!session) continue;
       const previousToken = accountActiveTokenByUserId.get(session.userId);
       const previousSession = previousToken ? accountSessionByToken.get(previousToken) : null;
-      if (previousSession && Number(previousSession.createdAt || 0) > session.createdAt) continue;
-      if (previousToken) accountSessionByToken.delete(previousToken);
       accountSessionByToken.set(session.token, session);
-      accountActiveTokenByUserId.set(session.userId, session.token);
+      if (!previousSession || Number(previousSession.createdAt || 0) <= session.createdAt) {
+        accountActiveTokenByUserId.set(session.userId, session.token);
+      }
     }
     if (pruneExpiredAuthSessions()) {
       persistAuthSessionStore();
@@ -287,6 +287,20 @@ const buildInvalidSessionPayload = (token = '') => {
   const safeToken = String(token || '').trim();
   const reason = safeToken && accountSessionByToken.size === 0 ? 'server_restarted' : 'session_replaced';
   return { ok: false, error: 'invalid_session', reason };
+};
+const authTokenDebugLabel = (token = '') => {
+  const safeToken = String(token || '').trim();
+  return safeToken ? safeToken.slice(0, 8) : 'none';
+};
+const authRequestDebugDetail = (req, patch = {}) => {
+  const explicitToken = getExplicitAuthTokenFromRequest(req);
+  const cookieToken = parseCookies(req?.headers?.cookie || '')?.[AUTH_COOKIE_NAME] || '';
+  return [
+    `explicit=${authTokenDebugLabel(explicitToken)}`,
+    `cookie=${authTokenDebugLabel(cookieToken)}`,
+    `sessions=${accountSessionByToken.size}`,
+    ...Object.entries(patch || {}).map(([key, value]) => `${key}=${String(value || '')}`)
+  ].join(' ');
 };
 
 const writeAuthLoginLog = async (req, patch = {}) => {
@@ -863,8 +877,6 @@ const invalidateSession = (token) => {
 };
 const createSession = (account) => {
   const userId = String(account?.id || '');
-  const previousToken = accountActiveTokenByUserId.get(userId);
-  if (previousToken) invalidateSession(previousToken);
   const token = randomBytes(24).toString('hex');
   const session = {
     token,
@@ -906,9 +918,12 @@ const getExplicitAuthTokenFromRequest = (req) => {
 const getSessionFromRequest = (req) => {
   pruneExpiredAuthSessions();
   const cookieToken = parseCookies(req?.headers?.cookie || '')?.[AUTH_COOKIE_NAME] || '';
-  const token = String(getExplicitAuthTokenFromRequest(req) || cookieToken || '').trim();
-  if (!token) return null;
-  return accountSessionByToken.get(token) || null;
+  const explicitToken = String(getExplicitAuthTokenFromRequest(req) || '').trim();
+  const sessionFromExplicitToken = explicitToken ? (accountSessionByToken.get(explicitToken) || null) : null;
+  if (sessionFromExplicitToken) return sessionFromExplicitToken;
+  const safeCookieToken = String(cookieToken || '').trim();
+  if (!safeCookieToken || safeCookieToken === explicitToken) return null;
+  return accountSessionByToken.get(safeCookieToken) || null;
 };
 const readAccountSaveState = async (session) => {
   const filePath = accountSaveFileOf(session?.userId);
@@ -1520,6 +1535,22 @@ const animationLabPresetSavePlugin = () => ({
           return;
         }
 
+        if (routePath === '/__auth/client-diagnostic') {
+          if (req.method !== 'POST') {
+            sendJson(405, { ok: false, error: 'method_not_allowed' });
+            return;
+          }
+          await writeAuthLoginLog(req, {
+            event: 'client_diagnostic',
+            result: String(req.__body?.result || 'info'),
+            username: String(req.__body?.username || ''),
+            userId: String(req.__body?.userId || ''),
+            detail: JSON.stringify(req.__body?.detail || {})
+          });
+          sendJson(200, { ok: true });
+          return;
+        }
+
         if (routePath === '/__auth/login') {
           if (req.method !== 'POST') {
             sendJson(405, { ok: false, error: 'method_not_allowed' });
@@ -1595,13 +1626,29 @@ const animationLabPresetSavePlugin = () => ({
         if (routePath === '/__auth/session') {
           const token = getExplicitAuthTokenFromRequest(req);
           pruneExpiredAuthSessions();
-          const session = token ? (accountSessionByToken.get(token) || null) : null;
+          const session = getSessionFromRequest(req);
           if (!session) {
+            await writeAuthLoginLog(req, {
+              event: 'session_restore',
+              result: 'invalid_session',
+              detail: authRequestDebugDetail(req, { reason: buildInvalidSessionPayload(token).reason })
+            });
             res.setHeader('Set-Cookie', expiredAuthCookieHeader());
             sendJson(401, buildInvalidSessionPayload(token));
             return;
           }
           const saveState = await readAccountSaveState(session);
+          await writeAuthLoginLog(req, {
+            event: 'session_restore',
+            result: 'success',
+            username: String(session.username || ''),
+            userId: String(session.userId || ''),
+            detail: authRequestDebugDetail(req, {
+              slotCount: Object.keys(saveState.slots || {}).length,
+              lastScreen: saveState.preferences?.lastViewState?.screen || '',
+              lastSlot: saveState.preferences?.lastActiveSaveSlot ?? ''
+            })
+          });
           sendJson(200, {
             ok: true,
             session,

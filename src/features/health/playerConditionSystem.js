@@ -1,3 +1,5 @@
+import { CLOTHING_ITEMS } from '../../config/items/clothing';
+
 const clampValue = (value, min = 0, max = 100) => Math.min(max, Math.max(min, value));
 
 const CONDITION_MAX_DAYS = 14;
@@ -21,12 +23,12 @@ const normalizeConditionMap = (raw = {}, defs = {}) => {
 };
 
 export const PLAYER_INJURY_DEFS = Object.freeze({
-  handCut: { label: '손 베임', baseDays: 2, healthLoss: 2.5, slots: ['gloves'] },
-  eyeIrritation: { label: '눈 이물감', baseDays: 2, healthLoss: 2.2, slots: ['eyes'] },
-  slipBruise: { label: '미끄러짐', baseDays: 3, healthLoss: 3.5, slots: ['shoes'] },
-  backStrain: { label: '허리 삠', baseDays: 4, healthLoss: 4.0, slots: [] },
+  handCut: { label: '손 베임', baseDays: 2, healthLoss: 2.5, slots: ['gloves', 'hand'] },
+  eyeIrritation: { label: '눈 이물감', baseDays: 2, healthLoss: 2.2, slots: ['eyes', 'face'] },
+  slipBruise: { label: '미끄러짐', baseDays: 3, healthLoss: 3.5, slots: ['shoes', 'foot'] },
+  backStrain: { label: '허리 삠', baseDays: 4, healthLoss: 4.0, slots: ['back', 'upper'] },
   headBump: { label: '머리 부딪힘', baseDays: 3, healthLoss: 3.0, slots: ['head'] },
-  chemicalExposure: { label: '약제 노출', baseDays: 3, healthLoss: 4.5, slots: ['face', 'eyes', 'gloves'] }
+  chemicalExposure: { label: '약제 노출', baseDays: 3, healthLoss: 4.5, slots: ['face', 'eyes', 'gloves', 'chemical', 'splash'] }
 });
 
 export const PLAYER_ILLNESS_DEFS = Object.freeze({
@@ -157,12 +159,46 @@ const taskRiskProfileOf = (taskKeyRaw = '') => {
   return { injuryKey: 'slipBruise', baseRisk: 0.008 };
 };
 
+const CLOTHING_PROTECTION_BY_KEY = Object.freeze(
+  (CLOTHING_ITEMS || []).reduce((acc, item) => {
+    const key = String(item?.key || '');
+    if (!key) return acc;
+    acc[key] = item?.protection && typeof item.protection === 'object' && !Array.isArray(item.protection)
+      ? item.protection
+      : {};
+    return acc;
+  }, {})
+);
+
+const PROTECTION_ALIAS_BY_KEY = Object.freeze({
+  hand: ['gloves'],
+  eyes: ['face'],
+  foot: ['shoes'],
+  upperBody: ['upper'],
+  lowerBody: ['lower'],
+  chemical: ['face'],
+  splash: ['eyes', 'face'],
+  back: ['upper'],
+  knee: ['lower']
+});
+
+const addProtectionToken = (tokens, tokenRaw = '') => {
+  const token = String(tokenRaw || '');
+  if (!token) return;
+  tokens.add(token);
+  (PROTECTION_ALIAS_BY_KEY[token] || []).forEach((alias) => tokens.add(alias));
+};
+
 const equippedSlotSetOf = (field = null) => {
   const byFacility = field?.housingClothingEquipmentsByFacilityKey || {};
   const slots = new Set();
   Object.values(byFacility || {}).forEach((slotMap) => {
     Object.entries(slotMap || {}).forEach(([slotKey, itemKey]) => {
-      if (itemKey) slots.add(String(slotKey || ''));
+      if (!itemKey) return;
+      addProtectionToken(slots, slotKey);
+      Object.keys(CLOTHING_PROTECTION_BY_KEY[String(itemKey || '')] || {}).forEach((protectionKey) => {
+        addProtectionToken(slots, protectionKey);
+      });
     });
   });
   return slots;

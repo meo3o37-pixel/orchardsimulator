@@ -9,6 +9,23 @@ export const FOOD_MART_ITEMS = [
     weightKg: 2
   },
   {
+    key: 'emptyWaterBottle2L',
+    name: '빈생수통 2L',
+    price: 0,
+    desc: '생수 2L를 다 마신 뒤 남는 빈 플라스틱 병 · 무게 0.06kg',
+    unit: '병',
+    subgroup: 'living'
+  },
+  {
+    key: 'emptyPetBottle15L',
+    name: '빈 페트병 1.5L',
+    price: 0,
+    desc: '1.5L 페트병 음료를 다 마신 뒤 남는 빈 플라스틱 병 · 무게 0.045kg',
+    unit: '병',
+    subgroup: 'living',
+    weightKg: 0.045
+  },
+  {
     key: 'foodSportsDrink15L',
     name: '이온음료 1.5L',
     price: 3200,
@@ -934,5 +951,23 @@ export const FOOD_MART_ITEMS = [
     unit: '팩',
     subgroup: 'living',
     weightKg: 2.7
+  },
+  {
+    key: 'foodButaneGasCan220g',
+    name: '부탄가스 220g',
+    price: 1800,
+    desc: '휴대용 가스버너에 쓰는 일회용 부탄가스 캔',
+    unit: '캔',
+    subgroup: 'living',
+    weightKg: 0.34
+  },
+  {
+    key: 'foodButaneGasCan4Pack',
+    name: '부탄가스 4입',
+    price: 6800,
+    desc: '휴대용 가스버너용 부탄가스 4캔 묶음',
+    unit: '팩',
+    subgroup: 'living',
+    weightKg: 1.36
   }
 ];

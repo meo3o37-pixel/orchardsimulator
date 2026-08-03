@@ -159,11 +159,12 @@ export default function PhoneQuickDrawer({
   setAutoSaveEnabled,
   autoRestoreViewEnabled,
   setAutoRestoreViewEnabled,
-  showHousingDevSettings,
   housingEntryButtonDragEnabled,
   toggleHousingEntryButtonDragEnabled,
   housingEntryButtonPositionDirty,
   saveHousingEntryButtonLayout,
+  housingExitButtonPositionDirty,
+  saveHousingExitButtonLayout,
   townMarkerCoordsLocked,
   toggleTownMarkerCoordsLocked,
   smallApcDevPlayerUnloadSkipEnabled,
@@ -286,6 +287,7 @@ export default function PhoneQuickDrawer({
     quickPrompts: []
   };
   const PHONE_NOTIFICATION_DELETE_THRESHOLD = -76;
+  const PHONE_LOCK_NOTIFICATION_DISMISS_UP_THRESHOLD = -46;
   const phoneHasOpenApp = Boolean(phoneOpenedApp);
   const phoneAppTransitionClass = phoneAppTransitionPhase === 'opening'
     ? 'is-opening'
@@ -723,6 +725,7 @@ export default function PhoneQuickDrawer({
   const [devLanguageModelPanelOpen, setDevLanguageModelPanelOpen] = React.useState(false);
   const [selectedMessageThread, setSelectedMessageThread] = React.useState(null);
   const [lockNotificationSwipeOffsetById, setLockNotificationSwipeOffsetById] = React.useState({});
+  const [lockNotificationSwipeUpOffsetById, setLockNotificationSwipeUpOffsetById] = React.useState({});
   const [messageSwipeOffsetById, setMessageSwipeOffsetById] = React.useState({});
   const [removingLockNotificationId, setRemovingLockNotificationId] = React.useState('');
   const [removingMessageNotificationId, setRemovingMessageNotificationId] = React.useState('');
@@ -731,7 +734,8 @@ export default function PhoneQuickDrawer({
     pointerId: null,
     startX: 0,
     startY: 0,
-    engaged: false
+    engaged: false,
+    mode: ''
   });
   const messageSwipeRef = React.useRef({
     id: '',
@@ -1080,6 +1084,11 @@ export default function PhoneQuickDrawer({
         delete next[targetId];
         return next;
       });
+      setLockNotificationSwipeUpOffsetById((prev) => {
+        const next = { ...prev };
+        delete next[targetId];
+        return next;
+      });
       setRemovingLockNotificationId((current) => (current === targetId ? '' : current));
       lockNotificationRemoveTimerRef.current = null;
     }, 180);
@@ -1113,6 +1122,12 @@ export default function PhoneQuickDrawer({
       delete next[targetId];
       return next;
     });
+    setLockNotificationSwipeUpOffsetById((prev) => {
+      if (!(targetId in prev)) return prev;
+      const next = { ...prev };
+      delete next[targetId];
+      return next;
+    });
   }, []);
   const resetMessageSwipe = React.useCallback((id) => {
     const targetId = String(id || '');
@@ -1130,7 +1145,8 @@ export default function PhoneQuickDrawer({
       pointerId: event.pointerId,
       startX: Number(event.clientX) || 0,
       startY: Number(event.clientY) || 0,
-      engaged: false
+      engaged: false,
+      mode: ''
     };
     event.currentTarget?.setPointerCapture?.(event.pointerId);
   }, []);
@@ -1140,14 +1156,40 @@ export default function PhoneQuickDrawer({
     if (drag.id !== targetId || drag.pointerId !== event.pointerId) return;
     event.stopPropagation();
     const deltaX = (Number(event.clientX) || 0) - drag.startX;
-    const deltaY = Math.abs((Number(event.clientY) || 0) - drag.startY);
-    const engaged = drag.engaged || (deltaX < -8 && Math.abs(deltaX) > (deltaY * 1.15));
-    lockNotificationSwipeRef.current = { ...drag, engaged };
+    const deltaY = (Number(event.clientY) || 0) - drag.startY;
+    const absDeltaX = Math.abs(deltaX);
+    const absDeltaY = Math.abs(deltaY);
+    const mode = drag.mode || (
+      deltaX < -8 && absDeltaX > (absDeltaY * 1.15)
+        ? 'left'
+        : (deltaY < -8 && absDeltaY > (absDeltaX * 1.15) ? 'up' : '')
+    );
+    const engaged = drag.engaged || Boolean(mode);
+    lockNotificationSwipeRef.current = { ...drag, engaged, mode };
     if (!engaged) return;
+    if (mode === 'up') {
+      setLockNotificationSwipeUpOffsetById((prev) => ({
+        ...prev,
+        [targetId]: Math.max(-76, Math.min(0, deltaY))
+      }));
+      setLockNotificationSwipeOffsetById((prev) => {
+        if (!(targetId in prev)) return prev;
+        const next = { ...prev };
+        delete next[targetId];
+        return next;
+      });
+      return;
+    }
     setLockNotificationSwipeOffsetById((prev) => ({
       ...prev,
       [targetId]: Math.max(-96, Math.min(0, deltaX))
     }));
+    setLockNotificationSwipeUpOffsetById((prev) => {
+      if (!(targetId in prev)) return prev;
+      const next = { ...prev };
+      delete next[targetId];
+      return next;
+    });
   }, []);
   const handleLockNotificationPointerUp = React.useCallback((event, id) => {
     const drag = lockNotificationSwipeRef.current;
@@ -1163,14 +1205,27 @@ export default function PhoneQuickDrawer({
       pointerId: null,
       startX: 0,
       startY: 0,
-      engaged: false
+      engaged: false,
+      mode: ''
     };
+    const finalUpOffset = Number(lockNotificationSwipeUpOffsetById[targetId] || 0);
+    if (finalUpOffset <= PHONE_LOCK_NOTIFICATION_DISMISS_UP_THRESHOLD) {
+      scheduleLockNotificationRemoval(targetId);
+      return;
+    }
     if (finalOffset <= PHONE_NOTIFICATION_DELETE_THRESHOLD) {
       scheduleLockNotificationRemoval(targetId);
       return;
     }
     resetLockNotificationSwipe(targetId);
-  }, [PHONE_NOTIFICATION_DELETE_THRESHOLD, lockNotificationSwipeOffsetById, resetLockNotificationSwipe, scheduleLockNotificationRemoval]);
+  }, [
+    PHONE_LOCK_NOTIFICATION_DISMISS_UP_THRESHOLD,
+    PHONE_NOTIFICATION_DELETE_THRESHOLD,
+    lockNotificationSwipeOffsetById,
+    lockNotificationSwipeUpOffsetById,
+    resetLockNotificationSwipe,
+    scheduleLockNotificationRemoval
+  ]);
   const handleMessagePointerDown = React.useCallback((event, id) => {
     messageSwipeRef.current = {
       id: String(id || ''),
@@ -2008,6 +2063,7 @@ export default function PhoneQuickDrawer({
                     <div className="phone-galaxy-lock-notifications" role="list" aria-label="잠금화면 알림">
                       {phoneLockNotifications.map((entry) => {
                         const swipeOffset = Number(lockNotificationSwipeOffsetById[String(entry.id || '')] || 0);
+                        const swipeUpOffset = Number(lockNotificationSwipeUpOffsetById[String(entry.id || '')] || 0);
                         const deleteRevealProgress = Math.max(0, Math.min(1, Math.abs(swipeOffset) / 88));
                         return (
                         <div
@@ -2037,7 +2093,7 @@ export default function PhoneQuickDrawer({
                           <button
                             type="button"
                             className={`phone-galaxy-lock-notification ${entry.read ? '' : 'is-unread'}`.trim()}
-                            style={{ transform: `translateX(${swipeOffset}px)` }}
+                            style={{ transform: `translate(${swipeOffset}px, ${swipeUpOffset}px)` }}
                             onClick={(event) => {
                               event.stopPropagation();
                               if (swipeOffset <= -8) {
@@ -3331,36 +3387,45 @@ export default function PhoneQuickDrawer({
                             ))}
                           </div>
                         ) : null}
-                        {devMode && showHousingDevSettings ? (
-                          <div className="phone-galaxy-settings-app__dev-tool-panel">
-                            <strong>하우징</strong>
-                            <div className="phone-galaxy-settings-app__row">
-                              <span>하우징 버튼 위치 드래그</span>
-                              <button
-                                type="button"
-                                className={`phone-galaxy-settings-app__toggle ${housingEntryButtonDragEnabled ? 'is-on' : ''}`.trim()}
-                                onClick={() => toggleHousingEntryButtonDragEnabled?.()}
-                              >
-                                {housingEntryButtonDragEnabled ? 'ON' : 'OFF'}
-                              </button>
-                            </div>
-                            <div className="phone-galaxy-settings-app__row">
-                              <span>들어가기 위치 고정</span>
-                              <button
-                                type="button"
-                                className="phone-galaxy-settings-app__mini-btn"
-                                onClick={() => saveHousingEntryButtonLayout?.()}
-                                disabled={!housingEntryButtonPositionDirty}
-                              >
-                                고정
-                              </button>
-                            </div>
-                            <div className="phone-galaxy-settings-app__row">
-                              <span>위치 상태</span>
-                              <em>{housingEntryButtonPositionDirty ? '조정 후 미고정' : '고정됨'}</em>
-                            </div>
+                        <div className="phone-galaxy-settings-app__dev-tool-panel">
+                          <strong>하우징</strong>
+                          <div className="phone-galaxy-settings-app__row">
+                            <span>하우징 버튼 위치 드래그</span>
+                            <button
+                              type="button"
+                              className={`phone-galaxy-settings-app__toggle ${housingEntryButtonDragEnabled ? 'is-on' : ''}`.trim()}
+                              onClick={() => toggleHousingEntryButtonDragEnabled?.()}
+                            >
+                              {housingEntryButtonDragEnabled ? 'ON' : 'OFF'}
+                            </button>
                           </div>
-                        ) : null}
+                          <div className="phone-galaxy-settings-app__row">
+                            <span>들어가기 위치 고정</span>
+                            <button
+                              type="button"
+                              className="phone-galaxy-settings-app__mini-btn"
+                              onClick={() => saveHousingEntryButtonLayout?.()}
+                              disabled={!housingEntryButtonPositionDirty}
+                            >
+                              고정
+                            </button>
+                          </div>
+                          <div className="phone-galaxy-settings-app__row">
+                            <span>나가기 위치 고정</span>
+                            <button
+                              type="button"
+                              className="phone-galaxy-settings-app__mini-btn"
+                              onClick={() => saveHousingExitButtonLayout?.()}
+                              disabled={!housingExitButtonPositionDirty}
+                            >
+                              고정
+                            </button>
+                          </div>
+                          <div className="phone-galaxy-settings-app__row">
+                            <span>위치 상태</span>
+                            <em>{housingEntryButtonPositionDirty || housingExitButtonPositionDirty ? '조정 후 미고정' : '고정됨'}</em>
+                          </div>
+                        </div>
                         <div className="phone-galaxy-settings-app__row">
                           <span>자동저장</span>
                           <button

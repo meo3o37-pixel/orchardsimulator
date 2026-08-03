@@ -6,6 +6,7 @@ export function useWarehouseOtherWarehouseTransferActions({
   facilityStorageModal,
   facilityStorageOtherWarehouseTransferPicker,
   facilityStorageSelectedCarrier,
+  game,
   itemMetaByKey,
   itemNameByKey,
   machineDisplayNameWithRentTag,
@@ -64,7 +65,18 @@ export function useWarehouseOtherWarehouseTransferActions({
       window.alert(`${targetName}에 적재 공간이 부족합니다.`);
       return;
     }
-    let movedQty = 0;
+    const currentStorage = resolveFieldFacilityInventoryByFacility(game, game?.selectedField);
+    const currentSourceInventory = normalizeCargoByItemKey(currentStorage?.byFacility?.[sourceFacilityKey] || {});
+    const currentSourceQty = Math.max(0, Number(currentSourceInventory?.[itemKey]) || 0);
+    let plannedQtyToMove = Math.max(0, Math.min(qtyRequested, currentSourceQty));
+    if (unitWeightKg > 0) {
+      const maxByWeight = Math.max(0, Math.floor((availableTargetKg + 1e-9) / unitWeightKg));
+      plannedQtyToMove = Math.min(plannedQtyToMove, maxByWeight);
+    }
+    if (plannedQtyToMove <= 0) {
+      window.alert('옮길 수량이 없거나 대상 창고 공간이 부족합니다.');
+      return;
+    }
     setGame((prev) => {
       const { fieldId, byFacility } = resolveFieldFacilityInventoryByFacility(prev, prev?.selectedField);
       if (!fieldId) return prev;
@@ -73,7 +85,7 @@ export function useWarehouseOtherWarehouseTransferActions({
       const targetFacilityInventory = normalizeCargoByItemKey(nextByFacility[targetFacilityKey] || {});
       const sourceQty = Math.max(0, Number(sourceFacilityInventory?.[itemKey]) || 0);
       if (sourceQty <= 0) return prev;
-      let qtyToMove = Math.max(0, Math.min(qtyRequested, sourceQty));
+      let qtyToMove = Math.max(0, Math.min(plannedQtyToMove, sourceQty));
       if (qtyToMove <= 0) return prev;
       if (unitWeightKg > 0) {
         const maxByWeight = Math.max(0, Math.floor((availableTargetKg + 1e-9) / unitWeightKg));
@@ -89,7 +101,6 @@ export function useWarehouseOtherWarehouseTransferActions({
         delete nextByFacility[sourceFacilityKey];
       }
       nextByFacility[targetFacilityKey] = targetFacilityInventory;
-      movedQty = qtyToMove;
       const carrierLabel = facilityStorageSelectedCarrier
         ? ` (${machineDisplayNameWithRentTag(facilityStorageSelectedCarrier)} 이동)`
         : '';
@@ -105,10 +116,6 @@ export function useWarehouseOtherWarehouseTransferActions({
         ),
       };
     });
-    if (movedQty <= 0) {
-      window.alert('옮길 수량이 없거나 대상 창고 공간이 부족합니다.');
-      return;
-    }
     setFacilityStorageOtherWarehouseTransferPicker(null);
   }, [
     activeFacilityStorageKey,
@@ -117,6 +124,7 @@ export function useWarehouseOtherWarehouseTransferActions({
     facilityStorageModal?.facilityName,
     facilityStorageOtherWarehouseTransferPicker,
     facilityStorageSelectedCarrier,
+    game,
     itemMetaByKey,
     itemNameByKey,
     machineDisplayNameWithRentTag,

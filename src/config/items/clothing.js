@@ -152,5 +152,115 @@ export const CLOTHING_ITEMS = [
     durable: true,
     weightKg: 0.25,
     protection: { visibility: 3 }
+  },
+  {
+    key: 'farmSunHat',
+    type: 'head',
+    name: '농사용 챙모자',
+    price: 8500,
+    desc: '여름 낮 작업 때 햇빛을 가려 주는 넓은 챙모자.',
+    unit: '개',
+    durable: true,
+    weightKg: 0.18,
+    protection: { sun: 2, head: 1 }
+  },
+  {
+    key: 'coolArmSleeves',
+    type: 'hands',
+    name: '쿨토시',
+    price: 6500,
+    desc: '팔 햇빛 노출을 줄이고 땀을 빨리 말리는 여름 작업용 쿨토시.',
+    unit: '쌍',
+    durable: true,
+    weightKg: 0.08,
+    protection: { sun: 1, heat: 1 }
+  },
+  {
+    key: 'winterWorkGloves',
+    type: 'hands',
+    name: '방한장갑',
+    price: 9800,
+    desc: '겨울 전정과 새벽 작업 때 손 시림을 줄이는 두꺼운 작업장갑.',
+    unit: '켤레',
+    durable: true,
+    weightKg: 0.18,
+    protection: { hand: 1, cold: 2 }
+  },
+  {
+    key: 'sprayProtectionSuit',
+    type: 'upper',
+    name: '방제복',
+    price: 42000,
+    desc: '농약 살포와 약제 희석 작업 때 몸에 약액이 묻는 것을 줄이는 방제복.',
+    unit: '벌',
+    durable: true,
+    weightKg: 0.9,
+    protection: { chemical: 3, splash: 2, upperBody: 1 }
+  },
+  {
+    key: 'chemicalResistantGloves',
+    type: 'hands',
+    name: '내화학 장갑',
+    price: 12500,
+    desc: '농약과 세척제를 다룰 때 손을 보호하는 긴 내화학 장갑.',
+    unit: '켤레',
+    durable: true,
+    weightKg: 0.22,
+    protection: { chemical: 3, hand: 2, splash: 2 }
+  },
+  {
+    key: 'respiratorMask',
+    type: 'face',
+    name: '방독마스크',
+    price: 36000,
+    desc: '방제 작업 때 약제 냄새와 미세 입자 흡입을 줄이는 필터식 방독마스크.',
+    unit: '개',
+    durable: true,
+    weightKg: 0.42,
+    protection: { chemical: 3, dust: 2, face: 2 }
+  },
+  {
+    key: 'faceShield',
+    type: 'face',
+    name: '안면보호구',
+    price: 18000,
+    desc: '예초, 파쇄, 세척 작업 때 얼굴로 튀는 이물질을 막는 투명 안면보호구.',
+    unit: '개',
+    durable: true,
+    weightKg: 0.26,
+    protection: { face: 2, eyes: 2, splash: 2 }
+  },
+  {
+    key: 'earProtectionMuffs',
+    type: 'head',
+    name: '귀덮개',
+    price: 16000,
+    desc: '예초기와 파쇄기처럼 소음이 큰 장비를 쓸 때 귀를 보호하는 방음 귀덮개.',
+    unit: '개',
+    durable: true,
+    weightKg: 0.28,
+    protection: { noise: 3, head: 1 }
+  },
+  {
+    key: 'kneePads',
+    type: 'lower',
+    name: '무릎보호대',
+    price: 11000,
+    desc: '묘목 관리와 낮은 자세 작업 때 무릎 압박과 쓸림을 줄이는 보호대.',
+    unit: '쌍',
+    durable: true,
+    weightKg: 0.24,
+    protection: { knee: 3, lowerBody: 1 }
+  },
+  {
+    key: 'backSupportBelt',
+    type: 'upper',
+    name: '허리보호대',
+    price: 24000,
+    desc: '상자 운반과 장시간 작업 때 허리 부담을 줄이는 작업용 허리보호대.',
+    unit: '개',
+    durable: true,
+    weightKg: 0.35,
+    protection: { back: 3, upperBody: 1 }
   }
 ];

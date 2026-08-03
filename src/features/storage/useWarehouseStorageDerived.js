@@ -31,6 +31,11 @@ const WAREHOUSE_SUBTAB_KEYS = Object.freeze([
   'reflectiveMaterial'
 ]);
 const WAREHOUSE_SUBTAB_KEY_SET = new Set(WAREHOUSE_SUBTAB_KEYS);
+const WAREHOUSE_INSTALL_PART_ITEM_KEYS = new Set([
+  'appleSortingPartsSmall',
+  'appleSortingPartsMedium',
+  'appleSortingPartsLarge'
+]);
 const WAREHOUSE_OBJECT_CACHE_IDS = new WeakMap();
 let warehouseObjectCacheIdSeq = 0;
 
@@ -81,7 +86,7 @@ const storageSubTabMatchesWarehouseItem = (tabKeyRaw = '', item = {}) => {
     return category === 'tool' && (type === 'spray' || /sprayer|등짐|분무|방제/i.test(text));
   }
   if (tabKey === 'installTool') {
-    return category === 'tool' && /sortingParts|reflectiveFilmCoverMachine|brickTongs|부품|도포기|집게/i.test(text);
+    return category === 'tool' && WAREHOUSE_INSTALL_PART_ITEM_KEYS.has(itemKey);
   }
   if (tabKey === 'trellisMaterial') {
     return category === 'consumableMaterial' && /trellis|stake|scaffold|wire|anchor|binding|training|cableTie|지주|비계|와이어|앙카|결속|유인끈|타이/i.test(text);

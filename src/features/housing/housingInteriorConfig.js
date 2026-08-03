@@ -6,7 +6,7 @@ export const HOUSING_INTERIOR_OBJECT_BUTTONS = Object.freeze([
   { key: 'bathroom', icon: '🚿', label: '욕실', hint: '샤워 기능 예정' },
   { key: 'exercise', icon: '🏃', label: '운동', hint: '실내 운동 기능 예정' },
   { key: 'closet', icon: '🧥', label: '옷장', hint: '의상/작업복 기능 예정' },
-  { key: 'storage', icon: '📦', label: '적재/배치', hint: '생활용품 적재와 가전·가구 배치 관리' },
+  { key: 'storage', icon: '📦', label: '적재', hint: '생활용품 적재와 가전·가구 배치 관리' },
   { key: 'door', icon: '🚪', label: '나가기', hint: '외부로 나가기' },
   { key: 'window', icon: '🪟', label: '창문', hint: '바깥 확인 기능 예정' },
   { key: 'tv', icon: '📺', label: 'TV', hint: 'TV 시청 기능 예정' },

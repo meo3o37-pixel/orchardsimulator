@@ -11,7 +11,19 @@ export const isAssetServiceWorkerSupported = () => (
 
 export const registerAssetCacheServiceWorker = () => {
   if (!isAssetServiceWorkerSupported()) return Promise.resolve(null);
-  if (!import.meta.env.PROD) return Promise.resolve(null);
+  if (!import.meta.env.PROD) {
+    navigator.serviceWorker.getRegistrations()
+      .then((registrations) => Promise.all(registrations.map((registration) => registration.unregister())))
+      .catch(() => {});
+    if (typeof caches !== 'undefined' && typeof caches.keys === 'function') {
+      caches.keys()
+        .then((keys) => Promise.all(keys
+          .filter((key) => String(key || '').startsWith('orchard-sw-'))
+          .map((key) => caches.delete(key))))
+        .catch(() => {});
+    }
+    return Promise.resolve(null);
+  }
   if (registrationPromise) return registrationPromise;
 
   registrationPromise = navigator.serviceWorker.register(SERVICE_WORKER_URL, { scope: '/' })

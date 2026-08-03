@@ -7,6 +7,11 @@ export const DEFAULT_HOUSING_ENTRY_BUTTON_POSITION = Object.freeze({
   yPercent: 78,
 });
 
+export const DEFAULT_HOUSING_EXIT_BUTTON_POSITION = Object.freeze({
+  xPercent: 61.5,
+  yPercent: 43.5,
+});
+
 const trackIndexFromSeed = (seed, size) => {
   const safeSize = Math.max(1, Math.floor(Number(size) || 1));
   let hash = 0;
@@ -59,5 +64,14 @@ export const normalizeHousingEntryButtonPosition = (raw) => {
   return {
     xPercent: Number.isFinite(xPercent) ? xPercent : DEFAULT_HOUSING_ENTRY_BUTTON_POSITION.xPercent,
     yPercent: Number.isFinite(yPercent) ? yPercent : DEFAULT_HOUSING_ENTRY_BUTTON_POSITION.yPercent,
+  };
+};
+
+export const normalizeHousingExitButtonPosition = (raw) => {
+  const xPercent = clamp(Number(raw?.xPercent), 12, 88);
+  const yPercent = clamp(Number(raw?.yPercent), 18, 90);
+  return {
+    xPercent: Number.isFinite(xPercent) ? xPercent : DEFAULT_HOUSING_EXIT_BUTTON_POSITION.xPercent,
+    yPercent: Number.isFinite(yPercent) ? yPercent : DEFAULT_HOUSING_EXIT_BUTTON_POSITION.yPercent,
   };
 };

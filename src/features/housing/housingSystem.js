@@ -2,8 +2,9 @@ import { FOOD_MART_ITEMS } from '../../config/items/foodMart';
 import { APPLIANCE_ITEMS } from '../../config/items/appliance';
 import { FURNITURE_ITEMS } from '../../config/items/furniture';
 import { CLOTHING_ITEMS } from '../../config/items/clothing';
-import { clamp, monthOf } from '../../utils/common';
+import { clamp, monthOf, toDate } from '../../utils/common';
 import { FACILITY_MAP } from '../../config/sim/facilityCatalog.js';
+import { HOUSING_FACILITY_KEYS } from '../../config/sim/housing.js';
 import { seasonKey } from '../../systems/weatherSystem';
 import {
   facilityBuildOptionKeysOfFacility,
@@ -52,7 +53,7 @@ export const HOUSING_APPLIANCE_SLOT_DEFS = Object.freeze([
   { key: 'heatingMat', type: 'heatingMat', icon: '🔥', label: '온열 매트 자리', hint: '침구 보온용 매트 설치 공간' },
   { key: 'heater', type: 'heater', icon: '🌡️', label: '난방기구 자리', hint: '실내 난방 보조 가전 설치 공간' },
   { key: 'boiler', type: 'boiler', icon: '♨️', label: '보일러 자리', hint: '난방수와 온수 공급 설비 설치 공간' },
-  { key: 'inductionCooktop', type: 'inductionCooktop', icon: '♨️', label: '인덕션 자리', hint: '전기 조리 가전 설치 공간' }
+  { key: 'inductionCooktop', type: 'inductionCooktop', icon: '♨️', label: '조리 화구 자리', hint: '인덕션이나 휴대용 가스버너 설치 공간' }
 ]);
 
 export const HOUSING_FURNITURE_SLOT_DEFS = Object.freeze([
@@ -60,7 +61,8 @@ export const HOUSING_FURNITURE_SLOT_DEFS = Object.freeze([
   { key: 'desk', type: 'desk', icon: '🧾', label: '책상 자리', hint: '서류와 PC 작업용 가구 설치 공간' },
   { key: 'chair', type: 'chair', icon: '🪑', label: '의자 자리', hint: '업무와 식사용 의자 설치 공간' },
   { key: 'storage', type: 'storage', icon: '🗄️', label: '수납장 자리', hint: '생활용품 보관 가구 설치 공간' },
-  { key: 'diningTable', type: 'diningTable', icon: '🍽️', label: '식탁 자리', hint: '식사와 간단한 준비 작업 공간' }
+  { key: 'diningTable', type: 'diningTable', icon: '🍽️', label: '식탁 자리', hint: '식사와 간단한 준비 작업 공간' },
+  { key: 'kitchenCounter', type: 'kitchenCounter', icon: '🔪', label: '주방 조리대 자리', hint: '인덕션과 식재료를 올려두는 조리 작업 공간' }
 ]);
 
 export const HOUSING_CLOTHING_SLOT_DEFS = Object.freeze([
@@ -370,6 +372,242 @@ const APPLIANCE_ITEM_BY_KEY = APPLIANCE_ITEMS.reduce((acc, item) => {
   return acc;
 }, {});
 
+export const HOUSING_ELECTRICITY_BASIC_FEE = 910;
+export const HOUSING_ELECTRICITY_RATE_TIERS = Object.freeze([
+  { upToKwh: 60, rate: 120 },
+  { upToKwh: 150, rate: 210 },
+  { upToKwh: Infinity, rate: 300 }
+]);
+
+const roundHousingKwh = (valueRaw = 0) => (
+  Math.round((Math.max(0, Number(valueRaw) || 0) + Number.EPSILON) * 1000) / 1000
+);
+
+export const housingElectricityMonthKeyOfDay = (dayRaw = 1, offsetMonths = 0) => {
+  const safeDay = Math.max(1, Math.floor(Number(dayRaw) || 1));
+  const date = toDate(safeDay);
+  date.setMonth(date.getMonth() + Math.floor(Number(offsetMonths) || 0));
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+};
+
+export const normalizeHousingElectricityUsageByMonthKey = (raw = {}) => {
+  const source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+  const next = {};
+  Object.entries(source).forEach(([monthKeyRaw, entryRaw]) => {
+    const monthKey = String(monthKeyRaw || '').trim();
+    if (!/^\d{4}-\d{2}$/.test(monthKey)) return;
+    const entry = entryRaw && typeof entryRaw === 'object' && !Array.isArray(entryRaw) ? entryRaw : {};
+    const kwh = roundHousingKwh(entry.kwh ?? entryRaw);
+    const amount = housingElectricityBillOfKwh(kwh).amount;
+    if (kwh <= 0 && amount <= 0) return;
+    next[monthKey] = {
+      monthKey,
+      kwh,
+      amount,
+      detailByFieldFacility: entry.detailByFieldFacility && typeof entry.detailByFieldFacility === 'object'
+        ? entry.detailByFieldFacility
+        : {}
+    };
+  });
+  return next;
+};
+
+export const housingElectricityBillOfKwh = (kwhRaw = 0) => {
+  const kwh = roundHousingKwh(kwhRaw);
+  if (kwh <= 0) {
+    return { kwh: 0, energyFee: 0, basicFee: 0, amount: 0, tierRows: [] };
+  }
+  let remain = kwh;
+  let previousLimit = 0;
+  const tierRows = [];
+  HOUSING_ELECTRICITY_RATE_TIERS.forEach((tier, index) => {
+    if (remain <= 0) return;
+    const limit = Number(tier.upToKwh);
+    const tierKwh = Number.isFinite(limit)
+      ? Math.min(remain, Math.max(0, limit - previousLimit))
+      : remain;
+    if (tierKwh <= 0) {
+      previousLimit = Number.isFinite(limit) ? limit : previousLimit;
+      return;
+    }
+    const rate = Math.max(0, Math.floor(Number(tier.rate) || 0));
+    const fee = Math.round(tierKwh * rate);
+    tierRows.push({
+      index: index + 1,
+      kwh: roundHousingKwh(tierKwh),
+      rate,
+      fee
+    });
+    remain = Math.max(0, remain - tierKwh);
+    previousLimit = Number.isFinite(limit) ? limit : previousLimit;
+  });
+  const energyFee = Math.max(0, tierRows.reduce((sum, row) => sum + Math.max(0, Math.floor(Number(row.fee) || 0)), 0));
+  const basicFee = HOUSING_ELECTRICITY_BASIC_FEE;
+  return {
+    kwh,
+    energyFee,
+    basicFee,
+    amount: energyFee + basicFee,
+    tierRows
+  };
+};
+
+export const housingElectricityBillOfUsage = (usageEntryRaw = null) => {
+  const usageEntry = usageEntryRaw && typeof usageEntryRaw === 'object' && !Array.isArray(usageEntryRaw)
+    ? usageEntryRaw
+    : {};
+  const kwh = roundHousingKwh(usageEntry.kwh);
+  return housingElectricityBillOfKwh(kwh);
+};
+
+const housingApplianceDailyPowerKwhOf = (item = null, fallbackByType = {}) => {
+  const direct = Number(item?.dailyPowerKwh);
+  if (Number.isFinite(direct) && direct > 0) return direct;
+  const type = String(item?.type || '');
+  if (Object.prototype.hasOwnProperty.call(fallbackByType, type)) {
+    return Math.max(0, Number(fallbackByType[type]) || 0);
+  }
+  const outputWatts = Math.max(0, Number(item?.outputWatts) || Number(item?.outputKw) * 1000 || 0);
+  if (outputWatts > 0) return outputWatts / 1000;
+  return 0;
+};
+
+const addHousingElectricityPart = (parts, key, label, item, kwhRaw) => {
+  const kwh = roundHousingKwh(kwhRaw);
+  if (!key || kwh <= 0) return;
+  const current = parts[key] || { key, label, kwh: 0 };
+  current.kwh = roundHousingKwh(current.kwh + kwh);
+  current.label = label || current.label || key;
+  parts[key] = current;
+};
+
+export const housingDailyElectricityUsageOfField = ({
+  field = null,
+  day = 1,
+  outdoorTemperatureC = 15,
+  fieldFacilityCountOf = null,
+  fieldFacilityUsable = null,
+  mealUsage = null
+} = {}) => {
+  if (!field || field?.housingBreakerEnabled === false) {
+    return { kwh: 0, amount: 0, detailByFacilityKey: {} };
+  }
+  const details = {};
+  const mealCount = Math.max(0, Math.floor(Number(mealUsage?.dayCount) || 0) + Math.floor(Number(mealUsage?.nightCount) || 0));
+  HOUSING_FACILITY_KEYS.forEach((facilityKey) => {
+    const count = typeof fieldFacilityCountOf === 'function'
+      ? Math.max(0, Math.floor(Number(fieldFacilityCountOf(field, facilityKey)) || 0))
+      : 1;
+    if (count <= 0) return;
+    if (typeof fieldFacilityUsable === 'function' && !fieldFacilityUsable(field, facilityKey, day)) return;
+    const installed = normalizeHousingApplianceInstallations(
+      field?.housingApplianceInstallationsByFacilityKey?.[facilityKey] || {},
+      facilityKey
+    );
+    const parts = {};
+    Object.entries(installed).forEach(([slotKey, itemKey]) => {
+      const item = APPLIANCE_ITEM_BY_KEY[String(itemKey || '')];
+      if (!item) return;
+      const type = String(item.type || '');
+      if (type === 'fridge') {
+        addHousingElectricityPart(parts, 'fridge', '냉장고', item, housingApplianceDailyPowerKwhOf(item, { fridge: 0.6 }));
+      }
+      if (type === 'riceCooker' && mealCount > 0) {
+        addHousingElectricityPart(parts, 'riceCooker', '전기밥솥', item, housingApplianceDailyPowerKwhOf(item, { riceCooker: 0.24 }) * Math.min(2, mealCount));
+      }
+      if (type === 'microwave' && mealCount > 0) {
+        addHousingElectricityPart(parts, 'microwave', '전자레인지', item, housingApplianceDailyPowerKwhOf(item, { microwave: 0.2 }) * Math.min(2, mealCount));
+      }
+      if (type === 'electricKettle' && mealCount > 0) {
+        addHousingElectricityPart(parts, 'electricKettle', '커피포트', item, housingApplianceDailyPowerKwhOf(item, { electricKettle: 0.12 }) * Math.min(3, mealCount));
+      }
+      if (type === 'boiler' && ['electricity', 'electric'].includes(String(item.fuelType || ''))) {
+        addHousingElectricityPart(parts, 'boiler', '전기보일러', item, housingApplianceDailyPowerKwhOf(item, { boiler: 5.2 }));
+      }
+    });
+
+    const hvacSetting = normalizeHousingHvacSetting(field?.housingHvacSettingsByFacilityKey?.[facilityKey] || {});
+    const indoorInfo = housingIndoorTemperatureInfoOf({
+      facilityKey,
+      optionKeys: field?.housingOptionKeysByFacility?.[facilityKey] || [],
+      hvacSetting,
+      installedApplianceKeys: Object.values(installed).filter(Boolean),
+      outdoorTemperatureC,
+      day
+    });
+    const activeMode = String(indoorInfo?.activeHvacMode || 'off');
+    const hvacKeys = activeMode === 'cooling'
+      ? (Array.isArray(indoorInfo?.selectedCoolingKeys) ? indoorInfo.selectedCoolingKeys : [])
+      : (activeMode === 'heating'
+        ? (Array.isArray(indoorInfo?.selectedHeatingKeys) ? indoorInfo.selectedHeatingKeys : [])
+        : []);
+    hvacKeys.forEach((itemKey) => {
+      const item = APPLIANCE_ITEM_BY_KEY[String(itemKey || '')];
+      if (!item) return;
+      const type = String(item.type || '');
+      const fallback = activeMode === 'cooling'
+        ? { airConditioner: 2.4, fan: 0.14 }
+        : { heater: 0.8 };
+      const multiplier = activeMode === 'cooling'
+        ? clamp((Math.abs(Number(indoorInfo?.passiveTemperatureC) - Number(indoorInfo?.targetTemperatureC)) || 1) / 8, 0.35, 1.25)
+        : clamp((Math.abs(Number(indoorInfo?.targetTemperatureC) - Number(indoorInfo?.passiveTemperatureC)) || 1) / 10, 0.35, 1.35);
+      addHousingElectricityPart(
+        parts,
+        `hvac:${itemKey}`,
+        activeMode === 'cooling' ? '공조 냉방' : '공조 난방',
+        item,
+        housingApplianceDailyPowerKwhOf(item, fallback) * multiplier
+      );
+    });
+
+    const kwh = roundHousingKwh(Object.values(parts).reduce((sum, part) => sum + (Number(part.kwh) || 0), 0));
+    if (kwh <= 0) return;
+    details[facilityKey] = {
+      facilityKey,
+      kwh,
+      parts
+    };
+  });
+  const kwh = roundHousingKwh(Object.values(details).reduce((sum, detail) => sum + (Number(detail.kwh) || 0), 0));
+  return {
+    kwh,
+    amount: housingElectricityBillOfKwh(kwh).amount,
+    detailByFacilityKey: details
+  };
+};
+
+export const mergeHousingElectricityUsage = (usageByMonthKeyRaw = {}, monthKeyRaw = '', usage = null) => {
+  const monthKey = String(monthKeyRaw || '').trim();
+  const next = normalizeHousingElectricityUsageByMonthKey(usageByMonthKeyRaw);
+  const kwhToAdd = roundHousingKwh(usage?.kwh);
+  if (!monthKey || kwhToAdd <= 0) return next;
+  const current = next[monthKey] || { monthKey, kwh: 0, amount: 0, detailByFieldFacility: {} };
+  const detailByFieldFacility = { ...(current.detailByFieldFacility || {}) };
+  Object.entries(usage?.detailByFieldFacility || {}).forEach(([key, detail]) => {
+    const detailKwh = roundHousingKwh(detail?.kwh);
+    if (!key || detailKwh <= 0) return;
+    const existing = detailByFieldFacility[key] || { key, kwh: 0, parts: {} };
+    detailByFieldFacility[key] = {
+      ...existing,
+      ...detail,
+      kwh: roundHousingKwh((Number(existing.kwh) || 0) + detailKwh),
+      parts: {
+        ...(existing.parts || {}),
+        ...(detail.parts || {})
+      }
+    };
+  });
+  const kwh = roundHousingKwh((Number(current.kwh) || 0) + kwhToAdd);
+  next[monthKey] = {
+    ...current,
+    monthKey,
+    kwh,
+    amount: housingElectricityBillOfKwh(kwh).amount,
+    detailByFieldFacility
+  };
+  return next;
+};
+
 const FURNITURE_ITEM_BY_KEY = FURNITURE_ITEMS.reduce((acc, item) => {
   const key = String(item?.key || '');
   if (key) acc[key] = item;
@@ -474,6 +712,24 @@ export const housingDefaultFurnitureOfFacility = (facilityKeyRaw = '') => {
   return {};
 };
 
+const HOUSING_DEFAULT_KITCHEN_COUNTER_EXCLUDED_FACILITY_KEYS = new Set([
+  'farmContainer20Used',
+  'sandwichPanelDorm4',
+  'usedSiteOffice5',
+  'farmContainer40Office',
+  'steelOfficeLounge',
+  'dualContainerLinked'
+]);
+
+export const housingDefaultBuiltInFurnitureOfFacility = (facilityKeyRaw = '') => {
+  const facilityKey = String(facilityKeyRaw || '');
+  if (!facilityKey || HOUSING_DEFAULT_KITCHEN_COUNTER_EXCLUDED_FACILITY_KEYS.has(facilityKey)) return {};
+  if (!HOUSING_FACILITY_KEYS.includes(facilityKey)) return {};
+  return {
+    kitchenCounter: 'kitchenWorkCounterBasic'
+  };
+};
+
 export const housingDefaultFurniturePackageCostOfFacility = (facilityKeyRaw = '') => {
   const defaults = housingDefaultFurnitureOfFacility(facilityKeyRaw);
   return Object.values(defaults).reduce((sum, itemKeyRaw) => {
@@ -482,14 +738,23 @@ export const housingDefaultFurniturePackageCostOfFacility = (facilityKeyRaw = ''
   }, 0);
 };
 
-export const normalizeHousingFurnitureInstallations = (raw = {}) => {
+export const normalizeHousingFurnitureInstallations = (raw = {}, facilityKeyRaw = '') => {
   const source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+  const merged = {
+    ...housingDefaultBuiltInFurnitureOfFacility(facilityKeyRaw),
+    ...source
+  };
   const next = {};
-  Object.entries(source).forEach(([slotKeyRaw, itemKeyRaw]) => {
+  Object.entries(merged).forEach(([slotKeyRaw, itemKeyRaw]) => {
     const slotKey = String(slotKeyRaw || '');
     const itemKey = String(itemKeyRaw || '');
     const slot = HOUSING_FURNITURE_SLOT_BY_KEY[slotKey];
     const item = FURNITURE_ITEM_BY_KEY[itemKey];
+    if (!slot) return;
+    if (Object.prototype.hasOwnProperty.call(source, slotKey) && !itemKey) {
+      next[slotKey] = '';
+      return;
+    }
     if (!slot || !item || String(item?.type || '') !== String(slot.type || '')) return;
     next[slotKey] = itemKey;
   });
@@ -1749,6 +2014,14 @@ const HOUSING_LIFE_SUPPLY_EXPLICIT_DAYS_BY_ITEM_KEY = {
 };
 
 const HOUSING_LIFE_SUPPLY_DAILY_CONSUME_QTY_BY_ITEM_KEY = {
+  foodWater2L: 0.35,
+  foodSportsDrink15L: 0.3,
+  foodSikhye15L: 0.3,
+  foodOrangeJuice15L: 0.3,
+  foodCola15L: 0.3,
+  foodCider15L: 0.3,
+  foodBarleyTea15L: 0.3,
+  foodTomatoJuice15L: 0.3,
   foodRice10kg: 0.08,
   foodKimchi35kg: 0.15,
   foodSoySauce18L: 0.03,
@@ -1783,6 +2056,37 @@ const HOUSING_LIFE_SUPPLY_DAILY_CONSUME_QTY_BY_ITEM_KEY = {
   foodSweetPotato1kg: 0.25,
   foodSaladDressing250ml: 0.08,
   foodInstantRice210g: 1
+};
+
+const HOUSING_EMPTY_CONTAINER_ITEM_BY_DRINK_ITEM_KEY = Object.freeze({
+  foodWater2L: 'emptyWaterBottle2L',
+  foodSportsDrink15L: 'emptyPetBottle15L',
+  foodSikhye15L: 'emptyPetBottle15L',
+  foodOrangeJuice15L: 'emptyPetBottle15L',
+  foodCola15L: 'emptyPetBottle15L',
+  foodCider15L: 'emptyPetBottle15L',
+  foodBarleyTea15L: 'emptyPetBottle15L',
+  foodTomatoJuice15L: 'emptyPetBottle15L'
+});
+
+const addEmptyDrinkContainerResult = (accRaw = {}, facilityKeyRaw = '', itemKeyRaw = '', beforeQtyRaw = 0, afterQtyRaw = 0) => {
+  const facilityKey = String(facilityKeyRaw || '');
+  const emptyItemKey = HOUSING_EMPTY_CONTAINER_ITEM_BY_DRINK_ITEM_KEY[String(itemKeyRaw || '')];
+  if (!facilityKey || !emptyItemKey) return accRaw || {};
+  const beforeQty = Math.max(0, Number(beforeQtyRaw) || 0);
+  const afterQty = Math.max(0, Number(afterQtyRaw) || 0);
+  if (beforeQty <= afterQty + 0.0001) return accRaw || {};
+  const openBottleCountBefore = beforeQty > 0.0001 ? Math.ceil(Math.max(0, beforeQty - 0.0001)) : 0;
+  const openBottleCountAfter = afterQty > 0.0001 ? Math.ceil(Math.max(0, afterQty - 0.0001)) : 0;
+  const emptiedQty = Math.max(0, openBottleCountBefore - openBottleCountAfter);
+  if (emptiedQty <= 0) return accRaw || {};
+  return {
+    ...(accRaw || {}),
+    [facilityKey]: {
+      ...((accRaw || {})[facilityKey] || {}),
+      [emptyItemKey]: Math.max(0, Math.floor(Number((accRaw || {})[facilityKey]?.[emptyItemKey]) || 0)) + emptiedQty
+    }
+  };
 };
 
 const FOOD_MART_META_BY_KEY = (FOOD_MART_ITEMS || []).reduce((acc, item) => {
@@ -3183,6 +3487,7 @@ export const consumeHousingDailyLifeSupplyForField = ({
   const nextFoodStorageByFacilityKey = { ...foodStorageByFacilityKey };
   let nextFoodStorageBatchesByFacilityKey = normalizeHousingFoodStorageBatchesByFacilityKey(field?.housingFoodStorageBatchesByFacilityKey || {});
   const logs = [];
+  let emptyContainersByFacilityKey = {};
   let changed = false;
   Object.entries(foodStorageByFacilityKey).forEach(([facilityKeyRaw, inventoryRaw]) => {
     const facilityKey = String(facilityKeyRaw || '');
@@ -3193,10 +3498,12 @@ export const consumeHousingDailyLifeSupplyForField = ({
         const qty = Math.max(0, Number(qtyRaw) || 0);
         if (!itemKey || qty <= 0) return null;
         if (String(itemCategoryByKey?.[itemKey] || '') !== 'foodMart') return null;
-        if (String(itemMetaByKey?.[itemKey]?.subgroup || FOOD_MART_META_BY_KEY?.[itemKey]?.subgroup || '') === 'living') return null;
+        const subgroup = String(itemMetaByKey?.[itemKey]?.subgroup || FOOD_MART_META_BY_KEY?.[itemKey]?.subgroup || '');
+        if (subgroup === 'living') return null;
         const itemDays = housingLifeSupplyItemDaysOf(itemKey);
         const hasEssentialValue = (Number(itemDays?.essentialDays) || 0) > 0;
-        if (!hasEssentialValue) return null;
+        const isDrink = subgroup === 'drink';
+        if (!hasEssentialValue && !isDrink) return null;
         return { itemKey, qty };
       })
       .filter(Boolean);
@@ -3207,9 +3514,17 @@ export const consumeHousingDailyLifeSupplyForField = ({
     const consumeQty = Math.min(picked.qty, housingLifeSupplyDailyConsumeQtyOf(picked.itemKey));
     if (consumeQty <= 0) return;
     const nextInventory = { ...inventory };
+    const beforeQty = Math.max(0, Number(nextInventory[picked.itemKey]) || 0);
     const remainingQty = Math.max(0, (Number(nextInventory[picked.itemKey]) || 0) - consumeQty);
     if (remainingQty > 0.0001) nextInventory[picked.itemKey] = Math.round(remainingQty * 100) / 100;
     else delete nextInventory[picked.itemKey];
+    emptyContainersByFacilityKey = addEmptyDrinkContainerResult(
+      emptyContainersByFacilityKey,
+      facilityKey,
+      picked.itemKey,
+      beforeQty,
+      remainingQty
+    );
     nextFoodStorageBatchesByFacilityKey = consumeHousingFoodStorageBatches({
       batchesByFacilityKey: nextFoodStorageBatchesByFacilityKey,
       facilityKey,
@@ -3227,14 +3542,15 @@ export const consumeHousingDailyLifeSupplyForField = ({
       : `${Math.round(consumeQty * 100)}%`;
     logs.push(`${field?.name || '필지'} ${facilityKey} 냉장실 생필품 소비: ${itemName} ${amountText}`);
   });
-  if (!changed) return { field, logs };
+  if (!changed) return { field, logs, emptyContainersByFacilityKey };
   return {
     field: {
       ...field,
       housingFoodStorageByFacilityKey: nextFoodStorageByFacilityKey,
       housingFoodStorageBatchesByFacilityKey: nextFoodStorageBatchesByFacilityKey
     },
-    logs
+    logs,
+    emptyContainersByFacilityKey
   };
 };
 
@@ -3318,6 +3634,7 @@ export const housingLivingConditionInfoOf = ({
   lifeSupplyInfo = null,
   facilityQualityInfo = null,
   internetInfo = null,
+  wasteInfo = null,
   satisfactionBuffInfo = null
 } = {}) => {
   const powerPenalty = powerInfo?.tone === 'off' ? 18 : 0;
@@ -3332,9 +3649,12 @@ export const housingLivingConditionInfoOf = ({
   const internetAdjust = hasInternet
     ? (powerInfo?.tone === 'off' ? 0 : 4)
     : (internetPending ? 0 : -4);
+  const wasteTotalKg = Math.max(0, Number(wasteInfo?.totalKg) || 0);
+  const wastePenalty = Math.max(0, Math.floor(Number(wasteInfo?.penalty) || 0));
+  const wasteAdjust = -wastePenalty;
   const satisfactionAdjust = Math.max(0, Math.min(3, Math.floor(Number(satisfactionBuffInfo?.value) || 0)));
   const baseScore = 0;
-  const nextScore = clamp(Math.round(baseScore + facilityAdjust + powerAdjust + hvacAdjust + lifeSupplyAdjust + internetAdjust + satisfactionAdjust), 0, 100);
+  const nextScore = clamp(Math.round(baseScore + facilityAdjust + powerAdjust + hvacAdjust + lifeSupplyAdjust + internetAdjust + wasteAdjust + satisfactionAdjust), 0, 100);
   const nextLabel = nextScore >= 95 ? '최상'
     : nextScore >= 88 ? '매우 좋음'
       : nextScore >= 80 ? '좋음'
@@ -3346,9 +3666,10 @@ export const housingLivingConditionInfoOf = ({
                   : nextScore >= 15 ? '매우 나쁨'
                     : '열악';
   const supplyDetail = lifeSupplyInfo?.detail || '';
+  const wasteDetail = wastePenalty > 0 ? `생활쓰레기 ${wasteTotalKg.toFixed(1)}kg 정리 필요` : '';
   const nextDetail = powerInfo?.tone === 'off'
     ? (supplyDetail ? `${supplyDetail} · 실내 전기 확인` : '실내 전기 확인 필요')
-    : (satisfactionBuffInfo?.detail || supplyDetail || (indoorInfo?.activeHvacMode && indoorInfo.activeHvacMode !== 'off'
+    : (wasteDetail || satisfactionBuffInfo?.detail || supplyDetail || (indoorInfo?.activeHvacMode && indoorInfo.activeHvacMode !== 'off'
         ? `${indoorInfo.activeHvacLabel} 반영`
         : '냉장실/실내 전기/실내상태 확인'));
   const nextTone = nextScore >= 80 ? 'good'
@@ -3372,8 +3693,9 @@ export const housingLivingConditionInfoOf = ({
       satisfaction: satisfactionAdjust,
       power: powerAdjust,
       internet: internetAdjust,
+      waste: wasteAdjust,
       hvac: hvacAdjust,
-      total: facilityAdjust + powerAdjust + hvacAdjust + lifeSupplyAdjust + internetAdjust + satisfactionAdjust
+      total: facilityAdjust + powerAdjust + hvacAdjust + lifeSupplyAdjust + internetAdjust + wasteAdjust + satisfactionAdjust
     }
   };
 };

@@ -159,8 +159,8 @@ export const applyFacilityInstallToField = (
     ? deps.normalizeHousingFurnitureInstallations?.({
         ...deps.housingDefaultFurnitureOfFacility?.(facility.key),
         ...existingHousingFurniture
-      })
-    : deps.normalizeHousingFurnitureInstallations?.(existingHousingFurniture);
+      }, facility.key)
+    : deps.normalizeHousingFurnitureInstallations?.(existingHousingFurniture, facility.key);
   const currentAppleSortingWarehouseMap = target?.appleSortingWarehouseByFacilityKey || {};
   const currentTankDurabilityMap = target?.tankDurabilityByFacility || {};
   const currentTankDurability = deps.clamp(Number(currentTankDurabilityMap?.[facility.key] ?? 100), 0, 100);

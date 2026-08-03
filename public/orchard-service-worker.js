@@ -1,4 +1,4 @@
-const SW_VERSION = 'orchard-sw-v1';
+const SW_VERSION = 'orchard-sw-v2';
 const APP_SHELL_CACHE = `${SW_VERSION}:app-shell`;
 const RUNTIME_CACHE = `${SW_VERSION}:runtime-assets`;
 const MAX_RUNTIME_ENTRIES = 900;
@@ -33,6 +33,15 @@ const isCacheableRequest = (request) => {
   if (!key) return false;
   if (key.startsWith('/api/') || key.startsWith('/data/')) return false;
   return key === '/' || CACHEABLE_EXTENSIONS.test(key.split('?')[0]);
+};
+
+const isAppCodeRequest = (request) => {
+  const key = cacheKeyOf(request);
+  const pathname = key.split('?')[0];
+  return request?.mode === 'navigate'
+    || pathname === '/'
+    || pathname === '/index.html'
+    || /\.(?:js|mjs|css)$/i.test(pathname);
 };
 
 const trimCache = async (cacheName, maxEntries) => {
@@ -98,6 +107,22 @@ self.addEventListener('fetch', (event) => {
   event.respondWith((async () => {
     const appCache = await caches.open(APP_SHELL_CACHE);
     const runtimeCache = await caches.open(RUNTIME_CACHE);
+
+    if (isAppCodeRequest(request)) {
+      try {
+        const fresh = await fetch(request);
+        if (fresh && fresh.ok) await runtimeCache.put(request, fresh.clone());
+        return fresh;
+      } catch {
+        const fallback = await runtimeCache.match(request)
+          || await appCache.match(request)
+          || await appCache.match('/index.html')
+          || await appCache.match('/');
+        if (fallback) return fallback;
+        throw new Error('app_code_fetch_failed');
+      }
+    }
+
     const cached = await appCache.match(request) || await runtimeCache.match(request);
 
     if (cached) {

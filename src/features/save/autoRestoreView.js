@@ -63,6 +63,21 @@ const sanitizeRestorableMapLocationModal = (raw = {}) => {
   };
 };
 
+const sanitizeRestorableWarehouseStorageModal = (raw = {}) => {
+  const source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+  const facilityKey = sanitizeRestoreKey(source.facilityKey, '');
+  const open = Boolean(source.open) && Boolean(facilityKey);
+  return {
+    open,
+    facilityKey: open ? facilityKey : '',
+    primaryTab: sanitizeRestoreKey(source.primaryTab, 'all'),
+    harvestTab: ['general', 'pallet'].includes(String(source.harvestTab || '')) ? String(source.harvestTab) : '',
+    facilityTab: ['harvest', 'sorting', 'workbench', 'coolingBlower', 'coolingOutdoor'].includes(String(source.facilityTab || ''))
+      ? String(source.facilityTab)
+      : ''
+  };
+};
+
 export const sanitizeLastActiveSaveSlotPreference = (value, slotCount = 0) => {
   if (value == null || value === '') return null;
   const slot = Math.floor(Number(value));
@@ -89,6 +104,7 @@ export const sanitizeLastViewStatePreference = (raw = {}, config = {}) => {
   const safeHousingObjectKey = SAFE_RESTORE_HOUSING_OBJECTS.has(String(source.housingInteriorPendingObjectKey || '')) ? String(source.housingInteriorPendingObjectKey) : '';
   const externalMapOpen = Boolean(source.externalMapOpen);
   const mapLocationModal = sanitizeRestorableMapLocationModal(source.mapLocationModal || {});
+  const warehouseStorageModal = sanitizeRestorableWarehouseStorageModal(source.warehouseStorageModal || {});
   const defaultShopTab = String(config.defaultManagementShopTab || 'machine');
   const defaultExternalMapZoom = Number(config.externalMapTownMoveDefaultZoom) || 0.5;
   const minExternalMapZoom = Number(config.externalMapTownMoveMinZoom) || 0.25;
@@ -116,6 +132,7 @@ export const sanitizeLastViewStatePreference = (raw = {}, config = {}) => {
     externalMapFieldMarkersVisible: source.externalMapFieldMarkersVisible !== false,
     externalMapLandAreasVisible: source.externalMapLandAreasVisible !== false,
     mapLocationModal,
+    warehouseStorageModal,
     quickDrawerOpen: Boolean(source.quickDrawerOpen),
     phoneUnlocked: Boolean(source.phoneUnlocked),
     phoneOpenedApp: safePhoneApp
@@ -135,6 +152,10 @@ export const sanitizeAccountPreferences = (raw = {}, config = {}) => ({
   housingEntryButtonPosition: {
     xPercent: clamp(Number(raw?.housingEntryButtonPosition?.xPercent), 12, 88) || 67,
     yPercent: clamp(Number(raw?.housingEntryButtonPosition?.yPercent), 18, 90) || 78,
+  },
+  housingExitButtonPosition: {
+    xPercent: clamp(Number(raw?.housingExitButtonPosition?.xPercent), 12, 88) || 61.5,
+    yPercent: clamp(Number(raw?.housingExitButtonPosition?.yPercent), 18, 90) || 43.5,
   },
   housingEntryButtonDragEnabled: Boolean(raw?.housingEntryButtonDragEnabled),
   townMarkerPositions: raw?.townMarkerPositions && typeof raw.townMarkerPositions === 'object' && !Array.isArray(raw.townMarkerPositions)
@@ -159,7 +180,7 @@ export const getRestorableViewLoadingPhaseKeys = (viewRaw = {}, config = {}) => 
   if (tab === 'map' || view.externalMapOpen || view.mapLocationModal?.open) {
     keys.add('map');
   }
-  if (tab === 'storage' || tab === 'warehouse' || view.mapLocationModal?.open) {
+  if (tab === 'storage' || tab === 'warehouse' || view.mapLocationModal?.open || view.warehouseStorageModal?.open) {
     keys.add('warehouse');
   }
   if (tab === 'shop' || ['machineRent', 'smallCity', 'usedCarDealer'].includes(mapLocationKey)) {
@@ -224,6 +245,16 @@ export const applyRestorableViewState = (viewRaw = {}, context = {}) => {
   );
   setters.setMapShopClosing?.(false);
   setters.setMapShopExitAnimating?.(false);
+  if (view.warehouseStorageModal?.open && view.warehouseStorageModal?.facilityKey) {
+    setters.setFacilityStorageDeferredWarehouseFocus?.({
+      facilityKey: view.warehouseStorageModal.facilityKey,
+      preserveSelectedCarrier: false,
+      preserveSelectedTransport: false,
+      forcedPrimaryTab: view.warehouseStorageModal.primaryTab || '',
+      forcedHarvestTab: view.warehouseStorageModal.harvestTab || '',
+      forcedFacilityTab: view.warehouseStorageModal.facilityTab || ''
+    });
+  }
   setters.setQuickDrawerOpen?.(Boolean(view.quickDrawerOpen || view.phoneOpenedApp));
   setters.setPhoneUnlocked?.(Boolean(view.phoneUnlocked || view.phoneOpenedApp));
   setters.setPhoneOpenedApp?.(view.phoneOpenedApp || '');

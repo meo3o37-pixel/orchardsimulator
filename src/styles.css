@@ -6451,7 +6451,7 @@ button {
   position: relative;
   z-index: 1;
   transition: transform 160ms ease;
-  touch-action: pan-y;
+  touch-action: none;
 }
 
 .phone-galaxy-lock-notification.is-unread {
@@ -30445,6 +30445,480 @@ button.small-apc-receiving-queue__item:hover {
   }
 }
 
+.housing-interior-placeholder-grid--breaker {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.housing-interior-breaker-card {
+  min-height: 258px;
+  background:
+    linear-gradient(135deg, rgba(252, 250, 244, 0.96), rgba(242, 238, 228, 0.9)),
+    rgba(255, 253, 248, 0.94);
+}
+
+.housing-interior-breaker-card .housing-interior-placeholder-card__title-row small {
+  padding: 4px 9px;
+  border: 1px solid rgba(70, 78, 68, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: rgba(43, 53, 46, 0.72);
+  font-size: 0.72rem;
+  font-weight: 950;
+}
+
+.housing-interior-breaker-box {
+  position: relative;
+  width: min(360px, 100%);
+  min-height: 156px;
+  margin: 4px 0 10px;
+  padding: 20px 22px 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px;
+  align-items: center;
+  gap: 18px;
+  border: 1px solid rgba(75, 80, 72, 0.28);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(248, 250, 247, 0.98), rgba(218, 224, 219, 0.98)),
+    #e1e5e0;
+  color: #253128;
+  box-shadow:
+    0 16px 28px rgba(37, 47, 39, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -12px 20px rgba(105, 116, 105, 0.08);
+  overflow: hidden;
+}
+
+.housing-interior-breaker-box::before {
+  content: '';
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 14px;
+  height: 26px;
+  border-top: 1px solid rgba(91, 98, 90, 0.18);
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(86, 94, 86, 0.16) 0 1px,
+    transparent 1px 16px
+  );
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+.housing-interior-breaker-box::after {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+.housing-interior-breaker-box__screw {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1px solid rgba(71, 78, 70, 0.32);
+  background:
+    linear-gradient(90deg, transparent 42%, rgba(70, 75, 68, 0.4) 42% 58%, transparent 58%),
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.86), rgba(122, 132, 122, 0.62));
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.42);
+}
+
+.housing-interior-breaker-box__screw--tl { top: 10px; left: 10px; }
+.housing-interior-breaker-box__screw--tr { top: 10px; right: 10px; }
+.housing-interior-breaker-box__screw--bl { bottom: 10px; left: 10px; }
+.housing-interior-breaker-box__screw--br { bottom: 10px; right: 10px; }
+
+.housing-interior-breaker-box__label {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.housing-interior-breaker-box__label span {
+  width: fit-content;
+  padding: 3px 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.68);
+  color: rgba(47, 56, 49, 0.58);
+  font-size: 0.52rem;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.housing-interior-breaker-box__label strong {
+  color: #26342b;
+  font-size: 1.08rem;
+  font-weight: 950;
+  line-height: 1.15;
+}
+
+.housing-interior-breaker-switch.housing-interior-power-toggle {
+  position: relative;
+  z-index: 1;
+  width: 82px;
+  height: 116px;
+  margin-top: 0;
+  padding: 9px 10px;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 20px 1fr 20px;
+  justify-items: center;
+  align-items: center;
+  border: 1px solid rgba(46, 52, 47, 0.28);
+  border-radius: 6px;
+  background:
+    linear-gradient(180deg, #f8faf6, #d5dad2),
+    #dde2db;
+  box-shadow:
+    0 8px 16px rgba(37, 47, 39, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86);
+  overflow: visible;
+}
+
+.housing-interior-breaker-switch.housing-interior-power-toggle::before,
+.housing-interior-breaker-switch.housing-interior-power-toggle::after {
+  content: none;
+}
+
+.housing-interior-breaker-switch__mark {
+  min-height: auto;
+  color: rgba(61, 68, 62, 0.54);
+  font-size: 0.68rem;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.housing-interior-power-panel.is-on .housing-interior-breaker-switch__mark--on {
+  color: #155f47;
+}
+
+.housing-interior-power-panel.is-off .housing-interior-breaker-switch__mark--off {
+  color: #8f352d;
+}
+
+.housing-interior-breaker-switch__rail {
+  position: relative;
+  width: 42px;
+  height: 62px;
+  min-height: 62px;
+  border: 1px solid rgba(48, 54, 48, 0.3);
+  border-radius: 4px;
+  background:
+    linear-gradient(180deg, rgba(47, 54, 49, 0.12), rgba(255, 255, 255, 0.34)),
+    #c6ccc4;
+  box-shadow:
+    inset 0 2px 5px rgba(33, 39, 33, 0.18),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.48);
+}
+
+.housing-interior-breaker-switch__lever {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  height: 28px;
+  border-radius: 4px;
+  border: 1px solid rgba(47, 55, 49, 0.24);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(214, 219, 212, 0.96)),
+    #e8ece5;
+  box-shadow:
+    0 5px 9px rgba(28, 34, 29, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    inset 0 -5px 8px rgba(112, 123, 112, 0.13);
+  transition:
+    top 260ms cubic-bezier(0.2, 0.9, 0.2, 1.08),
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.housing-interior-power-panel.is-on .housing-interior-breaker-switch__lever {
+  top: 5px;
+  background:
+    linear-gradient(180deg, rgba(247, 255, 250, 0.96), rgba(188, 220, 204, 0.98)),
+    #d8eadf;
+}
+
+.housing-interior-power-panel.is-off .housing-interior-breaker-switch__lever {
+  top: 27px;
+  background:
+    linear-gradient(180deg, rgba(255, 249, 245, 0.96), rgba(226, 202, 196, 0.98)),
+    #ead7d1;
+}
+
+.housing-interior-breaker-switch.housing-interior-power-toggle:active {
+  transform: translateY(1px);
+}
+
+.housing-interior-breaker-switch.housing-interior-power-toggle span {
+  transition: color 160ms ease;
+  transform: none;
+  text-shadow: none;
+}
+
+.housing-interior-breaker-card {
+  min-height: 270px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.88), transparent 42%),
+    linear-gradient(135deg, rgba(255, 253, 248, 0.98), rgba(247, 244, 235, 0.94));
+}
+
+.housing-interior-breaker-box.housing-interior-power-panel {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-height: 178px;
+  margin: 6px 0 12px;
+  padding: 26px clamp(16px, 3.2vw, 22px) 31px;
+  grid-template-columns: minmax(74px, 92px) minmax(34px, 44px) repeat(5, minmax(30px, 1fr));
+  grid-template-areas: "label main c1 c2 c3 c4 c5";
+  align-items: end;
+  gap: clamp(6px, 1.45vw, 10px);
+  border: 1px solid rgba(166, 169, 160, 0.8);
+  border-radius: 14px 14px 10px 10px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(239, 239, 234, 0.98) 54%, rgba(225, 226, 219, 0.98)),
+    #f4f4ef;
+  box-shadow:
+    0 18px 30px rgba(49, 55, 48, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.94),
+    inset 0 -8px 14px rgba(153, 158, 148, 0.1);
+}
+
+.housing-interior-breaker-box.housing-interior-power-panel::before {
+  left: 22px;
+  right: 22px;
+  top: 22px;
+  bottom: auto;
+  height: 44px;
+  border: 1px solid rgba(214, 217, 210, 0.9);
+  border-radius: 6px;
+  background:
+    linear-gradient(180deg, rgba(252, 253, 250, 0.94), rgba(232, 235, 228, 0.9)),
+    #f3f4ef;
+  opacity: 1;
+}
+
+.housing-interior-breaker-box.housing-interior-power-panel::after {
+  inset: auto 22px 24px 22px;
+  height: 74px;
+  border: 1px solid rgba(201, 204, 196, 0.92);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(231, 233, 227, 0.82)),
+    #eff1ec;
+  box-shadow:
+    inset 0 2px 5px rgba(86, 92, 84, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.housing-interior-breaker-box__screw--tl { top: 18px; left: 15px; }
+.housing-interior-breaker-box__screw--tr { top: 18px; right: 15px; }
+.housing-interior-breaker-box__screw--bl { bottom: 17px; left: 15px; }
+.housing-interior-breaker-box__screw--br { bottom: 17px; right: 15px; }
+
+.housing-interior-breaker-box__label {
+  grid-area: label;
+  align-self: center;
+  justify-items: start;
+  gap: 5px;
+}
+
+.housing-interior-breaker-box__label span {
+  padding: 3px 5px;
+  background: #f8faf6;
+  border: 1px solid rgba(208, 212, 204, 0.82);
+  color: rgba(52, 65, 56, 0.62);
+  font-size: 0.48rem;
+}
+
+.housing-interior-breaker-box__label strong {
+  color: #24382d;
+  font-size: 0.9rem;
+}
+
+.housing-interior-breaker-box__label small {
+  color: rgba(36, 56, 45, 0.55);
+  font-size: 0.62rem;
+  font-weight: 850;
+}
+
+.housing-interior-breaker-switch.housing-interior-power-toggle {
+  grid-area: main;
+  box-sizing: border-box;
+  width: 48px;
+  max-width: 48px;
+  height: 94px;
+  margin-inline: auto;
+  padding: 6px;
+  grid-template-rows: 18px 1fr 18px;
+  border: 1px solid rgba(32, 35, 33, 0.58);
+  border-radius: 17px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(236, 239, 233, 0.94)),
+    #eff2ec;
+  box-shadow:
+    0 6px 12px rgba(24, 29, 26, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -1px 0 rgba(23, 30, 25, 0.12);
+}
+
+.housing-interior-breaker-switch__mark {
+  min-height: auto;
+  color: rgba(38, 79, 61, 0.58);
+  font-size: 0.56rem;
+  font-weight: 950;
+  letter-spacing: 0;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.housing-interior-breaker-switch__rail {
+  position: relative;
+  width: 28px;
+  height: 38px;
+  min-height: 38px;
+  border: 1px solid rgba(0, 0, 0, 0.74);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 48% 22%, rgba(255, 255, 255, 0.28), transparent 34%),
+    linear-gradient(180deg, #3f4542 0%, #202523 48%, #090b0b 100%),
+    #171a19;
+  box-shadow:
+    0 8px 11px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -6px 9px rgba(0, 0, 0, 0.32);
+  transform-origin: center center;
+  transition:
+    transform 240ms cubic-bezier(0.2, 0.9, 0.2, 1.08),
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.housing-interior-breaker-switch__lever {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  right: auto;
+  width: 2px;
+  height: 20px;
+  border: 0;
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.36), rgba(255, 255, 255, 0.08));
+  box-shadow:
+    0 0 4px rgba(255, 255, 255, 0.12);
+  transform-origin: center center;
+  transform: translate(-50%, -50%);
+  transition: none;
+}
+
+.housing-interior-power-panel.is-on .housing-interior-breaker-switch__rail {
+  transform: translateY(-12px);
+  box-shadow:
+    0 10px 13px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -7px 10px rgba(0, 0, 0, 0.3);
+}
+
+.housing-interior-power-panel.is-off .housing-interior-breaker-switch__rail {
+  transform: translateY(12px);
+  background:
+    radial-gradient(circle at 48% 22%, rgba(255, 255, 255, 0.2), transparent 34%),
+    linear-gradient(180deg, #333735 0%, #191d1b 52%, #070808 100%),
+    #111313;
+  box-shadow:
+    0 5px 9px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -7px 10px rgba(0, 0, 0, 0.36);
+}
+
+.housing-interior-breaker-circuit-list {
+  position: relative;
+  z-index: 1;
+  display: contents;
+}
+
+.housing-interior-breaker-circuit {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 40px;
+  height: 88px;
+  margin-inline: auto;
+  display: grid;
+  grid-template-rows: 15px 1fr 16px;
+  justify-items: center;
+  align-items: center;
+  border: 1px solid rgba(178, 183, 174, 0.9);
+  border-radius: 5px;
+  background:
+    linear-gradient(180deg, #fdfefb, #ecefea 64%, #d7dcd4),
+    #f2f4ef;
+  box-shadow:
+    0 4px 8px rgba(49, 55, 48, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.housing-interior-breaker-circuit::before {
+  content: 'D20';
+  color: rgba(55, 63, 57, 0.5);
+  font-size: 0.46rem;
+  font-weight: 950;
+}
+
+.housing-interior-breaker-circuit i {
+  width: 18px;
+  height: 32px;
+  border-radius: 4px 4px 7px 7px;
+  border: 1px solid rgba(45, 52, 47, 0.2);
+  background:
+    linear-gradient(180deg, #f9fbf7, #d8ded4),
+    #e4e9e0;
+  box-shadow:
+    0 4px 7px rgba(43, 49, 43, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  transform: translateY(var(--breaker-lever-offset, -5px));
+}
+
+.housing-interior-breaker-circuit.is-off i {
+  --breaker-lever-offset: 5px;
+  background:
+    linear-gradient(180deg, #fff7f3, #e8d4cc),
+    #eadbd5;
+}
+
+.housing-interior-breaker-circuit em {
+  max-width: 100%;
+  overflow: hidden;
+  color: rgba(45, 58, 50, 0.6);
+  font-size: 0.46rem;
+  font-style: normal;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.housing-interior-breaker-box__handle {
+  position: absolute;
+  left: 50%;
+  bottom: 5px;
+  z-index: 1;
+  width: 58px;
+  height: 10px;
+  border: 1px solid rgba(175, 179, 169, 0.82);
+  border-radius: 0 0 8px 8px;
+  background: linear-gradient(180deg, #f8faf5, #d8ddd4);
+  transform: translateX(-50%);
+}
+
 .housing-interior-panel__hero-overlay .housing-interior-temperature-panel span,
 .housing-interior-panel__hero-overlay .housing-interior-temperature-panel strong,
 .housing-interior-panel__hero-overlay .housing-interior-temperature-panel small,
@@ -30751,11 +31225,12 @@ button.small-apc-receiving-queue__item:hover {
 
 .housing-interior-panel__exit {
   position: absolute;
-  top: 26px;
-  right: 26px;
-  z-index: 2;
-  min-width: 108px;
-  min-height: 52px;
+  left: 61.5%;
+  top: 43.5%;
+  right: auto;
+  z-index: 5;
+  min-width: 104px;
+  min-height: 42px;
   border-radius: 16px;
 }
 
@@ -31087,8 +31562,17 @@ button.small-apc-receiving-queue__item:hover {
 }
 
 .housing-interior-recipe-card__button {
-  width: 100%;
+  align-self: center;
+  width: auto;
+  min-width: 86px;
+  max-width: 100%;
+  min-height: 34px;
+  padding-inline: 12px;
   margin-top: auto;
+  line-height: 1;
+  white-space: nowrap;
+  word-break: keep-all;
+  overflow: visible;
 }
 
 .housing-interior-cooking-appliance-grid {
@@ -31100,6 +31584,12 @@ button.small-apc-receiving-queue__item:hover {
 }
 
 .housing-interior-cooking-appliance-card {
+  --cooking-gauge-track: rgba(229, 239, 230, 0.82);
+  --cooking-gauge-border: rgba(47, 111, 74, 0.12);
+  --cooking-gauge-fill-1: #2fdf90;
+  --cooking-gauge-fill-2: #8effc2;
+  --cooking-gauge-fill-3: #d9ffe8;
+  --cooking-gauge-glow: rgba(47, 226, 144, 0.42);
   display: grid;
   gap: 9px;
   min-width: 0;
@@ -31107,6 +31597,42 @@ button.small-apc-receiving-queue__item:hover {
   border-radius: 14px;
   border: 1px solid rgba(71, 109, 86, 0.14);
   background: rgba(255, 253, 248, 0.82);
+}
+
+.housing-interior-cooking-appliance-card.is-type-microwave {
+  --cooking-gauge-track: rgba(245, 231, 223, 0.88);
+  --cooking-gauge-border: rgba(190, 97, 52, 0.18);
+  --cooking-gauge-fill-1: #ff7d45;
+  --cooking-gauge-fill-2: #ffd166;
+  --cooking-gauge-fill-3: #fff1b8;
+  --cooking-gauge-glow: rgba(255, 128, 69, 0.44);
+}
+
+.housing-interior-cooking-appliance-card.is-type-riceCooker {
+  --cooking-gauge-track: rgba(236, 232, 244, 0.9);
+  --cooking-gauge-border: rgba(114, 91, 174, 0.18);
+  --cooking-gauge-fill-1: #8b70ff;
+  --cooking-gauge-fill-2: #d5c8ff;
+  --cooking-gauge-fill-3: #fff;
+  --cooking-gauge-glow: rgba(139, 112, 255, 0.4);
+}
+
+.housing-interior-cooking-appliance-card.is-type-waterPurifier {
+  --cooking-gauge-track: rgba(224, 240, 248, 0.9);
+  --cooking-gauge-border: rgba(64, 139, 194, 0.18);
+  --cooking-gauge-fill-1: #2f9fe8;
+  --cooking-gauge-fill-2: #75e2ff;
+  --cooking-gauge-fill-3: #dffaff;
+  --cooking-gauge-glow: rgba(63, 178, 232, 0.42);
+}
+
+.housing-interior-cooking-appliance-card.is-type-electricKettle {
+  --cooking-gauge-track: rgba(239, 233, 226, 0.9);
+  --cooking-gauge-border: rgba(142, 99, 70, 0.18);
+  --cooking-gauge-fill-1: #b7794f;
+  --cooking-gauge-fill-2: #f4b96f;
+  --cooking-gauge-fill-3: #ffe6bd;
+  --cooking-gauge-glow: rgba(203, 131, 73, 0.4);
 }
 
 .housing-interior-cooking-appliance-card.is-installed {
@@ -31230,26 +31756,110 @@ button.small-apc-receiving-queue__item:hover {
   background: rgba(255, 255, 255, 0.42);
 }
 
+.housing-interior-cooking-appliance-card__progress {
+  display: grid;
+  gap: 5px;
+  margin-top: 1px;
+}
+
+.housing-interior-cooking-appliance-card__progress-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: rgba(48, 86, 62, 0.68);
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.housing-interior-cooking-appliance-card__progress-head strong {
+  color: rgba(36, 92, 61, 0.78);
+  font-size: 0.72rem;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.housing-interior-cooking-appliance-card__progress.is-idle .housing-interior-cooking-appliance-card__progress-head {
+  color: rgba(76, 89, 76, 0.54);
+}
+
+.housing-interior-cooking-appliance-card__progress.is-idle .housing-interior-cooking-appliance-card__progress-head strong {
+  color: rgba(76, 89, 76, 0.58);
+}
+
 .housing-interior-cooking-appliance-card__gauge {
+  position: relative;
   width: 100%;
-  height: 9px;
+  height: 12px;
   border-radius: 999px;
-  border: 1px solid rgba(47, 111, 74, 0.12);
-  background: rgba(229, 239, 230, 0.82);
+  border: 1px solid var(--cooking-gauge-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0)),
+    var(--cooking-gauge-track);
   overflow: hidden;
-  box-shadow: inset 0 1px 2px rgba(26, 58, 39, 0.12);
+  box-shadow:
+    inset 0 1px 3px rgba(26, 58, 39, 0.14),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.52);
 }
 
 .housing-interior-cooking-appliance-card__gauge span {
+  position: relative;
   display: block;
   height: 100%;
   border-radius: inherit;
   background:
-    linear-gradient(90deg, #2fdf90, #8effc2);
+    linear-gradient(90deg, var(--cooking-gauge-fill-1), var(--cooking-gauge-fill-2) 62%, var(--cooking-gauge-fill-3));
   box-shadow:
-    0 0 10px rgba(47, 226, 144, 0.56),
+    0 0 12px var(--cooking-gauge-glow),
     inset 0 0 0 1px rgba(255, 255, 255, 0.34);
   transition: width 260ms linear;
+}
+
+.housing-interior-cooking-appliance-card__gauge span::after {
+  content: '';
+  position: absolute;
+  inset: 1px 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.48), transparent),
+    repeating-linear-gradient(
+      115deg,
+      rgba(255, 255, 255, 0.2) 0 7px,
+      rgba(255, 255, 255, 0) 7px 14px
+    );
+  opacity: 0.62;
+  transform: translateX(-34px);
+}
+
+.housing-interior-cooking-appliance-card.is-cooking .housing-interior-cooking-appliance-card__gauge {
+  box-shadow:
+    inset 0 1px 3px rgba(26, 58, 39, 0.14),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.52),
+    0 0 0 3px color-mix(in srgb, var(--cooking-gauge-glow) 34%, transparent),
+    0 8px 16px color-mix(in srgb, var(--cooking-gauge-glow) 28%, transparent);
+}
+
+.housing-interior-cooking-appliance-card.is-cooking .housing-interior-cooking-appliance-card__gauge span::after {
+  animation: cooking-appliance-gauge-sheen 1.25s linear infinite;
+}
+
+.housing-interior-cooking-appliance-card__progress.is-idle .housing-interior-cooking-appliance-card__gauge span {
+  box-shadow: none;
+}
+
+@keyframes cooking-appliance-gauge-sheen {
+  from {
+    transform: translateX(-34px);
+  }
+  to {
+    transform: translateX(88px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .housing-interior-cooking-appliance-card.is-cooking .housing-interior-cooking-appliance-card__gauge span::after {
+    animation: none;
+  }
 }
 
 .housing-interior-cooking-appliance-card__collect-button {
@@ -31288,7 +31898,7 @@ button.small-apc-receiving-queue__item:hover {
 
 .housing-interior-meal-plate-slot {
   min-width: 0;
-  min-height: 82px;
+  min-height: 102px;
   padding: 7px 8px;
   border-radius: 8px;
   border: 1px solid rgba(71, 109, 86, 0.14);
@@ -31341,10 +31951,27 @@ button.small-apc-receiving-queue__item:hover {
   white-space: nowrap;
 }
 
+.housing-interior-meal-plate-slot__thumb {
+  width: 44px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid rgba(71, 109, 86, 0.12);
+  background: rgba(255, 255, 255, 0.68);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.housing-interior-meal-plate-slot__thumb > img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .housing-interior-meal-plate-slot__actions {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 4px;
   margin-top: 3px;
 }
@@ -31460,16 +32087,44 @@ button.small-apc-receiving-queue__item:hover {
   background: rgba(255, 252, 246, 0.76);
   color: #315f46;
   padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 10px;
   text-align: left;
   cursor: pointer;
 }
 
-.housing-interior-meal-plate-option > strong {
+.housing-interior-meal-plate-option.is-with-image {
+  grid-template-columns: 54px minmax(0, 1fr);
+}
+
+.housing-interior-meal-plate-option__thumb {
+  width: 54px;
+  height: 54px;
+  border-radius: 10px;
+  border: 1px solid rgba(71, 109, 86, 0.12);
+  background: rgba(255, 255, 255, 0.72);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.housing-interior-meal-plate-option__thumb > img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.housing-interior-meal-plate-option__body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.housing-interior-meal-plate-option__body > strong {
   max-width: 100%;
   color: inherit;
   font-size: 0.9rem;
@@ -31480,7 +32135,7 @@ button.small-apc-receiving-queue__item:hover {
   white-space: nowrap;
 }
 
-.housing-interior-meal-plate-option > span {
+.housing-interior-meal-plate-option__body > span {
   max-width: 100%;
   color: rgba(49, 95, 70, 0.68);
   font-size: 0.74rem;
@@ -31498,7 +32153,7 @@ button.small-apc-receiving-queue__item:hover {
   color: #fffdf7;
 }
 
-.housing-interior-meal-plate-option.is-selected > span {
+.housing-interior-meal-plate-option.is-selected .housing-interior-meal-plate-option__body > span {
   color: rgba(255, 253, 247, 0.78);
 }
 
@@ -31572,8 +32227,389 @@ button.small-apc-receiving-queue__item:hover {
   width: min(720px, calc(100vw - 36px));
 }
 
+.confirm-modal--housing-cook-appliance-picker {
+  width: min(620px, calc(100vw - 36px));
+}
+
 .confirm-modal--housing-cooking-appliance {
   width: min(920px, calc(100vw - 36px));
+}
+
+.confirm-modal--housing-serving-container-picker {
+  width: min(640px, calc(100vw - 36px));
+}
+
+.housing-interior-cook-appliance-picker {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+  max-height: min(340px, calc(100vh - 300px));
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
+}
+
+.housing-interior-cook-appliance-picker--tab {
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.housing-interior-cook-setup-panel {
+  display: grid;
+  gap: 8px;
+  margin: 4px 0 10px;
+  padding: 10px;
+  border: 1px solid rgba(71, 109, 86, 0.13);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 92% 10%, rgba(208, 239, 222, 0.42), rgba(255, 255, 255, 0) 48%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.66), rgba(248, 252, 244, 0.5));
+}
+
+.housing-interior-cook-setup-panel__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.housing-interior-cook-setup-panel__head strong {
+  color: #214c35;
+  font-size: 0.92rem;
+  font-weight: 950;
+  line-height: 1.15;
+}
+
+.housing-interior-cook-setup-panel__head span,
+.housing-interior-cook-setup-panel__note {
+  color: rgba(54, 83, 64, 0.68);
+  font-size: 0.74rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.housing-interior-cook-appliance-picker--inline {
+  grid-template-columns: repeat(auto-fit, minmax(188px, 1fr));
+  gap: 8px;
+  margin-top: 0;
+  max-height: none;
+  overflow: visible;
+  padding-right: 0;
+}
+
+.housing-interior-cook-appliance-picker__section-title {
+  color: rgba(33, 76, 53, 0.82);
+  font-size: 0.78rem;
+  font-weight: 950;
+  line-height: 1.2;
+  margin-top: 2px;
+}
+
+.housing-interior-cook-appliance-picker--inline .housing-interior-cook-appliance-option {
+  grid-template-columns: 42px minmax(0, 1fr);
+  min-height: 62px;
+  padding: 8px;
+}
+
+.housing-interior-cook-appliance-picker--inline .housing-interior-cook-appliance-option__image {
+  width: 42px;
+  height: 42px;
+}
+
+.housing-interior-cook-setup-card-row {
+  --cook-setup-card-gap: 8px;
+  --cook-setup-visible-cards: 5;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - (var(--cook-setup-card-gap) * (var(--cook-setup-visible-cards) - 1))) / var(--cook-setup-visible-cards));
+  gap: var(--cook-setup-card-gap);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 2px 8px;
+  scrollbar-gutter: stable;
+  scroll-snap-type: x proximity;
+}
+
+.housing-interior-cook-setup-card-row .housing-interior-cook-appliance-option {
+  grid-template-columns: 18px 36px minmax(0, 1fr);
+  min-height: 74px;
+  gap: 8px;
+  padding: 8px;
+  scroll-snap-align: start;
+}
+
+.housing-interior-cook-setup-card-row .housing-interior-serving-container-empty {
+  display: grid;
+  place-items: center;
+  min-height: 74px;
+  padding: 10px 12px;
+  line-height: 1.35;
+  scroll-snap-align: start;
+}
+
+.housing-interior-cook-setup-card-row .housing-interior-cook-appliance-option__image {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+}
+
+.housing-interior-cook-setup-checkbox {
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgba(45, 83, 62, 0.32);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.housing-interior-cook-appliance-option.is-selected .housing-interior-cook-setup-checkbox {
+  border-color: rgba(36, 103, 66, 0.82);
+  background: linear-gradient(180deg, #2f7d4e, #245f3e);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 0 0 2px rgba(47, 226, 144, 0.18);
+}
+
+.housing-interior-cook-appliance-option.is-selected .housing-interior-cook-setup-checkbox::after {
+  content: "";
+  display: block;
+  width: 8px;
+  height: 4px;
+  margin: 4px auto 0;
+  border-left: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: rotate(-45deg);
+}
+
+.housing-interior-cook-setup-card-row .housing-interior-cook-appliance-option__meta {
+  min-width: 0;
+  gap: 3px;
+}
+
+.housing-interior-cook-setup-card-row .housing-interior-cook-appliance-option__meta strong,
+.housing-interior-cook-setup-card-row .housing-interior-cook-appliance-option__meta small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.housing-interior-cook-setup-card-row .housing-interior-cook-appliance-option__meta strong {
+  font-size: 0.86rem;
+}
+
+.housing-interior-cook-setup-card-row .housing-interior-cook-appliance-option__meta small {
+  font-size: 0.72rem;
+}
+
+.housing-interior-cook-setup-empty {
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+  margin-top: 10px;
+  border: 1px dashed rgba(71, 109, 86, 0.2);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(219, 242, 227, 0.46), rgba(255, 255, 255, 0) 48%),
+    rgba(250, 250, 244, 0.76);
+  color: rgba(54, 83, 64, 0.72);
+  font-size: 0.9rem;
+  font-weight: 850;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .housing-interior-cook-setup-card-row {
+    --cook-setup-visible-cards: 3;
+  }
+}
+
+@media (max-width: 560px) {
+  .housing-interior-cook-setup-card-row {
+    --cook-setup-visible-cards: 2;
+  }
+}
+
+.housing-interior-cook-appliance-option {
+  width: 100%;
+  min-width: 0;
+  appearance: none;
+  border: 1px solid rgba(71, 109, 86, 0.16);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at top right, rgba(227, 245, 232, 0.68), rgba(255, 255, 255, 0) 58%),
+    rgba(255, 253, 248, 0.94);
+  color: #214c35;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  text-align: left;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease, opacity 0.16s ease;
+}
+
+.housing-interior-cook-appliance-option:hover:not(:disabled),
+.housing-interior-cook-appliance-option:focus-visible {
+  border-color: rgba(43, 111, 73, 0.34);
+  box-shadow: 0 10px 20px rgba(38, 84, 59, 0.12);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.housing-interior-cook-appliance-option.is-selected {
+  border-color: rgba(47, 226, 144, 0.74);
+  box-shadow:
+    0 0 0 2px rgba(126, 255, 190, 0.28),
+    0 12px 22px rgba(38, 84, 59, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.86);
+}
+
+.housing-interior-cook-appliance-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.housing-interior-cook-appliance-option__image {
+  width: 54px;
+  height: 54px;
+  border: 1px solid rgba(71, 109, 86, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.housing-interior-cook-appliance-option__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 5px;
+}
+
+.housing-interior-cook-appliance-option__meta {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.housing-interior-cook-appliance-option__meta strong {
+  min-width: 0;
+  color: #214c35;
+  font-size: 0.92rem;
+  font-weight: 900;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.housing-interior-cook-appliance-option__meta small {
+  color: rgba(42, 74, 55, 0.62);
+  font-size: 0.78rem;
+  font-weight: 820;
+  line-height: 1.25;
+}
+
+.housing-interior-serving-container-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+  max-height: min(360px, calc(100vh - 300px));
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
+}
+
+.housing-interior-serving-container-group {
+  display: grid;
+  gap: 8px;
+}
+
+.housing-interior-serving-container-group > strong {
+  color: #214c35;
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.housing-interior-serving-container-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.housing-interior-serving-container-option {
+  width: 100%;
+  min-width: 0;
+  appearance: none;
+  border: 1px solid rgba(71, 109, 86, 0.16);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at top right, rgba(220, 246, 235, 0.62), rgba(255, 255, 255, 0) 56%),
+    rgba(255, 253, 248, 0.94);
+  color: #214c35;
+  cursor: pointer;
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  text-align: left;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+}
+
+.housing-interior-serving-container-option:hover,
+.housing-interior-serving-container-option:focus-visible {
+  border-color: rgba(43, 111, 73, 0.34);
+  box-shadow: 0 10px 20px rgba(38, 84, 59, 0.12);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.housing-interior-serving-container-option.is-selected {
+  border-color: rgba(47, 226, 144, 0.74);
+  box-shadow:
+    0 0 0 2px rgba(126, 255, 190, 0.28),
+    0 12px 22px rgba(38, 84, 59, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.86);
+}
+
+.housing-interior-serving-container-option > span {
+  width: fit-content;
+  border-radius: 999px;
+  background: rgba(43, 111, 73, 0.1);
+  color: #2f704c;
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1;
+  padding: 5px 7px;
+}
+
+.housing-interior-serving-container-option > strong {
+  color: #214c35;
+  font-size: 0.92rem;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.housing-interior-serving-container-option > small {
+  color: rgba(42, 74, 55, 0.62);
+  font-size: 0.78rem;
+  font-weight: 760;
+  line-height: 1.35;
+}
+
+.housing-interior-serving-container-empty {
+  border: 1px dashed rgba(71, 109, 86, 0.18);
+  border-radius: 12px;
+  background: rgba(255, 253, 248, 0.68);
+  color: rgba(42, 74, 55, 0.62);
+  font-size: 0.84rem;
+  font-weight: 820;
+  padding: 14px;
+  text-align: center;
 }
 
 .housing-interior-cookable-prep-list {
@@ -32177,12 +33213,26 @@ button.small-apc-receiving-queue__item:hover {
   line-height: 1.45;
 }
 
+.housing-interior-recipe-detail__section {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.housing-interior-recipe-detail__section > strong {
+  color: rgba(33, 76, 53, 0.78);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.housing-interior-recipe-detail__chips,
 .housing-interior-recipe-detail__ingredients {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
+.housing-interior-recipe-detail__chips span,
 .housing-interior-recipe-detail__ingredients span {
   padding: 5px 8px;
   border-radius: 999px;
@@ -32193,16 +33243,28 @@ button.small-apc-receiving-queue__item:hover {
   font-weight: 750;
 }
 
+.housing-interior-recipe-detail__chips span.is-ready,
 .housing-interior-recipe-detail__ingredients span.is-ready {
   border-color: rgba(43, 111, 73, 0.2);
   background: rgba(225, 242, 228, 0.72);
   color: #1d5c3b;
 }
 
+.housing-interior-recipe-detail__chips span.is-missing,
 .housing-interior-recipe-detail__ingredients span.is-missing {
   border-color: rgba(151, 94, 62, 0.2);
   background: rgba(252, 238, 224, 0.68);
   color: #7a4a2c;
+}
+
+.housing-interior-recipe-detail__inline-button {
+  min-width: 72px;
+  min-height: 28px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .housing-interior-placeholder-card {
@@ -32288,6 +33350,69 @@ button.small-apc-receiving-queue__item:hover {
   justify-content: space-between;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.housing-interior-modal-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.housing-interior-modal-title-row > span {
+  min-width: 0;
+}
+
+.housing-interior-storage-mode-toggle {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 5px 8px 5px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(71, 109, 86, 0.16);
+  background: rgba(255, 255, 255, 0.7);
+  color: rgba(48, 82, 62, 0.78);
+  font-size: 0.78rem;
+  font-weight: 850;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.62);
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease,
+    transform 120ms ease;
+}
+
+.housing-interior-storage-mode-toggle strong {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  min-height: 24px;
+  border-radius: 999px;
+  background: rgba(119, 132, 123, 0.14);
+  color: rgba(63, 77, 67, 0.82);
+  font-size: 0.76rem;
+}
+
+.housing-interior-storage-mode-toggle.is-on {
+  border-color: rgba(43, 111, 73, 0.34);
+  background: linear-gradient(180deg, rgba(229, 247, 234, 0.92), rgba(210, 236, 218, 0.78));
+  color: #214c35;
+  box-shadow:
+    0 8px 18px rgba(43, 111, 73, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.68);
+}
+
+.housing-interior-storage-mode-toggle.is-on strong {
+  background: #2b6f49;
+  color: #fff;
+}
+
+.housing-interior-storage-mode-toggle:hover {
+  transform: translateY(-1px);
 }
 
 .housing-interior-cold-storage-head > strong {
@@ -32579,38 +33704,210 @@ button.small-apc-receiving-queue__item:hover {
 }
 
 .housing-interior-water-source-summary-card {
+  position: relative;
   display: grid;
-  gap: 12px;
+  align-content: start;
+  gap: 14px;
   min-height: 220px;
-  padding: 16px;
-  border: 1px solid rgba(39, 93, 62, 0.14);
-  border-radius: 18px;
+  padding: 18px;
+  border: 1px solid rgba(39, 93, 62, 0.16);
+  border-radius: 16px;
   background:
     radial-gradient(circle at top right, rgba(211, 242, 221, 0.46), rgba(255, 255, 255, 0) 58%),
     rgba(255, 253, 248, 0.94);
   color: inherit;
   text-align: left;
-  box-shadow: 0 14px 32px rgba(39, 93, 62, 0.08);
-}
-
-button.housing-interior-water-source-summary-card {
   cursor: pointer;
+  outline: none;
+  box-shadow:
+    0 12px 28px rgba(39, 93, 62, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    background 140ms ease;
 }
 
-button.housing-interior-water-source-summary-card:hover {
+.housing-interior-water-source-summary-card.is-selected {
+  animation: housing-water-source-card-select 260ms cubic-bezier(0.2, 0.9, 0.3, 1.18);
+}
+
+.housing-interior-water-source-summary-card:hover,
+.housing-interior-water-source-summary-card:focus-visible {
   border-color: rgba(43, 111, 73, 0.32);
   transform: translateY(-1px);
+  box-shadow:
+    0 16px 34px rgba(39, 93, 62, 0.12),
+    0 0 0 3px rgba(73, 156, 110, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.76);
+}
+
+.housing-interior-water-source-summary-card.is-selected {
+  border-color: rgba(42, 129, 93, 0.48);
+  box-shadow:
+    0 18px 38px rgba(39, 93, 62, 0.13),
+    0 0 0 3px rgba(73, 156, 110, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+}
+
+.housing-interior-water-source-summary-card__top {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.housing-interior-water-source-summary-card__top > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.housing-interior-water-source-summary-card__top strong {
+  color: #214c35;
+  font-size: 0.98rem;
+  font-weight: 950;
+  line-height: 1.15;
+}
+
+.housing-interior-water-source-summary-card__top small {
+  color: rgba(33, 76, 53, 0.58);
+  font-size: 0.74rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.housing-interior-water-source-summary-card__check {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  margin-top: 0;
+  border-radius: 7px;
+  border: 1px solid rgba(40, 91, 62, 0.22);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.84),
+    0 4px 10px rgba(38, 81, 61, 0.08);
+  transform: scale(1);
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.housing-interior-water-source-summary-card.is-selected .housing-interior-water-source-summary-card__check {
+  border-color: rgba(37, 126, 87, 0.78);
+  background: linear-gradient(135deg, #2f9d6d, #58bd91);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 6px 14px rgba(37, 126, 87, 0.22);
+  animation: housing-water-source-check-pop 280ms cubic-bezier(0.2, 0.9, 0.3, 1.25);
+}
+
+.housing-interior-water-source-summary-card.is-selected .housing-interior-water-source-summary-card__check::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 3px;
+  width: 5px;
+  height: 10px;
+  border: solid rgba(255, 255, 255, 0.96);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) scale(1);
+  transform-origin: 50% 75%;
+  animation: housing-water-source-check-draw 220ms ease-out both;
+}
+
+@keyframes housing-water-source-card-select {
+  0% {
+    transform: translateY(0) scale(0.992);
+  }
+  62% {
+    transform: translateY(-2px) scale(1.006);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes housing-water-source-check-pop {
+  0% {
+    transform: scale(0.78);
+  }
+  58% {
+    transform: scale(1.16);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes housing-water-source-check-draw {
+  0% {
+    opacity: 0;
+    transform: rotate(45deg) scale(0.45);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(45deg) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .housing-interior-water-source-summary-card.is-selected,
+  .housing-interior-water-source-summary-card.is-selected .housing-interior-water-source-summary-card__check,
+  .housing-interior-water-source-summary-card.is-selected .housing-interior-water-source-summary-card__check::after {
+    animation: none;
+  }
+}
+
+.housing-interior-water-source-summary-card__manage {
+  align-self: start;
+  min-width: 58px;
+  min-height: 38px;
+  padding: 8px 15px;
+  border: 1px solid rgba(132, 229, 191, 0.82);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.42), transparent 44%),
+    linear-gradient(180deg, #47ba86, #237a56);
+  color: #ffffff;
+  font-size: 0.84rem;
+  font-weight: 950;
+  white-space: nowrap;
+  box-shadow:
+    0 0 0 2px rgba(68, 182, 255, 0.16),
+    0 0 16px rgba(53, 172, 255, 0.46),
+    0 8px 16px rgba(31, 102, 73, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.34);
+  text-shadow: 0 1px 0 rgba(20, 75, 53, 0.38);
+}
+
+.housing-interior-water-source-summary-card__manage:hover:not(:disabled),
+.housing-interior-water-source-summary-card__manage:focus-visible {
+  border-color: rgba(153, 235, 205, 0.96);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.5), transparent 45%),
+    linear-gradient(180deg, #58cc98, #278660);
+  box-shadow:
+    0 0 0 3px rgba(68, 182, 255, 0.2),
+    0 0 22px rgba(53, 172, 255, 0.62),
+    0 10px 18px rgba(31, 102, 73, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38);
 }
 
 .housing-interior-water-source-summary-card--tank {
   background:
-    radial-gradient(circle at top right, rgba(207, 247, 237, 0.72), rgba(255, 255, 255, 0) 58%),
-    linear-gradient(135deg, rgba(244, 255, 250, 0.96), rgba(255, 253, 248, 0.92));
+    radial-gradient(circle at 90% 12%, rgba(115, 213, 188, 0.28), rgba(255, 255, 255, 0) 46%),
+    linear-gradient(135deg, rgba(238, 255, 249, 0.96), rgba(255, 253, 248, 0.92));
 }
 
 .housing-interior-water-source-summary-card--bottled {
   background:
-    radial-gradient(circle at top right, rgba(228, 241, 255, 0.64), rgba(255, 255, 255, 0) 58%),
+    radial-gradient(circle at 90% 12%, rgba(151, 198, 244, 0.28), rgba(255, 255, 255, 0) 48%),
     linear-gradient(135deg, rgba(247, 252, 255, 0.96), rgba(255, 253, 248, 0.92));
 }
 
@@ -32743,6 +34040,15 @@ button.housing-interior-water-source-summary-card:hover {
   justify-content: center;
 }
 
+.housing-interior-facility-subtabs,
+.housing-interior-warehouse-subtabs {
+  margin-bottom: 12px;
+}
+
+.housing-interior-warehouse-subtabs {
+  margin-top: -2px;
+}
+
 @media (max-width: 760px) {
   .housing-interior-boiler-status-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -32756,11 +34062,23 @@ button.housing-interior-water-source-summary-card:hover {
   overflow: hidden;
 }
 
-.housing-interior-placeholder-grid--storage .housing-interior-placeholder-source-list,
+.housing-interior-placeholder-card--storage-wide {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.housing-interior-placeholder-grid--storage .housing-interior-placeholder-item-list--storage,
 .housing-interior-placeholder-grid--storage .housing-interior-placeholder-item-list--bag {
   max-height: min(32vh, 210px);
   overflow: auto;
   padding-right: 4px;
+}
+
+.housing-interior-placeholder-card--storage-wide .housing-interior-placeholder-item-list--storage {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
 }
 
 .housing-interior-placeholder-grid--storage .housing-interior-placeholder-card--bag {
@@ -32779,6 +34097,351 @@ button.housing-interior-water-source-summary-card:hover {
   width: 34px;
   min-height: 34px;
   padding-inline: 0;
+}
+
+.housing-interior-storage-title-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-left: auto;
+  min-width: 0;
+}
+
+.housing-interior-placeholder-card--storage-wide > .housing-interior-placeholder-card__title-row {
+  flex-wrap: nowrap;
+}
+
+.housing-interior-placeholder-card--storage-wide > .housing-interior-placeholder-card__title-row > strong {
+  flex: 0 0 auto;
+}
+
+.housing-interior-storage-capacity-badge {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 96px;
+  padding: 6px 9px;
+  border-radius: 12px;
+  border: 1px solid rgba(71, 109, 86, 0.14);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(244, 250, 240, 0.72));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.58);
+}
+
+.housing-interior-storage-capacity-badge__text {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  color: rgba(54, 83, 64, 0.72);
+  font-size: 0.78rem;
+  font-weight: 850;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.housing-interior-storage-capacity-badge__text strong {
+  color: #214c35;
+  font-size: 0.9rem;
+  font-weight: 950;
+}
+
+.housing-interior-storage-capacity-badge__text em {
+  color: rgba(54, 83, 64, 0.42);
+  font-style: normal;
+}
+
+.housing-interior-storage-capacity-badge__gauge {
+  height: 5px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(71, 109, 86, 0.12);
+}
+
+.housing-interior-storage-capacity-badge__gauge span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #7eb18a, #d2a85d);
+  box-shadow: 0 0 10px rgba(126, 177, 138, 0.34);
+}
+
+.housing-interior-storage-detail-button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.housing-interior-storage-item-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 2px 7px;
+  scrollbar-gutter: stable;
+}
+
+.housing-interior-storage-item-tab {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 34px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(71, 109, 86, 0.13);
+  background: rgba(255, 255, 255, 0.58);
+  color: rgba(33, 76, 53, 0.76);
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 850;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 120ms ease;
+}
+
+.housing-interior-storage-item-tab:hover {
+  border-color: rgba(43, 111, 73, 0.26);
+  background: rgba(238, 249, 238, 0.82);
+}
+
+.housing-interior-storage-item-tab:active {
+  transform: translateY(1px);
+}
+
+.housing-interior-storage-item-tab.is-active {
+  border-color: rgba(43, 111, 73, 0.38);
+  background: linear-gradient(180deg, rgba(229, 247, 232, 0.94), rgba(208, 235, 216, 0.82));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.62),
+    0 8px 16px rgba(38, 84, 59, 0.08);
+  color: #214c35;
+}
+
+.housing-interior-storage-item-tab strong {
+  min-width: 18px;
+  padding: 2px 5px;
+  border-radius: 999px;
+  background: rgba(43, 111, 73, 0.1);
+  color: #214c35;
+  font-size: 0.68rem;
+  line-height: 1;
+  text-align: center;
+}
+
+.housing-interior-storage-filter-empty {
+  display: grid;
+  place-items: center;
+  min-height: 86px;
+  border: 1px dashed rgba(71, 109, 86, 0.18);
+  border-radius: 12px;
+  color: rgba(54, 83, 64, 0.68);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.housing-storage-detail-view {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 420px;
+  max-height: min(68vh, 640px);
+}
+
+.housing-storage-detail-view__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.housing-storage-detail-view__head > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.housing-storage-detail-view__head strong {
+  color: #214c35;
+  font-size: 1.2rem;
+}
+
+.housing-storage-detail-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.housing-storage-detail-summary > span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(71, 109, 86, 0.12);
+  background: rgba(255, 255, 255, 0.56);
+}
+
+.housing-storage-detail-summary small,
+.housing-storage-detail-row__stats small {
+  color: rgba(54, 83, 64, 0.68);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.housing-storage-detail-summary strong,
+.housing-storage-detail-row__stats strong {
+  color: #214c35;
+  font-size: 0.92rem;
+}
+
+.housing-storage-detail-list {
+  --housing-storage-detail-card-height: 168px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 10px;
+  min-height: 0;
+  max-height: calc((var(--housing-storage-detail-card-height) * 3) + (10px * 2));
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.housing-storage-detail-row {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 9px;
+  align-items: start;
+  min-height: var(--housing-storage-detail-card-height);
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(71, 109, 86, 0.12);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(247, 251, 243, 0.54)),
+    radial-gradient(circle at top right, rgba(204, 235, 214, 0.28), rgba(255, 255, 255, 0) 60%);
+  overflow: hidden;
+}
+
+.housing-storage-detail-row__thumb {
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  border: 1px solid rgba(71, 109, 86, 0.12);
+  background: rgba(255, 255, 255, 0.72);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.housing-storage-detail-row__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.housing-storage-detail-row__main {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.housing-storage-detail-row__title {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+
+.housing-storage-detail-row__title strong {
+  color: #214c35;
+  max-width: 100%;
+  font-size: 0.9rem;
+  line-height: 1.18;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.housing-storage-detail-row__title span {
+  flex: 0 0 auto;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: rgba(218, 237, 221, 0.72);
+  color: rgba(33, 76, 53, 0.82);
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.housing-storage-detail-row__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  color: rgba(54, 83, 64, 0.72);
+  font-size: 0.7rem;
+  font-weight: 750;
+  line-height: 1.25;
+}
+
+.housing-storage-detail-row__meta span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.housing-storage-detail-row__stats {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.housing-storage-detail-row__stats > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 6px 7px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(71, 109, 86, 0.09);
+}
+
+.housing-storage-detail-empty {
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+  border: 1px dashed rgba(71, 109, 86, 0.22);
+  border-radius: 14px;
+  color: rgba(54, 83, 64, 0.74);
+  font-weight: 800;
+}
+
+@media (max-width: 760px) {
+  .housing-storage-detail-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .housing-storage-detail-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .housing-storage-detail-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .housing-interior-water-tank-slot-grid {
@@ -32814,6 +34477,7 @@ button.housing-interior-water-source-summary-card:hover {
 }
 
 .housing-interior-external-water-tank-card {
+  position: relative;
   border-color: rgba(67, 120, 88, 0.22);
   background:
     radial-gradient(circle at top right, rgba(210, 241, 252, 0.5), rgba(255, 255, 255, 0) 56%),
@@ -32836,25 +34500,80 @@ button.housing-interior-water-source-summary-card:hover {
   margin-left: auto;
 }
 
+.housing-interior-external-water-tank-card > .housing-interior-slot-durability {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  max-width: 146px;
+  background: rgba(255, 255, 255, 0.42);
+  border-radius: 8px;
+}
+
 .housing-interior-tank-water-visual,
 .housing-interior-tank-water-estimate {
   margin: 6px auto 0;
 }
 
 .housing-interior-tank-water-visual {
-  grid-template-columns: 44px 128px;
-  gap: 8px 10px;
-  width: min(232px, 100%);
-  min-height: 178px;
-  padding: 12px 14px;
+  grid-template-columns: 58px 150px;
+  align-content: start;
+  gap: 5px 12px;
+  width: min(276px, 100%);
+  min-height: 202px;
+  padding: 10px 14px 12px;
 }
 
 .housing-interior-tank-water-visual .tank-water-visual__tank {
-  height: 88px;
+  height: 96px;
 }
 
 .housing-interior-tank-water-visual .tank-water-visual__scale {
-  font-size: 0.55rem;
+  min-width: 0;
+  font-size: 0.48rem;
+  line-height: 0.95;
+  opacity: 0.78;
+}
+
+.housing-interior-tank-water-visual .tank-water-visual__scale > span {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-align: right;
+  text-overflow: clip;
+}
+
+.housing-interior-tank-water-visual .tank-water-visual__inset-readout {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 22px 12px 12px;
+  color: rgba(255, 255, 255, 0.96);
+  font-family: var(--font-ko-display);
+  text-align: center;
+  text-shadow: 0 2px 5px rgba(0, 77, 135, 0.42);
+  pointer-events: none;
+}
+
+.housing-interior-tank-water-visual .tank-water-visual__inset-readout strong {
+  font-size: 1.12rem;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.housing-interior-tank-water-visual .tank-water-visual__inset-readout small {
+  max-width: 100%;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 0.54rem;
+  font-weight: 850;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .housing-interior-tank-water-visual .tank-water-visual__readout strong {
@@ -32870,6 +34589,52 @@ button.housing-interior-water-source-summary-card:hover {
 .housing-interior-tank-water-visual .tank-water-visual__readout em {
   margin-top: 3px;
   font-size: 0.62rem;
+  line-height: 1.15;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.housing-interior-tank-water-visual .tank-water-visual__quality {
+  width: min(148px, 100%);
+  margin-top: 6px;
+  display: grid;
+  gap: 4px;
+  color: rgba(34, 95, 77, 0.68);
+  font-family: var(--font-ko-display);
+}
+
+.housing-interior-tank-water-visual .tank-water-visual__quality > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.58rem;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.housing-interior-tank-water-visual .tank-water-visual__quality strong {
+  color: rgba(29, 83, 65, 0.8);
+  font-size: inherit;
+  font-weight: 900;
+}
+
+.housing-interior-tank-water-visual .tank-water-visual__quality i {
+  display: block;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(44, 88, 67, 0.14);
+  box-shadow: inset 0 1px 2px rgba(33, 74, 57, 0.12);
+}
+
+.housing-interior-tank-water-visual .tank-water-visual__quality b {
+  display: block;
+  width: var(--living-water-quality-level, 0%);
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(77, 165, 122, 0.9), rgba(84, 190, 158, 0.92));
 }
 
 .housing-interior-tank-water-estimate {
@@ -33075,6 +34840,53 @@ button.housing-interior-water-source-summary-card:hover {
   font-size: 0.75rem;
   font-weight: 800;
   line-height: 1.25;
+}
+
+.housing-interior-water-source-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  justify-self: center;
+  max-width: 100%;
+  min-height: 24px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 0.72rem;
+  font-weight: 950;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 5px 12px rgba(35, 72, 96, 0.08);
+}
+
+.housing-interior-water-source-status-badge > span {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  box-shadow: 0 0 0 3px currentColor;
+  opacity: 0.32;
+}
+
+.housing-interior-water-source-status-badge.is-on {
+  color: #1d72a6;
+  border-color: rgba(52, 139, 199, 0.28);
+  background:
+    linear-gradient(180deg, rgba(250, 254, 255, 0.96), rgba(226, 244, 255, 0.9)),
+    rgba(226, 244, 255, 0.92);
+}
+
+.housing-interior-water-source-status-badge.is-off {
+  color: #9b3f3a;
+  border-color: rgba(151, 73, 67, 0.22);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(238, 239, 236, 0.9)),
+    rgba(241, 242, 240, 0.92);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 5px 12px rgba(92, 72, 70, 0.08);
 }
 
 .housing-interior-slot-durability {
@@ -33927,6 +35739,91 @@ button.housing-interior-water-source-summary-card:hover {
   padding-inline: 10px;
 }
 
+.housing-interior-prepared-meal-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.housing-interior-prepared-meal-card {
+  min-height: 112px;
+  padding: 12px;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 14% 12%, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0) 38%),
+    linear-gradient(135deg, rgba(255, 252, 246, 0.92), rgba(239, 249, 240, 0.62));
+  border-color: rgba(71, 109, 86, 0.14);
+  box-shadow:
+    0 10px 22px rgba(38, 84, 59, 0.06),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.64);
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) 72px;
+  align-items: stretch;
+  justify-content: initial;
+}
+
+.housing-interior-prepared-meal-card__thumb {
+  width: 58px;
+  height: 58px;
+  flex-basis: 58px;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.96), rgba(244, 249, 241, 0.68) 72%);
+}
+
+.housing-interior-prepared-meal-card__meta {
+  min-height: 58px;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 6px 10px;
+}
+
+.housing-interior-placeholder-item__meta > .housing-interior-prepared-meal-card__name {
+  width: 100%;
+  flex: 0 1 auto;
+  font-size: 0.92rem;
+  font-weight: 900;
+  color: #315f46;
+}
+
+.housing-interior-prepared-meal-card__actions {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 8px;
+}
+
+.housing-interior-prepared-meal-card__actions > strong {
+  color: #214c35;
+  font-size: 0.92rem;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.housing-interior-prepared-meal-card__button {
+  width: 58px;
+  min-width: 58px;
+  min-height: 34px;
+  border-radius: 999px;
+}
+
+.housing-interior-prepared-meal-empty {
+  min-height: 96px;
+  border-radius: 12px;
+  border: 1px dashed rgba(71, 109, 86, 0.16);
+  background: rgba(243, 247, 239, 0.46);
+  color: rgba(49, 95, 70, 0.58);
+  display: grid;
+  place-items: center;
+  font-size: 0.88rem;
+  font-weight: 850;
+}
+
 .housing-interior-placeholder-move-actions {
   flex: 0 0 auto;
   display: inline-flex;
@@ -34065,6 +35962,18 @@ button.housing-interior-water-source-summary-card:hover {
   padding: 0 18px;
   border-radius: 14px;
   font-size: 0.9rem;
+}
+
+.confirm-modal--housing-kitchen-cook .housing-interior-modal-body-motion {
+  margin-bottom: 0;
+}
+
+.confirm-modal--housing-kitchen-cook .housing-interior-modal-body-motion > .smooth-height-panel__inner {
+  padding-bottom: 8px;
+}
+
+.confirm-modal--housing-kitchen-cook > .footer-actions {
+  margin-top: -4px;
 }
 
 .confirm-modal--housing-pc .footer-actions {

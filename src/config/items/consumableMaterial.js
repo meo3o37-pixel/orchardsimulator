@@ -113,5 +113,29 @@ export const CONSUMABLE_MATERIAL_ITEMS = [
     desc: '주당 1개 설치, 60L/주/일 (관수펌프 필수)',
     unit: '개',
     weightKg: 0.1
+  },
+  {
+    key: 'housingGeneralWaste',
+    name: '생활쓰레기',
+    price: 0,
+    desc: '하우징 생활 중 생긴 일반 쓰레기. 1kg 단위로 적재됩니다.',
+    unit: 'kg',
+    weightKg: 1
+  },
+  {
+    key: 'housingFoodWaste',
+    name: '음식물 쓰레기',
+    price: 0,
+    desc: '조리와 식사 후 남은 음식물 쓰레기. 방치하면 생활품질이 떨어집니다.',
+    unit: 'kg',
+    weightKg: 1
+  },
+  {
+    key: 'housingRecycleWaste',
+    name: '재활용 쓰레기',
+    price: 0,
+    desc: '생수병, 포장재 등 분리배출 가능한 쓰레기. 1kg 단위로 적재됩니다.',
+    unit: 'kg',
+    weightKg: 1
   }
 ];

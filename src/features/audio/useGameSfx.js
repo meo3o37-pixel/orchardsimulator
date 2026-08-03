@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import FARM_MENU_BUTTON_SOUND from '../../assets/images/효과음/UI/딸깍음1.mp3';
 import UI_OPEN_SOUND from '../../assets/images/효과음/UI/UI 바로 열리는 소리.mp3';
 import CHECKING_BUTTON_SOUND from '../../assets/images/효과음/UI/체킹 버튼음.mp3';
+import CHANGE_BUTTON_SOUND from '../../assets/images/효과음/UI/변경 버튼음.mp3';
 import SLOT_PICKER_OPEN_SOUND from '../../assets/images/효과음/UI/모달이 휙하고 뭔가 열리는소리2.mp3';
 import PHONE_UNLOCK_SOUND from '../../assets/images/효과음/UI/핸드폰 잠금해제.mp3';
 import PHONE_TAKE_OUT_SOUND from '../../assets/images/효과음/UI/핸드폰 꺼내는소리.mp3';
@@ -48,6 +49,7 @@ export const useGameSfx = (volume = 0.1) => {
   const menuButtonAudioRef = useRef(null);
   const uiOpenAudioRef = useRef(null);
   const checkingButtonAudioRef = useRef(null);
+  const changeButtonAudioRef = useRef(null);
   const slotPickerAudioRef = useRef(null);
   const phoneUnlockAudioRef = useRef(null);
   const phoneTakeOutAudioRef = useRef(null);
@@ -149,6 +151,7 @@ export const useGameSfx = (volume = 0.1) => {
       menuButtonAudioRef.current,
       uiOpenAudioRef.current,
       checkingButtonAudioRef.current,
+      changeButtonAudioRef.current,
       slotPickerAudioRef.current,
       phoneUnlockAudioRef.current,
       phoneTakeOutAudioRef.current,
@@ -178,6 +181,7 @@ export const useGameSfx = (volume = 0.1) => {
     menuButtonAudioRef.current = createAudio(FARM_MENU_BUTTON_SOUND, volumeRef.current);
     uiOpenAudioRef.current = createAudio(UI_OPEN_SOUND, volumeRef.current);
     checkingButtonAudioRef.current = createAudio(CHECKING_BUTTON_SOUND, volumeRef.current);
+    changeButtonAudioRef.current = createAudio(CHANGE_BUTTON_SOUND, volumeRef.current);
     slotPickerAudioRef.current = createAudio(SLOT_PICKER_OPEN_SOUND, volumeRef.current);
     phoneUnlockAudioRef.current = createAudio(PHONE_UNLOCK_SOUND, volumeRef.current);
     phoneTakeOutAudioRef.current = createAudio(PHONE_TAKE_OUT_SOUND, volumeRef.current);
@@ -221,6 +225,7 @@ export const useGameSfx = (volume = 0.1) => {
         menuButtonAudioRef.current,
         uiOpenAudioRef.current,
         checkingButtonAudioRef.current,
+        changeButtonAudioRef.current,
         slotPickerAudioRef.current,
         phoneUnlockAudioRef.current,
         phoneTakeOutAudioRef.current,
@@ -250,6 +255,7 @@ export const useGameSfx = (volume = 0.1) => {
       menuButtonAudioRef.current = null;
       uiOpenAudioRef.current = null;
       checkingButtonAudioRef.current = null;
+      changeButtonAudioRef.current = null;
       slotPickerAudioRef.current = null;
       phoneUnlockAudioRef.current = null;
       phoneTakeOutAudioRef.current = null;
@@ -274,6 +280,7 @@ export const useGameSfx = (volume = 0.1) => {
     playMenuButtonSound: useCallback(() => playAudio(menuButtonAudioRef.current), [playAudio]),
     playUiOpenSound: useCallback(() => playAudio(uiOpenAudioRef.current), [playAudio]),
     playCheckingButtonSound: useCallback(() => playAudio(checkingButtonAudioRef.current), [playAudio]),
+    playChangeButtonSound: useCallback(() => playAudio(changeButtonAudioRef.current), [playAudio]),
     playSlotPickerOpenSound: useCallback(() => playAudio(slotPickerAudioRef.current), [playAudio]),
     playPhoneUnlockSound: useCallback(() => playAudio(phoneUnlockAudioRef.current), [playAudio]),
     playPhoneTakeOutSound: useCallback(() => playAudio(phoneTakeOutAudioRef.current), [playAudio]),

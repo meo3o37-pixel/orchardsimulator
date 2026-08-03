@@ -13,6 +13,11 @@ export default function useHousingEntryButtonLayout({
   draftPosition = DEFAULT_HOUSING_ENTRY_BUTTON_POSITION,
   setDraftPosition,
   setSavedPosition,
+  normalizePosition = normalizeHousingEntryButtonPosition,
+  positionPreferenceKey = 'housingEntryButtonPosition',
+  dragEnabledPreferenceKey = 'housingEntryButtonDragEnabled',
+  alertLabel = '하우징 버튼 위치',
+  logLabel = 'housing_button_layout',
 } = {}) {
   const dragRef = useRef({
     active: false,
@@ -25,11 +30,11 @@ export default function useHousingEntryButtonLayout({
   const suppressClickRef = useRef(false);
 
   const positionDirty = useMemo(() => {
-    const normalizedDraft = normalizeHousingEntryButtonPosition(draftPosition);
-    const normalizedSaved = normalizeHousingEntryButtonPosition(savedPosition);
+    const normalizedDraft = normalizePosition(draftPosition);
+    const normalizedSaved = normalizePosition(savedPosition);
     return Math.abs(normalizedDraft.xPercent - normalizedSaved.xPercent) > 0.05
       || Math.abs(normalizedDraft.yPercent - normalizedSaved.yPercent) > 0.05;
-  }, [draftPosition, savedPosition]);
+  }, [draftPosition, normalizePosition, savedPosition]);
 
   const toggleDragEnabled = useCallback(() => {
     if (typeof setDragEnabled === 'function') {
@@ -38,11 +43,12 @@ export default function useHousingEntryButtonLayout({
   }, [setDragEnabled]);
 
   const saveLayout = useCallback(() => {
-    const normalizedPosition = normalizeHousingEntryButtonPosition(draftPosition);
+    const normalizedPosition = normalizePosition(draftPosition);
     if (typeof setSavedPosition === 'function') setSavedPosition(normalizedPosition);
     if (typeof setDraftPosition === 'function') setDraftPosition(normalizedPosition);
+    if (typeof setDragEnabled === 'function') setDragEnabled(false);
     if (!authToken) {
-      window.alert('로그인된 계정이 없어 현재 접속에서만 반영됩니다. 계정 공통으로 쓰려면 로그인 상태에서 고정해 주세요.');
+      window.alert(`로그인된 계정이 없어 현재 접속에서만 반영됩니다. 계정 공통으로 쓰려면 로그인 상태에서 ${alertLabel}를 고정해 주세요.`);
       return;
     }
     void fetch('/__auth/preferences', {
@@ -51,15 +57,15 @@ export default function useHousingEntryButtonLayout({
       body: JSON.stringify({
         token: authToken,
         preferences: {
-          housingEntryButtonPosition: normalizedPosition,
-          housingEntryButtonDragEnabled: dragEnabled
+          [positionPreferenceKey]: normalizedPosition,
+          [dragEnabledPreferenceKey]: false
         }
       })
     }).catch((error) => {
-      console.error('housing_entry_button_layout_preference_save_failed', error);
-      window.alert('하우징 버튼 위치를 계정 설정에 저장하지 못했습니다. 다시 시도해 주세요.');
+      console.error(`${logLabel}_preference_save_failed`, error);
+      window.alert(`${alertLabel}를 계정 설정에 저장하지 못했습니다. 다시 시도해 주세요.`);
     });
-  }, [authToken, draftPosition, dragEnabled, setDraftPosition, setSavedPosition]);
+  }, [alertLabel, authToken, draftPosition, dragEnabledPreferenceKey, logLabel, normalizePosition, positionPreferenceKey, setDraftPosition, setDragEnabled, setSavedPosition]);
 
   const startDrag = useCallback((event) => {
     if (!dragEnabled) return;
@@ -76,11 +82,11 @@ export default function useHousingEntryButtonLayout({
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
-      startPosition: normalizeHousingEntryButtonPosition(draftPosition),
+      startPosition: normalizePosition(draftPosition),
       moved: false,
     };
     suppressClickRef.current = false;
-  }, [dragEnabled, draftPosition]);
+  }, [dragEnabled, draftPosition, normalizePosition]);
 
   const moveDrag = useCallback((event) => {
     const drag = dragRef.current;

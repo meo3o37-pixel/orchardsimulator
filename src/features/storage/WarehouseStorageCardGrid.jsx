@@ -402,6 +402,9 @@ function WarehouseStorageCard({
     ? 'is-gasoline'
     : (String(item?.fuelType || '').toLowerCase() === 'kerosene' ? 'is-kerosene' : 'is-diesel');
   const showGeneralHarvestMoveAction = item?.isHarvestStoredBox && activeTab === 'harvest' && activeHarvestTab === 'general';
+  const canShowCarrierTransferAction = Boolean(selectedCarrier) && hasTransferQty && !isParkedMachineRow;
+  const canShowOtherWarehouseTransferAction = Boolean(selectedTransportRow) && hasTransferQty && !isParkedMachineRow && !isFacilityRow;
+  const canShowTransferQtyInput = canShowCarrierTransferAction || canShowOtherWarehouseTransferAction;
   const displayKey = String(item?.displayKey || item?.key || '');
   const selectedSourceRowDisplayKey = String(selectedHarvestSourceRow?.displayKey || selectedHarvestSourceRow?.key || '');
   const selectedSourceRowCropLabel = String(selectedHarvestSourceRow?.cropLabel || selectedHarvestSourceRow?.name || '');
@@ -587,7 +590,7 @@ function WarehouseStorageCard({
             {disposalVerb}
           </button>
         )}
-        {selectedCarrier && hasTransferQty && !isParkedMachineRow ? (
+        {canShowTransferQtyInput ? (
           <>
             <input
               className="text-input shop-buy-qty-input"
@@ -596,12 +599,17 @@ function WarehouseStorageCard({
               min={1}
               max={transferMaxQty}
               value={transferQty}
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={(event) => event.stopPropagation()}
+              onDoubleClick={(event) => event.stopPropagation()}
+              onKeyDown={(event) => event.stopPropagation()}
               onChange={(event) => {
                 const raw = Math.floor(Number(event.target.value) || 1);
                 const next = Math.max(1, Math.min(transferMaxQty, raw));
                 setFacilityMoveQtyByKey((prev) => ({ ...(prev || {}), [qtyKey]: next }));
               }}
             />
+            {canShowCarrierTransferAction ? (
             <button
               type="button"
               className="button button--ghost button--compact"
@@ -611,6 +619,8 @@ function WarehouseStorageCard({
             >
               옮기기
             </button>
+            ) : null}
+            {canShowOtherWarehouseTransferAction ? (
             <button
               type="button"
               className="button button--ghost button--compact"
@@ -618,6 +628,7 @@ function WarehouseStorageCard({
             >
               다른 창고로 옮기기
             </button>
+            ) : null}
           </>
         ) : null}
       </div>
