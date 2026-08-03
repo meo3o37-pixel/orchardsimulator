@@ -47,6 +47,15 @@ export default function MapTransferVehicleArea({
   stageFuelCanToKiosk,
   toolImageSrcOf
 }) {
+  const selectedCarrierId = String(mapTransferSelectedCarrier?.id || '');
+  const isPersonalCarrier = selectedCarrierId === mapTransferPersonalCarrierId;
+  const isEquippedBagCarrier = selectedCarrierId === '__equipped_bag__'
+    || String(mapTransferSelectedCarrier?.machineKey || '') === 'equippedBag';
+  const selectedCarrierLabel = isPersonalCarrier
+    ? '개인소지품'
+    : isEquippedBagCarrier
+      ? '가방'
+      : '선택한 적재함';
   if (!mapTransferParkedCarrierRows.length) {
     return (
       <div className="empty-box" style={{ minHeight: 120 }}>
@@ -117,7 +126,7 @@ export default function MapTransferVehicleArea({
               />
             </div>
           ) : (
-            <div className="empty-box">선택한 차량 적재함이 비어 있습니다.</div>
+            <div className="empty-box">{`${selectedCarrierLabel}이 비어 있습니다.`}</div>
           )}
         </>
       ) : (

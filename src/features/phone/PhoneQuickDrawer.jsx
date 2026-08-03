@@ -1969,8 +1969,8 @@ export default function PhoneQuickDrawer({
           }
           setPhoneBagModalOpen(true);
         }}
-        aria-label="가방 열기"
-        title="가방"
+        aria-label="개인소지품 열기"
+        title="개인소지품"
       >
         <span className="quick-drawer-bag-handle__bag" aria-hidden="true">
           <span className="quick-drawer-bag-handle__bag-handle" />
@@ -1988,10 +1988,10 @@ export default function PhoneQuickDrawer({
           >
             <div className="quick-bag-modal__head">
               <div>
-                <span>가방</span>
+                <span>개인소지품</span>
                 <strong>내 개인 소지품</strong>
               </div>
-              <button type="button" onClick={() => setPhoneBagModalOpen(false)} aria-label="가방 닫기">×</button>
+              <button type="button" onClick={() => setPhoneBagModalOpen(false)} aria-label="개인소지품 닫기">×</button>
             </div>
             <div className="quick-bag-modal__summary">
               <span>종류</span>
@@ -2007,7 +2007,7 @@ export default function PhoneQuickDrawer({
                   <em>{item.qtyText}</em>
                 </article>
               )) : (
-                <div className="quick-bag-modal__empty">가방에 개인 소지품이 없습니다.</div>
+                <div className="quick-bag-modal__empty">개인소지품에 든 항목이 없습니다.</div>
               )}
             </div>
           </section>

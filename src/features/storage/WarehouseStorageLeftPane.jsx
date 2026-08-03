@@ -28,6 +28,12 @@ export default function WarehouseStorageLeftPane(props) {
       moveSecondaryCarrierItemToSelectedCarrier,
     } = carrierOnlyPaneProps;
 
+    const secondaryCarrierId = String(secondaryCarrier?.id || '');
+    const isPersonalCarrier = secondaryCarrierId === personalCarrierId;
+    const isEquippedBagCarrier = secondaryCarrierId === '__equipped_bag__'
+      || String(secondaryCarrier?.machineKey || '') === 'equippedBag';
+    const virtualCarryLabel = isEquippedBagCarrier ? '가방' : '개인소지품';
+
     return (
       <div
         ref={leftModalRef}
@@ -36,15 +42,15 @@ export default function WarehouseStorageLeftPane(props) {
         <div className="shop-cart-panel" style={{ height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column' }}>
           <div className="option-card__row">
             <strong>
-              {String(secondaryCarrier?.id || '') === personalCarrierId
-                ? '개인 가방'
+              {isPersonalCarrier || isEquippedBagCarrier
+                ? virtualCarryLabel
                 : `${machineDisplayNameWithRentTag(secondaryCarrier)} 적재함`}
             </strong>
             <span>{`적재량 ${secondaryCarrierUsedKg.toFixed(1)} / ${secondaryCarrierPayloadKg.toFixed(1)}kg`}</span>
           </div>
           <div className="shop-cart-item__meta" style={{ marginTop: 4 }}>
-            {String(secondaryCarrier?.id || '') === personalCarrierId
-              ? '개인 가방에 들어있는 물품입니다.'
+            {isPersonalCarrier || isEquippedBagCarrier
+              ? `${virtualCarryLabel}에 들어있는 물품입니다.`
               : '탑승 차량 적재함에 들어있는 물품입니다.'}
           </div>
           {secondaryCarrierCargoRows.length ? (

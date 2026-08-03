@@ -12,6 +12,14 @@ export default function MapTransferCarrierSelectorList({
         const imageSrc = typeof machineImageSrcOf === 'function'
           ? String(machineImageSrcOf(row.machine) || '')
           : '';
+        const isEquippedBag = Boolean(row.isEquippedBag)
+          || String(row?.machine?.id || '') === '__equipped_bag__'
+          || String(row?.machine?.machineKey || '') === 'equippedBag';
+        const label = row.isPersonal
+          ? '개인소지품'
+          : isEquippedBag
+            ? '가방'
+            : `${row.machine.item?.name || row.machine.machineKey} #${row.machine.unitNo}`;
         return (
         <button
           type="button"
@@ -48,8 +56,8 @@ export default function MapTransferCarrierSelectorList({
             ) : null}
             <div style={{ minWidth: 0, flex: '1 1 auto' }}>
               <div className="map-transfer-vehicle-card__head">
-                <strong>{row.isPersonal ? '개인소지품' : `${row.machine.item?.name || row.machine.machineKey} #${row.machine.unitNo}`}</strong>
-                <span>{row.isPersonal ? '기본' : (row.slotLabel || `P${row.slotNo}`)}</span>
+                <strong>{label}</strong>
+                <span>{row.isPersonal || isEquippedBag ? (row.slotLabel || '기본') : (row.slotLabel || `P${row.slotNo}`)}</span>
               </div>
               <div className="map-transfer-vehicle-card__meta">
                 {`적재량 ${(Number(row.machine.item?.payloadKg) || 0).toLocaleString()}kg`}

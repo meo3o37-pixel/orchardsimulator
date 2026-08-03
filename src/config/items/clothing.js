@@ -8,6 +8,9 @@ export const CLOTHING_ITEMS = [
     unit: '켤레',
     durable: true,
     weightKg: 0.08,
+    comfort: 4,
+    discomfort: 2,
+    mobilityPenalty: 1,
     protection: { hand: 1 }
   },
   {
@@ -19,6 +22,9 @@ export const CLOTHING_ITEMS = [
     unit: '켤레',
     durable: true,
     weightKg: 0.16,
+    comfort: 1,
+    discomfort: 6,
+    mobilityPenalty: 4,
     protection: { hand: 1, water: 2 }
   },
   {
@@ -30,6 +36,9 @@ export const CLOTHING_ITEMS = [
     unit: '켤레',
     durable: true,
     weightKg: 1.1,
+    comfort: 8,
+    discomfort: 4,
+    mobilityPenalty: 2,
     protection: { foot: 2, slip: 1 }
   },
   {
@@ -41,6 +50,9 @@ export const CLOTHING_ITEMS = [
     unit: '켤레',
     durable: true,
     weightKg: 1.4,
+    comfort: 2,
+    discomfort: 11,
+    mobilityPenalty: 7,
     protection: { foot: 1, water: 3, slip: 1 }
   },
   {
@@ -52,6 +64,9 @@ export const CLOTHING_ITEMS = [
     unit: '개',
     durable: true,
     weightKg: 0.55,
+    comfort: 5,
+    discomfort: 6,
+    mobilityPenalty: 3,
     protection: { upperBody: 2, scratch: 1 }
   },
   {
@@ -63,6 +78,9 @@ export const CLOTHING_ITEMS = [
     unit: '개',
     durable: true,
     weightKg: 0.55,
+    comfort: 5,
+    discomfort: 5,
+    mobilityPenalty: 3,
     protection: { lowerBody: 2, scratch: 1 }
   },
   {
@@ -74,6 +92,9 @@ export const CLOTHING_ITEMS = [
     unit: '벌',
     durable: true,
     weightKg: 0.7,
+    comfort: 2,
+    discomfort: 12,
+    mobilityPenalty: 5,
     protection: { upperBody: 1, water: 2, wind: 1 }
   },
   {
@@ -85,6 +106,9 @@ export const CLOTHING_ITEMS = [
     unit: '개',
     durable: true,
     weightKg: 0.65,
+    comfort: 2,
+    discomfort: 11,
+    mobilityPenalty: 5,
     protection: { lowerBody: 1, water: 2, wind: 1 }
   },
   {
@@ -96,6 +120,9 @@ export const CLOTHING_ITEMS = [
     unit: '벌',
     durable: true,
     weightKg: 1.8,
+    comfort: 3,
+    discomfort: 22,
+    mobilityPenalty: 11,
     protection: { upperBody: 2, cold: 3, wind: 1 }
   },
   {
@@ -107,6 +134,9 @@ export const CLOTHING_ITEMS = [
     unit: '개',
     durable: true,
     weightKg: 0.95,
+    comfort: 3,
+    discomfort: 16,
+    mobilityPenalty: 8,
     protection: { lowerBody: 2, cold: 2, wind: 1 }
   },
   {
@@ -118,6 +148,9 @@ export const CLOTHING_ITEMS = [
     unit: '팩',
     durable: true,
     weightKg: 0.12,
+    comfort: 0,
+    discomfort: 7,
+    mobilityPenalty: 2,
     protection: { dust: 2, face: 1 }
   },
   {
@@ -129,6 +162,9 @@ export const CLOTHING_ITEMS = [
     unit: '개',
     durable: true,
     weightKg: 0.09,
+    comfort: 1,
+    discomfort: 4,
+    mobilityPenalty: 1,
     protection: { eyes: 2, splash: 1 }
   },
   {
@@ -140,6 +176,9 @@ export const CLOTHING_ITEMS = [
     unit: '개',
     durable: true,
     weightKg: 0.38,
+    comfort: 1,
+    discomfort: 7,
+    mobilityPenalty: 2,
     protection: { head: 3 }
   },
   {
@@ -151,6 +190,9 @@ export const CLOTHING_ITEMS = [
     unit: '벌',
     durable: true,
     weightKg: 0.25,
+    comfort: 2,
+    discomfort: 3,
+    mobilityPenalty: 1,
     protection: { visibility: 3 }
   },
   {
@@ -162,6 +204,9 @@ export const CLOTHING_ITEMS = [
     unit: '개',
     durable: true,
     weightKg: 0.18,
+    comfort: 4,
+    discomfort: 2,
+    mobilityPenalty: 1,
     protection: { sun: 2, head: 1 }
   },
   {
@@ -173,6 +218,9 @@ export const CLOTHING_ITEMS = [
     unit: '쌍',
     durable: true,
     weightKg: 0.08,
+    comfort: 5,
+    discomfort: 1,
+    mobilityPenalty: 1,
     protection: { sun: 1, heat: 1 }
   },
   {
@@ -184,6 +232,9 @@ export const CLOTHING_ITEMS = [
     unit: '켤레',
     durable: true,
     weightKg: 0.18,
+    comfort: 2,
+    discomfort: 10,
+    mobilityPenalty: 7,
     protection: { hand: 1, cold: 2 }
   },
   {
@@ -195,6 +246,9 @@ export const CLOTHING_ITEMS = [
     unit: '벌',
     durable: true,
     weightKg: 0.9,
+    comfort: 0,
+    discomfort: 28,
+    mobilityPenalty: 12,
     protection: { chemical: 3, splash: 2, upperBody: 1 }
   },
   {
@@ -206,6 +260,9 @@ export const CLOTHING_ITEMS = [
     unit: '켤레',
     durable: true,
     weightKg: 0.22,
+    comfort: 0,
+    discomfort: 12,
+    mobilityPenalty: 8,
     protection: { chemical: 3, hand: 2, splash: 2 }
   },
   {
@@ -217,6 +274,9 @@ export const CLOTHING_ITEMS = [
     unit: '개',
     durable: true,
     weightKg: 0.42,
+    comfort: 0,
+    discomfort: 18,
+    mobilityPenalty: 5,
     protection: { chemical: 3, dust: 2, face: 2 }
   },
   {
@@ -228,6 +288,9 @@ export const CLOTHING_ITEMS = [
     unit: '개',
     durable: true,
     weightKg: 0.26,
+    comfort: 1,
+    discomfort: 10,
+    mobilityPenalty: 4,
     protection: { face: 2, eyes: 2, splash: 2 }
   },
   {
@@ -239,6 +302,9 @@ export const CLOTHING_ITEMS = [
     unit: '개',
     durable: true,
     weightKg: 0.28,
+    comfort: 1,
+    discomfort: 8,
+    mobilityPenalty: 2,
     protection: { noise: 3, head: 1 }
   },
   {
@@ -250,6 +316,9 @@ export const CLOTHING_ITEMS = [
     unit: '쌍',
     durable: true,
     weightKg: 0.24,
+    comfort: 2,
+    discomfort: 8,
+    mobilityPenalty: 5,
     protection: { knee: 3, lowerBody: 1 }
   },
   {
@@ -261,6 +330,9 @@ export const CLOTHING_ITEMS = [
     unit: '개',
     durable: true,
     weightKg: 0.35,
+    comfort: 3,
+    discomfort: 9,
+    mobilityPenalty: 5,
     protection: { back: 3, upperBody: 1 }
   },
   {
@@ -272,6 +344,9 @@ export const CLOTHING_ITEMS = [
     unit: '개',
     durable: true,
     weightKg: 0.45,
+    comfort: 2,
+    discomfort: 7,
+    mobilityPenalty: 4,
     protection: { carry: 1, back: 1 }
   },
   {
@@ -283,7 +358,24 @@ export const CLOTHING_ITEMS = [
     unit: '개',
     durable: true,
     weightKg: 0.9,
+    comfort: 3,
+    discomfort: 12,
+    mobilityPenalty: 7,
     protection: { carry: 2, weather: 1 }
+  },
+  {
+    key: 'basicMessengerBag',
+    type: 'bag',
+    name: '기본 메신저백',
+    price: 22000,
+    desc: '개인 소지품과 작은 작업도구를 넣어 어깨에 메는 기본형 크로스백.',
+    unit: '개',
+    durable: true,
+    weightKg: 0.62,
+    comfort: 4,
+    discomfort: 7,
+    mobilityPenalty: 4,
+    protection: { carry: 2, mobility: 1 }
   },
   {
     key: 'orchardToolBackpack',
@@ -294,6 +386,9 @@ export const CLOTHING_ITEMS = [
     unit: '개',
     durable: true,
     weightKg: 1.15,
+    comfort: 2,
+    discomfort: 16,
+    mobilityPenalty: 9,
     protection: { carry: 3, back: 1 }
   },
   {
@@ -305,6 +400,9 @@ export const CLOTHING_ITEMS = [
     unit: '개',
     durable: true,
     weightKg: 0.82,
+    comfort: 2,
+    discomfort: 12,
+    mobilityPenalty: 6,
     protection: { carry: 2, water: 3 }
   },
   {
@@ -316,6 +414,9 @@ export const CLOTHING_ITEMS = [
     unit: '개',
     durable: true,
     weightKg: 0.52,
+    comfort: 5,
+    discomfort: 5,
+    mobilityPenalty: 3,
     protection: { carry: 2, mobility: 1 }
   },
   {
@@ -327,6 +428,9 @@ export const CLOTHING_ITEMS = [
     unit: '개',
     durable: true,
     weightKg: 1.05,
+    comfort: 1,
+    discomfort: 15,
+    mobilityPenalty: 8,
     protection: { carry: 2, chemical: 1, splash: 1 }
   }
 ];

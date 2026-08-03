@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="only light" />
+    <link rel="icon" type="image/png" href="/assets/%EC%A3%BC%EC%86%8C%EC%95%84%EC%9D%B4%EC%BD%98-BVwwhJgI.png" />
+    <meta name="description" content="현실적인 과수 농장 운영과 수확, 운반, 보관, 자재 관리를 직접 굴려보는 농장 시뮬레이터." />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="농장 시뮬레이터" />
+    <meta property="og:title" content="농장 시뮬레이터" />
+    <meta property="og:description" content="현실적인 과수 농장 운영과 수확, 운반, 보관, 자재 관리를 직접 굴려보는 농장 시뮬레이터." />
+    <meta property="og:url" content="http://orchardsimulator.p-e.kr:5173/" />
+    <meta property="og:image" content="http://orchardsimulator.p-e.kr:5173/og-main-menu.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="농장 시뮬레이터 메인메뉴 화면" />
+    <title>농장 시뮬레이터</title>
+    <script>
+      (() => {
+        const STORAGE_KEY = 'orchard_dev_auto_page_reload';
+        const GLOBAL_KEY = '__orchardDevAutoPageReloadEnabled';
+        const BLOCKED_EVENT = 'orchard:dev-auto-page-reload-blocked';
+        const readEnabled = () => {
+          try {
+            return localStorage.getItem(STORAGE_KEY) !== 'off';
+          } catch {
+            return true;
+          }
+        };
+        const writeEnabled = (enabled) => {
+          const normalized = enabled !== false;
+          window[GLOBAL_KEY] = normalized;
+          try {
+            localStorage.setItem(STORAGE_KEY, normalized ? 'on' : 'off');
+          } catch {}
+        };
+        const notifyBlockedReload = (payloadRaw) => {
+          let detail = null;
+          try {
+            detail = JSON.parse(payloadRaw);
+          } catch {}
+          window.dispatchEvent(new CustomEvent(BLOCKED_EVENT, { detail }));
+        };
+        const shouldBlockMessage = (payloadRaw) => {
+          if (window[GLOBAL_KEY] !== false) return false;
+          if (typeof payloadRaw !== 'string') return false;
+          try {
+            const payload = JSON.parse(payloadRaw);
+            return payload && payload.type === 'full-reload';
+          } catch {
+            return false;
+          }
+        };
+        const wrapMessageListener = (listener) => function wrappedMessageListener(event) {
+          if (shouldBlockMessage(event?.data)) {
+            notifyBlockedReload(event.data);
+            return;
+          }
+          return listener.call(this, event);
+        };
+
+        window[GLOBAL_KEY] = readEnabled();
+        window.__setOrchardDevAutoPageReload = writeEnabled;
+        window.addEventListener('storage', (event) => {
+          if (event.key !== STORAGE_KEY) return;
+          window[GLOBAL_KEY] = event.newValue !== 'off';
+        });
+
+        const originalAddEventListener = WebSocket.prototype.addEventListener;
+        const wrappedListenerMap = new WeakMap();
+        WebSocket.prototype.addEventListener = function patchedAddEventListener(type, listener, options) {
+          if (type !== 'message' || typeof listener !== 'function') {
+            return originalAddEventListener.call(this, type, listener, options);
+          }
+          let wrapped = wrappedListenerMap.get(listener);
+          if (!wrapped) {
+            wrapped = wrapMessageListener(listener);
+            wrappedListenerMap.set(listener, wrapped);
+          }
+          return originalAddEventListener.call(this, type, wrapped, options);
+        };
+
+        const onMessageDescriptor = Object.getOwnPropertyDescriptor(WebSocket.prototype, 'onmessage');
+        if (onMessageDescriptor?.configurable && typeof onMessageDescriptor.set === 'function') {
+          Object.defineProperty(WebSocket.prototype, 'onmessage', {
+            configurable: true,
+            enumerable: onMessageDescriptor.enumerable ?? true,
+            get() {
+              return this.__orchardOriginalOnMessage || null;
+            },
+            set(listener) {
+              this.__orchardOriginalOnMessage = listener;
+              if (typeof listener !== 'function') {
+                onMessageDescriptor.set.call(this, listener);
+                return;
+              }
+              onMessageDescriptor.set.call(this, wrapMessageListener(listener));
+            }
+          });
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-D_jeYEhY.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CR2li5gn.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

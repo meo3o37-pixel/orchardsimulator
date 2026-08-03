@@ -8,14 +8,20 @@ export default function MapTransferPanelHeader({
   payloadKg,
   machineImageSrcOf
 }) {
+  const selectedCarrierId = String(mapTransferSelectedCarrier?.id || '');
+  const isPersonalCarrier = selectedCarrierId === mapTransferPersonalCarrierId;
+  const isEquippedBagCarrier = selectedCarrierId === '__equipped_bag__'
+    || String(mapTransferSelectedCarrier?.machineKey || '') === 'equippedBag';
+  const selectedCarrierName = isPersonalCarrier
+    ? '개인소지품'
+    : isEquippedBagCarrier
+      ? '가방'
+      : `${mapTransferSelectedCarrier?.item?.name || mapTransferSelectedCarrier?.machineKey || '선택 적재함'} #${mapTransferSelectedCarrier?.unitNo}`;
   const selectedCarrierLabel = mapTransferSelectedCarrier
-    ? `${mapTransferSelectedCarrier?.id === mapTransferPersonalCarrierId
-      ? '개인소지품'
-      : `${mapTransferSelectedCarrier?.item?.name || mapTransferSelectedCarrier?.machineKey || '선택 차량'} #${mapTransferSelectedCarrier?.unitNo}`}`.trim() + ' 적재함'
+    ? selectedCarrierName.trim()
     : (mapShopIsPaymentShifted ? '적재를 선택해주세요' : '적재하시려면 적재를 선택해주세요');
   const selectedCarrierImageSrc = (
     mapTransferSelectedCarrier
-    && mapTransferSelectedCarrier?.id !== mapTransferPersonalCarrierId
     && typeof machineImageSrcOf === 'function'
   )
     ? String(machineImageSrcOf(mapTransferSelectedCarrier) || '')

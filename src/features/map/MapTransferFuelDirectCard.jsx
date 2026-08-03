@@ -18,11 +18,20 @@ export default function MapTransferFuelDirectCard({
   setFuelKioskFuelingDone,
   setFuelKioskBorrowedCan
 }) {
+  const selectedCarrierId = String(mapTransferSelectedCarrier?.id || '');
+  const isPersonalCarrier = selectedCarrierId === mapTransferPersonalCarrierId;
+  const isEquippedBagCarrier = selectedCarrierId === '__equipped_bag__'
+    || String(mapTransferSelectedCarrier?.machineKey || '') === 'equippedBag';
+  const selectedCarrierLabel = isPersonalCarrier
+    ? '개인소지품'
+    : isEquippedBagCarrier
+      ? '가방'
+      : `${mapTransferSelectedCarrier?.item?.name || mapTransferSelectedCarrier?.machineKey || '선택 차량'} #${mapTransferSelectedCarrier?.unitNo}`;
   return (
     <div className="map-transfer-vehicle-card map-transfer-vehicle-card--selected">
       <div className="map-transfer-vehicle-card__head">
-        <strong>{mapTransferSelectedCarrier?.id === mapTransferPersonalCarrierId ? '개인소지품' : `${mapTransferSelectedCarrier?.item?.name || mapTransferSelectedCarrier?.machineKey || '선택 차량'} #${mapTransferSelectedCarrier?.unitNo}`}</strong>
-        <span>{mapTransferSelectedCarrier?.id === mapTransferPersonalCarrierId ? '기본' : '선택완료'}</span>
+        <strong>{selectedCarrierLabel}</strong>
+        <span>{isPersonalCarrier ? '기본' : isEquippedBagCarrier ? '착용' : '선택완료'}</span>
       </div>
       <div className="map-transfer-vehicle-card__meta">
         {selectedCarrierCanDirectRefuel

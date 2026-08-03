@@ -16,6 +16,12 @@ export default function MapShopTempStoragePanel({
   closeMapLocationModal,
   renderMapTransferPlaceholderModal
 }) {
+  const selectedCarrierId = String(mapTransferSelectedCarrier?.id || '');
+  const selectedCarrierLabel = selectedCarrierId === '__personal_carry__'
+    ? '개인소지품'
+    : selectedCarrierId === '__equipped_bag__' || String(mapTransferSelectedCarrier?.machineKey || '') === 'equippedBag'
+      ? '가방'
+      : '선택 적재함';
   return (
     <div
       className={`${containerClassName} ${mapTransferSelectedCarrier ? 'is-transfer-linked' : ''}`.trim()}
@@ -49,7 +55,7 @@ export default function MapShopTempStoragePanel({
                   className={`option-card map-temp-storage-card ${isVehiclePickupItem ? 'map-temp-storage-card--vehicle-pickup' : ''} ${toolImageSrc || isAppleCrateVisualItem ? 'shop-tool-card--has-image' : ''} ${!isVehiclePickupItem && !mapTransferSelectedCarrier ? 'is-disabled' : ''}`.trim()}
                   role="button"
                   tabIndex={0}
-                  title={isVehiclePickupItem ? '주차장으로 출고할 차량입니다.' : (!mapTransferSelectedCarrier ? '적재할 차량을 먼저 선택해 주세요.' : '눌러서 적재함에 담기')}
+                  title={isVehiclePickupItem ? '주차장으로 출고할 차량입니다.' : (!mapTransferSelectedCarrier ? '적재할 곳을 먼저 선택해 주세요.' : `눌러서 ${selectedCarrierLabel}에 담기`)}
                   onClick={() => {
                     if (isVehiclePickupItem) return;
                     moveTempStorageEntryToSelectedCarrier(row.id);

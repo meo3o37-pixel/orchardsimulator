@@ -629,6 +629,94 @@ const CLOTHING_ITEM_BY_KEY = CLOTHING_ITEMS.reduce((acc, item) => {
   return acc;
 }, {});
 
+const CLOTHING_ACTIVITY_SLOT_WEIGHT_BY_KEY = Object.freeze({
+  head: 0.45,
+  eyes: 0.25,
+  face: 0.55,
+  ears: 0.25,
+  upper: 1,
+  vest: 0.45,
+  bag: 0.85,
+  lower: 0.9,
+  arms: 0.35,
+  hands: 0.55,
+  waist: 0.55,
+  knees: 0.45,
+  feet: 0.75
+});
+
+export const clothingActivityStatsOfItem = (itemRaw = null, slotKeyRaw = '') => {
+  const item = itemRaw && typeof itemRaw === 'object' ? itemRaw : {};
+  const slotKey = String(slotKeyRaw || '');
+  const slotWeight = Math.max(0, Number(CLOTHING_ACTIVITY_SLOT_WEIGHT_BY_KEY?.[slotKey]) || 0.5);
+  const comfort = clamp(Number(item?.comfort) || 0, 0, 100);
+  const discomfort = clamp(Number(item?.discomfort) || 0, 0, 100);
+  const mobilityPenalty = clamp(Number(item?.mobilityPenalty) || 0, 0, 100);
+  const penalty = Math.max(0, ((discomfort + mobilityPenalty) - (comfort * 0.35)) * slotWeight);
+  return {
+    comfort,
+    discomfort,
+    mobilityPenalty,
+    slotWeight,
+    penalty: Math.round(penalty * 10) / 10
+  };
+};
+
+export const clothingActivityInfoOfEquipments = (equipmentsRaw = {}) => {
+  const equipments = normalizeHousingClothingEquipments(equipmentsRaw || {});
+  const rows = HOUSING_CLOTHING_SLOT_DEFS.map((slot) => {
+    const itemKey = String(equipments?.[slot.key] || '');
+    const item = CLOTHING_ITEM_BY_KEY[itemKey] || null;
+    if (!item) {
+      return {
+        slotKey: slot.key,
+        slotLabel: slot.label,
+        itemKey: '',
+        name: '',
+        equipped: false,
+        comfort: 0,
+        discomfort: 0,
+        mobilityPenalty: 0,
+        penalty: 0
+      };
+    }
+    const stats = clothingActivityStatsOfItem(item, slot.key);
+    return {
+      slotKey: slot.key,
+      slotLabel: slot.label,
+      itemKey,
+      name: String(item?.name || itemKey),
+      equipped: true,
+      ...stats
+    };
+  });
+  const totalComfort = rows.reduce((sum, row) => sum + Math.max(0, Number(row?.comfort) || 0), 0);
+  const totalDiscomfort = rows.reduce((sum, row) => sum + Math.max(0, Number(row?.discomfort) || 0), 0);
+  const totalMobilityPenalty = rows.reduce((sum, row) => sum + Math.max(0, Number(row?.mobilityPenalty) || 0), 0);
+  const totalPenalty = rows.reduce((sum, row) => sum + Math.max(0, Number(row?.penalty) || 0), 0);
+  const activity = clamp(Math.round(100 - totalPenalty), 35, 100);
+  const efficiencyMultiplier = clamp(1 - ((100 - activity) * 0.003), 0.75, 1);
+  return {
+    activity,
+    efficiencyMultiplier,
+    totalComfort,
+    totalDiscomfort,
+    totalMobilityPenalty,
+    totalPenalty: Math.round(totalPenalty * 10) / 10,
+    rows
+  };
+};
+
+export const clothingActivityInfoOfField = (field = null, facilityKeyRaw = '') => {
+  const byFacility = field?.housingClothingEquipmentsByFacilityKey || {};
+  const facilityKey = String(facilityKeyRaw || '');
+  if (facilityKey && byFacility?.[facilityKey]) {
+    return clothingActivityInfoOfEquipments(byFacility[facilityKey] || {});
+  }
+  const firstEquipped = Object.values(byFacility || {}).find((entry) => Object.keys(normalizeHousingClothingEquipments(entry || {})).length > 0);
+  return clothingActivityInfoOfEquipments(firstEquipped || {});
+};
+
 const HOUSING_APPLIANCE_SLOT_BY_KEY = HOUSING_APPLIANCE_SLOT_DEFS.reduce((acc, slot) => ({
   ...acc,
   [slot.key]: slot

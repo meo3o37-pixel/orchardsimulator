@@ -94,6 +94,7 @@ import PANEL_COOLING_BLOWER_IMAGE from './assets/images/시설/저온저장고/�
 import PANEL_COOLING_OUTDOOR_IMAGE from './assets/images/시설/저온저장고/실외기.png';
 import MANUAL_CARRY_IMAGE from './assets/images/아이템/맨손이미지.png';
 import PERSONAL_CARRY_IMAGE from './assets/images/개인소지품.png';
+import BASIC_MESSENGER_BAG_IMAGE from './assets/images/아이템/의류/기본 메신저백.png';
 import DISASSEMBLED_SORTING_MACHINE_IMAGE from './assets/images/아이템/분해된 선별기.png';
 import APPLE_SORTING_RULES_MARKDOWN from '../docs/apple-sorting-rules.md?raw';
 import HARVEST_PALLET_MOVE_RULES_MARKDOWN from '../docs/harvest-pallet-move-rules.md?raw';
@@ -727,6 +728,9 @@ import {
   housingMealWaterLitersOf,
   housingMealSatisfactionBuffInfoOf,
   housingWaterDisplayTextOf,
+  clothingActivityInfoOfEquipments,
+  clothingActivityInfoOfField,
+  clothingActivityStatsOfItem,
   housingMealCookConsumeQtyOf,
   addHousingFoodStorageBatch,
   consumeHousingFoodStorageBatches,
@@ -1478,6 +1482,29 @@ const LAND_MOVE_VEHICLE_LABOR_PER_10KM = 1;
 const TOWN_MOVE_DISTANCE_KM = 3;
 const MAP_TRANSFER_PERSONAL_CARRIER_ID = '__personal_carry__';
 const MAP_TRANSFER_PERSONAL_PAYLOAD_KG = 10; // legacy compatibility for hot-reload stale references
+const MAP_TRANSFER_EQUIPPED_BAG_CARRIER_ID = '__equipped_bag__';
+const MAP_TRANSFER_EQUIPPED_BAG_PAYLOAD_KG = 6;
+const isVirtualPersonalCarrierId = (carrierIdRaw = '') => (
+  String(carrierIdRaw || '') === MAP_TRANSFER_PERSONAL_CARRIER_ID
+  || String(carrierIdRaw || '') === MAP_TRANSFER_EQUIPPED_BAG_CARRIER_ID
+);
+const virtualPersonalCarrierMetaOf = (carrierIdRaw = '') => {
+  const carrierId = String(carrierIdRaw || '');
+  if (carrierId === MAP_TRANSFER_EQUIPPED_BAG_CARRIER_ID) {
+    return {
+      id: MAP_TRANSFER_EQUIPPED_BAG_CARRIER_ID,
+      machineKey: 'equippedBag',
+      unitNo: 1,
+      item: { name: '가방', payloadKg: MAP_TRANSFER_EQUIPPED_BAG_PAYLOAD_KG }
+    };
+  }
+  return {
+    id: MAP_TRANSFER_PERSONAL_CARRIER_ID,
+    machineKey: 'personalCarry',
+    unitNo: 1,
+    item: { name: '개인소지품', payloadKg: MAP_TRANSFER_PERSONAL_PAYLOAD_KG }
+  };
+};
 const SQM_PER_PY = 3.305785;
 const PY_PER_SQKM = 1000000 / SQM_PER_PY;
 const polygonAreaSqKmFromPoints = (points = []) => {
@@ -2908,7 +2935,7 @@ const normalizeLastSleepQualityInfo = (info = null) => {
     workEfficiencyMultiplier: sleepQualityWorkEfficiencyMultiplierOf(score)
   };
 };
-const workLaborFactorsOf = ({ weatherName = '', temperatureC = 15, field = null, isNightSelfWork = false, sleepQualityScore = null, health = 100 } = {}) => {
+const workLaborFactorsOf = ({ weatherName = '', temperatureC = 15, field = null, isNightSelfWork = false, sleepQualityScore = null, health = 100, clothingActivityMultiplier = 1 } = {}) => {
   const weatherLabor = Math.max(0.01, Number(weatherLaborMultiplier(weatherName)) || 1);
   const temperatureLabor = Math.max(0.01, Number(temperatureLaborMultiplier(temperatureC)) || 1);
   const slopeLabor = Math.max(1, Number(slopeLaborMultiplierForField(field)) || 1);
@@ -2917,8 +2944,9 @@ const workLaborFactorsOf = ({ weatherName = '', temperatureC = 15, field = null,
   const nightLabor = Math.max(1, Number(nightLaborMultiplierOf(isNightSelfWork)) || 1);
   const sleepEfficiency = sleepQualityWorkEfficiencyMultiplierOf(sleepQualityScore);
   const healthEfficiency = healthWorkEfficiencyMultiplierOf(health);
+  const clothingEfficiency = clamp(Number(clothingActivityMultiplier) || 1, 0.75, 1);
   const totalLabor = Math.max(0.01, weatherLabor * temperatureLabor * slopeLabor * weedLabor * nightLabor);
-  const totalEfficiency = sleepEfficiency * healthEfficiency;
+  const totalEfficiency = sleepEfficiency * healthEfficiency * clothingEfficiency;
   const workEfficiencyRatio = clamp(totalEfficiency / totalLabor, 0.01, 1.15);
   const workEfficiency = clamp((100 * totalEfficiency) / totalLabor, 0, 115);
   return {
@@ -2930,6 +2958,7 @@ const workLaborFactorsOf = ({ weatherName = '', temperatureC = 15, field = null,
     nightLabor,
     sleepEfficiency,
     healthEfficiency,
+    clothingEfficiency,
     totalLabor,
     workEfficiencyRatio,
     workEfficiency
@@ -5513,6 +5542,9 @@ const SS_ATTACHMENT_IMAGE_KEYWORDS_BY_MACHINE_KEY = {
 const MACHINE_PARKING_IMAGE_SRC_CACHE = new Map();
 const machineImageSrcOfParkingState = (machine, gameState) => {
   if (!machine) return '';
+  if (String(machine?.id || '') === MAP_TRANSFER_EQUIPPED_BAG_CARRIER_ID || String(machine?.machineKey || '') === 'equippedBag') {
+    return BASIC_MESSENGER_BAG_IMAGE;
+  }
   if (String(machine?.id || '') === MAP_TRANSFER_PERSONAL_CARRIER_ID || String(machine?.machineKey || '') === 'personalCarry') {
     return PERSONAL_CARRY_IMAGE;
   }
@@ -13249,6 +13281,10 @@ const AUTH_PERSISTENT_SESSION_TOKEN_STORAGE_KEY = 'orchard_auth_persistent_sessi
 const AUTH_ACTIVE_TAB_HEARTBEAT_INTERVAL_MS = 2000;
 const AUTH_ACTIVE_TAB_STALE_MS = 12000;
 const CHAT_HISTORY_LIMIT = 80;
+const AUTH_PAGE_INSTANCE_ID =
+  typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `auth-page-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 const getOrCreateAuthTabId = () => {
   if (typeof window === 'undefined') return `auth-tab-${Date.now()}`;
   try {
@@ -13271,9 +13307,10 @@ const readActiveAuthTab = () => {
     if (!parsed || typeof parsed !== 'object') return null;
     const username = String(parsed.username || '').trim();
     const tabId = String(parsed.tabId || '').trim();
+    const pageId = String(parsed.pageId || '').trim();
     const updatedAt = Number(parsed.updatedAt) || 0;
     if (!username || !tabId || updatedAt <= 0) return null;
-    return { username, tabId, updatedAt };
+    return { username, tabId, pageId, updatedAt };
   } catch {
     return null;
   }
@@ -13283,7 +13320,7 @@ const isAuthSessionOwnedByAnotherActiveTab = (session = null) => {
   if (!username || typeof window === 'undefined') return false;
   const activeTab = readActiveAuthTab();
   if (!activeTab || activeTab.username !== username) return false;
-  if (activeTab.tabId === getOrCreateAuthTabId()) return false;
+  if (activeTab.tabId === getOrCreateAuthTabId() && activeTab.pageId === AUTH_PAGE_INSTANCE_ID) return false;
   return Date.now() - activeTab.updatedAt <= AUTH_ACTIVE_TAB_STALE_MS;
 };
 const writeActiveAuthTab = (session = null) => {
@@ -13293,6 +13330,7 @@ const writeActiveAuthTab = (session = null) => {
     localStorage.setItem(AUTH_ACTIVE_TAB_STORAGE_KEY, JSON.stringify({
       username,
       tabId: getOrCreateAuthTabId(),
+      pageId: AUTH_PAGE_INSTANCE_ID,
       updatedAt: Date.now()
     }));
   } catch {
@@ -13303,7 +13341,7 @@ const clearActiveAuthTabIfOwned = () => {
   if (typeof window === 'undefined') return;
   try {
     const activeTab = readActiveAuthTab();
-    if (activeTab?.tabId === getOrCreateAuthTabId()) {
+    if (activeTab?.tabId === getOrCreateAuthTabId() && activeTab?.pageId === AUTH_PAGE_INSTANCE_ID) {
       localStorage.removeItem(AUTH_ACTIVE_TAB_STORAGE_KEY);
     }
   } catch {
@@ -18053,7 +18091,10 @@ const taskLaborBlockReason = (game, task, field, source = WORK_SOURCE.work) => {
     field,
     isNightSelfWork: (String(game?.timeOfDay || 'day') === 'night') && source === WORK_SOURCE.work,
     sleepQualityScore: source === WORK_SOURCE.work ? game?.lastSleepQualityInfo?.score : null,
-    health: game?.health
+    health: game?.health,
+    clothingActivityMultiplier: source === WORK_SOURCE.work
+      ? clothingActivityInfoOfField(field).efficiencyMultiplier
+      : 1
   });
   const laborNeed = roundLabor(Math.max(1, taskLaborNeed(task, field, game.day) * equipFx.laborMultiplier / laborFactors.workEfficiencyRatio));
   const available = availableLaborBySource(game, source);
@@ -18287,6 +18328,7 @@ const ANIMATION_LAB_EDITOR_BASE_TRANSFORM_ATTR = 'data-animation-lab-base-transf
 const ANIMATION_LAB_EDITOR_STYLE_ID = 'animation-lab-editor-style';
 const ANIMATION_LAB_LAST_PRESET_STORAGE_PREFIX = 'orchard.animationLab.lastPreset.';
 const ANIMATION_LAB_EDITOR_GROUP_SELECTOR = '.fan-wrap, .machine-wrap, .tank-wrap, .can-wrap, .scene, .groundwater-scene, .crate';
+const ANIMATION_LAB_DIRECT_PICK_ROOT_CLASS = 'animation-lab-editor-direct-pick-root';
 const createAnimationLabLineLayer = (seq = 1) => ({
   id: `line-${Date.now()}-${seq}`,
   name: `선 ${seq}`,
@@ -18931,6 +18973,7 @@ export default function App() {
   }));
   const [animationLabLineEditMode, setAnimationLabLineEditMode] = useState(false);
   const [animationLabElementEditMode, setAnimationLabElementEditMode] = useState(true);
+  const [animationLabDirectPickEnabled, setAnimationLabDirectPickEnabled] = useState(false);
   const [animationLabElementLayers, setAnimationLabElementLayers] = useState([]);
   const [animationLabSelectedElementLayerId, setAnimationLabSelectedElementLayerId] = useState('');
   const [animationLabElementLayerSearchText, setAnimationLabElementLayerSearchText] = useState('');
@@ -20289,8 +20332,44 @@ export default function App() {
     style.id = ANIMATION_LAB_EDITOR_STYLE_ID;
     style.textContent = `
 .animation-lab-editor-target { cursor: auto !important; }
-.animation-lab-editor-selected { outline: none !important; }`;
+.${ANIMATION_LAB_DIRECT_PICK_ROOT_CLASS} .animation-lab-editor-target { cursor: crosshair !important; }
+.animation-lab-editor-selected {
+  outline: 3px solid #48d7ff !important;
+  outline-offset: 3px !important;
+  box-shadow:
+    0 0 0 2px rgba(72, 215, 255, 0.34),
+    0 0 18px rgba(72, 215, 255, 0.56) !important;
+}`;
     doc.head.appendChild(style);
+  }, []);
+  const resolveAnimationLabDirectPickTarget = useCallback((source, doc) => {
+    if (!(source && source.nodeType === 1) || !(doc && doc.body)) return null;
+    const blockedTags = new Set(['HTML', 'BODY', 'SCRIPT', 'STYLE', 'META', 'TITLE', 'LINK', 'NOSCRIPT']);
+    const candidates = [];
+    let node = source;
+    while (node && node !== doc.body && node !== doc.documentElement) {
+      if (!blockedTags.has(node.tagName) && node.id !== 'animation-lab-overlay-root') {
+        const rect = node.getBoundingClientRect?.();
+        const width = Math.max(0, Number(rect?.width) || 0);
+        const height = Math.max(0, Number(rect?.height) || 0);
+        const area = width * height;
+        const classText = String(node.getAttribute('class') || '');
+        const semanticScore = /\b(card|panel|module|wrap|block|grid|display|switch|gauge|output|process|scene|shell|face|zone|button|control|station|view|visual)\b/i.test(classText)
+          ? 6
+          : 0;
+        const hasNameScore = (node.id || classText.trim()) ? 2 : 0;
+        const sizeScore = area >= 1600 ? 4 : (area >= 420 ? 2 : 0);
+        const tagPenalty = /^(SPAN|I|EM|SMALL|STRONG|B|P|H1|H2|H3|H4|LABEL)$/i.test(node.tagName) ? 3 : 0;
+        candidates.push({
+          element: node,
+          score: semanticScore + hasNameScore + sizeScore - tagPenalty,
+          area
+        });
+      }
+      node = node.parentElement;
+    }
+    candidates.sort((a, b) => (b.score - a.score) || (a.area - b.area));
+    return candidates[0]?.element || null;
   }, []);
   const resolveAnimationLabElementZHost = useCallback((element, doc) => {
     if (!(element instanceof Element) || !(doc && doc.body)) return element;
@@ -20499,6 +20578,86 @@ export default function App() {
     syncAnimationLabSelectedElementClass();
   }, [syncAnimationLabSelectedElementClass]);
   useEffect(() => {
+    if (!animationLabModalOpen || animationLabIsCurrentFieldMapMode || animationLabIsUiWorkshopMode) return undefined;
+    const doc = getAnimationLabPreviewDocument();
+    if (!doc || !doc.body) return undefined;
+    doc.body.classList.toggle(ANIMATION_LAB_DIRECT_PICK_ROOT_CLASS, animationLabDirectPickEnabled);
+    return () => {
+      try {
+        doc.body?.classList?.remove(ANIMATION_LAB_DIRECT_PICK_ROOT_CLASS);
+      } catch {
+        // iframe may already be unloaded
+      }
+    };
+  }, [
+    animationLabDirectPickEnabled,
+    animationLabIsCurrentFieldMapMode,
+    animationLabIsUiWorkshopMode,
+    animationLabModalOpen,
+    animationLabPreviewTick,
+    getAnimationLabPreviewDocument
+  ]);
+  useEffect(() => {
+    if (
+      !animationLabModalOpen
+      || !animationLabElementEditMode
+      || animationLabLineEditMode
+      || !animationLabDirectPickEnabled
+      || animationLabIsCurrentFieldMapMode
+      || animationLabIsUiWorkshopMode
+    ) {
+      return undefined;
+    }
+    const doc = getAnimationLabPreviewDocument();
+    if (!doc || !doc.body) return undefined;
+    ensureAnimationLabEditorStyle(doc);
+    doc.body.classList.add(ANIMATION_LAB_DIRECT_PICK_ROOT_CLASS);
+    const handleDirectPick = (event) => {
+      const target = resolveAnimationLabDirectPickTarget(event.target, doc);
+      if (!target) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
+      let nextId = String(target.getAttribute(ANIMATION_LAB_EDITOR_LAYER_ATTR) || '').trim();
+      if (!nextId) {
+        nextId = `elem-${animationLabElementLayerSeqRef.current++}`;
+        target.setAttribute(ANIMATION_LAB_EDITOR_LAYER_ATTR, nextId);
+      }
+      target.classList.add('animation-lab-editor-target');
+      animationLabSelectedElementLayerIdRef.current = nextId;
+      setAnimationLabSelectedElementLayerId(nextId);
+      setAnimationLabElementLayerSearchText('');
+      if (animationLabElementLayerSelectRef.current) {
+        animationLabElementLayerSelectRef.current.value = nextId;
+      }
+      collectAnimationLabElementLayers();
+      pushAnimationLabDebugLog('element-select:direct-pick', {
+        nextId,
+        tagName: String(target.tagName || '').toLowerCase(),
+        id: String(target.getAttribute('id') || ''),
+        className: String(target.getAttribute('class') || '')
+      });
+    };
+    doc.addEventListener('click', handleDirectPick, true);
+    return () => {
+      doc.removeEventListener('click', handleDirectPick, true);
+      doc.body?.classList?.remove(ANIMATION_LAB_DIRECT_PICK_ROOT_CLASS);
+    };
+  }, [
+    animationLabDirectPickEnabled,
+    animationLabElementEditMode,
+    animationLabIsCurrentFieldMapMode,
+    animationLabIsUiWorkshopMode,
+    animationLabLineEditMode,
+    animationLabModalOpen,
+    animationLabPreviewTick,
+    collectAnimationLabElementLayers,
+    ensureAnimationLabEditorStyle,
+    getAnimationLabPreviewDocument,
+    pushAnimationLabDebugLog,
+    resolveAnimationLabDirectPickTarget
+  ]);
+  useEffect(() => {
     if (!animationLabModalOpen || animationLabLineEditMode) return;
     const handle = window.requestAnimationFrame(() => {
       scrollAnimationLabEditorToSelectedElement();
@@ -20673,6 +20832,7 @@ export default function App() {
     if (!cloned || cloned.nodeType !== 1) return '';
     const styleEl = cloned.querySelector(`#${ANIMATION_LAB_EDITOR_STYLE_ID}`);
     if (styleEl) styleEl.remove();
+    cloned.querySelector('body')?.classList?.remove(ANIMATION_LAB_DIRECT_PICK_ROOT_CLASS);
     const targets = cloned.querySelectorAll(`[${ANIMATION_LAB_EDITOR_LAYER_ATTR}]`);
     targets.forEach((el) => {
       el.removeAttribute(ANIMATION_LAB_EDITOR_LAYER_ATTR);
@@ -20684,7 +20844,7 @@ export default function App() {
       el.removeAttribute(ANIMATION_LAB_EDITOR_ROTATE_ATTR);
       el.removeAttribute(ANIMATION_LAB_EDITOR_OPACITY_ATTR);
       el.removeAttribute(ANIMATION_LAB_EDITOR_BASE_TRANSFORM_ATTR);
-      el.classList.remove('animation-lab-editor-target', 'animation-lab-editor-selected');
+      el.classList.remove('animation-lab-editor-target', 'animation-lab-editor-selected', ANIMATION_LAB_DIRECT_PICK_ROOT_CLASS);
       if (!el.classList.length) el.removeAttribute('class');
     });
     return `<!DOCTYPE html>\n${cloned.outerHTML}`;
@@ -26031,6 +26191,45 @@ body { display: flex !important; align-items: center !important; justify-content
       housingDoorAnimationTimerRef.current = null;
     }, 1320);
   };
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    const isEditableTarget = (target) => {
+      if (!target || !(target instanceof HTMLElement)) return false;
+      const tagName = String(target.tagName || '').toUpperCase();
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tagName)) return true;
+      if (target.isContentEditable) return true;
+      return Boolean(target.closest('[contenteditable="true"]'));
+    };
+    const handler = (event) => {
+      if (screen !== 'game') return;
+      if (event.defaultPrevented || event.isComposing || event.repeat) return;
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (isEditableTarget(event.target)) return;
+      if (String(event.key || '').toLowerCase() !== 'h') return;
+      if (focusTab !== 'housing' || housingViewMode !== 'list') return;
+      if (housingInteriorFacilityKey || housingDoorAnimationModal) return;
+      if (housingEntryButtonDragEnabled || document.querySelector('.confirm-modal, .confirm-modal-backdrop')) return;
+      const selectedRow = housingViewFacilityRows.find((row) => row.key === housingViewSelectedFacilityKey);
+      const targetRow = selectedRow || housingViewFacilityRows[0] || null;
+      if (!targetRow?.key) return;
+      event.preventDefault();
+      openHousingDoorAnimation(targetRow.key);
+    };
+    document.addEventListener('keydown', handler);
+    return () => {
+      document.removeEventListener('keydown', handler);
+    };
+  }, [
+    focusTab,
+    housingDoorAnimationModal,
+    housingEntryButtonDragEnabled,
+    housingInteriorFacilityKey,
+    housingViewFacilityRows,
+    housingViewMode,
+    housingViewSelectedFacilityKey,
+    openHousingDoorAnimation,
+    screen
+  ]);
   const closeHousingDoorAnimation = () => {
     const facilityKey = String(housingInteriorFacilityRow?.key || housingInteriorFacilityKey || '').trim();
     const facilityName = housingInteriorFacilityRow?.name || housingViewSelectedFacilityRow?.name || '하우징';
@@ -28540,6 +28739,42 @@ body { display: flex !important; align-items: center !important; justify-content
         || String(a.name).localeCompare(String(b.name), 'ko')
       ));
   }, [game?.vehicleCargoByInstance, housingCustomFoodMetaByKey, itemCategoryByKey, itemMetaByKey, itemNameByKey]);
+  const phoneEquippedBagRows = useMemo(() => {
+    const bagInventory = normalizeCargoByItemKey(
+      game?.vehicleCargoByInstance?.[MAP_TRANSFER_EQUIPPED_BAG_CARRIER_ID] || {}
+    );
+    return Object.entries(bagInventory)
+      .map(([itemKeyRaw, qtyRaw]) => {
+        const itemKey = String(itemKeyRaw || '');
+        const rawQty = Math.max(0, Number(qtyRaw) || 0);
+        const qty = isHousingWasteItemKey(itemKey) ? roundHousingWasteKg(rawQty) : Math.max(0, Math.floor(rawQty));
+        if (!itemKey || qty <= 0) return null;
+        const meta = housingCustomFoodMetaByKey[itemKey] || itemMetaByKey?.[itemKey] || {};
+        const category = String(itemCategoryByKey?.[itemKey] || meta?.category || '');
+        const categoryLabel = shopCategoryLabelOf(category);
+        const unit = String(meta?.unit || '개');
+        const weightKg = Math.max(0, Number(meta?.weightKg) || 0);
+        const totalWeightKg = weightKg > 0 ? Math.round(weightKg * qty * 10) / 10 : 0;
+        return {
+          key: itemKey,
+          name: String(meta?.name || itemNameByKey?.[itemKey] || itemKey),
+          qty,
+          qtyText: formatCountWithUnit(qty, unit),
+          category,
+          categoryLabel,
+          unitWeightKg: weightKg,
+          totalWeightKg,
+          metaText: totalWeightKg > 0
+            ? `${categoryLabel} · ${totalWeightKg.toLocaleString()}kg`
+            : categoryLabel
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => (
+        String(a.categoryLabel).localeCompare(String(b.categoryLabel), 'ko')
+        || String(a.name).localeCompare(String(b.name), 'ko')
+      ));
+  }, [game?.vehicleCargoByInstance, housingCustomFoodMetaByKey, itemCategoryByKey, itemMetaByKey, itemNameByKey]);
   const isHousingInteriorWindowPreviewOpen = housingInteriorPendingObject?.key === 'window';
   const selectedFieldFacilityInventoryState = useMemo(
     () => resolveFieldFacilityInventoryByFacility(game, game?.selectedField),
@@ -28706,8 +28941,57 @@ body { display: flex !important; align-items: center !important; justify-content
       })
       .filter(Boolean);
   }, [game?.vehicleCargoByInstance, isHousingColdStorageFoodItemKey, itemMetaByKey, toolImageSrcOf]);
+  const housingInteriorEquippedBagFoodRows = useMemo(() => {
+    const inventoryMap = normalizeCargoByItemKey(game?.vehicleCargoByInstance?.[MAP_TRANSFER_EQUIPPED_BAG_CARRIER_ID] || {});
+    return Object.entries(inventoryMap)
+      .map(([itemKeyRaw, qtyRaw]) => {
+        const itemKey = String(itemKeyRaw || '');
+        const qty = Math.max(0, Number(qtyRaw) || 0);
+        if (!itemKey || qty <= 0) return null;
+        if (!isHousingColdStorageFoodItemKey(itemKey)) return null;
+        const meta = itemMetaByKey?.[itemKey] || {};
+        return {
+          itemKey,
+          name: String(meta?.name || itemKey),
+          qty: Math.round(qty * 100) / 100,
+          unit: String(meta?.unit || ''),
+          imageSrc: toolImageSrcOf(itemKey)
+        };
+      })
+      .filter(Boolean);
+  }, [game?.vehicleCargoByInstance, isHousingColdStorageFoodItemKey, itemMetaByKey, toolImageSrcOf]);
   const housingInteriorBagRows = useMemo(() => {
     const inventoryMap = normalizeCargoByItemKey(game?.vehicleCargoByInstance?.[MAP_TRANSFER_PERSONAL_CARRIER_ID] || {});
+    return Object.entries(inventoryMap)
+      .map(([itemKeyRaw, qtyRaw]) => {
+        const itemKey = String(itemKeyRaw || '');
+        const qty = Math.max(0, Number(qtyRaw) || 0);
+        if (!itemKey || qty <= 0) return null;
+        const meta = itemMetaByKey?.[itemKey] || {};
+        const category = String(itemCategoryByKey?.[itemKey] || meta?.category || '');
+        const categoryLabel = shopCategoryLabelOf(category);
+        const unit = String(meta?.unit || '개');
+        const weightKg = Math.max(0, Number(meta?.weightKg) || 0);
+        return {
+          itemKey,
+          name: String(meta?.name || itemNameByKey?.[itemKey] || itemKey),
+          qty: Math.round(qty * 100) / 100,
+          unit,
+          category,
+          categoryLabel,
+          type: String(meta?.type || ''),
+          weightKg,
+          imageSrc: toolImageSrcOf(itemKey)
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => (
+        String(a.categoryLabel).localeCompare(String(b.categoryLabel), 'ko')
+        || String(a.name).localeCompare(String(b.name), 'ko')
+      ));
+  }, [game?.vehicleCargoByInstance, itemCategoryByKey, itemMetaByKey, itemNameByKey, toolImageSrcOf]);
+  const housingInteriorEquippedBagRows = useMemo(() => {
+    const inventoryMap = normalizeCargoByItemKey(game?.vehicleCargoByInstance?.[MAP_TRANSFER_EQUIPPED_BAG_CARRIER_ID] || {});
     return Object.entries(inventoryMap)
       .map(([itemKeyRaw, qtyRaw]) => {
         const itemKey = String(itemKeyRaw || '');
@@ -28786,27 +29070,44 @@ body { display: flex !important; align-items: center !important; justify-content
         || String(a.name || '').localeCompare(String(b.name || ''), 'ko')
       ));
     const actualFacilityInventoryByKey = selectedFieldFacilityInventoryState?.byFacility || {};
-    const bagItems = buildStorageItemRows(
+    const personalItems = buildStorageItemRows(
       game?.vehicleCargoByInstance?.[MAP_TRANSFER_PERSONAL_CARRIER_ID] || {},
       '',
       { type: 'carrier', carrierId: MAP_TRANSFER_PERSONAL_CARRIER_ID }
+    );
+    const equippedBagItems = buildStorageItemRows(
+      game?.vehicleCargoByInstance?.[MAP_TRANSFER_EQUIPPED_BAG_CARRIER_ID] || {},
+      '',
+      { type: 'carrier', carrierId: MAP_TRANSFER_EQUIPPED_BAG_CARRIER_ID }
     );
     const storageSourceUsedKgOfItems = (items = []) => (
       (Array.isArray(items) ? items : []).reduce((sum, item) => (
         sum + (Math.max(0, Number(item?.qty) || 0) * Math.max(0, Number(item?.weightKg) || 0))
       ), 0)
     );
-    const bagUsedKg = storageSourceUsedKgOfItems(bagItems);
-    const bagRow = {
+    const personalUsedKg = storageSourceUsedKgOfItems(personalItems);
+    const equippedBagUsedKg = storageSourceUsedKgOfItems(equippedBagItems);
+    const personalRow = {
       sourceType: 'carrier',
       sourceKey: MAP_TRANSFER_PERSONAL_CARRIER_ID,
       sourceName: '개인소지품',
-      sourceDetail: bagItems.length ? `현재 들고 있는 짐 · ${bagItems.length}종` : '현재 들고 있는 짐 없음',
+      sourceDetail: personalItems.length ? `현재 들고 있는 짐 · ${personalItems.length}종` : '현재 들고 있는 짐 없음',
       sourceImageSrc: PERSONAL_CARRY_IMAGE,
       sourceIcon: '🧺',
-      usedKg: bagUsedKg,
+      usedKg: personalUsedKg,
       capacityKg: MAP_TRANSFER_PERSONAL_PAYLOAD_KG,
-      items: bagItems
+      items: personalItems
+    };
+    const equippedBagRow = {
+      sourceType: 'carrier',
+      sourceKey: MAP_TRANSFER_EQUIPPED_BAG_CARRIER_ID,
+      sourceName: '가방',
+      sourceDetail: equippedBagItems.length ? `착용한 가방 · ${equippedBagItems.length}종` : '착용한 가방 비어있음',
+      sourceImageSrc: BASIC_MESSENGER_BAG_IMAGE,
+      sourceIcon: '🎒',
+      usedKg: equippedBagUsedKg,
+      capacityKg: MAP_TRANSFER_EQUIPPED_BAG_PAYLOAD_KG,
+      items: equippedBagItems
     };
     const fridgeItems = buildStorageItemRows(selectedField?.housingFoodStorageByFacilityKey?.[housingFacilityKey] || {});
     const freezerItems = buildStorageItemRows(selectedField?.housingFreezerFoodStorageByFacilityKey?.[housingFacilityKey] || {});
@@ -28881,7 +29182,7 @@ body { display: flex !important; align-items: center !important; justify-content
         };
       })
       .filter(Boolean);
-    return [bagRow, ...vehicleRows, ...warehouseRows, ...fridgeRows];
+    return [personalRow, equippedBagRow, ...vehicleRows, ...warehouseRows, ...fridgeRows];
   }, [
     game,
     game?.fieldFacilityInventoryByFieldId,
@@ -29181,6 +29482,10 @@ body { display: flex !important; align-items: center !important; justify-content
       selectedField?.housingClothingEquipmentsByFacilityKey?.[facilityKey] || {}
     );
   }, [housingInteriorFacilityRow, selectedField?.housingClothingEquipmentsByFacilityKey]);
+  const housingInteriorClothingActivityInfo = useMemo(
+    () => clothingActivityInfoOfEquipments(housingInteriorClothingEquipments),
+    [housingInteriorClothingEquipments]
+  );
   const housingInteriorClothingSlotRows = useMemo(() => {
     const clothingItems = SHOP_ITEMS.clothing || [];
     const clothingMap = clothingItems.reduce((acc, item) => {
@@ -29191,12 +29496,17 @@ body { display: flex !important; align-items: center !important; justify-content
     return HOUSING_CLOTHING_SLOT_DEFS.map((slot) => {
       const itemKey = String(housingInteriorClothingEquipments?.[slot.key] || '');
       const item = clothingMap[itemKey] || null;
+      const activityStats = item ? clothingActivityStatsOfItem(item, slot.key) : null;
       return {
         ...slot,
         itemKey,
         installed: Boolean(item),
         name: item ? String(item?.name || itemKey) : '',
         desc: item ? String(item?.desc || '') : '',
+        comfort: activityStats?.comfort || 0,
+        discomfort: activityStats?.discomfort || 0,
+        mobilityPenalty: activityStats?.mobilityPenalty || 0,
+        activityPenalty: activityStats?.penalty || 0,
         imageSrc: item ? toolImageSrcOf(itemKey) : ''
       };
     });
@@ -29216,6 +29526,7 @@ body { display: flex !important; align-items: center !important; justify-content
         if (!itemKey || qty <= 0) return null;
         const meta = itemMetaByKey?.[itemKey] || {};
         const slot = HOUSING_CLOTHING_SLOT_DEFS.find((entry) => String(entry?.type || '') === String(meta?.type || '')) || null;
+        const activityStats = slot ? clothingActivityStatsOfItem(meta, slot.key) : null;
         return {
           itemKey,
           name: String(meta?.name || itemNameByKey?.[itemKey] || itemKey),
@@ -29224,6 +29535,10 @@ body { display: flex !important; align-items: center !important; justify-content
           type: String(meta?.type || ''),
           slotKey: String(slot?.key || ''),
           slotLabel: String(slot?.label || ''),
+          comfort: activityStats?.comfort || 0,
+          discomfort: activityStats?.discomfort || 0,
+          mobilityPenalty: activityStats?.mobilityPenalty || 0,
+          activityPenalty: activityStats?.penalty || 0,
           imageSrc: toolImageSrcOf(itemKey)
         };
       })
@@ -29236,13 +29551,19 @@ body { display: flex !important; align-items: center !important; justify-content
       .map((row) => {
         const type = String(row?.type || itemMetaByKey?.[String(row?.itemKey || '')]?.type || '');
         const slot = HOUSING_CLOTHING_SLOT_DEFS.find((entry) => String(entry?.type || '') === type) || null;
+        const meta = itemMetaByKey?.[String(row?.itemKey || '')] || {};
+        const activityStats = slot ? clothingActivityStatsOfItem(meta, slot.key) : null;
         return {
           ...row,
           type,
           qty: Math.max(0, Math.floor(Number(row?.qty) || 0)),
           unit: String(row?.unit || '개'),
           slotKey: String(slot?.key || ''),
-          slotLabel: String(slot?.label || '')
+          slotLabel: String(slot?.label || ''),
+          comfort: activityStats?.comfort || 0,
+          discomfort: activityStats?.discomfort || 0,
+          mobilityPenalty: activityStats?.mobilityPenalty || 0,
+          activityPenalty: activityStats?.penalty || 0
         };
       })
       .filter((row) => row.itemKey && row.qty > 0)
@@ -29255,12 +29576,21 @@ body { display: flex !important; align-items: center !important; justify-content
         .map((row) => {
           const itemKey = String(row?.itemKey || '');
           const meta = itemMetaByKey?.[itemKey] || {};
+          const type = String(row?.type || meta?.type || '');
+          const slot = HOUSING_CLOTHING_SLOT_DEFS.find((entry) => String(entry?.type || '') === type) || null;
+          const activityStats = String(row?.category || meta?.category || '') === 'clothing' && slot
+            ? clothingActivityStatsOfItem(meta, slot.key)
+            : null;
           const unitWeightKg = Math.max(0, Number(row?.unitWeightKg ?? row?.weightKg ?? meta?.weightKg) || 0);
           return {
             ...row,
-            type: String(row?.type || meta?.type || ''),
+            type,
             unitWeightKg,
             weightKg: unitWeightKg,
+            comfort: activityStats?.comfort ?? row?.comfort ?? 0,
+            discomfort: activityStats?.discomfort ?? row?.discomfort ?? 0,
+            mobilityPenalty: activityStats?.mobilityPenalty ?? row?.mobilityPenalty ?? 0,
+            activityPenalty: activityStats?.penalty ?? row?.activityPenalty ?? 0,
             sourceType,
             sourceKey,
             sourceName,
@@ -29350,6 +29680,7 @@ body { display: flex !important; align-items: center !important; justify-content
     });
     return [
       ...buildRows(housingInteriorBagRows, 'carrier', MAP_TRANSFER_PERSONAL_CARRIER_ID, '개인소지품', '현재 들고 있는 개인 소지품', PERSONAL_CARRY_IMAGE, '🧳'),
+      ...buildRows(housingInteriorEquippedBagRows, 'carrier', MAP_TRANSFER_EQUIPPED_BAG_CARRIER_ID, '가방', '착용한 가방 내부', BASIC_MESSENGER_BAG_IMAGE, '🎒'),
       ...vehicleSourceRows,
       ...fieldFacilitySourceRows
     ];
@@ -29357,6 +29688,7 @@ body { display: flex !important; align-items: center !important; justify-content
     game,
     game?.vehicleCargoByInstance,
     housingInteriorBagRows,
+    housingInteriorEquippedBagRows,
     itemCategoryByKey,
     itemMetaByKey,
     itemNameByKey,
@@ -29380,7 +29712,23 @@ body { display: flex !important; align-items: center !important; justify-content
       label: '개인소지품',
       detail: `보관 ${Math.round(personalUsedKg).toLocaleString()} / ${MAP_TRANSFER_PERSONAL_PAYLOAD_KG.toLocaleString()}kg`,
       icon: '🧳',
-      imageSrc: ''
+      imageSrc: PERSONAL_CARRY_IMAGE
+    };
+    const equippedBagCargo = normalizeCargoByItemKey(game?.vehicleCargoByInstance?.[MAP_TRANSFER_EQUIPPED_BAG_CARRIER_ID] || {});
+    const equippedBagUsedKg = Object.entries(equippedBagCargo).reduce((sum, [itemKeyRaw, qtyRaw]) => {
+      const itemKey = String(itemKeyRaw || '');
+      const qty = Math.max(0, Number(qtyRaw) || 0);
+      const weightKg = Math.max(0, Number(itemMetaByKey?.[itemKey]?.weightKg) || 0);
+      return sum + (qty * weightKg);
+    }, 0);
+    const equippedBagRow = {
+      key: 'carrier:equipped-bag',
+      targetType: 'carrier',
+      targetKey: MAP_TRANSFER_EQUIPPED_BAG_CARRIER_ID,
+      label: '가방',
+      detail: `보관 ${Math.round(equippedBagUsedKg).toLocaleString()} / ${MAP_TRANSFER_EQUIPPED_BAG_PAYLOAD_KG.toLocaleString()}kg`,
+      icon: '🎒',
+      imageSrc: BASIC_MESSENGER_BAG_IMAGE
     };
     const vehicleRows = (selectedFieldParkingSlots || [])
       .map((instanceId, idx) => {
@@ -29434,7 +29782,7 @@ body { display: flex !important; align-items: center !important; justify-content
         };
       })
       .filter(Boolean);
-    return [...warehouseRows, ...vehicleRows, personalRow];
+    return [...warehouseRows, ...vehicleRows, personalRow, equippedBagRow];
   }, [
     game,
     game?.vehicleCargoByInstance,
@@ -30876,8 +31224,8 @@ body { display: flex !important; align-items: center !important; justify-content
       if (targetType === 'carrier') {
         const itemWeightKg = Math.max(0, Number(itemMetaByKey?.[itemKey]?.weightKg) || 0);
         const usedKg = carrierCargoUsedKgByInstance(prev, targetKey);
-        const targetCarrier = targetKey === MAP_TRANSFER_PERSONAL_CARRIER_ID
-          ? { item: { payloadKg: MAP_TRANSFER_PERSONAL_PAYLOAD_KG } }
+        const targetCarrier = isVirtualPersonalCarrierId(targetKey)
+          ? virtualPersonalCarrierMetaOf(targetKey)
           : resolveMachineInstanceById(targetKey);
         const capacityKg = Math.max(0, Number(targetCarrier?.item?.payloadKg) || 0);
         if (itemWeightKg > 0 && capacityKg > 0 && usedKg + itemWeightKg > capacityKg + 0.0001) return prev;
@@ -31149,13 +31497,14 @@ body { display: flex !important; align-items: center !important; justify-content
       return { nextByFacility, nextVehicleCargoByInstance };
     }
     const targetCarrierId = safeTargetKey || MAP_TRANSFER_PERSONAL_CARRIER_ID;
-    const targetCarrier = targetCarrierId === MAP_TRANSFER_PERSONAL_CARRIER_ID
-      ? { item: { payloadKg: MAP_TRANSFER_PERSONAL_PAYLOAD_KG } }
+    const isVirtualPersonalCarrier = isVirtualPersonalCarrierId(targetCarrierId);
+    const targetCarrier = isVirtualPersonalCarrier
+      ? virtualPersonalCarrierMetaOf(targetCarrierId)
       : resolveMachineInstanceById(targetCarrierId);
-    const attachmentMode = targetCarrierId === MAP_TRANSFER_PERSONAL_CARRIER_ID
+    const attachmentMode = isVirtualPersonalCarrier
       ? ''
       : ssAttachmentModeOfGameState(prev, targetCarrierId);
-    const ssCargoAttached = targetCarrierId !== MAP_TRANSFER_PERSONAL_CARRIER_ID
+    const ssCargoAttached = !isVirtualPersonalCarrier
       && isSsAttachmentEligibleMachineKey(String(targetCarrier?.machineKey || ''))
       && attachmentMode === SS_ATTACHMENT_MODE_CARGO_BED;
     const payloadKg = ssCargoAttached
@@ -31164,14 +31513,14 @@ body { display: flex !important; align-items: center !important; justify-content
           Math.max(0, Number(MACHINE_ITEM_MAP?.ssCargoBed?.payloadKg) || 0)
         )
       : Math.max(0, Number(targetCarrier?.item?.payloadKg) || 0);
-    if (!targetCarrier || payloadKg <= 0 || (targetCarrierId !== MAP_TRANSFER_PERSONAL_CARRIER_ID && isForkliftMachineLike(targetCarrier))) return null;
+    if (!targetCarrier || payloadKg <= 0 || (!isVirtualPersonalCarrier && isForkliftMachineLike(targetCarrier))) return null;
     const currentCarrierCargo = normalizeCargoByItemKey(nextVehicleCargoByInstance[targetCarrierId] || {});
     const cargoUsedKg = Object.entries(currentCarrierCargo).reduce((sum, [cargoItemKey, qty]) => {
       const safeQty = Math.max(0, Number(qty) || 0);
       const weightKg = Math.max(0, Number(itemMetaByKey?.[String(cargoItemKey || '')]?.weightKg) || 0);
       return sum + (weightKg * safeQty);
     }, 0);
-    const usedKg = targetCarrierId === MAP_TRANSFER_PERSONAL_CARRIER_ID
+    const usedKg = isVirtualPersonalCarrier
       ? cargoUsedKg
       : Math.max(0, carrierTotalLoadedKgByInstance(prev, targetCarrierId) - carrierCargoUsedKgByInstance(prev, targetCarrierId) + cargoUsedKg);
     if (itemWeightKg > 0 && usedKg + itemWeightKg > payloadKg + 0.0001) return null;
@@ -31808,8 +32157,8 @@ body { display: flex !important; align-items: center !important; justify-content
         const cargo = normalizeCargoByItemKey(nextCargoByInstance[targetKey] || {});
         const itemWeightKg = Math.max(0, Number(itemMetaByKey?.[itemKey]?.weightKg) || 0);
         const usedKg = carrierCargoUsedKgByInstance(prev, targetKey);
-        const targetCarrier = targetKey === MAP_TRANSFER_PERSONAL_CARRIER_ID
-          ? { item: { payloadKg: MAP_TRANSFER_PERSONAL_PAYLOAD_KG } }
+        const targetCarrier = isVirtualPersonalCarrierId(targetKey)
+          ? virtualPersonalCarrierMetaOf(targetKey)
           : resolveMachineInstanceById(targetKey);
         const capacityKg = Math.max(0, Number(targetCarrier?.item?.payloadKg) || 0);
         if (itemWeightKg > 0 && capacityKg > 0 && usedKg + (itemWeightKg * moved) > capacityKg + 0.0001) return prev;
@@ -35285,23 +35634,27 @@ body { display: flex !important; align-items: center !important; justify-content
         })
         .filter(Boolean);
       const hasPersonalRow = parkedRows.some((row) => String(row?.machine?.id || '') === MAP_TRANSFER_PERSONAL_CARRIER_ID);
-      if (hasPersonalRow) return parkedRows;
-      return [
-        ...parkedRows,
-        {
+      const hasEquippedBagRow = parkedRows.some((row) => String(row?.machine?.id || '') === MAP_TRANSFER_EQUIPPED_BAG_CARRIER_ID);
+      const virtualRows = [];
+      if (!hasPersonalRow) {
+        virtualRows.push({
           slotNo: 0,
           slotLabel: '기본',
           isPersonal: true,
-          machine: {
-            id: MAP_TRANSFER_PERSONAL_CARRIER_ID,
-            machineKey: 'personalCarry',
-            unitNo: 1,
-            item: {
-              name: '개인소지품',
-              payloadKg: MAP_TRANSFER_PERSONAL_PAYLOAD_KG
-            }
-          }
-        }
+          machine: virtualPersonalCarrierMetaOf(MAP_TRANSFER_PERSONAL_CARRIER_ID)
+        });
+      }
+      if (!hasEquippedBagRow) {
+        virtualRows.push({
+          slotNo: 0,
+          slotLabel: '착용',
+          isEquippedBag: true,
+          machine: virtualPersonalCarrierMetaOf(MAP_TRANSFER_EQUIPPED_BAG_CARRIER_ID)
+        });
+      }
+      return [
+        ...parkedRows,
+        ...virtualRows
       ];
     },
     [selectedFieldParkingSlots, resolveMachineInstanceById, game, machineDisplayNameWithRentTag]
@@ -35452,17 +35805,15 @@ body { display: flex !important; align-items: center !important; justify-content
         slotNo: 0,
         slotLabel: '기본',
         isPersonal: true,
-        machine: {
-          id: MAP_TRANSFER_PERSONAL_CARRIER_ID,
-          machineKey: 'personalCarry',
-          unitNo: 1,
-          item: {
-            name: '개인소지품',
-            payloadKg: MAP_TRANSFER_PERSONAL_PAYLOAD_KG
-          }
-        }
+        machine: virtualPersonalCarrierMetaOf(MAP_TRANSFER_PERSONAL_CARRIER_ID)
       };
-      return [...parkedRows, personalCarrierRow];
+      const equippedBagCarrierRow = {
+        slotNo: 0,
+        slotLabel: '착용',
+        isEquippedBag: true,
+        machine: virtualPersonalCarrierMetaOf(MAP_TRANSFER_EQUIPPED_BAG_CARRIER_ID)
+      };
+      return [...parkedRows, personalCarrierRow, equippedBagCarrierRow];
     },
     [mapLocationModal?.key, game?.townMarkerParkingByKey, resolveMachineInstanceById]
   );
@@ -35470,6 +35821,13 @@ body { display: flex !important; align-items: center !important; justify-content
     () => mapTransferParkedCarrierRows.find((row) => row.machine.id === mapTransferSelectedCarrierId)?.machine || null,
     [mapTransferParkedCarrierRows, mapTransferSelectedCarrierId]
   );
+  const mapTransferSelectedCarrierLabel = useMemo(() => {
+    const carrierId = String(mapTransferSelectedCarrier?.id || '');
+    if (!carrierId) return '';
+    if (carrierId === MAP_TRANSFER_PERSONAL_CARRIER_ID) return '개인소지품';
+    if (carrierId === MAP_TRANSFER_EQUIPPED_BAG_CARRIER_ID || String(mapTransferSelectedCarrier?.machineKey || '') === 'equippedBag') return '가방';
+    return `${mapTransferSelectedCarrier?.item?.name || mapTransferSelectedCarrier?.machineKey || '선택 적재함'}${Number(mapTransferSelectedCarrier?.unitNo) > 0 ? ` #${mapTransferSelectedCarrier.unitNo}` : ''}`;
+  }, [mapTransferSelectedCarrier]);
   useEffect(() => {
     mapTransferSelectedCarrierIdRef.current = String(mapTransferSelectedCarrier?.id || '');
   }, [mapTransferSelectedCarrier]);
@@ -35939,7 +36297,7 @@ body { display: flex !important; align-items: center !important; justify-content
   const moveTempStorageEntryToSelectedCarrier = (entryId) => {
     const selectedCarrierId = String(mapTransferSelectedCarrier?.id || '');
     if (!selectedCarrierId) {
-      window.alert('적재할 차량을 먼저 선택해 주세요.');
+      window.alert('적재할 곳을 먼저 선택해 주세요.');
       return;
     }
     const shopKey = String(mapLocationModal?.key || '');
@@ -35966,7 +36324,7 @@ body { display: flex !important; align-items: center !important; justify-content
       ? Math.max(0, Math.min(requestQty, Math.floor(remainKg / itemWeightKg)))
       : requestQty;
     if (movableQty <= 0) {
-      window.alert('선택한 차량의 적재 공간이 부족합니다.');
+      window.alert(`선택한 ${mapTransferSelectedCarrierLabel || '적재 공간'}의 적재 공간이 부족합니다.`);
       return;
     }
     setGame((prev) => {
@@ -36061,7 +36419,7 @@ body { display: flex !important; align-items: center !important; justify-content
   const movePaidCartEntryToSelectedCarrier = (entryKey) => {
     const selectedCarrierId = String(mapTransferSelectedCarrier?.id || '');
     if (!selectedCarrierId) {
-      window.alert('적재할 차량을 먼저 선택해 주세요.');
+      window.alert('적재할 곳을 먼저 선택해 주세요.');
       return;
     }
     const entry = shopCartByKey?.[entryKey];
@@ -36087,7 +36445,7 @@ body { display: flex !important; align-items: center !important; justify-content
       ? Math.max(0, Math.min(requestQty, Math.floor(remainKg / itemWeightKg)))
       : requestQty;
     if (movableQty <= 0) {
-      window.alert('선택한 차량의 적재 공간이 부족합니다.');
+      window.alert(`선택한 ${mapTransferSelectedCarrierLabel || '적재 공간'}의 적재 공간이 부족합니다.`);
       return;
     }
     setGame((prev) => {
@@ -36121,7 +36479,7 @@ body { display: flex !important; align-items: center !important; justify-content
   const moveAllPaidCartEntriesToSelectedCarrier = () => {
     const selectedCarrierId = String(mapTransferSelectedCarrier?.id || '');
     if (!selectedCarrierId) {
-      window.alert('적재할 차량을 먼저 선택해 주세요.');
+      window.alert('적재할 곳을 먼저 선택해 주세요.');
       return;
     }
     const paidEntries = Object.entries(shopCartByKey || {})
@@ -36791,6 +37149,14 @@ body { display: flex !important; align-items: center !important; justify-content
             const isActive = String(machine?.id || '') === String(facilityStorageSelectedCarrierId || '');
             const isForkliftMachine = isForkliftMachineLike(machine);
             const thumbSrc = machineImageSrcOfParkingState(machine, game);
+            const isEquippedBag = Boolean(row?.isEquippedBag)
+              || String(machine?.id || '') === MAP_TRANSFER_EQUIPPED_BAG_CARRIER_ID
+              || String(machine?.machineKey || '') === 'equippedBag';
+            const carrierLabel = row?.isPersonal
+              ? '개인소지품'
+              : isEquippedBag
+                ? '가방'
+                : (row?.displayName || machineDisplayNameWithRentTag(machine));
             return (
               <button
                 key={machine.id}
@@ -36803,14 +37169,14 @@ body { display: flex !important; align-items: center !important; justify-content
                     <div className="warehouse-storage-harvest-forklift-card__thumb">
                       <img
                         src={thumbSrc}
-                        alt={row?.isPersonal ? '개인소지품' : machineDisplayNameWithRentTag(machine)}
+                        alt={carrierLabel}
                         loading="lazy"
                       />
                     </div>
                   ) : null}
                   <div className="warehouse-storage-harvest-forklift-card__text">
                     <div className="map-transfer-vehicle-card__head">
-                      <strong>{row?.isPersonal ? '개인소지품' : (row?.displayName || machineDisplayNameWithRentTag(machine))}</strong>
+                      <strong>{carrierLabel}</strong>
                       <span>{row.slotLabel || `P${row.slotNo}`}</span>
                     </div>
                     {!isForkliftMachine ? (
@@ -42276,7 +42642,11 @@ body { display: flex !important; align-items: center !important; justify-content
     });
   }, [selectedField, selectedFieldStorageUsedKgByFacility]);
   const facilityStorageSelectableParkingRows = useMemo(
-    () => (facilityStorageParkedCarrierInstances || []).filter((row) => !row?.isPersonal && String(row?.machine?.id || '')),
+    () => (facilityStorageParkedCarrierInstances || []).filter((row) => (
+      !row?.isPersonal
+      && !row?.isEquippedBag
+      && String(row?.machine?.id || '')
+    )),
     [facilityStorageParkedCarrierInstances]
   );
   const workbenchInstallSourceRows = useMemo(() => {
@@ -43380,6 +43750,22 @@ body { display: flex !important; align-items: center !important; justify-content
         }
         const data = await response.json();
         if (cancelled) return;
+        if (isAuthSessionOwnedByAnotherActiveTab(data.session || null)) {
+          console.warn('[auth-restore] blocked_duplicate_tab', {
+            username: data.session?.username || ''
+          });
+          sendAuthClientDiagnostic(data.session || null, 'restore_blocked_duplicate_tab', {
+            username: data.session?.username || ''
+          });
+          setAuthSession(null);
+          setActiveSaveSlot(null);
+          setGame(null);
+          setScreen('menu');
+          setSlotMode('');
+          setAuthForcedLogoutMessage('이 계정은 이미 다른 탭에서 열려 있습니다. 기존 탭을 닫은 뒤 다시 열어 주세요.');
+          setAuthForcedLogoutModalOpen(true);
+          return;
+        }
         console.info('[auth-restore] success', {
           username: data.session?.username || '',
           slotKeys: Object.keys(data.slots || {}),
@@ -48074,7 +48460,10 @@ body { display: flex !important; align-items: center !important; justify-content
         field: current,
         isNightSelfWork,
         sleepQualityScore: source === WORK_SOURCE.work ? prev?.lastSleepQualityInfo?.score : null,
-        health: prev?.health
+        health: prev?.health,
+        clothingActivityMultiplier: source === WORK_SOURCE.work
+          ? clothingActivityInfoOfField(current).efficiencyMultiplier
+          : 1
       });
       const cleanupNeglectLaborMultiplier = isSprayTask
         ? cleanupWastePenaltyProfileOfField(current).laborMultiplier
@@ -58157,11 +58546,14 @@ const requestRepairEquipment = (itemKey) => {
   const isExternalMovementUiActive = Boolean(townMoveModal.open)
     || Boolean(townReturnModalOpen);
   const isIndoorLocationModalActive = Boolean(mapLocationModal.open);
-  const isIndoorRainAmbientActive = !isExternalMovementUiActive && (
-    Boolean(isHousingInteriorActive)
-    || Boolean(facilityStorageModal.open && activeFacilityStorageKey && activeFacilityStorageKey !== OPEN_STORAGE_BASE_FACILITY_KEY)
-    || isIndoorLocationModalActive
-  );
+  const isIndoorRainAmbientActive = Boolean(isHousingInteriorActive)
+    || (
+      !isExternalMovementUiActive
+      && (
+        Boolean(facilityStorageModal.open && activeFacilityStorageKey && activeFacilityStorageKey !== OPEN_STORAGE_BASE_FACILITY_KEY)
+        || isIndoorLocationModalActive
+      )
+    );
   const isTownAmbientSmallCity = isSmallCityContext
     || (
       mapLocationModal.open
@@ -58185,10 +58577,7 @@ const requestRepairEquipment = (itemKey) => {
   const isTownAmbientActive = Boolean(game)
     && screen !== 'menu'
     && !isIndoorRainAmbientActive
-    && (
-      tab === 'map'
-      || Boolean(townMarkerParkingModal.open)
-    )
+    && Boolean(townMarkerParkingModal.open)
     && !mapLocationModal.open;
   const centerTileMapImageBySeason = game
     ? pickCenterTileMapImage(game.weather, monthOf(game.day), game.timeOfDay)
@@ -58275,9 +58664,7 @@ const requestRepairEquipment = (itemKey) => {
     };
     const month = game ? monthOf(game.day) : 1;
     const isNight = String(game?.timeOfDay || 'day') === 'night';
-    const isSettlementAmbientBlocked = tab === 'map'
-      || Boolean(townMoveModal.open)
-      || Boolean(townReturnModalOpen)
+    const isSettlementAmbientBlocked = Boolean(townReturnModalOpen)
       || Boolean(mapLocationModal.open);
     const shouldPlayFallBird = Boolean(game)
       && Boolean(birdAudio)
@@ -60318,6 +60705,15 @@ const requestRepairEquipment = (itemKey) => {
                         value={animationLabElementLayerSearchText}
                         onChange={(e) => setAnimationLabElementLayerSearchText(e.target.value)}
                       />
+                      <label className={`animation-lab__direct-pick-toggle ${animationLabDirectPickEnabled ? 'is-on' : ''}`.trim()}>
+                        <input
+                          type="checkbox"
+                          checked={animationLabDirectPickEnabled}
+                          onChange={(e) => setAnimationLabDirectPickEnabled(e.target.checked)}
+                        />
+                        <span>객체 직접 선택</span>
+                        <strong>{animationLabDirectPickEnabled ? 'ON' : 'OFF'}</strong>
+                      </label>
                       <select
                         ref={animationLabElementLayerSelectRef}
                         className="text-input animation-lab__layer-select"
@@ -60350,7 +60746,11 @@ const requestRepairEquipment = (itemKey) => {
                         뒤로
                       </button>
                     </div>
-                    <div className="animation-lab__layer-hint">드롭다운으로 객체를 고른 뒤 슬라이더로 위치/크기를 조절하세요.</div>
+                    <div className="animation-lab__layer-hint">
+                      {animationLabDirectPickEnabled
+                        ? '미리보기에서 조정할 객체를 클릭하세요. 선택 후 슬라이더로 위치/크기를 조절할 수 있습니다.'
+                        : '드롭다운으로 객체를 고른 뒤 슬라이더로 위치/크기를 조절하세요.'}
+                    </div>
                     <div className="animation-lab__gauge-grid">
                       <label>
                         위치 X
@@ -61392,13 +61792,15 @@ const requestRepairEquipment = (itemKey) => {
   const townMoveRivers = townMoveStaticRouteViews.rivers;
   const townMoveVillages = townMoveStaticRouteViews.villages;
   const seasonalTasks = Object.values(TASKS).filter((task) => isTaskSeasonActive(selectedField, task, month));
+  const selectedFieldClothingActivityInfo = clothingActivityInfoOfField(selectedField, housingInteriorFacilityRow?.key);
   const currentWorkLaborFactors = workLaborFactorsOf({
     weatherName: game.weather,
     temperatureC: game.temperatureC,
     field: selectedField,
     isNightSelfWork: isNightPhase,
     sleepQualityScore: game?.lastSleepQualityInfo?.score,
-    health: game?.health
+    health: game?.health,
+    clothingActivityMultiplier: selectedFieldClothingActivityInfo.efficiencyMultiplier
   });
   const weatherLaborMultiplierNow = currentWorkLaborFactors.weatherLabor;
   const temperatureLaborMultiplierNow = currentWorkLaborFactors.temperatureLabor;
@@ -61424,6 +61826,7 @@ const requestRepairEquipment = (itemKey) => {
   const nightWorkDropPctNow = laborMultiplierToDropPct(nightLaborMultiplierNow);
   const sleepWorkDeltaPctNow = clamp(((Number(sleepWorkEfficiencyNow) || 1) - 1) * 100, -100, 100);
   const healthWorkDeltaPctNow = clamp(((Number(healthWorkEfficiencyNow) || 1) - 1) * 100, -100, 100);
+  const clothingWorkDropPctNow = clamp((1 - (Number(currentWorkLaborFactors.clothingEfficiency) || 1)) * 100, 0, 100);
   const selectedSlopeDeg = Math.max(0, Number(selectedField?.slopeDeg) || 0);
   const selectedSlopeBandLabel = slopeBandLabelOf(selectedSlopeDeg);
   const selectedLandGroundwaterFallback = LAND_POOL.find(
@@ -66537,12 +66940,15 @@ body { display: flex !important; align-items: center !important; justify-content
               housingInteriorWaterTankSlotRows={housingInteriorWaterTankSlotRows}
               housingInteriorApplianceSlotRows={housingInteriorApplianceSlotRows}
               housingInteriorClothingSlotRows={housingInteriorClothingSlotRows}
+              housingInteriorClothingActivityInfo={housingInteriorClothingActivityInfo}
               housingInteriorClothingStorageRows={housingInteriorClothingStorageRows}
               housingInteriorFurnitureSlotRows={housingInteriorFurnitureSlotRows}
               housingInteriorInstallSourceRows={housingInteriorInstallSourceRows}
               housingInteriorInstallDestinationRows={housingInteriorInstallDestinationRows}
               housingInteriorBagRows={housingInteriorBagRows}
               housingInteriorBagFoodRows={housingInteriorBagFoodRows}
+              housingInteriorEquippedBagRows={housingInteriorEquippedBagRows}
+              housingInteriorEquippedBagFoodRows={housingInteriorEquippedBagFoodRows}
               housingInteriorBagClothingRows={housingInteriorBagClothingRows}
               housingInteriorVehicleFoodSourceRows={housingInteriorVehicleFoodSourceRows}
               housingInteriorStorageSourceRows={housingInteriorStorageSourceRows}
@@ -67035,7 +67441,7 @@ body { display: flex !important; align-items: center !important; justify-content
                                 openHousingDoorAnimation(row.key);
                               }}
                             >
-                              🚪 들어가기
+                              🚪 들어가기(H)
                             </button>
                           </div>
                         ) : null}
@@ -67073,7 +67479,7 @@ body { display: flex !important; align-items: center !important; justify-content
                                   openHousingDoorAnimation(row.key);
                                 }}
                               >
-                                🚪 들어가기
+                                🚪 들어가기(H)
                               </button>
                             </div>
                           ) : null}
@@ -68916,7 +69322,8 @@ body { display: flex !important; align-items: center !important; justify-content
                                 field: selectedField,
                                 isNightSelfWork: String(game?.timeOfDay || 'day') === 'night',
                                 sleepQualityScore: game?.lastSleepQualityInfo?.score,
-                                health: game?.health
+                                health: game?.health,
+                                clothingActivityMultiplier: selectedFieldClothingActivityInfo.efficiencyMultiplier
                               });
                               const perTreeLaborBase = Math.max(0.01, Number(taskLaborPerTree(task, selectedField, game.day)) || 0.01);
                               const perTreeLaborPreview = Math.max(0.01, perTreeLaborBase * previewEquipFx.laborMultiplier / laborFactors.workEfficiencyRatio);
@@ -70072,7 +70479,8 @@ body { display: flex !important; align-items: center !important; justify-content
                           field: selectedField,
                           isNightSelfWork: String(game?.timeOfDay || 'day') === 'night',
                           sleepQualityScore: game?.lastSleepQualityInfo?.score,
-                          health: game?.health
+                          health: game?.health,
+                          clothingActivityMultiplier: selectedFieldClothingActivityInfo.efficiencyMultiplier
                         });
                         const perTreeLaborBase = Math.max(0.01, Number(taskLaborPerTree(task, selectedField, game.day)) || 0.01);
                         const perTreeLaborPreview = Math.max(0.01, perTreeLaborBase * previewEquipFx.laborMultiplier / laborFactors.workEfficiencyRatio);
@@ -72809,7 +73217,10 @@ body { display: flex !important; align-items: center !important; justify-content
       <InventoryModal
         open={inventoryModalOpen}
         onClose={() => setInventoryModalOpen(false)}
-        bagRows={phoneBagRows}
+        equipmentRows={housingInteriorClothingSlotRows}
+        activityInfo={housingInteriorClothingActivityInfo}
+        personalRows={phoneBagRows}
+        bagRows={phoneEquippedBagRows}
       />
       <WarehouseStorageModalShell
         open={facilityStorageModal.open}
@@ -76846,6 +77257,10 @@ body { display: flex !important; align-items: center !important; justify-content
                   <span>{`건강 영향 (${healthGaugeValue.toFixed(1)}/100)`}</span>
                   <strong>{healthWorkDeltaPctNow > 0 ? `+${healthWorkDeltaPctNow.toFixed(1)}%` : healthWorkDeltaPctNow < 0 ? `${healthWorkDeltaPctNow.toFixed(1)}%` : '영향 없음'}</strong>
                 </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+                  <span>{`복장 활동성 (${Math.max(0, Math.round(Number(selectedFieldClothingActivityInfo?.activity) || 100))}/100)`}</span>
+                  <strong>{clothingWorkDropPctNow > 0 ? `-${clothingWorkDropPctNow.toFixed(1)}%` : '하락 없음'}</strong>
+                </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, marginTop: 2, paddingTop: 8, borderTop: '1px solid #d6dfd6' }}>
                   <span>최종 작업효율 하락</span>
                   <strong>{workEfficiencyDropPctNow > 0 ? `-${workEfficiencyDropPctNow.toFixed(1)}%` : '하락 없음'}</strong>
@@ -76861,7 +77276,7 @@ body { display: flex !important; align-items: center !important; justify-content
               <div style={{ marginTop: 10, opacity: 0.8, fontSize: 12.5, lineHeight: 1.45 }}>
                 참고 배수
                 <br />
-                {`날씨 ${weatherLaborMultiplierNow.toFixed(2)}배 / 기온 ${temperatureLaborMultiplierNow.toFixed(2)}배 / 경사도 ${slopeLaborMultiplierNow.toFixed(2)}배 / 잡초 효율 ${(weedWorkEfficiencyNow * 100).toFixed(1)}% / 야간 ${nightLaborMultiplierNow.toFixed(2)}배 / 수면 x${sleepWorkEfficiencyNow.toFixed(2)} / 건강 x${healthWorkEfficiencyNow.toFixed(2)} / 총 노동력 ${totalWorkLaborMultiplierNow.toFixed(2)}배`}
+                {`날씨 ${weatherLaborMultiplierNow.toFixed(2)}배 / 기온 ${temperatureLaborMultiplierNow.toFixed(2)}배 / 경사도 ${slopeLaborMultiplierNow.toFixed(2)}배 / 잡초 효율 ${(weedWorkEfficiencyNow * 100).toFixed(1)}% / 야간 ${nightLaborMultiplierNow.toFixed(2)}배 / 수면 x${sleepWorkEfficiencyNow.toFixed(2)} / 건강 x${healthWorkEfficiencyNow.toFixed(2)} / 복장 x${Number(currentWorkLaborFactors.clothingEfficiency || 1).toFixed(2)} / 총 노동력 ${totalWorkLaborMultiplierNow.toFixed(2)}배`}
                 {weedLaborMultiplierNow > 1 ? ` / 잡초 노동력 ${weedLaborMultiplierNow.toFixed(2)}배` : ''}
               </div>
               <div style={{ marginTop: 10, opacity: 0.85, fontSize: 13, lineHeight: 1.45 }}>

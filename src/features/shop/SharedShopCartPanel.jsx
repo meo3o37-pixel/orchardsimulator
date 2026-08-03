@@ -31,6 +31,12 @@ export default function SharedShopCartPanel({
   const canReopenTransferStep = hasPaidEntries && !shopCartUnpaidEntries.length && !mapShopIsPaymentShifted;
   const showMoveAllToCarrierBtn = hasPaidEntries && mapShopIsPaymentShifted;
   const canMoveAllToCarrier = Boolean(mapTransferSelectedCarrier);
+  const selectedCarrierId = String(mapTransferSelectedCarrier?.id || '');
+  const selectedCarrierLabel = selectedCarrierId === '__personal_carry__'
+    ? '개인소지품'
+    : selectedCarrierId === '__equipped_bag__' || String(mapTransferSelectedCarrier?.machineKey || '') === 'equippedBag'
+      ? '가방'
+      : '선택 적재함';
 
   return (
     <div className="shop-cart-panel">
@@ -89,7 +95,7 @@ export default function SharedShopCartPanel({
                       <button
                         className="button button--ghost button--compact day-transition-animate-button map-transfer-move-btn"
                         disabled={!canMoveToCarrier}
-                        title={!canMoveToCarrier ? '적재할 차량을 먼저 선택해 주세요.' : ''}
+                        title={!canMoveToCarrier ? '적재할 곳을 먼저 선택해 주세요.' : `${selectedCarrierLabel}으로 옮기기`}
                         onClick={() => movePaidCartEntryToSelectedCarrier(entryKey)}
                       >
                         옮기기
@@ -115,7 +121,7 @@ export default function SharedShopCartPanel({
           <button
             className="button button--ghost day-transition-animate-button"
             disabled={!canMoveAllToCarrier}
-            title={!canMoveAllToCarrier ? '적재할 차량을 먼저 선택해 주세요.' : ''}
+            title={!canMoveAllToCarrier ? '적재할 곳을 먼저 선택해 주세요.' : `${selectedCarrierLabel}으로 모두 옮기기`}
             onClick={moveAllPaidCartEntriesToSelectedCarrier}
           >
             모두 옮기기

@@ -97,13 +97,17 @@ export default function WarehouseSelectedCarrierPanel({
 }) {
   const selectedCarrierId = String(selectedCarrier?.id || '');
   const isPersonalCarrier = selectedCarrierId === personalCarrierId;
+  const isEquippedBagCarrier = selectedCarrierId === '__equipped_bag__'
+    || String(selectedCarrier?.machineKey || '') === 'equippedBag';
+  const isVirtualCarryCarrier = isPersonalCarrier || isEquippedBagCarrier;
+  const virtualCarryLabel = isEquippedBagCarrier ? '가방' : '개인소지품';
   const selectedCarrierType = String(selectedCarrier?.item?.type || '');
   const isPassengerCarrier = selectedCarrierType === 'passenger';
-  const supportsCarrierPalletTab = !isPersonalCarrier
+  const supportsCarrierPalletTab = !isVirtualCarryCarrier
     && !isPassengerCarrier
     && !isForkliftMachineLike(selectedCarrier)
     && selectedCarrierPalletSlotRows.length > 0;
-  const supportsCarrierMachineTab = !isPersonalCarrier
+  const supportsCarrierMachineTab = !isVirtualCarryCarrier
     && !isPassengerCarrier
     && !isForkliftMachineLike(selectedCarrier)
     && Math.max(0, Number(selectedCarrier?.item?.payloadKg) || 0) > 0;
@@ -180,8 +184,8 @@ export default function WarehouseSelectedCarrierPanel({
       >
         <div className="storage-card__head">
           <strong>
-            {isPersonalCarrier ? '개인소지품' : machineDisplayNameWithRentTag(selectedCarrier)}
-            {!isPersonalCarrier ? (
+            {isVirtualCarryCarrier ? virtualCarryLabel : machineDisplayNameWithRentTag(selectedCarrier)}
+            {!isVirtualCarryCarrier ? (
               <span className={`storage-card__title-inline-meta ${durabilityToneClass(equipmentDurabilityOf(game, selectedCarrier?.machineKey))}`}>
                 {`내구도 ${equipmentDurabilityOf(game, selectedCarrier?.machineKey).toFixed(1)}%`}
               </span>
@@ -197,8 +201,8 @@ export default function WarehouseSelectedCarrierPanel({
       </div>
       {carrierOnlyMode ? (
         <div className="storage-card__meta" style={{ marginTop: 6 }}>
-              {isPersonalCarrier
-                ? '개인소지품에서 탑승 차량으로 옮길 수 있습니다.'
+              {isVirtualCarryCarrier
+                ? `${virtualCarryLabel}에서 탑승 차량으로 옮길 수 있습니다.`
                 : '탑승 차량에서 개인소지품으로 옮길 수 있습니다.'}
         </div>
       ) : null}
@@ -209,7 +213,7 @@ export default function WarehouseSelectedCarrierPanel({
             className={`focus-tab focus-tab--farm-main-animate ${activeCarrierViewTab === 'cargo' ? 'focus-tab--active' : ''}`.trim()}
             onClick={() => setCarrierViewTab('cargo')}
           >
-            {isPersonalCarrier ? '가방' : '일반 적재함'}
+            {isVirtualCarryCarrier ? virtualCarryLabel : '일반 적재함'}
           </button>
           {supportsCarrierPalletTab ? (
             <button
@@ -402,7 +406,7 @@ export default function WarehouseSelectedCarrierPanel({
               </div>
             ) : (
               <div className="empty-box" style={{ marginTop: 6 }}>
-                {isPersonalCarrier ? '현재 가방에 들어있는 짐이 없습니다.' : '현재 차량 일반 적재함에 적재된 짐이 없습니다.'}
+                {isVirtualCarryCarrier ? `현재 ${virtualCarryLabel}에 들어있는 짐이 없습니다.` : '현재 차량 일반 적재함에 적재된 짐이 없습니다.'}
               </div>
             )}
             </div>
@@ -1381,7 +1385,7 @@ export default function WarehouseSelectedCarrierPanel({
             </button>
           ) : null}
           <button className="button button--ghost day-transition-animate-button" onClick={() => setSelectedCarrierId('')}>
-            {isPersonalCarrier ? '가방 선택' : '적재함 선택'}
+            {isVirtualCarryCarrier ? `${virtualCarryLabel} 선택` : '적재함 선택'}
           </button>
         </div>
       ) : (
