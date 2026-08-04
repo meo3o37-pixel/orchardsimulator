@@ -26,6 +26,7 @@ import LARGE_DOOR_CLOSE_SOUND_4 from '../../assets/images/효과음/시설/문�
 import CONTROL_PANEL_SWITCH_SOUND from '../../assets/images/효과음/전기/제어판 스위치.mp3';
 import KEPCO_POWER_ON_SOUND from '../../assets/images/효과음/전기/한전 ON 사운드.mp3';
 import KEPCO_POWER_OFF_SOUND from '../../assets/images/효과음/전기/한전 OFF 사운드.mp3';
+import KEPCO_CONTROL_PANEL_POWER_SOUND from '../../assets/images/효과음/전기/한전제어판 전력소리.mp3';
 import SHOP_BARCODE_SOUND from '../../assets/images/효과음/시설/상점사운드/바코드.mp3';
 
 import SHOP_CARD_PAYMENT_SOUND from '../../assets/images/효과음/시설/상점사운드/카드결제사운드.mp3';
@@ -43,6 +44,7 @@ const createAudio = (src, volume) => {
 const SHOP_BARCODE_VOLUME_RATIO = 0.22;
 const SHOP_CARD_PAYMENT_VOLUME_RATIO = 0.72;
 const SHOP_CARD_RECEIPT_VOLUME_RATIO = 0.58;
+const KEPCO_CONTROL_PANEL_POWER_VOLUME_RATIO = 1.65;
 
 export const useGameSfx = (volume = 0.1) => {
   const volumeRef = useRef(volume);
@@ -65,6 +67,7 @@ export const useGameSfx = (volume = 0.1) => {
   const controlPanelSwitchAudioRef = useRef(null);
   const kepcoPowerOnAudioRef = useRef(null);
   const kepcoPowerOffAudioRef = useRef(null);
+  const kepcoControlPanelPowerAudioRef = useRef(null);
   const shopBarcodeAudioRef = useRef(null);
   const shopCardPaymentAudioRef = useRef(null);
   const shopCardReceiptAudioRefs = useRef([]);
@@ -166,6 +169,7 @@ export const useGameSfx = (volume = 0.1) => {
       controlPanelSwitchAudioRef.current,
       kepcoPowerOnAudioRef.current,
       kepcoPowerOffAudioRef.current,
+      kepcoControlPanelPowerAudioRef.current,
       shopBarcodeAudioRef.current,
       shopCardPaymentAudioRef.current,
       ...shopCardReceiptAudioRefs.current
@@ -208,6 +212,7 @@ export const useGameSfx = (volume = 0.1) => {
     controlPanelSwitchAudioRef.current = createAudio(CONTROL_PANEL_SWITCH_SOUND, volumeRef.current);
     kepcoPowerOnAudioRef.current = createAudio(KEPCO_POWER_ON_SOUND, volumeRef.current);
     kepcoPowerOffAudioRef.current = createAudio(KEPCO_POWER_OFF_SOUND, volumeRef.current);
+    kepcoControlPanelPowerAudioRef.current = createAudio(KEPCO_CONTROL_PANEL_POWER_SOUND, volumeRef.current);
     shopBarcodeAudioRef.current = createAudio(SHOP_BARCODE_SOUND, volumeRef.current);
     shopCardPaymentAudioRef.current = createAudio(SHOP_CARD_PAYMENT_SOUND, volumeRef.current);
     shopCardReceiptAudioRefs.current = [
@@ -240,6 +245,7 @@ export const useGameSfx = (volume = 0.1) => {
         controlPanelSwitchAudioRef.current,
         kepcoPowerOnAudioRef.current,
         kepcoPowerOffAudioRef.current,
+        kepcoControlPanelPowerAudioRef.current,
         shopBarcodeAudioRef.current,
         shopCardPaymentAudioRef.current,
         ...shopCardReceiptAudioRefs.current
@@ -270,6 +276,7 @@ export const useGameSfx = (volume = 0.1) => {
       controlPanelSwitchAudioRef.current = null;
       kepcoPowerOnAudioRef.current = null;
       kepcoPowerOffAudioRef.current = null;
+      kepcoControlPanelPowerAudioRef.current = null;
       shopBarcodeAudioRef.current = null;
       shopCardPaymentAudioRef.current = null;
       shopCardReceiptAudioRefs.current = [];
@@ -295,6 +302,10 @@ export const useGameSfx = (volume = 0.1) => {
     playControlPanelSwitchSound: useCallback(() => playAudio(controlPanelSwitchAudioRef.current), [playAudio]),
     playKepcoPowerOnSound: useCallback(() => playAudio(kepcoPowerOnAudioRef.current), [playAudio]),
     playKepcoPowerOffSound: useCallback(() => playAudio(kepcoPowerOffAudioRef.current), [playAudio]),
+    playKepcoControlPanelPowerSound: useCallback(
+      () => playAudioWithVolumeRatio(kepcoControlPanelPowerAudioRef.current, KEPCO_CONTROL_PANEL_POWER_VOLUME_RATIO),
+      [playAudioWithVolumeRatio]
+    ),
     playShopBarcodeSound: useCallback(
       () => playAudioWithVolumeRatio(shopBarcodeAudioRef.current, SHOP_BARCODE_VOLUME_RATIO),
       [playAudioWithVolumeRatio]

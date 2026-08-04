@@ -13280,6 +13280,10 @@ const AUTH_SESSION_TOKEN_STORAGE_KEY = 'orchard_auth_session_token';
 const AUTH_PERSISTENT_SESSION_TOKEN_STORAGE_KEY = 'orchard_auth_persistent_session_token';
 const AUTH_ACTIVE_TAB_HEARTBEAT_INTERVAL_MS = 2000;
 const AUTH_ACTIVE_TAB_STALE_MS = 12000;
+const AUTH_ACTIVE_TAB_PROBE_REQUEST_STORAGE_KEY = 'orchard_auth_active_tab_probe_request';
+const AUTH_ACTIVE_TAB_PROBE_RESPONSE_STORAGE_KEY = 'orchard_auth_active_tab_probe_response';
+const AUTH_ACTIVE_TAB_PROBE_TIMEOUT_MS = 280;
+const AUTH_REPLACED_BY_OTHER_TAB_MESSAGE = '이 계정이 다른 탭에서 열려서 현재 탭의 접속을 종료했습니다.';
 const CHAT_HISTORY_LIMIT = 80;
 const AUTH_PAGE_INSTANCE_ID =
   typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
@@ -13322,6 +13326,77 @@ const isAuthSessionOwnedByAnotherActiveTab = (session = null) => {
   if (!activeTab || activeTab.username !== username) return false;
   if (activeTab.tabId === getOrCreateAuthTabId() && activeTab.pageId === AUTH_PAGE_INSTANCE_ID) return false;
   return Date.now() - activeTab.updatedAt <= AUTH_ACTIVE_TAB_STALE_MS;
+};
+const probeAnotherActiveAuthTab = (session = null) => new Promise((resolve) => {
+  const username = String(session?.username || '').trim();
+  if (!username || typeof window === 'undefined') {
+    resolve(false);
+    return;
+  }
+  const activeTab = readActiveAuthTab();
+  if (!activeTab || activeTab.username !== username) {
+    resolve(false);
+    return;
+  }
+  if (activeTab.tabId === getOrCreateAuthTabId() && activeTab.pageId === AUTH_PAGE_INSTANCE_ID) {
+    resolve(false);
+    return;
+  }
+  const requestId =
+    typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `auth-probe-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  let settled = false;
+  let timeoutId = null;
+  const finish = (foundLiveTab) => {
+    if (settled) return;
+    settled = true;
+    if (timeoutId) window.clearTimeout(timeoutId);
+    window.removeEventListener('storage', handleStorage);
+    try {
+      const latest = readActiveAuthTab();
+      if (!foundLiveTab && latest?.username === username && latest?.tabId === activeTab.tabId && latest?.pageId === activeTab.pageId) {
+        localStorage.removeItem(AUTH_ACTIVE_TAB_STORAGE_KEY);
+      }
+      localStorage.removeItem(AUTH_ACTIVE_TAB_PROBE_REQUEST_STORAGE_KEY);
+    } catch {
+      // localStorage unavailable
+    }
+    resolve(Boolean(foundLiveTab));
+  };
+  const handleStorage = (event) => {
+    if (event?.key !== AUTH_ACTIVE_TAB_PROBE_RESPONSE_STORAGE_KEY) return;
+    try {
+      const response = JSON.parse(String(event.newValue || 'null'));
+      if (
+        String(response?.requestId || '') === requestId
+        && String(response?.username || '') === username
+        && String(response?.tabId || '') === activeTab.tabId
+        && String(response?.pageId || '') === activeTab.pageId
+      ) {
+        finish(true);
+      }
+    } catch {
+      // Ignore malformed probe responses.
+    }
+  };
+  window.addEventListener('storage', handleStorage);
+  timeoutId = window.setTimeout(() => finish(false), AUTH_ACTIVE_TAB_PROBE_TIMEOUT_MS);
+  try {
+    localStorage.setItem(AUTH_ACTIVE_TAB_PROBE_REQUEST_STORAGE_KEY, JSON.stringify({
+      requestId,
+      username,
+      tabId: activeTab.tabId,
+      pageId: activeTab.pageId,
+      requestedAt: Date.now()
+    }));
+  } catch {
+    finish(false);
+  }
+});
+const isAuthSessionOwnedByAnotherLiveTab = async (session = null) => {
+  if (!isAuthSessionOwnedByAnotherActiveTab(session)) return false;
+  return probeAnotherActiveAuthTab(session);
 };
 const writeActiveAuthTab = (session = null) => {
   const username = String(session?.username || '').trim();
@@ -19052,6 +19127,7 @@ export default function App() {
     playControlPanelSwitchSound,
     playKepcoPowerOnSound,
     playKepcoPowerOffSound,
+    playKepcoControlPanelPowerSound,
     playShopBarcodeSound,
     playShopCardPaymentSound,
     playShopCardReceiptSound
@@ -21980,6 +22056,7 @@ export default function App() {
     shopTab,
     landFacilityMainTab,
     landFacilitySubTab,
+    landFacilityDetailModal,
     housingViewMode,
     housingViewSelectedFacilityKey,
     housingInteriorFacilityKey,
@@ -21999,6 +22076,7 @@ export default function App() {
     phoneOpenedApp
   }, AUTO_RESTORE_VIEW_CONFIG), [
     focusTab,
+    landFacilityDetailModal,
     landFacilityMainTab,
     landFacilitySubTab,
     housingInteriorFacilityKey,
@@ -26206,9 +26284,16 @@ body { display: flex !important; align-items: center !important; justify-content
       if (event.ctrlKey || event.metaKey || event.altKey) return;
       if (isEditableTarget(event.target)) return;
       if (String(event.key || '').toLowerCase() !== 'h') return;
-      if (focusTab !== 'housing' || housingViewMode !== 'list') return;
+      if (document.querySelector('.confirm-modal, .confirm-modal-backdrop')) return;
+      if (!canOperateSelectedField) return;
+      if (focusTab !== 'housing') {
+        event.preventDefault();
+        setFocusTab('housing');
+        return;
+      }
+      if (housingViewMode !== 'list') return;
       if (housingInteriorFacilityKey || housingDoorAnimationModal) return;
-      if (housingEntryButtonDragEnabled || document.querySelector('.confirm-modal, .confirm-modal-backdrop')) return;
+      if (housingEntryButtonDragEnabled) return;
       const selectedRow = housingViewFacilityRows.find((row) => row.key === housingViewSelectedFacilityKey);
       const targetRow = selectedRow || housingViewFacilityRows[0] || null;
       if (!targetRow?.key) return;
@@ -26220,6 +26305,7 @@ body { display: flex !important; align-items: center !important; justify-content
       document.removeEventListener('keydown', handler);
     };
   }, [
+    canOperateSelectedField,
     focusTab,
     housingDoorAnimationModal,
     housingEntryButtonDragEnabled,
@@ -28877,7 +28963,15 @@ body { display: flex !important; align-items: center !important; justify-content
       .map((instanceId, idx) => {
         const machine = instanceId ? resolveMachineInstanceById(instanceId) : null;
         if (!machine) return null;
-        const payloadKg = Math.max(0, Number(machine?.item?.payloadKg) || Number(machine?.payloadKg) || 0);
+        const attachmentMode = ssAttachmentModeOfGameState(game, String(machine?.id || ''));
+        const ssCargoAttached = isSsAttachmentEligibleMachineKey(String(machine?.machineKey || ''))
+          && attachmentMode === SS_ATTACHMENT_MODE_CARGO_BED;
+        const payloadKg = ssCargoAttached
+          ? Math.max(
+              Math.max(0, Number(machine?.item?.payloadKg) || Number(machine?.payloadKg) || 0),
+              Math.max(0, Number(MACHINE_ITEM_MAP?.ssCargoBed?.payloadKg) || 0)
+            )
+          : Math.max(0, Number(machine?.item?.payloadKg) || Number(machine?.payloadKg) || 0);
         if (payloadKg <= 0 || isForkliftMachineLike(machine)) return null;
         const carrierId = String(machine?.id || '');
         const cargoByKey = normalizeCargoByItemKey(game?.vehicleCargoByInstance?.[carrierId] || {});
@@ -29159,7 +29253,15 @@ body { display: flex !important; align-items: center !important; justify-content
       .map((instanceId, idx) => {
         const machine = instanceId ? resolveMachineInstanceById(instanceId) : null;
         if (!machine) return null;
-        const payloadKg = Math.max(0, Number(machine?.item?.payloadKg) || Number(machine?.payloadKg) || 0);
+        const attachmentMode = ssAttachmentModeOfGameState(game, String(machine?.id || ''));
+        const ssCargoAttached = isSsAttachmentEligibleMachineKey(String(machine?.machineKey || ''))
+          && attachmentMode === SS_ATTACHMENT_MODE_CARGO_BED;
+        const payloadKg = ssCargoAttached
+          ? Math.max(
+              Math.max(0, Number(machine?.item?.payloadKg) || Number(machine?.payloadKg) || 0),
+              Math.max(0, Number(MACHINE_ITEM_MAP?.ssCargoBed?.payloadKg) || 0)
+            )
+          : Math.max(0, Number(machine?.item?.payloadKg) || Number(machine?.payloadKg) || 0);
         if (payloadKg <= 0 || isForkliftMachineLike(machine)) return null;
         const carrierId = String(machine?.id || '');
         if (!carrierId) return null;
@@ -43712,13 +43814,54 @@ body { display: flex !important; align-items: center !important; justify-content
     const heartbeatTimer = window.setInterval(() => {
       writeActiveAuthTab(authSession);
     }, AUTH_ACTIVE_TAB_HEARTBEAT_INTERVAL_MS);
+    const handleAuthActiveTabStorage = (event) => {
+      if (event?.key !== AUTH_ACTIVE_TAB_STORAGE_KEY) return;
+      const activeTab = readActiveAuthTab();
+      if (!activeTab || activeTab.username !== String(authSession.username || '').trim()) return;
+      if (activeTab.tabId === getOrCreateAuthTabId() && activeTab.pageId === AUTH_PAGE_INSTANCE_ID) return;
+      if (Date.now() - activeTab.updatedAt > AUTH_ACTIVE_TAB_STALE_MS) return;
+      handleInvalidSession(AUTH_REPLACED_BY_OTHER_TAB_MESSAGE);
+    };
+    const handleAuthActiveTabProbe = (event) => {
+      if (event?.key !== AUTH_ACTIVE_TAB_PROBE_REQUEST_STORAGE_KEY) return;
+      try {
+        const request = JSON.parse(String(event.newValue || 'null'));
+        const username = String(authSession.username || '').trim();
+        const activeTab = readActiveAuthTab();
+        if (
+          !request
+          || String(request.username || '') !== username
+          || String(request.tabId || '') !== getOrCreateAuthTabId()
+          || String(request.pageId || '') !== AUTH_PAGE_INSTANCE_ID
+          || activeTab?.tabId !== getOrCreateAuthTabId()
+          || activeTab?.pageId !== AUTH_PAGE_INSTANCE_ID
+        ) {
+          return;
+        }
+        localStorage.setItem(AUTH_ACTIVE_TAB_PROBE_RESPONSE_STORAGE_KEY, JSON.stringify({
+          requestId: String(request.requestId || ''),
+          username,
+          tabId: getOrCreateAuthTabId(),
+          pageId: AUTH_PAGE_INSTANCE_ID,
+          respondedAt: Date.now()
+        }));
+      } catch {
+        // Ignore malformed probe requests.
+      }
+    };
     const handleBeforeUnload = () => {
       clearActiveAuthTabIfOwned();
     };
+    window.addEventListener('storage', handleAuthActiveTabStorage);
+    window.addEventListener('storage', handleAuthActiveTabProbe);
     window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handleBeforeUnload);
     return () => {
       window.clearInterval(heartbeatTimer);
+      window.removeEventListener('storage', handleAuthActiveTabStorage);
+      window.removeEventListener('storage', handleAuthActiveTabProbe);
       window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handleBeforeUnload);
     };
   }, [authSession?.token, authSession?.username]);
   useEffect(() => {
@@ -43750,7 +43893,7 @@ body { display: flex !important; align-items: center !important; justify-content
         }
         const data = await response.json();
         if (cancelled) return;
-        if (isAuthSessionOwnedByAnotherActiveTab(data.session || null)) {
+        if (await isAuthSessionOwnedByAnotherLiveTab(data.session || null)) {
           console.warn('[auth-restore] blocked_duplicate_tab', {
             username: data.session?.username || ''
           });
@@ -54551,7 +54694,15 @@ body { display: flex !important; align-items: center !important; justify-content
   };
   const toggleHousingInteriorBreakerEnabled = () => {
     if (!game || !selectedField || !housingInteriorFacilityRow) return;
-    playControlPanelSwitchSound();
+    const nextEnabledPreview = selectedField?.housingBreakerEnabled !== false ? false : true;
+    if (nextEnabledPreview) {
+      playKepcoControlPanelPowerSound();
+      window.setTimeout(() => {
+        playKepcoPowerOnSound();
+      }, 160);
+    } else {
+      playKepcoPowerOffSound();
+    }
     setGame((prev) => {
       const fields = [...(prev.fields || [])];
       const target = fields[prev.selectedField];
@@ -66237,6 +66388,7 @@ body { display: flex !important; align-items: center !important; justify-content
         setShopTab,
         setLandFacilityMainTab,
         setLandFacilitySubTab,
+        setLandFacilityDetailModal,
         setHousingViewMode,
         setHousingViewSelectedFacilityKey,
         setHousingInteriorFacilityKey,
@@ -66992,6 +67144,10 @@ body { display: flex !important; align-items: center !important; justify-content
               openSaveLoadFromHousing={openSaveLoadFromHousing}
               openMainMenuFromHousing={() => openMenuWithBurst()}
               playChangeButtonSound={playChangeButtonSound}
+              playControlPanelSwitchSound={playControlPanelSwitchSound}
+              playKepcoPowerOnSound={playKepcoPowerOnSound}
+              playKepcoPowerOffSound={playKepcoPowerOffSound}
+              playKepcoControlPanelPowerSound={playKepcoControlPanelPowerSound}
               addCalendarEvent={addCalendarEvent}
               removeCalendarEvent={removeCalendarEvent}
             />
@@ -67088,11 +67244,11 @@ body { display: flex !important; align-items: center !important; justify-content
                   onClick={() => {
                     setFocusTab('housing');
                   }}
-                  title="하우징"
-                  aria-label="하우징"
+                  title="하우징(H)"
+                  aria-label="하우징(H)"
                 >
                   <span aria-hidden="true">{landFacilityMainTabIcons.housing}</span>
-                  <span className="focus-tab__facility-text">하우징</span>
+                  <span className="focus-tab__facility-text">하우징(H)</span>
                 </button>
                 <button
                   type="button"

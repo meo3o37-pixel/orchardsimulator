@@ -18,8 +18,10 @@ const SAFE_RESTORE_HOUSING_OBJECTS = new Set([
   'hvac',
   'bathroom',
   'closet',
+  'exercise',
   'storage',
   'window',
+  'tv',
   'pc',
   'livingDetail',
   'farmLog',
@@ -78,6 +80,18 @@ const sanitizeRestorableWarehouseStorageModal = (raw = {}) => {
   };
 };
 
+const sanitizeRestorableLandFacilityDetailModal = (raw = {}) => {
+  const source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+  const facilityKey = sanitizeRestoreKey(source.facilityKey, '');
+  const open = Boolean(source.open) && Boolean(facilityKey);
+  return {
+    open,
+    facilityKey: open ? facilityKey : '',
+    unitIndex: Math.max(0, Math.floor(Number(source.unitIndex) || 0)),
+    isTankUnitCard: Boolean(source.isTankUnitCard)
+  };
+};
+
 export const sanitizeLastActiveSaveSlotPreference = (value, slotCount = 0) => {
   if (value == null || value === '') return null;
   const slot = Math.floor(Number(value));
@@ -102,9 +116,14 @@ export const sanitizeLastViewStatePreference = (raw = {}, config = {}) => {
   const safeFocusTab = ['cropStatus', 'manage', 'housing', 'landFacility', 'work', 'workOrder'].includes(String(source.focusTab || '')) ? String(source.focusTab) : 'manage';
   const safePhoneApp = SAFE_RESTORE_PHONE_APPS.has(String(source.phoneOpenedApp || '')) ? String(source.phoneOpenedApp) : '';
   const safeHousingObjectKey = SAFE_RESTORE_HOUSING_OBJECTS.has(String(source.housingInteriorPendingObjectKey || '')) ? String(source.housingInteriorPendingObjectKey) : '';
+  const safeHousingInteriorFacilityKey = sanitizeRestoreKey(source.housingInteriorFacilityKey, '');
+  const restorableHousingObjectKey = safeFocusTab === 'housing' && safeHousingInteriorFacilityKey ? safeHousingObjectKey : '';
   const externalMapOpen = Boolean(source.externalMapOpen);
   const mapLocationModal = sanitizeRestorableMapLocationModal(source.mapLocationModal || {});
   const warehouseStorageModal = sanitizeRestorableWarehouseStorageModal(source.warehouseStorageModal || {});
+  const landFacilityDetailModal = safeFocusTab === 'landFacility'
+    ? sanitizeRestorableLandFacilityDetailModal(source.landFacilityDetailModal || {})
+    : sanitizeRestorableLandFacilityDetailModal({});
   const defaultShopTab = String(config.defaultManagementShopTab || 'machine');
   const defaultExternalMapZoom = Number(config.externalMapTownMoveDefaultZoom) || 0.5;
   const minExternalMapZoom = Number(config.externalMapTownMoveMinZoom) || 0.25;
@@ -118,10 +137,11 @@ export const sanitizeLastViewStatePreference = (raw = {}, config = {}) => {
     shopTab: sanitizeRestoreKey(source.shopTab, defaultShopTab),
     landFacilityMainTab: ['types', 'warehouse', 'parking', 'control'].includes(String(source.landFacilityMainTab || '')) ? String(source.landFacilityMainTab) : 'types',
     landFacilitySubTab: sanitizeRestoreKey(source.landFacilitySubTab, 'land'),
+    landFacilityDetailModal,
     housingViewMode: ['list', 'detail'].includes(String(source.housingViewMode || '')) ? String(source.housingViewMode) : 'list',
     housingViewSelectedFacilityKey: sanitizeRestoreKey(source.housingViewSelectedFacilityKey, ''),
-    housingInteriorFacilityKey: sanitizeRestoreKey(source.housingInteriorFacilityKey, ''),
-    housingInteriorPendingObjectKey: safeHousingObjectKey,
+    housingInteriorFacilityKey: safeHousingInteriorFacilityKey,
+    housingInteriorPendingObjectKey: restorableHousingObjectKey,
     externalMapOpen,
     externalMapLocationContext: String(source.externalMapLocationContext || '') === 'town' ? 'town' : 'field',
     externalMapFieldSelectMode: Boolean(source.externalMapFieldSelectMode),
@@ -189,6 +209,7 @@ export const getRestorableViewLoadingPhaseKeys = (viewRaw = {}, config = {}) => 
   if (
     tab === 'facility'
     || focusTab === 'landFacility'
+    || view.landFacilityDetailModal?.open
     || focusTab === 'housing'
     || ['constructionOffice', 'maintenanceShop', 'smallApc'].includes(mapLocationKey)
     || (mapLocationKey === 'townOffice' && mapLocationTab === 'machine')
@@ -212,6 +233,16 @@ export const applyRestorableViewState = (viewRaw = {}, context = {}) => {
   setters.setShopTab?.(view.shopTab || config.defaultManagementShopTab || 'machine');
   setters.setLandFacilityMainTab?.(view.landFacilityMainTab || 'types');
   setters.setLandFacilitySubTab?.(view.landFacilitySubTab || 'land');
+  setters.setLandFacilityDetailModal?.(
+    view.landFacilityDetailModal?.open
+      ? {
+          open: true,
+          facilityKey: view.landFacilityDetailModal.facilityKey,
+          unitIndex: Math.max(0, Math.floor(Number(view.landFacilityDetailModal.unitIndex) || 0)),
+          isTankUnitCard: Boolean(view.landFacilityDetailModal.isTankUnitCard)
+        }
+      : { open: false, facilityKey: '', unitIndex: 0, isTankUnitCard: false }
+  );
   setters.setHousingViewMode?.(view.housingViewMode || 'list');
   setters.setHousingViewSelectedFacilityKey?.(view.housingViewSelectedFacilityKey || '');
   setters.setHousingInteriorFacilityKey?.(view.housingInteriorFacilityKey || '');

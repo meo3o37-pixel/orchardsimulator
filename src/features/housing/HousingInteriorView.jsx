@@ -26,13 +26,13 @@ const HOUSING_WASTE_LABEL_BY_KEY = {
   housingRecycleWaste: '재활용 쓰레기'
 };
 const HOUSING_STORAGE_ITEM_TABS = Object.freeze([
-  ['all', '전체'],
-  ['food', '식품'],
-  ['drink', '음료'],
-  ['appliance', '가전'],
-  ['furniture', '가구'],
-  ['kitchenware', '주방용품'],
-  ['other', '기타']
+  ['all', '전체', '📦'],
+  ['food', '식품', '🍱'],
+  ['drink', '음료', '🥤'],
+  ['appliance', '가전', '🔌'],
+  ['furniture', '가구', '🪑'],
+  ['kitchenware', '주방용품', '🍽️'],
+  ['other', '기타', '🔖']
 ]);
 
 const roundHousingBottledWaterQty = (qtyRaw = 0) => (
@@ -244,6 +244,7 @@ export default function HousingInteriorView({
   housingInteriorFridgeSetting,
   updateHousingInteriorFridgeSetting,
   toggleHousingInteriorPowerControl,
+  playControlPanelSwitchSound = null,
   housingInteriorPendingObject,
   housingBathroomInfo = null,
   housingInteriorFridgeStoredRows,
@@ -308,6 +309,9 @@ export default function HousingInteriorView({
   openSaveLoadFromHousing,
   openMainMenuFromHousing,
   playChangeButtonSound,
+  playKepcoPowerOnSound = null,
+  playKepcoPowerOffSound = null,
+  playKepcoControlPanelPowerSound = null,
   addCalendarEvent,
   removeCalendarEvent,
 }) {
@@ -358,10 +362,12 @@ export default function HousingInteriorView({
   const [warehouseSubTab, setWarehouseSubTab] = React.useState('items');
   const [facilitySubTab, setFacilitySubTab] = React.useState('power');
   const [housingBreakerDetailOpen, setHousingBreakerDetailOpen] = React.useState(false);
+  const [housingBreakerDetailSrcDoc, setHousingBreakerDetailSrcDoc] = React.useState('');
   const [housingStorageDetailOpen, setHousingStorageDetailOpen] = React.useState(false);
   const [housingStorageItemTab, setHousingStorageItemTab] = React.useState('all');
   const [storageSourceItemTab, setStorageSourceItemTab] = React.useState('all');
   const [storageTabDirection, setStorageTabDirection] = React.useState('forward');
+  const housingBreakerDetailFrameCleanupRef = React.useRef(null);
   React.useEffect(() => {
     if (facilitySubTab !== 'power') setHousingBreakerDetailOpen(false);
   }, [facilitySubTab]);
@@ -557,22 +563,59 @@ export default function HousingInteriorView({
       transform-origin: top center;
     }
 
+    .breaker-brand {
+      display: none !important;
+    }
+
     html,
     body {
       width: 100%;
-      min-height: 548px;
+      min-height: 536px;
       overflow: hidden !important;
     }
 
     body {
       align-items: start !important;
-      padding: 10px 12px 0 !important;
+      padding: 0 !important;
       background: transparent !important;
     }
   </style>`);
     if (isPowerOn) return html;
     return html.replace(/\r?\n\s*checked(?=\r?\n\s*aria-label="메인 차단기")/, '');
   }, [housingInteriorPowerInfo?.label]);
+  const openHousingBreakerDetail = React.useCallback(() => {
+    setHousingBreakerDetailSrcDoc(housingBreakerBoardHtml);
+    setHousingBreakerDetailOpen(true);
+  }, [housingBreakerBoardHtml]);
+  const handleHousingBreakerDetailFrameLoad = React.useCallback((event) => {
+    housingBreakerDetailFrameCleanupRef.current?.();
+    housingBreakerDetailFrameCleanupRef.current = null;
+    const frameDocument = event?.currentTarget?.contentDocument;
+    const mainPowerInput = frameDocument?.querySelector?.('#mainPower');
+    if (!mainPowerInput) return;
+    const handleMainPowerChange = () => {
+      if (typeof toggleHousingInteriorPowerControl === 'function') {
+        toggleHousingInteriorPowerControl();
+        return;
+      }
+      if (mainPowerInput.checked) {
+        playKepcoControlPanelPowerSound?.();
+        window.setTimeout(() => {
+          playKepcoPowerOnSound?.();
+        }, 160);
+      } else {
+        playKepcoPowerOffSound?.();
+      }
+    };
+    mainPowerInput.addEventListener('change', handleMainPowerChange);
+    housingBreakerDetailFrameCleanupRef.current = () => {
+      mainPowerInput.removeEventListener('change', handleMainPowerChange);
+    };
+  }, [playKepcoControlPanelPowerSound, playKepcoPowerOffSound, playKepcoPowerOnSound, toggleHousingInteriorPowerControl]);
+  React.useEffect(() => () => {
+    housingBreakerDetailFrameCleanupRef.current?.();
+    housingBreakerDetailFrameCleanupRef.current = null;
+  }, []);
   const housingBoilerStatusInfo = React.useMemo(() => {
     const slot = installedHousingBoilerSlot;
     const item = slot?.itemMeta || {};
@@ -2078,6 +2121,19 @@ export default function HousingInteriorView({
     const totalWeightKg = visibleHousingStorageDetailRows.reduce((sum, item) => sum + Math.max(0, Number(item?.totalWeightKg) || 0), 0);
     return { totalQty, totalWeightKg };
   }, [visibleHousingStorageDetailRows]);
+  const visibleHousingStorageDetailUsagePercent = React.useMemo(() => {
+    const capacityKg = Math.max(0, Number(housingInteriorStorageInfo?.capacityKg) || 0);
+    if (capacityKg <= 0) return 0;
+    const usedKg = housingStorageItemTab === 'all'
+      ? Math.max(0, Number(housingInteriorStorageInfo?.usedKg) || 0)
+      : Math.max(0, Number(visibleHousingStorageDetailSummary.totalWeightKg) || 0);
+    return Math.max(0, Math.min(100, (usedKg / capacityKg) * 100));
+  }, [
+    housingInteriorStorageInfo?.capacityKg,
+    housingInteriorStorageInfo?.usedKg,
+    housingStorageItemTab,
+    visibleHousingStorageDetailSummary.totalWeightKg
+  ]);
   const visibleHousingInteriorStorageRows = React.useMemo(
     () => (Array.isArray(housingInteriorStorageRows) ? housingInteriorStorageRows : []).filter(isHousingStorageItemVisibleInTab),
     [housingInteriorStorageRows, isHousingStorageItemVisibleInTab]
@@ -3371,7 +3427,18 @@ export default function HousingInteriorView({
               <div className="housing-interior-living-detail-panel">
                 <div className={`housing-interior-living-detail-summary is-${housingLivingConditionInfo?.tone || 'normal'}`.trim()}>
                   <span>현재 생활여건</span>
-                  <strong>{`${housingLivingConditionInfo?.label || '-'} · ${Math.max(0, Math.min(100, Number(housingLivingConditionInfo?.score) || 0))}/100`}</strong>
+                  <div className="housing-interior-living-detail-meter">
+                    <div className="housing-interior-living-detail-meter__head">
+                      <strong>{housingLivingConditionInfo?.label || '-'}</strong>
+                      <em>{`${Math.max(0, Math.min(100, Number(housingLivingConditionInfo?.score) || 0))}/100`}</em>
+                    </div>
+                    <div className="housing-interior-living-detail-meter__track" aria-hidden="true">
+                      <div
+                        className="housing-interior-living-detail-meter__fill"
+                        style={{ width: `${Math.max(0, Math.min(100, Number(housingLivingConditionInfo?.score) || 0))}%` }}
+                      />
+                    </div>
+                  </div>
                   <small>{housingLivingConditionInfo?.detail || '생활여건 상태 확인'}</small>
                 </div>
                 <div className="housing-interior-living-detail-grid">
@@ -4172,7 +4239,6 @@ export default function HousingInteriorView({
                   <div className="housing-storage-detail-view">
                     <div className="housing-storage-detail-view__head">
                       <div>
-                        <div className="panel__eyebrow">현재 하우징 적재 전체</div>
                         <strong>{housingInteriorStorageInfo?.facilityName || '하우징 적재'}</strong>
                       </div>
                       <button
@@ -4183,52 +4249,12 @@ export default function HousingInteriorView({
                         간단보기
                       </button>
                     </div>
-                    <div className="housing-storage-detail-summary">
-                      <span>
-                        <small>적재량</small>
-                        <strong>
-                          {housingStorageItemTab === 'all' && housingInteriorStorageInfo
-                            ? `${formatHousingStorageWeightText(housingInteriorStorageInfo.usedKg) || '0kg'} / ${formatHousingStorageWeightText(housingInteriorStorageInfo.capacityKg) || '0kg'}`
-                            : (formatHousingStorageWeightText(visibleHousingStorageDetailSummary.totalWeightKg) || '0kg')}
-                        </strong>
-                      </span>
-                      <span>
-                        <small>잔여</small>
-                        <strong>{housingStorageItemTab === 'all' ? (formatHousingStorageWeightText(housingInteriorStorageInfo?.remainKg) || '0kg') : '-'}</strong>
-                      </span>
-                      <span>
-                        <small>종류</small>
-                        <strong>{`${visibleHousingStorageDetailRows.length.toLocaleString('ko-KR')}종`}</strong>
-                      </span>
-                      <span>
-                        <small>총수량</small>
-                        <strong>{visibleHousingStorageDetailSummary.totalQty.toLocaleString('ko-KR')}</strong>
-                      </span>
-                    </div>
-                    <div className="housing-interior-storage-item-tabs housing-storage-detail-tabs" role="tablist" aria-label="전체보기 물품 분류">
-                      {HOUSING_STORAGE_ITEM_TABS.map(([tabKey, label]) => {
-                        const count = Math.max(0, Number(housingStorageItemTabCounts?.[tabKey]) || 0);
-                        return (
-                          <button
-                            key={`housing-storage-detail-tab-${tabKey}`}
-                            type="button"
-                            role="tab"
-                            aria-selected={housingStorageItemTab === tabKey}
-                            className={`housing-interior-storage-item-tab ${housingStorageItemTab === tabKey ? 'is-active' : ''}`.trim()}
-                            onClick={() => setHousingStorageItemTab(tabKey)}
-                          >
-                            <span>{label}</span>
-                            <strong>{count.toLocaleString('ko-KR')}</strong>
-                          </button>
-                        );
-                      })}
-                    </div>
-                    {visibleHousingStorageDetailRows.length ? (
+                    {housingStorageDetailRows.length ? (
                       <div className="housing-storage-detail-list">
-                        {visibleHousingStorageDetailRows.map(renderHousingStorageDetailRow)}
+                        {housingStorageDetailRows.map(renderHousingStorageDetailRow)}
                       </div>
                     ) : (
-                      <div className="housing-storage-detail-empty">이 분류에 해당하는 적재품이 없습니다.</div>
+                      <div className="housing-storage-detail-empty">적재품이 없습니다.</div>
                     )}
                   </div>
                 ) : (
@@ -4291,7 +4317,7 @@ export default function HousingInteriorView({
                         </div>
                       </div>
                       <div className="housing-interior-storage-item-tabs" role="tablist" aria-label="적재 물품 분류">
-                        {HOUSING_STORAGE_ITEM_TABS.map(([tabKey, label]) => {
+                        {HOUSING_STORAGE_ITEM_TABS.map(([tabKey, label, icon]) => {
                           const count = Math.max(0, Number(housingStorageItemTabCounts?.[tabKey]) || 0);
                           return (
                             <button
@@ -4302,6 +4328,7 @@ export default function HousingInteriorView({
                               className={`housing-interior-storage-item-tab ${housingStorageItemTab === tabKey ? 'is-active' : ''}`.trim()}
                               onClick={() => setHousingStorageItemTab(tabKey)}
                             >
+                              <span aria-hidden="true">{icon}</span>
                               <span>{label}</span>
                               <strong>{count.toLocaleString('ko-KR')}</strong>
                             </button>
@@ -4407,7 +4434,7 @@ export default function HousingInteriorView({
                         ) : null}
                       </div>
                       <div className="housing-interior-storage-item-tabs housing-interior-storage-item-tabs--source" role="tablist" aria-label={`${storageSourceLabel} 물품 분류`}>
-                        {HOUSING_STORAGE_ITEM_TABS.map(([tabKey, label]) => {
+                        {HOUSING_STORAGE_ITEM_TABS.map(([tabKey, label, icon]) => {
                           const count = Math.max(0, Number(storageSourceItemTabCounts?.[tabKey]) || 0);
                           return (
                             <button
@@ -4418,6 +4445,7 @@ export default function HousingInteriorView({
                               className={`housing-interior-storage-item-tab ${storageSourceItemTab === tabKey ? 'is-active' : ''}`.trim()}
                               onClick={() => setStorageSourceItemTab(tabKey)}
                             >
+                              <span aria-hidden="true">{icon}</span>
                               <span>{label}</span>
                               <strong>{count.toLocaleString('ko-KR')}</strong>
                             </button>
@@ -4546,7 +4574,7 @@ export default function HousingInteriorView({
                             <button
                               type="button"
                               className="button button--primary button--compact housing-breaker-summary-card__open"
-                              onClick={() => setHousingBreakerDetailOpen(true)}
+                              onClick={openHousingBreakerDetail}
                             >
                               열기
                             </button>
@@ -5345,7 +5373,7 @@ export default function HousingInteriorView({
                 onClick={() => setHousingBreakerDetailOpen(false)}
               />
               <div
-                className="confirm-modal confirm-modal--housing-breaker-detail"
+                className="housing-breaker-detail-float"
                 style={{ zIndex: 137 }}
                 onClick={(e) => e.stopPropagation()}
               >
@@ -5353,12 +5381,13 @@ export default function HousingInteriorView({
                   <iframe
                     title="두꺼비집 분전반"
                     className="housing-breaker-detail-shell__frame"
-                    srcDoc={housingBreakerBoardHtml}
+                    srcDoc={housingBreakerDetailSrcDoc || housingBreakerBoardHtml}
+                    onLoad={handleHousingBreakerDetailFrameLoad}
                   />
                   <div className="housing-breaker-detail-shell__actions">
                     <button
                       type="button"
-                      className="button button--ghost housing-breaker-direct__power-button"
+                      className="housing-breaker-detail-close-button"
                       onClick={() => setHousingBreakerDetailOpen(false)}
                     >
                       닫기

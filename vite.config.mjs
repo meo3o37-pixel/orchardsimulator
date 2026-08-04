@@ -954,10 +954,16 @@ const getSessionFromRequest = (req) => {
   const cookieToken = parseCookies(req?.headers?.cookie || '')?.[AUTH_COOKIE_NAME] || '';
   const explicitToken = String(getExplicitAuthTokenFromRequest(req) || '').trim();
   const sessionFromExplicitToken = explicitToken ? (accountSessionByToken.get(explicitToken) || null) : null;
-  if (sessionFromExplicitToken) return sessionFromExplicitToken;
+  if (sessionFromExplicitToken) {
+    const activeToken = String(accountActiveTokenByUserId.get(sessionFromExplicitToken.userId) || '').trim();
+    return activeToken === explicitToken ? sessionFromExplicitToken : null;
+  }
   const safeCookieToken = String(cookieToken || '').trim();
   if (!safeCookieToken || safeCookieToken === explicitToken) return null;
-  return accountSessionByToken.get(safeCookieToken) || null;
+  const sessionFromCookieToken = accountSessionByToken.get(safeCookieToken) || null;
+  if (!sessionFromCookieToken) return null;
+  const activeToken = String(accountActiveTokenByUserId.get(sessionFromCookieToken.userId) || '').trim();
+  return activeToken === safeCookieToken ? sessionFromCookieToken : null;
 };
 const readAccountSaveState = async (session) => {
   const filePath = accountSaveFileOf(session?.userId);
