@@ -1,6 +1,7 @@
 .tmp.driveupload/
 .tmp.drivedownload/
 .tmp-*/
+tmp/vite-build-check*/
 .chrome-debug-profile/
 .tmp-edge-phone/
 .tmp-chrome-ppt-cdp/
