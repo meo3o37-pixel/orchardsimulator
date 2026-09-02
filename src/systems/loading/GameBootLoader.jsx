@@ -76,6 +76,21 @@ const buttonBaseStyle = {
   letterSpacing: 0
 };
 
+const plannerDownloadUrl = '/downloads/OrchardPlanner-Setup-1.0.0.exe';
+
+const secondaryLinkButtonStyle = {
+  ...buttonBaseStyle,
+  minHeight: 40,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 'fit-content',
+  textDecoration: 'none',
+  border: '1px solid rgba(155, 198, 232, 0.42)',
+  background: 'rgba(83, 137, 172, 0.14)',
+  color: '#e8f5ff',
+  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+};
 const cacheConnectionGuides = Object.freeze([
   {
     title: '느린 인터넷 / 모바일 핫스팟',
@@ -202,6 +217,29 @@ function CacheConsentScreen({ onAccept, onDecline }) {
         >
           <div>동의하면 약 337MB의 권장 리소스를 메인 메뉴 전에 먼저 받아둡니다.</div>
           <div>동의하지 않아도 게임은 실행됩니다. 대신 처음 여는 화면에서 리소스를 그때그때 받을 수 있습니다.</div>
+        </div>
+        <div
+          style={{
+            display: 'grid',
+            gap: 8,
+            padding: 14,
+            border: '1px solid rgba(155, 198, 232, 0.24)',
+            borderRadius: 8,
+            background: 'rgba(9, 28, 38, 0.32)',
+            color: '#dce7d1',
+            fontSize: 13,
+            lineHeight: 1.55
+          }}
+        >
+          <strong style={{ color: '#fff7df', fontSize: 13 }}>과수 재식 프로그램</strong>
+          <span>별도 설치형 과수 재식 계산 프로그램이 필요한 경우 내려받을 수 있습니다.</span>
+          <a
+            href={plannerDownloadUrl}
+            download="OrchardPlanner-Setup-1.0.0.exe"
+            style={secondaryLinkButtonStyle}
+          >
+            설치파일 다운로드
+          </a>
         </div>
         <div
           style={{
