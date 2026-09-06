@@ -219,6 +219,7 @@ export const rollWorkAccident = ({
   remainingLabor = 100,
   weatherName = '',
   timeOfDay = 'day',
+  accidentRiskMultiplier = 1,
   random = Math.random
 } = {}) => {
   if (String(source || 'work') === 'workOrder') return null;
@@ -235,7 +236,7 @@ export const rollWorkAccident = ({
       + (Number(remainingLabor) <= 10 ? 0.012 : 0),
     0,
     0.12
-  ) * (1 - (protectionRatio * 0.65));
+  ) * (1 - (protectionRatio * 0.65)) * clampValue(Number(accidentRiskMultiplier) || 1, 0.75, 1.15);
   if ((Number(random()) || 0) >= risk) return null;
   const severityRoll = Number(random()) || 0;
   const severity = severityRoll > 0.92 ? 3 : (severityRoll > 0.65 ? 2 : 1);

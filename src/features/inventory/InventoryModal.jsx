@@ -6,7 +6,8 @@ export default function InventoryModal({
   equipmentRows = [],
   activityInfo = null,
   personalRows = [],
-  bagRows = []
+  bagRows = [],
+  hasEquippedBag = false
 }) {
   if (!open) return null;
   const visibleEquipmentRows = Array.isArray(equipmentRows) ? equipmentRows : [];
@@ -18,7 +19,7 @@ export default function InventoryModal({
       ? 'is-fair'
       : 'is-low';
   const visiblePersonalRows = Array.isArray(personalRows) ? personalRows.filter((row) => row?.key) : [];
-  const visibleBagRows = Array.isArray(bagRows) ? bagRows.filter((row) => row?.key) : [];
+  const visibleBagRows = hasEquippedBag && Array.isArray(bagRows) ? bagRows.filter((row) => row?.key) : [];
 
   return (
     <>
@@ -86,10 +87,12 @@ export default function InventoryModal({
           <section className="inventory-control-card inventory-carried-bag-panel">
             <div className="inventory-control-card__head">
               <strong>🧳 가방 인벤토리</strong>
-              <span>착용한 가방 내부 항목</span>
+              <span>{hasEquippedBag ? '착용한 가방 내부 항목' : '착용한 가방 없음'}</span>
             </div>
             <div className="inventory-bag-list">
-              {visibleBagRows.length ? (
+              {!hasEquippedBag ? (
+                <div className="inventory-bag-empty">가방을 착용하면 내부 항목이 표시됩니다.</div>
+              ) : visibleBagRows.length ? (
                 visibleBagRows.map((row) => (
                   <button type="button" key={`inventory-carried-bag-row-${row.key}`} className="inventory-bag-row">
                     <span className="inventory-bag-row__name">{row.name}</span>

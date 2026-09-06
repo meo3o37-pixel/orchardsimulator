@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { toPng } from 'html-to-image';
 import SMALL_CITY_NIGHT_CROWD_MURMUR from './assets/images/효과음/시설/사람들 소리/살짝웅성거리는 소리.mp3';
 import { SAVE_SLOTS } from './config/gameConfig';
 import { UPDATE_LOG_ENTRIES } from './data/updateLogEntries';
@@ -2365,6 +2366,14 @@ const normalizeDistanceKm = (distanceKm, fallback = 0) => {
   return Math.max(0, Number(safeDistance) || 0);
 };
 const formatDistanceKmText = (distanceKm) => `${normalizeDistanceKm(distanceKm).toFixed(2)}km`;
+const VEHICLE_TRAVEL_ANIMATION_MIN_MS = 1400;
+const VEHICLE_TRAVEL_ANIMATION_MAX_MS = 6200;
+const VEHICLE_TRAVEL_ANIMATION_MS_PER_KM = 380;
+const vehicleTravelAnimationDurationMs = (distanceKm = 0) => clamp(
+  Math.round(VEHICLE_TRAVEL_ANIMATION_MIN_MS + normalizeDistanceKm(distanceKm) * VEHICLE_TRAVEL_ANIMATION_MS_PER_KM),
+  VEHICLE_TRAVEL_ANIMATION_MIN_MS,
+  VEHICLE_TRAVEL_ANIMATION_MAX_MS
+);
 const AERIAL_FUEL_USE_MULTIPLIER = 0.15; // 고소작업차 연료 소모 85% 감소
 const LAND_MOVE_FUEL_LITER_PER_KM_BY_TYPE = {
   transport: 0.35,
@@ -2762,12 +2771,18 @@ const reflectiveFilmLabelOf = (itemKey) => {
 const HOUSING_GENERAL_WASTE_ITEM_KEY = 'housingGeneralWaste';
 const HOUSING_FOOD_WASTE_ITEM_KEY = 'housingFoodWaste';
 const HOUSING_RECYCLE_WASTE_ITEM_KEY = 'housingRecycleWaste';
+const HOUSING_GENERAL_WASTE_BAG_ITEM_KEY = 'foodTrashBag20L';
+const HOUSING_FOOD_WASTE_BAG_ITEM_KEY = 'foodFoodWasteBag5L';
 const HOUSING_WASTE_ITEM_KEYS = Object.freeze([
   HOUSING_GENERAL_WASTE_ITEM_KEY,
   HOUSING_FOOD_WASTE_ITEM_KEY,
   HOUSING_RECYCLE_WASTE_ITEM_KEY
 ]);
 const HOUSING_WASTE_ITEM_KEY_SET = new Set(HOUSING_WASTE_ITEM_KEYS);
+const HOUSING_WASTE_BAG_ITEM_KEY_BY_WASTE_KEY = Object.freeze({
+  [HOUSING_GENERAL_WASTE_ITEM_KEY]: HOUSING_GENERAL_WASTE_BAG_ITEM_KEY,
+  [HOUSING_FOOD_WASTE_ITEM_KEY]: HOUSING_FOOD_WASTE_BAG_ITEM_KEY
+});
 const EMPTY_CONTAINER_ITEM_BY_DRINK_ITEM_KEY = Object.freeze({
   foodWater2L: 'emptyWaterBottle2L',
   foodSportsDrink15L: 'emptyPetBottle15L',
@@ -2935,6 +2950,96 @@ const normalizeLastSleepQualityInfo = (info = null) => {
     workEfficiencyMultiplier: sleepQualityWorkEfficiencyMultiplierOf(score)
   };
 };
+const HOUSING_EXERCISE_ACTIONS = Object.freeze([
+  {
+    key: 'stretch',
+    name: '🤸 스트레칭 10분',
+    desc: '작업 전후 몸을 풀어 손목·허리 부담을 줄입니다.',
+    laborCost: 2,
+    healthGain: 0.2,
+    sleepBonus: 2,
+    accidentRiskMultiplier: 0.96,
+    durationLabel: '10분'
+  },
+  {
+    key: 'strength',
+    name: '🏋️ 가벼운 근력운동 20분',
+    desc: '코어와 하체 위주로 작업 지구력을 다집니다.',
+    laborCost: 5,
+    healthGain: 0.4,
+    sleepBonus: 1,
+    accidentRiskMultiplier: 0.94,
+    durationLabel: '20분',
+    minHealth: 45
+  },
+  {
+    key: 'cardio',
+    name: '🏃 유산소 운동 20분',
+    desc: '가볍게 숨이 찰 정도로 움직여 수면 리듬을 맞춥니다.',
+    laborCost: 6,
+    healthGain: 0.3,
+    sleepBonus: 3,
+    accidentRiskMultiplier: 0.95,
+    durationLabel: '20분',
+    minHealth: 45,
+    minIndoorTemp: 10,
+    maxIndoorTemp: 30
+  },
+  {
+    key: 'rehab',
+    name: '🩹 재활 운동',
+    desc: '통증 부위를 무리하지 않고 풀어 회복을 보조합니다.',
+    laborCost: 3,
+    healthGain: 0.1,
+    sleepBonus: 1,
+    accidentRiskMultiplier: 0.98,
+    durationLabel: '15분',
+    requiresInjury: true,
+    rehabChance: 0.35
+  }
+]);
+const HOUSING_EXERCISE_LIMIT_BY_PHASE = Object.freeze({ day: 2, night: 1 });
+const HOUSING_EXERCISE_COOLDOWN_MS = 2 * 60 * 1000;
+
+const normalizeHousingExerciseUsage = (raw = null, dayRaw = 1) => {
+  const day = Math.max(1, Math.floor(Number(dayRaw) || 1));
+  const source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+  const sourceDay = Math.max(0, Math.floor(Number(source.day) || 0));
+  if (sourceDay !== day) {
+    return { day, count: 0, dayCount: 0, nightCount: 0, lastExerciseKey: '', lastExerciseAt: 0 };
+  }
+  const legacyCount = Math.max(0, Math.floor(Number(source.count) || 0));
+  const dayCount = Math.max(0, Math.floor(Number(source.dayCount ?? legacyCount) || 0));
+  const nightCount = Math.max(0, Math.floor(Number(source.nightCount) || 0));
+  return {
+    day,
+    count: dayCount + nightCount,
+    dayCount,
+    nightCount,
+    lastExerciseKey: String(source.lastExerciseKey || ''),
+    lastExerciseAt: Math.max(0, Number(source.lastExerciseAt) || 0)
+  };
+};
+
+const normalizeHousingExerciseBuffs = (raw = [], dayRaw = 1) => {
+  const day = Math.max(1, Math.floor(Number(dayRaw) || 1));
+  return (Array.isArray(raw) ? raw : [])
+    .map((buff) => ({
+      key: String(buff?.key || ''),
+      name: String(buff?.name || ''),
+      startDay: Math.max(1, Math.floor(Number(buff?.startDay) || day)),
+      endDay: Math.max(1, Math.floor(Number(buff?.endDay) || 0)),
+      sleepBonus: Math.max(0, Number(buff?.sleepBonus) || 0),
+      accidentRiskMultiplier: clamp(Number(buff?.accidentRiskMultiplier) || 1, 0.75, 1.15)
+    }))
+    .filter((buff) => buff.key && buff.endDay >= day)
+    .slice(-8);
+};
+
+const housingExerciseAccidentRiskMultiplierOf = (buffsRaw = [], dayRaw = 1) => (
+  normalizeHousingExerciseBuffs(buffsRaw, dayRaw)
+    .reduce((multiplier, buff) => multiplier * clamp(Number(buff.accidentRiskMultiplier) || 1, 0.75, 1.15), 1)
+);
 const workLaborFactorsOf = ({ weatherName = '', temperatureC = 15, field = null, isNightSelfWork = false, sleepQualityScore = null, health = 100, clothingActivityMultiplier = 1 } = {}) => {
   const weatherLabor = Math.max(0.01, Number(weatherLaborMultiplier(weatherName)) || 1);
   const temperatureLabor = Math.max(0.01, Number(temperatureLaborMultiplier(temperatureC)) || 1);
@@ -13012,6 +13117,8 @@ function makeNewGame(
     weatherForecast: firstWeatherForecast,
     timeOfDay: 'day',
     housingMealUsage: normalizeHousingMealUsage(null, day),
+    housingExerciseUsage: normalizeHousingExerciseUsage(null, day),
+    housingExerciseBuffs: [],
     housingElectricityUsageByMonthKey: {},
     housingElectricityBillHistory: [],
     pestRainBoostUntilDay: 0,
@@ -16878,6 +16985,8 @@ const normalizeLoadedGame = (loaded, accountUsername = '') => {
     crewApprovalNotice: null,
     timeOfDay: String(loaded.timeOfDay || 'day') === 'night' ? 'night' : 'day',
     housingMealUsage: normalizeHousingMealUsage(loaded.housingMealUsage, day),
+    housingExerciseUsage: normalizeHousingExerciseUsage(loaded.housingExerciseUsage, day),
+    housingExerciseBuffs: normalizeHousingExerciseBuffs(loaded.housingExerciseBuffs, day),
     housingElectricityUsageByMonthKey: normalizeHousingElectricityUsageByMonthKey(loaded.housingElectricityUsageByMonthKey || {}),
     housingElectricityBillHistory: Array.isArray(loaded.housingElectricityBillHistory)
       ? loaded.housingElectricityBillHistory
@@ -19248,6 +19357,8 @@ export default function App() {
   const [updateLogModalTab, setUpdateLogModalTab] = useState('log');
   const [realApplePriceModalOpen, setRealApplePriceModalOpen] = useState(false);
   const [realApplePriceTab, setRealApplePriceTab] = useState(REAL_APPLE_PRICE_TABS[0]?.key || 'wholesale');
+  const [realApplePriceImageSaving, setRealApplePriceImageSaving] = useState(false);
+  const realApplePriceModalRef = useRef(null);
   const [updateRuleTab, setUpdateRuleTab] = useState('sorting');
   const [updatePlanEntries, setUpdatePlanEntries] = useState(() => sanitizeUpdatePlanEntries(DEFAULT_UPDATE_PLAN_ENTRIES));
   const [updatePlanDrafts, setUpdatePlanDrafts] = useState(() => buildUpdatePlanDrafts(DEFAULT_UPDATE_PLAN_ENTRIES));
@@ -19338,6 +19449,15 @@ export default function App() {
     completeMode: 'nextDay',
     caption: '시간 진행중'
   });
+  const [vehicleTravelTransition, setVehicleTravelTransition] = useState({
+    open: false,
+    closing: false,
+    sourceLabel: '',
+    destinationLabel: '',
+    distanceKm: 0,
+    durationMs: VEHICLE_TRAVEL_ANIMATION_MIN_MS,
+    vehicleLabel: ''
+  });
   const [activeSaveSlot, setActiveSaveSlot] = useState(null);
   const animationLabPreviewWrapRef = useRef(null);
   const animationLabPreviewIframeRef = useRef(null);
@@ -19350,6 +19470,9 @@ export default function App() {
   const timeTransitionRafRef = useRef(0);
   const timeTransitionRunRef = useRef(null);
   const timeTransitionCompleteTimerRef = useRef(null);
+  const vehicleTravelCompleteRef = useRef(null);
+  const vehicleTravelTimerRef = useRef(null);
+  const vehicleTravelCloseTimerRef = useRef(null);
   const animationLabLayerDragRef = useRef(null);
   const animationLabLayerResizeRef = useRef(null);
   const animationLabElementDragRef = useRef(null);
@@ -20144,6 +20267,46 @@ export default function App() {
     }
     timeTransitionRunRef.current = null;
   }, []);
+  const clearVehicleTravelTransitionTimers = useCallback(() => {
+    if (vehicleTravelTimerRef.current) {
+      clearTimeout(vehicleTravelTimerRef.current);
+      vehicleTravelTimerRef.current = null;
+    }
+    if (vehicleTravelCloseTimerRef.current) {
+      clearTimeout(vehicleTravelCloseTimerRef.current);
+      vehicleTravelCloseTimerRef.current = null;
+    }
+  }, []);
+  useEffect(() => () => {
+    clearVehicleTravelTransitionTimers();
+    vehicleTravelCompleteRef.current = null;
+  }, [clearVehicleTravelTransitionTimers]);
+  const startVehicleTravelTransition = useCallback((details = {}, onComplete = null) => {
+    if (vehicleTravelTransition.open) return false;
+    clearVehicleTravelTransitionTimers();
+    const distanceKm = normalizeDistanceKm(details.distanceKm);
+    const durationMs = vehicleTravelAnimationDurationMs(distanceKm);
+    vehicleTravelCompleteRef.current = typeof onComplete === 'function' ? onComplete : null;
+    setVehicleTravelTransition({
+      open: true,
+      closing: false,
+      sourceLabel: String(details.sourceLabel || '출발지'),
+      destinationLabel: String(details.destinationLabel || '도착지'),
+      distanceKm,
+      durationMs,
+      vehicleLabel: String(details.vehicleLabel || '차량')
+    });
+    vehicleTravelTimerRef.current = setTimeout(() => {
+      setVehicleTravelTransition((prev) => (prev.open ? { ...prev, closing: true } : prev));
+      vehicleTravelCloseTimerRef.current = setTimeout(() => {
+        const complete = vehicleTravelCompleteRef.current;
+        vehicleTravelCompleteRef.current = null;
+        setVehicleTravelTransition((prev) => ({ ...prev, open: false, closing: false }));
+        if (typeof complete === 'function') complete();
+      }, 260);
+    }, durationMs);
+    return true;
+  }, [clearVehicleTravelTransitionTimers, vehicleTravelTransition.open]);
   const resolveAnimationLabSaveTarget = useCallback((preset) => {
     if (!preset) return null;
     return preset.saveTarget || ANIMATION_LAB_PRESET_SAVE_TARGET_BY_KEY[preset.key] || null;
@@ -24977,6 +25140,15 @@ body { display: flex !important; align-items: center !important; justify-content
     [game?.primaryAccountId]
   );
   const selectedField = game ? game.fields[game.selectedField] : null;
+  const hasSelectedFieldEquippedBag = useMemo(() => (
+    Object.values(selectedField?.housingClothingEquipmentsByFacilityKey || {})
+      .some((equipmentMap) => Boolean(normalizeHousingClothingEquipments(equipmentMap || {})?.bag))
+  ), [selectedField?.housingClothingEquipmentsByFacilityKey]);
+  const hasAnyFieldEquippedBag = useMemo(() => (
+    (Array.isArray(game?.fields) ? game.fields : [])
+      .some((field) => Object.values(field?.housingClothingEquipmentsByFacilityKey || {})
+        .some((equipmentMap) => Boolean(normalizeHousingClothingEquipments(equipmentMap || {})?.bag)))
+  ), [game?.fields]);
   const housingMunicipalWaterworksQuote = useMemo(() => {
     const fieldId = String(selectedField?.id || '');
     const fieldPoint = fieldId ? externalFieldMarkerPointByFieldId?.[fieldId] : null;
@@ -26394,6 +26566,169 @@ body { display: flex !important; align-items: center !important; justify-content
       day: game?.day
     });
   }, [game?.day, housingInteriorFacilityRow?.key, selectedField?.housingBathroomStateByFacilityKey]);
+  const housingExerciseInfo = useMemo(() => {
+    const usage = normalizeHousingExerciseUsage(game?.housingExerciseUsage, game?.day);
+    const activeBuffs = normalizeHousingExerciseBuffs(game?.housingExerciseBuffs, game?.day);
+    const phase = String(game?.timeOfDay || 'day') === 'night' ? 'night' : 'day';
+    const phaseLabel = phase === 'night' ? '야간' : '주간';
+    const used = phase === 'night' ? usage.nightCount : usage.dayCount;
+    const limit = HOUSING_EXERCISE_LIMIT_BY_PHASE[phase] || 0;
+    const cooldownUntilAt = Math.max(0, Number(usage.lastExerciseAt) || 0) + HOUSING_EXERCISE_COOLDOWN_MS;
+    const cooldownRemainingMs = Math.max(0, cooldownUntilAt - Date.now());
+    const health = clamp(Number(game?.health) || 0, 0, 100);
+    const labor = clamp(Number(game?.labor) || 0, 0, 125);
+    const indoorTemp = Number(housingIndoorTemperatureInfo?.temperatureC);
+    const injuryCount = Object.keys(normalizePlayerInjuries(game?.playerInjuries || {})).length;
+    const severeIllness = Object.entries(normalizePlayerIllnesses(game?.playerIllnesses || {}))
+      .some(([key, entry]) => ['severeCold', 'exhaustion', 'heatExhaustion', 'pesticidePoisoning', 'acuteGastritis', 'insomnia'].includes(key) || Number(entry?.severity) >= 3);
+    const rows = HOUSING_EXERCISE_ACTIONS.map((action) => {
+      const reasons = [];
+      if (used >= limit) reasons.push(`${phaseLabel} 운동 완료`);
+      if (labor + 0.0001 < action.laborCost) reasons.push('자가노동력 부족');
+      if (action.minHealth && health < action.minHealth) reasons.push('건강 낮음');
+      if (severeIllness && action.key !== 'stretch' && action.key !== 'rehab') reasons.push('증상 악화 위험');
+      if (action.requiresInjury && injuryCount <= 0) reasons.push('회복 중인 부상 없음');
+      if (Number.isFinite(indoorTemp)) {
+        if (Number.isFinite(Number(action.minIndoorTemp)) && indoorTemp < Number(action.minIndoorTemp)) reasons.push('실내가 추움');
+        if (Number.isFinite(Number(action.maxIndoorTemp)) && indoorTemp > Number(action.maxIndoorTemp)) reasons.push('실내가 더움');
+      }
+      if (cooldownRemainingMs > 0) reasons.push('운동 쿨타임 대기');
+      return {
+        ...action,
+        reasons,
+        enabled: reasons.length <= 0,
+        reason: reasons[0] || '운동 가능'
+      };
+    });
+    return {
+      day: usage.day,
+      count: used,
+      limit,
+      phase,
+      phaseLabel,
+      dailyCount: usage.count,
+      dailyLimit: HOUSING_EXERCISE_LIMIT_BY_PHASE.day + HOUSING_EXERCISE_LIMIT_BY_PHASE.night,
+      cooldownMs: HOUSING_EXERCISE_COOLDOWN_MS,
+      cooldownUntilAt,
+      cooldownRemainingMs,
+      rows,
+      activeBuffs,
+      activeBuffText: activeBuffs.length
+        ? activeBuffs.map((buff) => `${buff.name || '운동'} ${Math.max(0, buff.endDay - Math.max(1, Number(game?.day) || 1) + 1)}일`).join(' / ')
+        : '적용 중인 운동 보정 없음'
+    };
+  }, [
+    game?.day,
+    game?.health,
+    game?.housingExerciseBuffs,
+    game?.housingExerciseUsage,
+    game?.labor,
+    game?.playerIllnesses,
+    game?.playerInjuries,
+    game?.timeOfDay,
+    housingIndoorTemperatureInfo
+  ]);
+  const exerciseHousing = (exerciseKeyRaw = '') => {
+    const exerciseKey = String(exerciseKeyRaw || '').trim();
+    const action = HOUSING_EXERCISE_ACTIONS.find((item) => item.key === exerciseKey);
+    if (!action) return;
+    setGame((prev) => {
+      if (!prev) return prev;
+      const usage = normalizeHousingExerciseUsage(prev.housingExerciseUsage, prev.day);
+      const phase = String(prev?.timeOfDay || 'day') === 'night' ? 'night' : 'day';
+      const phaseLabel = phase === 'night' ? '야간' : '주간';
+      const used = phase === 'night' ? usage.nightCount : usage.dayCount;
+      const limit = HOUSING_EXERCISE_LIMIT_BY_PHASE[phase] || 0;
+      if (used >= limit) {
+        setGameAlertMessage(`${phaseLabel} 운동 횟수를 모두 사용했습니다.`);
+        return prev;
+      }
+      const now = Date.now();
+      if (Math.max(0, Number(usage.lastExerciseAt) || 0) + HOUSING_EXERCISE_COOLDOWN_MS > now) {
+        setGameAlertMessage('운동 쿨타임이 남아 있습니다.');
+        return prev;
+      }
+      const prevLabor = clamp(Number(prev.labor) || 0, 0, 125);
+      if (prevLabor + 0.0001 < action.laborCost) {
+        setGameAlertMessage('자가노동력이 부족합니다.');
+        return prev;
+      }
+      const prevHealth = clamp(Number(prev.health) || 0, 0, 100);
+      if (action.minHealth && prevHealth < action.minHealth) {
+        setGameAlertMessage('현재 건강 상태로는 무리한 운동을 피하는 게 좋습니다.');
+        return prev;
+      }
+      const severeIllness = Object.entries(normalizePlayerIllnesses(prev.playerIllnesses || {}))
+        .some(([key, entry]) => ['severeCold', 'exhaustion', 'heatExhaustion', 'pesticidePoisoning', 'acuteGastritis', 'insomnia'].includes(key) || Number(entry?.severity) >= 3);
+      if (severeIllness && action.key !== 'stretch' && action.key !== 'rehab') {
+        setGameAlertMessage('증상이 심할 때는 스트레칭이나 재활 운동만 하는 게 좋습니다.');
+        return prev;
+      }
+      const normalizedInjuries = normalizePlayerInjuries(prev.playerInjuries || {});
+      if (action.requiresInjury && Object.keys(normalizedInjuries).length <= 0) {
+        setGameAlertMessage('회복 중인 부상이 없어 재활 운동이 필요하지 않습니다.');
+        return prev;
+      }
+      const indoorTemp = Number(housingIndoorTemperatureInfo?.temperatureC);
+      if (Number.isFinite(indoorTemp)) {
+        if (Number.isFinite(Number(action.minIndoorTemp)) && indoorTemp < Number(action.minIndoorTemp)) {
+          setGameAlertMessage('실내가 너무 추워 유산소 운동은 피하는 게 좋습니다.');
+          return prev;
+        }
+        if (Number.isFinite(Number(action.maxIndoorTemp)) && indoorTemp > Number(action.maxIndoorTemp)) {
+          setGameAlertMessage('실내가 너무 더워 유산소 운동은 피하는 게 좋습니다.');
+          return prev;
+        }
+      }
+      const day = Math.max(1, Math.floor(Number(prev.day) || 1));
+      let nextInjuries = normalizedInjuries;
+      let rehabText = '';
+      if (action.rehabChance > 0) {
+        const rehabTarget = Object.entries(normalizedInjuries)
+          .sort(([, a], [, b]) => (Number(b?.severity) || 0) - (Number(a?.severity) || 0))[0];
+        if (rehabTarget && Math.random() < action.rehabChance) {
+          const [injuryKey, injury] = rehabTarget;
+          const remainingDays = Math.max(0, Math.floor(Number(injury?.remainingDays) || 0) - 1);
+          nextInjuries = { ...normalizedInjuries };
+          if (remainingDays > 0) nextInjuries[injuryKey] = { ...injury, remainingDays };
+          else delete nextInjuries[injuryKey];
+          rehabText = ` / 재활 효과 ${remainingDays > 0 ? `${remainingDays}일 남음` : '회복 완료'}`;
+        }
+      }
+      const nextLabor = roundLabor(Math.max(0, prevLabor - action.laborCost));
+      const nextHealth = Math.round(clamp(prevHealth + action.healthGain, 0, 100) * 10) / 10;
+      const nextBuffs = [
+        ...normalizeHousingExerciseBuffs(prev.housingExerciseBuffs, day),
+        {
+          key: action.key,
+          name: action.name,
+          startDay: day,
+          endDay: day + 1,
+          sleepBonus: action.sleepBonus,
+          accidentRiskMultiplier: action.accidentRiskMultiplier
+        }
+      ].slice(-8);
+      return {
+        ...prev,
+        labor: nextLabor,
+        health: nextHealth,
+        playerInjuries: nextInjuries,
+        housingExerciseUsage: {
+          day,
+          count: usage.count + 1,
+          dayCount: usage.dayCount + (phase === 'day' ? 1 : 0),
+          nightCount: usage.nightCount + (phase === 'night' ? 1 : 0),
+          lastExerciseKey: action.key,
+          lastExerciseAt: now
+        },
+        housingExerciseBuffs: nextBuffs,
+        logs: pushDiary(
+          prev,
+          `하우징 운동: ${action.name} (${action.durationLabel}, 자가 노동력 -${action.laborCost.toFixed(1)} / 건강 +${action.healthGain.toFixed(1)} / 수면품질 +${action.sleepBonus}${rehabText})`
+        )
+      };
+    });
+  };
   const updateHousingBathroomState = (updater, logTextOf = null) => {
     const facilityKey = String(housingInteriorFacilityRow?.key || housingInteriorFacilityKey || '').trim();
     const fieldId = selectedField?.id;
@@ -29125,6 +29460,32 @@ body { display: flex !important; align-items: center !important; justify-content
         || String(a.name).localeCompare(String(b.name), 'ko')
       ));
   }, [game?.vehicleCargoByInstance, housingCustomFoodMetaByKey, itemCategoryByKey, itemMetaByKey, itemNameByKey]);
+  useEffect(() => {
+    if (hasAnyFieldEquippedBag) return;
+    setGame((prev) => {
+      if (!prev) return prev;
+      const equippedBagCargo = normalizeCargoByItemKey(prev.vehicleCargoByInstance?.[MAP_TRANSFER_EQUIPPED_BAG_CARRIER_ID] || {});
+      const orphanEntries = Object.entries(equippedBagCargo)
+        .filter(([itemKey, qty]) => String(itemKey || '') && Math.max(0, Number(qty) || 0) > 0);
+      if (!orphanEntries.length) return prev;
+
+      const personalCargo = normalizeCargoByItemKey(prev.vehicleCargoByInstance?.[MAP_TRANSFER_PERSONAL_CARRIER_ID] || {});
+      const nextPersonalCargo = { ...personalCargo };
+      orphanEntries.forEach(([itemKey, qty]) => {
+        nextPersonalCargo[itemKey] = (Number(nextPersonalCargo[itemKey]) || 0) + Math.max(0, Number(qty) || 0);
+      });
+
+      const nextVehicleCargoByInstance = {
+        ...(prev.vehicleCargoByInstance || {}),
+        [MAP_TRANSFER_PERSONAL_CARRIER_ID]: nextPersonalCargo
+      };
+      delete nextVehicleCargoByInstance[MAP_TRANSFER_EQUIPPED_BAG_CARRIER_ID];
+      return {
+        ...prev,
+        vehicleCargoByInstance: nextVehicleCargoByInstance
+      };
+    });
+  }, [game?.vehicleCargoByInstance, hasAnyFieldEquippedBag]);
   const isHousingInteriorWindowPreviewOpen = housingInteriorPendingObject?.key === 'window';
   const selectedFieldFacilityInventoryState = useMemo(
     () => resolveFieldFacilityInventoryByFacility(game, game?.selectedField),
@@ -29548,12 +29909,13 @@ body { display: flex !important; align-items: center !important; justify-content
         };
       })
       .filter(Boolean);
-    return [personalRow, equippedBagRow, ...vehicleRows, ...warehouseRows, ...fridgeRows];
+    return [personalRow, ...(hasSelectedFieldEquippedBag ? [equippedBagRow] : []), ...vehicleRows, ...warehouseRows, ...fridgeRows];
   }, [
     game,
     game?.fieldFacilityInventoryByFieldId,
     game?.housingStoredDurabilityByLocation,
     game?.vehicleCargoByInstance,
+    hasSelectedFieldEquippedBag,
     housingInteriorFacilityRow,
     itemCategoryByKey,
     itemMetaByKey,
@@ -29641,6 +30003,8 @@ body { display: flex !important; align-items: center !important; justify-content
           type: String(meta?.type || ''),
           subgroup: String(meta?.subgroup || ''),
           desc: String(meta?.desc || ''),
+          itemMeta: meta,
+          servings: Math.max(0, Math.floor(Number(meta?.servings) || 0)),
           unitWeightKg,
           totalWeightKg,
           waterTankLiters: Math.max(0, Number(meta?.waterTankLiters) || 0),
@@ -30148,10 +30512,11 @@ body { display: flex !important; align-items: center !important; justify-content
         };
       })
       .filter(Boolean);
-    return [...warehouseRows, ...vehicleRows, personalRow, equippedBagRow];
+    return [...warehouseRows, ...vehicleRows, personalRow, ...(hasSelectedFieldEquippedBag ? [equippedBagRow] : [])];
   }, [
     game,
     game?.vehicleCargoByInstance,
+    hasSelectedFieldEquippedBag,
     itemMetaByKey,
     resolveMachineInstanceById,
     selectedField,
@@ -30552,7 +30917,9 @@ body { display: flex !important; align-items: center !important; justify-content
       const mealDef = HOUSING_MEAL_PREP_BY_KEY[mealKey] || HOUSING_MEAL_RECIPE_BY_KEY[mealKey] || { key: mealKey };
       const eatingKitchenwareRoles = housingKitchenwareEatRolesOfMeal(mealDef);
       const currentByFieldId = prev.fieldFacilityInventoryByFieldId || {};
-      const currentByFacility = { ...(currentByFieldId[fieldId] || {}) };
+      const resolvedInventoryState = resolveFieldFacilityInventoryByFacility(prev, prev?.selectedField);
+      const resolvedFieldId = String(resolvedInventoryState?.fieldId || fieldId);
+      const currentByFacility = { ...(resolvedInventoryState?.byFacility || {}) };
       const housingStorageInventory = normalizeCargoByItemKey(currentByFacility[housingFacilityKey] || {});
       const kitchenwareUse = useHousingKitchenwareForRoles(
         housingStorageInventory,
@@ -30669,7 +31036,9 @@ body { display: flex !important; align-items: center !important; justify-content
       const fieldId = String(currentField?.id || '');
       if (!currentField || !fieldId) return prev;
       const currentByFieldId = prev.fieldFacilityInventoryByFieldId || {};
-      const currentByFacility = { ...(currentByFieldId[fieldId] || {}) };
+      const resolvedInventoryState = resolveFieldFacilityInventoryByFacility(prev, prev?.selectedField);
+      const resolvedFieldId = String(resolvedInventoryState?.fieldId || fieldId);
+      const currentByFacility = { ...(resolvedInventoryState?.byFacility || {}) };
       const housingStorageInventory = normalizeCargoByItemKey(currentByFacility[housingFacilityKey] || {});
       let nextFieldFacilityInventoryByFieldId = currentByFieldId;
       const nextHousingFoodStorageByFacilityKey = { ...(currentField.housingFoodStorageByFacilityKey || {}) };
@@ -31245,6 +31614,21 @@ body { display: flex !important; align-items: center !important; justify-content
         : HOUSING_WASTE_ITEM_KEYS.filter((itemKey) => itemKey === targetItemKey);
       const removedKg = roundHousingWasteKg(removableKeys.reduce((sum, itemKey) => sum + (Number(housingStorageInventory[itemKey]) || 0), 0));
       if (removedKg <= 0) return prev;
+      const requiredBagItemKeys = removableKeys
+        .filter((itemKey) => Math.max(0, Number(housingStorageInventory[itemKey]) || 0) > 0)
+        .map((itemKey) => HOUSING_WASTE_BAG_ITEM_KEY_BY_WASTE_KEY[itemKey])
+        .filter(Boolean);
+      const missingBagItemKey = requiredBagItemKeys.find((bagItemKey) => Math.max(0, Math.floor(Number(housingStorageInventory[bagItemKey]) || 0)) <= 0);
+      if (missingBagItemKey) {
+        const bagName = String(itemMetaByKey?.[missingBagItemKey]?.name || '쓰레기봉투');
+        setGameAlertMessage(`${bagName}가 필요합니다. 하우징 보관함에 넣어 주세요.`);
+        return prev;
+      }
+      requiredBagItemKeys.forEach((bagItemKey) => {
+        const nextQty = Math.max(0, Math.floor(Number(housingStorageInventory[bagItemKey]) || 0)) - 1;
+        if (nextQty > 0) housingStorageInventory[bagItemKey] = nextQty;
+        else delete housingStorageInventory[bagItemKey];
+      });
       removableKeys.forEach((itemKey) => {
         delete housingStorageInventory[itemKey];
       });
@@ -31419,7 +31803,9 @@ body { display: flex !important; align-items: center !important; justify-content
       const capacityKg = Math.max(0, housingStorageCapacityKgOfFacility(currentField, housingFacilityKey, itemMetaByKey));
       if (capacityKg <= 0) return prev;
       const currentByFieldId = prev.fieldFacilityInventoryByFieldId || {};
-      const currentByFacility = { ...(currentByFieldId[fieldId] || {}) };
+      const resolvedInventoryState = resolveFieldFacilityInventoryByFacility(prev, prev?.selectedField);
+      const resolvedFieldId = String(resolvedInventoryState?.fieldId || fieldId);
+      const currentByFacility = { ...(resolvedInventoryState?.byFacility || {}) };
       const targetStorageInventory = normalizeCargoByItemKey(currentByFacility[housingFacilityKey] || {});
       const usedKg = Object.entries(targetStorageInventory).reduce((sum, [storageItemKey, qty]) => {
         const safeQty = Math.max(0, Number(qty) || 0);
@@ -31468,14 +31854,14 @@ body { display: flex !important; align-items: center !important; justify-content
         const sourceInventory = normalizeCargoByItemKey(nextByFacility[sourceKey] || {});
         const sourceQty = Math.max(0, Math.floor(Number(sourceInventory[itemKey]) || 0));
         if (sourceQty <= 0) return prev;
-        takeStoredDurabilityFromSource({ type: 'warehouse', fieldId, facilityKey: sourceKey }, sourceQty);
+        takeStoredDurabilityFromSource({ type: 'warehouse', fieldId: resolvedFieldId, facilityKey: sourceKey }, sourceQty);
         sourceInventory[itemKey] = sourceQty - 1;
         if ((sourceInventory[itemKey] || 0) <= 0) delete sourceInventory[itemKey];
         if (Object.keys(sourceInventory).length > 0) nextByFacility[sourceKey] = sourceInventory;
         else delete nextByFacility[sourceKey];
         nextFieldFacilityInventoryByFieldId = {
           ...currentByFieldId,
-          [fieldId]: nextByFacility
+          [resolvedFieldId]: nextByFacility
         };
         moved = 1;
       } else if (sourceType === 'housingColdStorage') {
@@ -31516,7 +31902,7 @@ body { display: flex !important; align-items: center !important; justify-content
         const targetQtyAfter = Math.max(0, Math.floor(Number(targetStorageInventory[itemKey]) || 0));
         nextHousingStoredDurabilityByLocation = addHousingStoredDurabilityUnit(
           nextHousingStoredDurabilityByLocation,
-          { type: 'warehouse', fieldId, facilityKey: housingFacilityKey },
+          { type: 'warehouse', fieldId: resolvedFieldId, facilityKey: housingFacilityKey },
           itemKey,
           Math.max(0, targetQtyAfter - 1),
           Number(movedStoredDurability ?? 100)
@@ -31531,8 +31917,8 @@ body { display: flex !important; align-items: center !important; justify-content
         housingStoredDurabilityByLocation: nextHousingStoredDurabilityByLocation,
         fieldFacilityInventoryByFieldId: {
           ...nextFieldFacilityInventoryByFieldId,
-          [fieldId]: {
-            ...(nextFieldFacilityInventoryByFieldId[fieldId] || {}),
+          [resolvedFieldId]: {
+            ...(nextFieldFacilityInventoryByFieldId[resolvedFieldId] || {}),
             [housingFacilityKey]: targetStorageInventory
           }
         },
@@ -31850,7 +32236,9 @@ body { display: flex !important; align-items: center !important; justify-content
     const itemWeightKg = Math.max(0, Number(itemMetaByKey?.[safeItemKey]?.weightKg) || 0);
     if (safeTargetType === 'warehouse') {
       const facilityKey = safeTargetKey || String(housingInteriorFacilityRow?.key || '');
-      const capacityKg = Math.max(0, housingStorageCapacityKgOfFacility(field, facilityKey, itemMetaByKey));
+      const housingCapacityKg = Math.max(0, housingStorageCapacityKgOfFacility(field, facilityKey, itemMetaByKey));
+      const fieldStorageCapacityKg = Math.max(0, storageCapacityKgTotalOfFieldFacility(field, facilityKey));
+      const capacityKg = Math.max(housingCapacityKg, fieldStorageCapacityKg);
       const targetInventory = normalizeCargoByItemKey(nextByFacility[facilityKey] || {});
       const usedKg = Object.entries(targetInventory).reduce((sum, [storageItemKey, qty]) => {
         const safeQty = Math.max(0, Number(qty) || 0);
@@ -36010,7 +36398,7 @@ body { display: flex !important; align-items: center !important; justify-content
           machine: virtualPersonalCarrierMetaOf(MAP_TRANSFER_PERSONAL_CARRIER_ID)
         });
       }
-      if (!hasEquippedBagRow) {
+      if (hasSelectedFieldEquippedBag && !hasEquippedBagRow) {
         virtualRows.push({
           slotNo: 0,
           slotLabel: '착용',
@@ -36023,7 +36411,7 @@ body { display: flex !important; align-items: center !important; justify-content
         ...virtualRows
       ];
     },
-    [selectedFieldParkingSlots, resolveMachineInstanceById, game, machineDisplayNameWithRentTag]
+    [selectedFieldParkingSlots, resolveMachineInstanceById, game, machineDisplayNameWithRentTag, hasSelectedFieldEquippedBag]
   );
   const facilityStorageHarvestForkliftRows = useMemo(
     () => {
@@ -36179,9 +36567,9 @@ body { display: flex !important; align-items: center !important; justify-content
         isEquippedBag: true,
         machine: virtualPersonalCarrierMetaOf(MAP_TRANSFER_EQUIPPED_BAG_CARRIER_ID)
       };
-      return [...parkedRows, personalCarrierRow, equippedBagCarrierRow];
+      return [...parkedRows, personalCarrierRow, ...(hasSelectedFieldEquippedBag ? [equippedBagCarrierRow] : [])];
     },
-    [mapLocationModal?.key, game?.townMarkerParkingByKey, resolveMachineInstanceById]
+    [mapLocationModal?.key, game?.townMarkerParkingByKey, hasSelectedFieldEquippedBag, resolveMachineInstanceById]
   );
   const mapTransferSelectedCarrier = useMemo(
     () => mapTransferParkedCarrierRows.find((row) => row.machine.id === mapTransferSelectedCarrierId)?.machine || null,
@@ -47217,9 +47605,18 @@ body { display: flex !important; align-items: center !important; justify-content
         prev,
         currentTimeOfDay
       }, advanceDayPreludeDeps);
-      const appliedSleepQualityInfo = normalizeLastSleepQualityInfo(
+      const baseSleepQualityInfo = normalizeLastSleepQualityInfo(
         canSleepAtCurrentLocation ? housingSleepQualityInfo : prev?.lastSleepQualityInfo
       );
+      const activeExerciseBuffs = normalizeHousingExerciseBuffs(prev?.housingExerciseBuffs, prev?.day);
+      const exerciseSleepBonus = activeExerciseBuffs.reduce((sum, buff) => sum + Math.max(0, Number(buff.sleepBonus) || 0), 0);
+      const appliedSleepQualityInfo = baseSleepQualityInfo && exerciseSleepBonus > 0
+        ? {
+            ...baseSleepQualityInfo,
+            score: clamp(Math.round((Number(baseSleepQualityInfo.score) || 0) + exerciseSleepBonus), 0, 100),
+            reason: `${baseSleepQualityInfo.reason || '수면품질'} · 운동 +${exerciseSleepBonus}`
+          }
+        : baseSleepQualityInfo;
       const sleepLaborDelta = sleepQualityLaborDeltaOf(appliedSleepQualityInfo?.score);
       const adjustedNextLabor = clamp(Math.round((Number(nextLabor) || 0) + sleepLaborDelta), 0, 125);
       const adjustedSelfLabor = clamp(Math.round((Number(selfLabor) || 0) + sleepLaborDelta), 0, 125);
@@ -47776,6 +48173,8 @@ body { display: flex !important; align-items: center !important; justify-content
         day: nextDay,
         timeOfDay: 'day',
         housingMealUsage: normalizeHousingMealUsage(null, nextDay),
+        housingExerciseUsage: normalizeHousingExerciseUsage(null, nextDay),
+        housingExerciseBuffs: normalizeHousingExerciseBuffs(prev?.housingExerciseBuffs, nextDay),
         money: nextMoney,
         nightTemperatureC: nextNightTemperatureC,
         lastSleepQualityInfo: appliedSleepQualityInfo,
@@ -48455,7 +48854,8 @@ body { display: flex !important; align-items: center !important; justify-content
           health: prev.health,
           remainingLabor: prev.labor,
           weatherName: prev.weather,
-          timeOfDay: prev.timeOfDay
+          timeOfDay: prev.timeOfDay,
+          accidentRiskMultiplier: housingExerciseAccidentRiskMultiplierOf(prev?.housingExerciseBuffs, prev?.day)
         });
         if (accident) {
           const healthBeforeAccident = Number.isFinite(Number(nextGameState?.health))
@@ -52892,7 +53292,7 @@ body { display: flex !important; align-items: center !important; justify-content
     closeTownMoveMarkerConfirmModal();
     closeTownMoveModal();
   };
-  const moveToTownByVehicle = () => {
+  const moveToTownByVehicle = (skipTravelAnimation = false) => {
     if (!game || !townMoveModal.open) return;
     const selectedVehicle = townMoveLocationContext === 'town'
       ? (townReturnVehicle || townMoveSelectedVehicle)
@@ -52932,6 +53332,18 @@ body { display: flex !important; align-items: center !important; justify-content
     const fuelUnitLabel = machineFuelUnitLabelOf(selectedVehicle.item?.fuelType);
     if (currentFuel + 1e-6 < fuelNeed) {
       window.alert(`연료가 부족합니다. 필요 ${fuelNeed.toFixed(2)}${fuelUnitLabel} / 현재 ${currentFuel.toFixed(2)}${fuelUnitLabel}`);
+      return;
+    }
+    if (skipTravelAnimation !== true) {
+      const sourceField = game?.fields?.[Math.max(0, Number(game?.selectedField) || 0)] || null;
+      const sourceLabel = townMoveLocationContext === 'town' ? activeTownMarkerLabel : (sourceField?.name || '현재 토지');
+      const destinationLabel = townMoveMarkerConfirmModal.settlementLabel || '마을';
+      startVehicleTravelTransition({
+        sourceLabel,
+        destinationLabel,
+        distanceKm: moveDistanceKm,
+        vehicleLabel: `${selectedVehicle.item?.name || selectedVehicle.machineKey} #${selectedVehicle.unitNo}`
+      }, () => moveToTownByVehicle(true));
       return;
     }
     setGame((prev) => {
@@ -53050,7 +53462,7 @@ body { display: flex !important; align-items: center !important; justify-content
     closeHousingInteriorForExternalMove();
     closeTownReturnModal();
   };
-  const moveToFarmByVehicle = () => {
+  const moveToFarmByVehicle = (skipTravelAnimation = false) => {
     if (!game || !townReturnModalOpen) return;
     const vehicle = isTownReturnFromTownContext
       ? (townReturnVehicle || townToFieldSelectedVehicle)
@@ -53111,6 +53523,16 @@ body { display: flex !important; align-items: center !important; justify-content
     const fuelUnitLabel = machineFuelUnitLabelOf(vehicle.item?.fuelType);
     if (currentFuel + 1e-6 < fuelNeed) {
       window.alert(`연료가 부족합니다. 필요 ${fuelNeed.toFixed(2)}${fuelUnitLabel} / 현재 ${currentFuel.toFixed(2)}${fuelUnitLabel}`);
+      return;
+    }
+    if (skipTravelAnimation !== true) {
+      const sourceField = game?.fields?.[Math.max(0, Number(game?.selectedField) || 0)] || null;
+      startVehicleTravelTransition({
+        sourceLabel: townReturnSourceContext === 'town' ? '마을' : (sourceField?.name || '현재 토지'),
+        destinationLabel: targetField.name || '도착 토지',
+        distanceKm: moveDistanceKm,
+        vehicleLabel: `${vehicle.item?.name || vehicle.machineKey} #${vehicle.unitNo}`
+      }, () => moveToFarmByVehicle(true));
       return;
     }
     setGame((prev) => {
@@ -53239,7 +53661,7 @@ body { display: flex !important; align-items: center !important; justify-content
     });
     closeFieldMoveModal();
   };
-  const moveToFieldByVehicle = () => {
+  const moveToFieldByVehicle = (skipTravelAnimation = false) => {
     if (!game || !fieldMoveModal.open) return;
     if (!fieldMoveTargetField?.owned) return;
     const selectedVehicle = fieldMoveSelectedVehicle;
@@ -53280,6 +53702,16 @@ body { display: flex !important; align-items: center !important; justify-content
     const fuelUnitLabel = machineFuelUnitLabelOf(selectedVehicle.item?.fuelType);
     if (currentFuel + 1e-6 < fuelNeed) {
       window.alert(`연료가 부족합니다. 필요 ${fuelNeed.toFixed(2)}${fuelUnitLabel} / 현재 ${currentFuel.toFixed(2)}${fuelUnitLabel}`);
+      return;
+    }
+    if (skipTravelAnimation !== true) {
+      const sourceField = game?.fields?.[Math.max(0, Number(game?.selectedField) || 0)] || null;
+      startVehicleTravelTransition({
+        sourceLabel: sourceField?.name || '현재 토지',
+        destinationLabel: fieldMoveTargetField.name || '도착 토지',
+        distanceKm: moveDistanceKm,
+        vehicleLabel: `${selectedVehicle.item?.name || selectedVehicle.machineKey} #${selectedVehicle.unitNo}`
+      }, () => moveToFieldByVehicle(true));
       return;
     }
     const targetFieldIndex = fieldMoveModal.targetFieldIndex;
@@ -59745,11 +60177,60 @@ const requestRepairEquipment = (itemKey) => {
       setBugReportStatus({ state: 'error', message: '전송에 실패했습니다. 잠시 후 다시 시도해주세요.' });
     }
   };
+  const downloadRealApplePriceModalImage = useCallback(async (priceTab) => {
+    if (!priceTab || typeof document === 'undefined' || realApplePriceImageSaving) {
+      return;
+    }
+    const modalNode = realApplePriceModalRef.current;
+    if (!modalNode) {
+      downloadRealApplePriceBoardImage(priceTab);
+      return;
+    }
+
+    const safeLabel = (priceTab.label || 'apple-price').replace(/[\\/:*?"<>|]/g, '-');
+    const fileName = `baram-apple-price-${safeLabel}-${priceTab.year || '2026'}.png`;
+    setRealApplePriceImageSaving(true);
+    try {
+      const captureWidth = modalNode.offsetWidth || modalNode.scrollWidth;
+      const captureHeight = modalNode.scrollHeight || modalNode.offsetHeight;
+      const dataUrl = await toPng(modalNode, {
+        width: captureWidth,
+        height: captureHeight,
+        pixelRatio: 2,
+        cacheBust: true,
+        backgroundColor: '#d9ead2',
+        style: {
+          position: 'relative',
+          left: '0',
+          top: '0',
+          right: 'auto',
+          bottom: 'auto',
+          width: `${captureWidth}px`,
+          height: `${captureHeight}px`,
+          maxHeight: 'none',
+          overflow: 'visible',
+          transform: 'none',
+        },
+      });
+      const anchor = document.createElement('a');
+      anchor.download = fileName;
+      anchor.href = dataUrl;
+      anchor.style.display = 'none';
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+    } catch (error) {
+      console.warn('Failed to capture apple price modal as image, falling back to canvas export.', error);
+      downloadRealApplePriceBoardImage(priceTab);
+    } finally {
+      setRealApplePriceImageSaving(false);
+    }
+  }, [realApplePriceImageSaving]);
   const activeRealApplePriceTab = REAL_APPLE_PRICE_TABS.find((entry) => entry.key === realApplePriceTab) || REAL_APPLE_PRICE_TABS[0];
   const realApplePriceModalNode = realApplePriceModalOpen ? (
     <>
       <div className="confirm-modal-backdrop" onClick={() => setRealApplePriceModalOpen(false)} />
-      <div className="confirm-modal real-apple-price-modal">
+      <div className="confirm-modal real-apple-price-modal" ref={realApplePriceModalRef}>
         <div className="real-apple-price-modal__hero">
           <div>
             <div className="real-apple-price-modal__eyebrow">{activeRealApplePriceTab?.farmName || '바람한조각'}</div>
@@ -59818,9 +60299,10 @@ const requestRepairEquipment = (itemKey) => {
       <button
         type="button"
         className="real-apple-price-modal__download"
-        onClick={() => downloadRealApplePriceBoardImage(activeRealApplePriceTab)}
+        onClick={() => downloadRealApplePriceModalImage(activeRealApplePriceTab)}
+        disabled={realApplePriceImageSaving}
       >
-        이미지 저장
+        {realApplePriceImageSaving ? '저장 중...' : '이미지 저장'}
       </button>
     </>
   ) : null;
@@ -67469,6 +67951,7 @@ body { display: flex !important; align-items: center !important; justify-content
               housingInteriorVehicleFoodSourceRows={housingInteriorVehicleFoodSourceRows}
               housingInteriorStorageSourceRows={housingInteriorStorageSourceRows}
               housingMealInfo={housingMealInfo}
+              housingExerciseInfo={housingExerciseInfo}
               housingWaterInfo={housingWaterInfo}
               isHousingInteriorWindowPreviewOpen={isHousingInteriorWindowPreviewOpen}
               weatherSceneImage={weatherSceneImage}
@@ -67487,6 +67970,7 @@ body { display: flex !important; align-items: center !important; justify-content
               startDayTimeTransition={startDayTimeTransition}
               advanceMultipleDays={advanceMultipleDays}
               eatHousingMeal={eatHousingMeal}
+              exerciseHousing={exerciseHousing}
               showerHousingBathroom={showerHousingBathroom}
               washHousingBathroomAfterWork={washHousingBathroomAfterWork}
               cleanHousingBathroom={cleanHousingBathroom}
@@ -67497,6 +67981,7 @@ body { display: flex !important; align-items: center !important; justify-content
               moveFoodItemToHousingFridge={moveFoodItemToHousingFridge}
               moveFoodItemToHousingStorage={moveFoodItemToHousingStorage}
               moveFoodItemFromHousingStorageToInventory={moveFoodItemFromHousingStorageToInventory}
+              openShopItemDetailModal={openShopItemDetailModal}
               moveClothingItemToHousingWardrobe={moveClothingItemToHousingWardrobe}
               moveClothingItemFromHousingWardrobe={moveClothingItemFromHousingWardrobe}
               installHousingWaterTankSlot={installHousingWaterTankSlot}
@@ -73741,6 +74226,7 @@ body { display: flex !important; align-items: center !important; justify-content
         activityInfo={housingInteriorClothingActivityInfo}
         personalRows={phoneBagRows}
         bagRows={phoneEquippedBagRows}
+        hasEquippedBag={hasSelectedFieldEquippedBag}
       />
       <WarehouseStorageModalShell
         open={facilityStorageModal.open}
@@ -80905,6 +81391,48 @@ body { display: flex !important; align-items: center !important; justify-content
           }}
           aria-hidden="true"
         />
+      ) : null}
+      {vehicleTravelTransition.open ? (
+        <>
+          <div
+            className={`confirm-modal-backdrop vehicle-travel-transition-backdrop ${vehicleTravelTransition.closing ? 'is-closing' : ''}`.trim()}
+            style={{ zIndex: 5300 }}
+          />
+          <section
+            className={`vehicle-travel-transition ${vehicleTravelTransition.closing ? 'is-closing' : ''}`.trim()}
+            style={{
+              zIndex: 5301,
+              '--vehicle-travel-duration': `${Math.max(VEHICLE_TRAVEL_ANIMATION_MIN_MS, Number(vehicleTravelTransition.durationMs) || VEHICLE_TRAVEL_ANIMATION_MIN_MS)}ms`
+            }}
+            role="status"
+            aria-live="polite"
+          >
+            <div className="vehicle-travel-transition__status">
+              <span>이동중</span>
+              <span className="vehicle-travel-transition__dots" aria-hidden="true">
+                <span>.</span><span>.</span><span>.</span>
+              </span>
+            </div>
+            <div className="vehicle-travel-transition__route">
+              <strong>{vehicleTravelTransition.vehicleLabel || '차량'}</strong>
+              <span>{`${vehicleTravelTransition.sourceLabel || '출발지'} → ${vehicleTravelTransition.destinationLabel || '도착지'}`}</span>
+              <em>{formatDistanceKmText(vehicleTravelTransition.distanceKm)}</em>
+            </div>
+            <div className="vehicle-travel-transition__stage" aria-hidden="true">
+              <div className="vehicle-travel-transition__road" />
+              <div className="vehicle-travel-transition__vehicle-wrap">
+                <img
+                  className="vehicle-travel-transition__vehicle"
+                  src="/animation-moving-silhouette.png"
+                  alt=""
+                />
+              </div>
+            </div>
+            <div className="vehicle-travel-transition__gauge" aria-hidden="true">
+              <span />
+            </div>
+          </section>
+        </>
       ) : null}
       {timeTransitionModal.open ? (
         <>

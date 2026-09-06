@@ -8,7 +8,7 @@ import {
   housingFoodStorageExpirySummaryOf,
   housingHasBathroomOfFacility,
 } from './housingSystem';
-import { won } from '../../utils/common';
+import { longDate, won } from '../../utils/common';
 import HousingPcDesktop from './HousingPcDesktop';
 import ShopTerminalPaymentModal from '../payment/ShopTerminalPaymentModal';
 import {
@@ -25,10 +25,12 @@ const HOUSING_WASTE_LABEL_BY_KEY = {
   housingFoodWaste: '음식물 쓰레기',
   housingRecycleWaste: '재활용 쓰레기'
 };
+const HOUSING_ICE_CREAM_ITEM_KEY_SET = new Set(['foodIceCreamBar6Pack']);
 const HOUSING_STORAGE_ITEM_TABS = Object.freeze([
   ['all', '전체', '📦'],
   ['food', '식품', '🍱'],
   ['drink', '음료', '🥤'],
+  ['living', '생활', '🧻'],
   ['appliance', '가전', '🔌'],
   ['furniture', '가구', '🪑'],
   ['kitchenware', '주방용품', '🍽️'],
@@ -104,7 +106,11 @@ const housingStorageItemTabKeyOf = (item = null) => {
   if (type === 'dirtyKitchenware' || type === 'kitchenware') return 'kitchenware';
   if (category === 'appliance' || slotGroup === 'appliance') return 'appliance';
   if (category === 'furniture' || slotGroup === 'furniture') return 'furniture';
-  if (category === 'foodMart') return subgroup === 'drink' ? 'drink' : 'food';
+  if (category === 'foodMart') {
+    if (subgroup === 'drink') return 'drink';
+    if (subgroup === 'living') return 'living';
+    return 'food';
+  }
   return 'other';
 };
 
@@ -270,6 +276,7 @@ export default function HousingInteriorView({
   housingInteriorVehicleFoodSourceRows = [],
   housingInteriorStorageSourceRows = [],
   housingMealInfo,
+  housingExerciseInfo = null,
   housingWaterInfo = null,
   isHousingInteriorWindowPreviewOpen,
   weatherSceneImage,
@@ -288,6 +295,7 @@ export default function HousingInteriorView({
   startDayTimeTransition,
   advanceMultipleDays,
   eatHousingMeal,
+  exerciseHousing,
   showerHousingBathroom,
   washHousingBathroomAfterWork,
   cleanHousingBathroom,
@@ -298,6 +306,7 @@ export default function HousingInteriorView({
   moveFoodItemToHousingFridge,
   moveFoodItemToHousingStorage,
   moveFoodItemFromHousingStorageToInventory,
+  openShopItemDetailModal = null,
   moveClothingItemToHousingWardrobe,
   moveClothingItemFromHousingWardrobe,
   installHousingWaterTankSlot,
@@ -396,6 +405,27 @@ export default function HousingInteriorView({
   const [boilerInstallPaymentModal, setBoilerInstallPaymentModal] = React.useState({ open: false, done: false });
   const [housingInstallSourcePickerKey, setHousingInstallSourcePickerKey] = React.useState('');
   const [mealCooldownNow, setMealCooldownNow] = React.useState(() => Date.now());
+  const currentGameDay = Math.max(1, Math.floor(Number(game?.day) || 1));
+  const selectedDayAdvanceDays = Math.max(1, Math.min(14, Math.floor(Number(dayAdvanceDraft) || 1)));
+  const dayAdvanceTargetDay = currentGameDay + selectedDayAdvanceDays;
+  const dayAdvanceCalendarRows = React.useMemo(() => (
+    Array.from({ length: 14 }, (_, index) => {
+      const days = index + 1;
+      const targetDay = currentGameDay + days;
+      return {
+        key: `day-advance-${days}`,
+        days,
+        targetDay,
+        dayNumber: Number(longDate(targetDay).split('-')[2]) || targetDay,
+        dateText: longDate(targetDay),
+        label: days === 1 ? '내일' : `+${days}일`
+      };
+    })
+  ), [currentGameDay]);
+  const selectDayAdvanceDays = React.useCallback((daysRaw = 1) => {
+    const nextDays = Math.max(1, Math.min(14, Math.floor(Number(daysRaw) || 1)));
+    setDayAdvanceDraft(String(nextDays));
+  }, []);
   const farmLogTypingTimerRef = React.useRef(null);
   const fridgeMoveTimerRef = React.useRef(null);
   const boilerInstallPaymentTimerRef = React.useRef(null);
@@ -857,25 +887,11 @@ export default function HousingInteriorView({
   const indoorTemperatureIllnessRiskInfo = housingIndoorTemperatureInfo?.illnessRiskInfo || {};
   const indoorTemperatureDetailRows = [
     {
-      key: 'temperature',
-      label: '온도 보정',
-      value: indoorTemperatureBreakdown.temperatureLabel || '측정 대기',
-      detail: indoorTemperatureBreakdown.temperatureDetail || '실내온도 측정값 없음',
-      delta: indoorTemperatureBreakdown.temperatureAdjust
-    },
-    {
       key: 'hvac',
       label: '공조 작동',
       value: housingIndoorTemperatureInfo?.activeHvacLabel || '공조 꺼짐',
       detail: indoorTemperatureBreakdown.hvacDetail || '공조 보정 없음',
       delta: indoorTemperatureBreakdown.activeHvacBonus
-    },
-    {
-      key: 'total',
-      label: '생활여건 합계',
-      value: '실내온도 항목',
-      detail: '생활여건 자세히의 실내온도 점수와 같은 값',
-      delta: indoorTemperatureBreakdown.total
     },
     {
       key: 'health',
@@ -942,11 +958,11 @@ export default function HousingInteriorView({
     updateHousingInteriorFridgeSetting?.({ ...fridgeSetting, [key]: nextTemp });
   };
   React.useEffect(() => {
-    if (housingInteriorPendingObject?.key !== 'meal') return undefined;
+    if (!['meal', 'exercise'].includes(String(housingInteriorPendingObject?.key || ''))) return undefined;
     setMealCooldownNow(Date.now());
     const timer = window.setInterval(() => setMealCooldownNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
-  }, [housingInteriorPendingObject?.key, housingMealInfo?.cooldownUntilAt]);
+  }, [housingInteriorPendingObject?.key, housingMealInfo?.cooldownUntilAt, housingExerciseInfo?.cooldownUntilAt]);
   React.useEffect(() => {
     if (housingInteriorPendingObject) return undefined;
     const isEditableTarget = (target) => {
@@ -1018,6 +1034,11 @@ export default function HousingInteriorView({
   const mealCooldownSeconds = Math.ceil(mealCooldownRemainingMs / 1000);
   const mealCooldownLabel = mealCooldownSeconds > 0
     ? `${Math.floor(mealCooldownSeconds / 60)}:${String(mealCooldownSeconds % 60).padStart(2, '0')}`
+    : '0:00';
+  const exerciseCooldownRemainingMs = Math.max(0, Math.floor(Number(housingExerciseInfo?.cooldownUntilAt) || 0) - mealCooldownNow);
+  const exerciseCooldownSeconds = Math.ceil(exerciseCooldownRemainingMs / 1000);
+  const exerciseCooldownLabel = exerciseCooldownSeconds > 0
+    ? `${Math.floor(exerciseCooldownSeconds / 60)}:${String(exerciseCooldownSeconds % 60).padStart(2, '0')}`
     : '0:00';
   const canEatHousingMealNow = Boolean(housingMealInfo?.canEatWithoutCooldown ?? housingMealInfo?.canEat) && mealCooldownRemainingMs <= 0;
   const housingPlateOptionRows = housingMealInfo?.plateOptionRows || {};
@@ -1127,7 +1148,8 @@ export default function HousingInteriorView({
       .filter((item) => String(item?.category || '') === 'appliance' && Math.max(0, Number(item?.qty) || 0) > 0)
       .map((item) => {
         const itemKey = String(item?.itemKey || '');
-        const type = String(item?.type || '');
+        const itemMeta = item?.itemMeta || {};
+        const type = String(item?.type || itemMeta?.type || '');
         const durability = Number.isFinite(Number(item?.durability)) ? Number(item.durability) : null;
         return {
           key: `housing-appliance-${itemKey}`,
@@ -1139,9 +1161,9 @@ export default function HousingInteriorView({
           operational: durability === null || durability > 0,
           durability,
           name: String(item?.name || itemKey),
-          desc: String(item?.desc || ''),
-          itemMeta: item?.itemMeta || null,
-          servings: Math.max(0, Math.floor(Number(item?.servings) || 0)),
+          desc: String(item?.desc || itemMeta?.desc || ''),
+          itemMeta,
+          servings: Math.max(0, Math.floor(Number(item?.servings ?? itemMeta?.servings) || 0)),
           imageSrc: item?.imageSrc || ''
         };
       })
@@ -2210,7 +2232,7 @@ export default function HousingInteriorView({
     const facilityKey = String(housingInteriorFacilityKey || '');
     const day = Math.max(1, Math.floor(Number(game?.day) || 1));
     if (!facilityKey || !selectedHousingInteriorField) return { fridge: {}, freezer: {} };
-    const buildMap = (batchMap) => {
+    const buildMap = (batchMap, storageType) => {
       const next = {};
       const itemRows = batchMap?.[facilityKey] || {};
       Object.keys(itemRows || {}).forEach((itemKey) => {
@@ -2218,15 +2240,16 @@ export default function HousingInteriorView({
           batchesByFacilityKey: batchMap,
           facilityKey,
           itemKey,
-          day
+          day,
+          storageType
         });
         if (summary) next[itemKey] = summary;
       });
       return next;
     };
     return {
-      fridge: buildMap(selectedHousingInteriorField.housingFoodStorageBatchesByFacilityKey || {}),
-      freezer: buildMap(selectedHousingInteriorField.housingFreezerFoodStorageBatchesByFacilityKey || {})
+      fridge: buildMap(selectedHousingInteriorField.housingFoodStorageBatchesByFacilityKey || {}, 'fridge'),
+      freezer: buildMap(selectedHousingInteriorField.housingFreezerFoodStorageBatchesByFacilityKey || {}, 'freezer')
     };
   }, [game?.day, housingInteriorFacilityKey, selectedHousingInteriorField]);
   const selectedColdStorageMoveTarget = React.useMemo(() => {
@@ -2452,6 +2475,60 @@ export default function HousingInteriorView({
     ? '__personal_carry__'
     : String(selectedStorageSourceOption?.sourceKey || '');
   const canMoveFromHousingStorageToSelectedTarget = Boolean(selectedStorageTargetType && selectedStorageTargetKey);
+  const housingStorageTargetMoveBlockReasonOf = React.useCallback((item = null, options = {}) => {
+    const targetType = String(options?.targetType || selectedStorageTargetType || '');
+    const targetKey = String(options?.targetKey || selectedStorageTargetKey || '');
+    const itemKey = String(item?.itemKey || '');
+    const category = String(item?.category || '');
+    const itemName = String(item?.name || itemKey || '물품');
+    if (!targetType || !targetKey) return '옮길 위치를 먼저 선택해야 합니다.';
+    if (!itemKey) return '옮길 물품 정보가 없습니다.';
+    if (targetType === 'warehouse' && targetKey === String(housingInteriorStorageInfo?.facilityKey || '')) {
+      return '이미 같은 적재공간에 있습니다.';
+    }
+    if (targetType === 'housingColdStorage') {
+      if (category !== 'foodMart') return '냉장고에는 식료품만 넣을 수 있습니다.';
+      if (String(item?.subgroup || '') === 'living') return '생활용품은 냉장고에 넣을 수 없습니다.';
+    }
+    if (targetType === 'carrier' || targetType === 'warehouse') {
+      const capacityKg = Math.max(0, Number(storageSourceCapacityKg) || 0);
+      const usedKg = Math.max(0, Number(storageSourceUsedKg) || 0);
+      const itemWeightKg = Math.max(0, Number(item?.unitWeightKg ?? item?.weightKg) || 0);
+      if (capacityKg > 0 && itemWeightKg > 0 && usedKg + itemWeightKg > capacityKg + 0.0001) {
+        return `${itemName}을 옮기기엔 ${storageSourceLabel} 용량이 부족합니다.`;
+      }
+    }
+    return '';
+  }, [
+    housingInteriorStorageInfo?.facilityKey,
+    selectedStorageTargetKey,
+    selectedStorageTargetType,
+    storageSourceCapacityKg,
+    storageSourceLabel,
+    storageSourceUsedKg
+  ]);
+  const housingStorageSourceMoveBlockReasonOf = React.useCallback((item = null, options = {}) => {
+    const sourceType = String(options?.sourceType || '');
+    const sourceKey = String(options?.sourceKey || '');
+    const itemKey = String(item?.itemKey || '');
+    const itemName = String(item?.name || itemKey || '물품');
+    if (!sourceType || !sourceKey) return '이 위치에서는 옮길 수 없습니다.';
+    if (!itemKey) return '옮길 물품 정보가 없습니다.';
+    if (sourceType === 'warehouse' && sourceKey === String(housingInteriorStorageInfo?.facilityKey || '')) {
+      return '이미 하우징 적재공간에 있습니다.';
+    }
+    const capacityKg = Math.max(0, Number(housingInteriorStorageInfo?.capacityKg) || 0);
+    const usedKg = Math.max(0, Number(housingInteriorStorageInfo?.usedKg) || 0);
+    const itemWeightKg = Math.max(0, Number(item?.unitWeightKg ?? item?.weightKg) || 0);
+    if (capacityKg > 0 && itemWeightKg > 0 && usedKg + itemWeightKg > capacityKg + 0.0001) {
+      return `${itemName}을 넣기엔 하우징 적재공간 용량이 부족합니다.`;
+    }
+    return '';
+  }, [
+    housingInteriorStorageInfo?.capacityKg,
+    housingInteriorStorageInfo?.facilityKey,
+    housingInteriorStorageInfo?.usedKg
+  ]);
   const storageSourceDisplayRows = String(selectedStorageSourceOption?.key || '') === 'bag'
     ? housingInteriorEquippedBagRows
     : String(selectedStorageSourceOption?.key || '') === 'personal'
@@ -2672,6 +2749,31 @@ export default function HousingInteriorView({
       </div>
     </>
   );
+  const openHousingStorageItemDetail = React.useCallback((item = null, locationLabel = '') => {
+    if (!item || typeof openShopItemDetailModal !== 'function') return;
+    const itemKey = String(item?.itemKey || item?.key || '');
+    const detailItem = {
+      ...(item?.itemMeta && typeof item.itemMeta === 'object' ? item.itemMeta : {}),
+      ...item,
+      key: itemKey || String(item?.key || ''),
+      name: String(item?.name || item?.itemMeta?.name || itemKey || '물품'),
+      category: String(item?.category || item?.itemMeta?.category || ''),
+      type: String(item?.type || item?.itemMeta?.type || ''),
+      unit: String(item?.unit || item?.itemMeta?.unit || '')
+    };
+    openShopItemDetailModal(detailItem, detailItem.category, {
+      viewOnly: true,
+      allowNonEquipment: true,
+      quantity: Number(item?.qty ?? item?.displayQty) || 0,
+      unit: detailItem.unit,
+      locationLabel: locationLabel || String(item?.placementLabel || item?.sourceName || '')
+    });
+  }, [openShopItemDetailModal]);
+  const handleHousingStorageItemCardKeyDown = React.useCallback((event, item, locationLabel = '') => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    openHousingStorageItemDetail(item, locationLabel);
+  }, [openHousingStorageItemDetail]);
   const renderHousingStorageDetailRow = (item) => {
     const qtyText = `${item.displayQty || item.qty}${item.unit || ''}`;
     const unitWeightText = formatHousingStorageWeightText(item?.unitWeightKg);
@@ -3126,11 +3228,6 @@ export default function HousingInteriorView({
                   <div key={`indoor-temperature-detail-${row.key}`} className="housing-interior-living-detail-item">
                     <div className="housing-interior-living-detail-item__head">
                       <span>{row.label}</span>
-                      <em className={`housing-interior-living-detail-delta ${row.isRisk ? (Number(row.delta) > 0 ? 'is-minus' : 'is-zero') : (Number(row.delta) > 0 ? 'is-plus' : Number(row.delta) < 0 ? 'is-minus' : 'is-zero')}`.trim()}>
-                        {row.isRisk
-                          ? `${Math.max(0, Number(row.delta) || 0).toFixed(1)}%`
-                          : (row.isHealth ? formatHealthDelta(row.delta) : formatLivingFactorDelta(row.delta))}
-                      </em>
                     </div>
                     <strong>{row.value}</strong>
                     <small>{row.detail}</small>
@@ -3158,7 +3255,7 @@ export default function HousingInteriorView({
             onClick={closeHousingInteriorPendingModal}
           />
           <div
-            className={`confirm-modal confirm-modal--facility-detail confirm-modal--housing-interior-object ${housingInteriorPendingObject.key === 'pc' ? 'confirm-modal--housing-pc' : ''} ${housingInteriorPendingObject.key === 'kitchen' && kitchenTab === 'cook' ? 'confirm-modal--housing-kitchen-cook' : ''} ${housingInteriorPendingObject.key === 'storage' && storageTab === 'facility' && facilitySubTab === 'power' ? 'confirm-modal--housing-breaker-view' : ''}`.trim()}
+            className={`confirm-modal confirm-modal--facility-detail confirm-modal--housing-interior-object ${housingInteriorPendingObject.key === 'pc' ? 'confirm-modal--housing-pc' : ''} ${['storage', 'closet'].includes(housingInteriorPendingObject.key) ? 'confirm-modal--housing-storage-object' : ''} ${housingInteriorPendingObject.key === 'kitchen' && kitchenTab === 'cook' ? 'confirm-modal--housing-kitchen-cook' : ''} ${housingInteriorPendingObject.key === 'storage' && storageTab === 'facility' && facilitySubTab === 'power' ? 'confirm-modal--housing-breaker-view' : ''}`.trim()}
             style={{ zIndex: 131 }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -3219,6 +3316,27 @@ export default function HousingInteriorView({
                       >
                         진행
                       </button>
+                    </div>
+                    <div className="housing-interior-day-advance-calendar" aria-label="진행 날짜 선택">
+                      <div className="housing-interior-day-advance-calendar__head">
+                        <span>📅 달력 선택</span>
+                        <strong>{`${longDate(currentGameDay)} → ${longDate(dayAdvanceTargetDay)}`}</strong>
+                      </div>
+                      <div className="housing-interior-day-advance-calendar__grid">
+                        {dayAdvanceCalendarRows.map((row) => (
+                          <button
+                            key={row.key}
+                            type="button"
+                            className={`housing-interior-day-advance-date ${row.days === selectedDayAdvanceDays ? 'is-selected' : ''}`.trim()}
+                            onClick={() => selectDayAdvanceDays(row.days)}
+                            aria-pressed={row.days === selectedDayAdvanceDays}
+                          >
+                            <span>{row.label}</span>
+                            <strong>{row.dayNumber}</strong>
+                            <em>{row.dateText}</em>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                   <div className="footer-actions">
@@ -4338,52 +4456,98 @@ export default function HousingInteriorView({
                       {housingInteriorStorageRows.length || housingPlacedItemRows.length || housingInteriorDirtyKitchenwareRows.length ? (
                         <>
                           <div className="housing-interior-placeholder-item-list housing-interior-placeholder-item-list--storage">
-                            {visibleHousingInteriorStorageRows.map((item) => (
-                              <div key={`housing-storage-source-${item.itemKey}`} className="housing-interior-placeholder-item">
-                                {renderFoodItemContent(item)}
+                            {visibleHousingInteriorStorageRows.map((item) => {
+                              const blockReason = housingStorageTargetMoveBlockReasonOf(item);
+                              const disabled = Boolean(blockReason);
+                              return (
+                              <div
+                                key={`housing-storage-source-${item.itemKey}`}
+                                className="housing-interior-placeholder-item housing-interior-placeholder-item--clickable"
+                                role="button"
+                                tabIndex={0}
+                                title="상세정보 보기"
+                                onClick={() => openHousingStorageItemDetail(item, housingInteriorStorageInfo?.facilityName || '하우징 적재')}
+                                onKeyDown={(event) => handleHousingStorageItemCardKeyDown(event, item, housingInteriorStorageInfo?.facilityName || '하우징 적재')}
+                              >
+                                {renderFoodItemContent({
+                                  ...item,
+                                  expiry: HOUSING_ICE_CREAM_ITEM_KEY_SET.has(String(item.itemKey || ''))
+                                    ? { tone: 'melted', label: '💧 녹음' }
+                                    : item.expiry
+                                })}
                                 <button
                                   type="button"
                                   className="button button--ghost button--compact housing-interior-placeholder-move-button"
-                                  title={canMoveFromHousingStorageToSelectedTarget ? `${storageSourceLabel}로 이동` : '옮길 위치를 선택해야 합니다.'}
-                                  disabled={!canMoveFromHousingStorageToSelectedTarget}
-                                  onClick={() => moveFoodItemFromHousingStorageToInventory?.({
+                                  title={disabled ? blockReason : `${storageSourceLabel}로 이동`}
+                                  disabled={disabled}
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    moveFoodItemFromHousingStorageToInventory?.({
                                     targetType: selectedStorageTargetType,
                                     targetKey: selectedStorageTargetKey,
                                     targetName: storageSourceLabel,
                                     itemKey: item.itemKey
-                                  })}
+                                    });
+                                  }}
                                 >
                                   {storageSourceIcon}
                                 </button>
                               </div>
-                            ))}
-                            {visibleHousingPlacedItemRows.map((item) => (
-                              <div key={`housing-placed-storage-item-${item.slotGroup}-${item.slotKey}-${item.itemKey}`} className="housing-interior-placeholder-item">
+                              );
+                            })}
+                            {visibleHousingPlacedItemRows.map((item) => {
+                              const blockReason = housingStorageTargetMoveBlockReasonOf(item);
+                              const disabled = Boolean(blockReason);
+                              return (
+                              <div
+                                key={`housing-placed-storage-item-${item.slotGroup}-${item.slotKey}-${item.itemKey}`}
+                                className="housing-interior-placeholder-item housing-interior-placeholder-item--clickable"
+                                role="button"
+                                tabIndex={0}
+                                title="상세정보 보기"
+                                onClick={() => openHousingStorageItemDetail(item, item.placementLabel || '하우징 내부 배치')}
+                                onKeyDown={(event) => handleHousingStorageItemCardKeyDown(event, item, item.placementLabel || '하우징 내부 배치')}
+                              >
                                 {renderFoodItemContent(item)}
                                 <button
                                   type="button"
                                   className="button button--ghost button--compact housing-interior-placeholder-move-button"
-                                  title={canMoveFromHousingStorageToSelectedTarget ? `${storageSourceLabel}로 이동` : '옮길 위치를 선택해야 합니다.'}
-                                  disabled={!canMoveFromHousingStorageToSelectedTarget}
-                                  onClick={() => moveHousingSlotItemToTarget?.({
+                                  title={disabled ? blockReason : `${storageSourceLabel}로 이동`}
+                                  disabled={disabled}
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    moveHousingSlotItemToTarget?.({
                                     slotGroup: item.slotGroup,
                                     slotKey: item.slotKey,
                                     targetType: selectedStorageTargetType,
                                     targetKey: selectedStorageTargetKey
-                                  })}
+                                    });
+                                  }}
                                 >
                                   {storageSourceIcon}
                                 </button>
                               </div>
-                            ))}
+                              );
+                            })}
                             {visibleHousingInteriorDirtyKitchenwareRows.map((item) => (
-                              <div key={`housing-dirty-kitchenware-${item.itemKey}`} className="housing-interior-placeholder-item">
+                              <div
+                                key={`housing-dirty-kitchenware-${item.itemKey}`}
+                                className="housing-interior-placeholder-item housing-interior-placeholder-item--clickable"
+                                role="button"
+                                tabIndex={0}
+                                title="상세정보 보기"
+                                onClick={() => openHousingStorageItemDetail(item, '설거지 대기')}
+                                onKeyDown={(event) => handleHousingStorageItemCardKeyDown(event, item, '설거지 대기')}
+                              >
                                 {renderFoodItemContent(item)}
                                 <button
                                   type="button"
                                   className="button button--ghost button--compact housing-interior-placeholder-move-button"
                                   title="설거지해서 다시 사용"
-                                  onClick={() => washHousingDirtyKitchenware?.(item.itemKey)}
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    washHousingDirtyKitchenware?.(item.itemKey);
+                                  }}
                                 >
                                   설거지
                                 </button>
@@ -4458,18 +4622,30 @@ export default function HousingInteriorView({
                             const selectedKey = String(selectedStorageSourceOption?.key || 'bag');
                             const sourceType = String(selectedStorageSourceOption?.sourceType || (selectedKey === 'warehouse' ? 'warehouse' : 'carrier'));
                             const sourceKey = selectedKey === 'bag'
+                              ? '__equipped_bag__'
+                              : selectedKey === 'personal'
                               ? '__personal_carry__'
                               : String(selectedStorageSourceOption?.sourceKey || '');
-                            const canMoveToStorage = Boolean(sourceType && sourceKey);
+                            const blockReason = housingStorageSourceMoveBlockReasonOf(item, { sourceType, sourceKey });
+                            const canMoveToStorage = !blockReason;
                             return (
-                            <div key={`housing-storage-source-${selectedKey}-${selectedStorageSourceOption?.sourceKey || 'default'}-${item.itemKey}`} className="housing-interior-placeholder-item">
+                            <div
+                              key={`housing-storage-source-${selectedKey}-${selectedStorageSourceOption?.sourceKey || 'default'}-${item.itemKey}`}
+                              className="housing-interior-placeholder-item housing-interior-placeholder-item--clickable"
+                              role="button"
+                              tabIndex={0}
+                              title="상세정보 보기"
+                              onClick={() => openHousingStorageItemDetail(item, storageSourceLabel)}
+                              onKeyDown={(event) => handleHousingStorageItemCardKeyDown(event, item, storageSourceLabel)}
+                            >
                               {renderFoodItemContent(item)}
                               <button
                                 type="button"
                                 className="button button--ghost button--compact housing-interior-placeholder-move-button"
-                                title={canMoveToStorage ? '적재로 이동' : '이 위치에서 옮길 수 없음'}
+                                title={canMoveToStorage ? '적재로 이동' : blockReason}
                                 disabled={!canMoveToStorage}
-                                onClick={() => {
+                                onClick={(event) => {
+                                  event.stopPropagation();
                                   moveFoodItemToHousingStorage?.({
                                     sourceType,
                                     sourceKey,
@@ -4507,7 +4683,21 @@ export default function HousingInteriorView({
                           </div>
                           <div className="housing-interior-placeholder-item-list">
                             {housingInteriorWasteRows.map((item) => (
-                              <div key={`housing-waste-storage-${item.itemKey}`} className="housing-interior-placeholder-item">
+                              <div
+                                key={`housing-waste-storage-${item.itemKey}`}
+                                className="housing-interior-placeholder-item housing-interior-placeholder-item--clickable"
+                                role="button"
+                                tabIndex={0}
+                                title="상세정보 보기"
+                                onClick={() => openHousingStorageItemDetail({
+                                  ...item,
+                                  name: HOUSING_WASTE_LABEL_BY_KEY[item.itemKey] || item.name
+                                }, '생활폐기물')}
+                                onKeyDown={(event) => handleHousingStorageItemCardKeyDown(event, {
+                                  ...item,
+                                  name: HOUSING_WASTE_LABEL_BY_KEY[item.itemKey] || item.name
+                                }, '생활폐기물')}
+                              >
                                 {renderFoodItemContent({
                                   ...item,
                                   name: HOUSING_WASTE_LABEL_BY_KEY[item.itemKey] || item.name
@@ -4515,7 +4705,10 @@ export default function HousingInteriorView({
                                 <button
                                   type="button"
                                   className="button button--ghost button--compact housing-interior-placeholder-move-button"
-                                  onClick={() => disposeHousingWaste?.(item.itemKey)}
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    disposeHousingWaste?.(item.itemKey);
+                                  }}
                                 >
                                   배출
                                 </button>
@@ -5069,10 +5262,20 @@ export default function HousingInteriorView({
                       {housingInteriorFridgeStoredRows.map((item) => {
                         const moveId = `fridge:${item.itemKey}`;
                         return (
-                          <div key={`housing-fridge-${item.itemKey}`} className={`housing-interior-placeholder-item ${fridgeMoveClassOf(moveId)}`.trim()}>
+                          <div
+                            key={`housing-fridge-${item.itemKey}`}
+                            className={`housing-interior-placeholder-item housing-interior-placeholder-item--clickable ${fridgeMoveClassOf(moveId)}`.trim()}
+                            role="button"
+                            tabIndex={0}
+                            title="상세정보 보기"
+                            onClick={() => openHousingStorageItemDetail(item, '냉장실')}
+                            onKeyDown={(event) => handleHousingStorageItemCardKeyDown(event, item, '냉장실')}
+                          >
                             {renderFoodItemContent({
                               ...item,
-                              expiry: housingFoodExpiryByColdStorage.fridge?.[item.itemKey] || null
+                              expiry: HOUSING_ICE_CREAM_ITEM_KEY_SET.has(String(item.itemKey || ''))
+                                ? { tone: 'melted', label: '💧 녹음' }
+                                : (housingFoodExpiryByColdStorage.fridge?.[item.itemKey] || null)
                             })}
                             {fridgeStorageModeOn ? (
                             <div className="housing-interior-placeholder-move-actions">
@@ -5081,17 +5284,20 @@ export default function HousingInteriorView({
                                 className="button button--ghost button--compact housing-interior-placeholder-move-button"
                                 title={selectedColdStorageMoveTarget?.title || '이동할 보관처 없음'}
                                 disabled={Boolean(fridgeMovingItem) || !selectedColdStorageMoveTarget}
-                                onClick={() => runFridgeMoveAnimation({
-                                  id: moveId,
-                                  direction: 'to-fridge',
-                                  action: () => moveFoodItemFromHousingColdStorage?.({
-                                    from: 'fridge',
-                                    targetType: selectedColdStorageMoveTarget?.targetType,
-                                    targetKey: selectedColdStorageMoveTarget?.targetKey,
-                                    targetName: selectedColdStorageMoveTarget?.targetName,
-                                    itemKey: item.itemKey
-                                  })
-                                })}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  runFridgeMoveAnimation({
+                                    id: moveId,
+                                    direction: 'to-fridge',
+                                    action: () => moveFoodItemFromHousingColdStorage?.({
+                                      from: 'fridge',
+                                      targetType: selectedColdStorageMoveTarget?.targetType,
+                                      targetKey: selectedColdStorageMoveTarget?.targetKey,
+                                      targetName: selectedColdStorageMoveTarget?.targetName,
+                                      itemKey: item.itemKey
+                                    })
+                                  });
+                                }}
                               >
                                 {selectedColdStorageMoveTarget?.icon || '↩'}
                               </button>
@@ -5100,15 +5306,18 @@ export default function HousingInteriorView({
                                 className="button button--ghost button--compact housing-interior-placeholder-move-button"
                                 title="냉동실로 이동"
                                 disabled={Boolean(fridgeMovingItem)}
-                                onClick={() => runFridgeMoveAnimation({
-                                  id: moveId,
-                                  direction: 'to-freezer',
-                                  action: () => moveFoodItemBetweenHousingColdStorage?.({
-                                    from: 'fridge',
-                                    to: 'freezer',
-                                    itemKey: item.itemKey
-                                  })
-                                })}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  runFridgeMoveAnimation({
+                                    id: moveId,
+                                    direction: 'to-freezer',
+                                    action: () => moveFoodItemBetweenHousingColdStorage?.({
+                                      from: 'fridge',
+                                      to: 'freezer',
+                                      itemKey: item.itemKey
+                                    })
+                                  });
+                                }}
                               >
                                 ❄️
                               </button>
@@ -5145,10 +5354,18 @@ export default function HousingInteriorView({
                       {housingInteriorFreezerStoredRows.map((item) => {
                         const moveId = `freezer:${item.itemKey}`;
                         return (
-                          <div key={`housing-freezer-${item.itemKey}`} className={`housing-interior-placeholder-item ${fridgeMoveClassOf(moveId)}`.trim()}>
+                          <div
+                            key={`housing-freezer-${item.itemKey}`}
+                            className={`housing-interior-placeholder-item housing-interior-placeholder-item--clickable ${fridgeMoveClassOf(moveId)}`.trim()}
+                            role="button"
+                            tabIndex={0}
+                            title="상세정보 보기"
+                            onClick={() => openHousingStorageItemDetail(item, '냉동실')}
+                            onKeyDown={(event) => handleHousingStorageItemCardKeyDown(event, item, '냉동실')}
+                          >
                             {renderFoodItemContent({
                               ...item,
-                              expiry: housingFoodExpiryByColdStorage.freezer?.[item.itemKey] || null
+                              expiry: housingFoodExpiryByColdStorage.freezer?.[item.itemKey] || { tone: 'frozen', label: '❄️ 냉동됨' }
                             })}
                             {fridgeStorageModeOn ? (
                             <div className="housing-interior-placeholder-move-actions">
@@ -5157,17 +5374,20 @@ export default function HousingInteriorView({
                                 className="button button--ghost button--compact housing-interior-placeholder-move-button"
                                 title={selectedColdStorageMoveTarget?.title || '이동할 보관처 없음'}
                                 disabled={Boolean(fridgeMovingItem) || !selectedColdStorageMoveTarget}
-                                onClick={() => runFridgeMoveAnimation({
-                                  id: moveId,
-                                  direction: 'to-fridge',
-                                  action: () => moveFoodItemFromHousingColdStorage?.({
-                                    from: 'freezer',
-                                    targetType: selectedColdStorageMoveTarget?.targetType,
-                                    targetKey: selectedColdStorageMoveTarget?.targetKey,
-                                    targetName: selectedColdStorageMoveTarget?.targetName,
-                                    itemKey: item.itemKey
-                                  })
-                                })}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  runFridgeMoveAnimation({
+                                    id: moveId,
+                                    direction: 'to-fridge',
+                                    action: () => moveFoodItemFromHousingColdStorage?.({
+                                      from: 'freezer',
+                                      targetType: selectedColdStorageMoveTarget?.targetType,
+                                      targetKey: selectedColdStorageMoveTarget?.targetKey,
+                                      targetName: selectedColdStorageMoveTarget?.targetName,
+                                      itemKey: item.itemKey
+                                    })
+                                  });
+                                }}
                               >
                                 {selectedColdStorageMoveTarget?.icon || '↩'}
                               </button>
@@ -5176,15 +5396,18 @@ export default function HousingInteriorView({
                                 className="button button--ghost button--compact housing-interior-placeholder-move-button"
                                 title="냉장실로 이동"
                                 disabled={Boolean(fridgeMovingItem)}
-                                onClick={() => runFridgeMoveAnimation({
-                                  id: moveId,
-                                  direction: 'to-fridge',
-                                  action: () => moveFoodItemBetweenHousingColdStorage?.({
-                                    from: 'freezer',
-                                    to: 'fridge',
-                                    itemKey: item.itemKey
-                                  })
-                                })}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  runFridgeMoveAnimation({
+                                    id: moveId,
+                                    direction: 'to-fridge',
+                                    action: () => moveFoodItemBetweenHousingColdStorage?.({
+                                      from: 'freezer',
+                                      to: 'fridge',
+                                      itemKey: item.itemKey
+                                    })
+                                  });
+                                }}
                               >
                                 🧊
                               </button>
@@ -5340,6 +5563,62 @@ export default function HousingInteriorView({
                 ) : null}
               </div>
               </SmoothHeightPanel>
+            ) : housingInteriorPendingObject.key === 'exercise' ? (
+              <div className="housing-interior-exercise-panel">
+                <div className="housing-interior-exercise-summary">
+                  <div>
+                    <span>{`${housingExerciseInfo?.phaseLabel || '주간'} 운동`}</span>
+                    <strong>{`${Math.max(0, Number(housingExerciseInfo?.count) || 0)}/${Math.max(1, Number(housingExerciseInfo?.limit) || 1)}`}</strong>
+                  </div>
+                  <div>
+                    <span>현재 몸상태</span>
+                    <strong>{healthStatus.label}</strong>
+                  </div>
+                  <small>{housingExerciseInfo?.activeBuffText || '적용 중인 운동 보정 없음'}</small>
+                </div>
+                <div className="housing-interior-exercise-grid">
+                  {(housingExerciseInfo?.rows || []).map((exercise) => {
+                    const exerciseReasons = Array.isArray(exercise.reasons) ? exercise.reasons : [exercise.reason].filter(Boolean);
+                    const onlyCooldownBlocked = exerciseReasons.length === 1 && exerciseReasons[0] === '운동 쿨타임 대기';
+                    const exerciseEnabledNow = Boolean(exercise.enabled) || (onlyCooldownBlocked && exerciseCooldownRemainingMs <= 0);
+                    const exerciseReasonText = onlyCooldownBlocked && exerciseCooldownRemainingMs > 0
+                      ? `다음 운동까지 ${exerciseCooldownLabel} 남음`
+                      : (exerciseEnabledNow ? '운동 가능' : exercise.reason);
+                    return (
+                      <div
+                        key={`housing-exercise-${exercise.key}`}
+                        className={`housing-interior-exercise-card ${exerciseEnabledNow ? 'is-ready' : 'is-disabled'}`.trim()}
+                      >
+                        <div className="housing-interior-exercise-card__head">
+                          <strong>{exercise.name}</strong>
+                          <span>{exercise.durationLabel}</span>
+                        </div>
+                        <p>{exercise.desc}</p>
+                        <div className="housing-interior-exercise-card__effects">
+                          <span>{`노동력 -${Number(exercise.laborCost || 0).toFixed(1)}`}</span>
+                          <span>{`건강 ${formatHealthDelta(exercise.healthGain)}`}</span>
+                          <span>{`수면 +${Math.max(0, Number(exercise.sleepBonus) || 0)}`}</span>
+                          <span>{`사고위험 -${Math.max(0, Math.round((1 - Number(exercise.accidentRiskMultiplier || 1)) * 100))}%`}</span>
+                        </div>
+                        <div className="housing-interior-exercise-card__footer">
+                          <small>{exerciseReasonText}</small>
+                          <button
+                            type="button"
+                            className="button button--primary button--compact"
+                            disabled={!exerciseEnabledNow}
+                            onClick={() => exerciseHousing?.(exercise.key)}
+                          >
+                            운동하기
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="housing-interior-hvac-note">
+                  운동은 주간 2회, 야간 1회까지 가능하며 운동 사이에는 2분 쿨타임이 있습니다. 즉시 건강이 조금 오르고, 다음 수면품질과 작업 사고 위험에 작은 보정이 붙습니다.
+                </p>
+              </div>
             ) : (
               <div className="confirm-modal__desc">
                 {isHousingInteriorWindowPreviewOpen

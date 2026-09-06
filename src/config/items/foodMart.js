@@ -953,6 +953,24 @@ export const FOOD_MART_ITEMS = [
     weightKg: 2.7
   },
   {
+    key: 'foodTrashBag20L',
+    name: '종량제봉투 20L',
+    price: 120,
+    desc: '하우징 생활쓰레기 배출에 쓰는 봉투',
+    unit: '장',
+    subgroup: 'living',
+    weightKg: 0.012
+  },
+  {
+    key: 'foodFoodWasteBag5L',
+    name: '음식물 쓰레기봉투 5L',
+    price: 80,
+    desc: '하우징 음식물 쓰레기 배출에 쓰는 봉투',
+    unit: '장',
+    subgroup: 'living',
+    weightKg: 0.006
+  },
+  {
     key: 'foodButaneGasCan220g',
     name: '부탄가스 220g',
     price: 1800,

@@ -1048,6 +1048,7 @@ export const normalizeHousingFoodStorageByItemKey = (rawCargo = {}) => {
 };
 
 const HOUSING_FOOD_SHELF_LIFE_BY_ITEM_KEY = Object.freeze({
+  foodIceCreamBar6Pack: { room: 1, fridge: 1, freezer: 45 },
   foodWater2L: { room: 180, fridge: 180, freezer: 0 },
   foodSportsDrink15L: { room: 120, fridge: 120, freezer: 0 },
   foodCanCoffee: { room: 180, fridge: 180, freezer: 0 },
@@ -1154,6 +1155,7 @@ const HOUSING_FOOD_DEFAULT_SHELF_LIFE_BY_SUBGROUP = Object.freeze({
 });
 
 const HOUSING_FOOD_DEFAULT_SHELF_LIFE = Object.freeze({ room: 30, fridge: 45, freezer: 0 });
+const HOUSING_ICE_CREAM_ITEM_KEY_SET = new Set(['foodIceCreamBar6Pack']);
 
 export const housingFoodShelfLifeDaysOf = (itemKeyRaw = '', storageTypeRaw = 'fridge') => {
   const itemKey = String(itemKeyRaw || '');
@@ -1322,10 +1324,21 @@ export const housingFoodStorageExpirySummaryOf = ({
   batchesByFacilityKey = {},
   facilityKey = '',
   itemKey = '',
-  day = 1
+  day = 1,
+  storageType = ''
 } = {}) => {
   const normalized = normalizeHousingFoodStorageBatchesByFacilityKey(batchesByFacilityKey);
-  const rows = normalized?.[String(facilityKey || '')]?.[String(itemKey || '')] || [];
+  const targetItemKey = String(itemKey || '');
+  const normalizedStorageType = String(storageType || '') === 'freezer'
+    ? 'freezer'
+    : (String(storageType || '') === 'room' ? 'room' : 'fridge');
+  if (HOUSING_ICE_CREAM_ITEM_KEY_SET.has(targetItemKey) && normalizedStorageType === 'freezer') {
+    return { tone: 'frozen', label: '❄️ 냉동됨', expireDay: 0, remainDays: null };
+  }
+  if (HOUSING_ICE_CREAM_ITEM_KEY_SET.has(targetItemKey) && normalizedStorageType !== 'freezer') {
+    return { tone: 'melted', label: '💧 녹음', expireDay: Math.max(1, Math.floor(Number(day) || 1)), remainDays: 0 };
+  }
+  const rows = normalized?.[String(facilityKey || '')]?.[targetItemKey] || [];
   if (!rows.length) return null;
   const today = Math.max(1, Math.floor(Number(day) || 1));
   const datedRows = rows.filter((row) => Math.max(0, Number(row.expireDay) || 0) > 0);
@@ -1349,12 +1362,14 @@ export const expireHousingFoodStorageBatchesForField = ({
     {
       storageKey: 'housingFoodStorageByFacilityKey',
       batchKey: 'housingFoodStorageBatchesByFacilityKey',
-      label: '냉장실'
+      label: '냉장실',
+      storageType: 'fridge'
     },
     {
       storageKey: 'housingFreezerFoodStorageByFacilityKey',
       batchKey: 'housingFreezerFoodStorageBatchesByFacilityKey',
-      label: '냉동실'
+      label: '냉동실',
+      storageType: 'freezer'
     }
   ];
   let nextField = field;
@@ -1375,7 +1390,8 @@ export const expireHousingFoodStorageBatchesForField = ({
           const expireDay = Math.max(0, Math.floor(Number(row?.expireDay) || 0));
           const qty = Math.max(0, Number(row?.qty) || 0);
           if (qty <= 0) return;
-          if (expireDay > 0 && expireDay < today) {
+          const isMeltedIceCream = HOUSING_ICE_CREAM_ITEM_KEY_SET.has(String(itemKey || '')) && String(config.storageType || '') !== 'freezer' && Math.max(1, Math.floor(Number(row?.storedDay) || 1)) < today;
+          if (isMeltedIceCream || (expireDay > 0 && expireDay < today)) {
             expiredQty = Math.round((expiredQty + qty) * 10000) / 10000;
             changed = true;
           } else {
@@ -1389,7 +1405,10 @@ export const expireHousingFoodStorageBatchesForField = ({
           else delete storageInventory[itemKey];
           const itemName = String(itemMetaByKey?.[itemKey]?.name || FOOD_MART_META_BY_KEY?.[itemKey]?.name || itemKey);
           const unit = String(itemMetaByKey?.[itemKey]?.unit || FOOD_MART_META_BY_KEY?.[itemKey]?.unit || '');
-          logs.push(`${field?.name || '필지'} ${facilityKey} ${config.label} 유통기한 만료 폐기: ${itemName} ${Math.round(expiredQty * 100) / 100}${unit}`);
+          const disposeReasonText = HOUSING_ICE_CREAM_ITEM_KEY_SET.has(String(itemKey || '')) && String(config.storageType || '') !== 'freezer'
+            ? '녹아서 폐기'
+            : '유통기한 만료 폐기';
+          logs.push(`${field?.name || '필지'} ${facilityKey} ${config.label} ${disposeReasonText}: ${itemName} ${Math.round(expiredQty * 100) / 100}${unit}`);
         }
         if (keptRows.length) nextFacilityBatches[itemKey] = keptRows;
       });

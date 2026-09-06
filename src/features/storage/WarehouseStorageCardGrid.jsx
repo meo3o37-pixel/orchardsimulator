@@ -455,7 +455,16 @@ function WarehouseStorageCard({
       style={canOpenWarehouseDetail ? { cursor: 'pointer', ...(selectedCardStyle || {}) } : selectedCardStyle}
       title={canOpenWarehouseDetail ? '눌러서 상세정보 확인' : undefined}
       onClick={(event) => {
-        if (!canOpenWarehouseDetail || shouldIgnoreDetailCardOpen(event.target)) return;
+        const closestRoleButton = event.target instanceof Element
+          ? event.target.closest('[role="button"]')
+          : null;
+        if (
+          !canOpenWarehouseDetail
+          || (
+            shouldIgnoreDetailCardOpen(event.target)
+            && closestRoleButton !== event.currentTarget
+          )
+        ) return;
         openDetail();
       }}
       onKeyDown={(event) => {

@@ -20,6 +20,7 @@
     "auto-backup:5m": "powershell -ExecutionPolicy Bypass -File scripts/auto-backup.ps1 -IntervalSec 300"
   },
   "dependencies": {
+    "html-to-image": "^1.11.13",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
