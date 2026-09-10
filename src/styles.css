@@ -3232,6 +3232,23 @@ button {
   display: block;
 }
 
+.facility-estimate-card__thumb-button {
+  pointer-events: auto;
+  cursor: pointer;
+  padding: 0;
+}
+
+.facility-estimate-card__thumb-button:hover {
+  border-color: rgba(47, 127, 88, 0.42);
+  background: rgba(237, 248, 235, 0.96);
+  transform: translateY(-1px);
+}
+
+.facility-estimate-card__thumb-button:focus-visible {
+  outline: 3px solid rgba(47, 127, 88, 0.18);
+  outline-offset: 2px;
+}
+
 .option-card.shop-tool-card--has-image[data-land-facility-drag-armed] .footer-actions {
   max-width: calc(100% - 86px);
   align-items: flex-start;
@@ -22600,8 +22617,8 @@ body.is-resizing-animation-lab-preview * {
   transform: scale(0.4);
 }
 
-.shop-item-detail-modal__hero .shop-can-preview .fuel-jerrycan {
-  transform: scale(1.7);
+.shop-item-detail-modal__hero .shop-can-preview--detail .fuel-jerrycan {
+  transform: scale(1.15);
   transform-origin: center;
 }
 
@@ -28783,11 +28800,116 @@ button.small-apc-receiving-queue__item:hover {
   overflow-x: hidden;
 }
 
-.housing-facility-card-grid {
+.housing-facility-carousel {
+  position: relative;
   margin-top: 10px;
+  min-height: 620px;
+}
+
+.housing-facility-card-grid {
   grid-template-columns: minmax(0, 1fr);
   gap: 18px;
   align-items: stretch;
+}
+
+.housing-facility-card-grid--enter-forward {
+  animation: housing-facility-slide-in-forward 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.housing-facility-card-grid--enter-backward {
+  animation: housing-facility-slide-in-backward 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes housing-facility-slide-in-forward {
+  0% {
+    opacity: 0;
+    transform: translateX(52px) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes housing-facility-slide-in-backward {
+  0% {
+    opacity: 0;
+    transform: translateX(-52px) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.housing-facility-carousel__nav {
+  position: absolute;
+  top: 41%;
+  z-index: 4;
+  width: 54px;
+  height: 86px;
+  display: grid;
+  place-items: center;
+  padding: 0 0 8px;
+  border: 1px solid rgba(90, 119, 83, 0.26);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 249, 0.92), rgba(237, 242, 232, 0.82)),
+    rgba(255, 255, 255, 0.84);
+  color: #2f684a;
+  font-size: 3.2rem;
+  font-weight: 800;
+  line-height: 0.82;
+  box-shadow:
+    0 14px 28px rgba(33, 50, 35, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86);
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.housing-facility-carousel__nav--prev {
+  left: 20px;
+}
+
+.housing-facility-carousel__nav--next {
+  right: 20px;
+}
+
+.housing-facility-carousel__nav:hover:not(:disabled) {
+  border-color: rgba(55, 109, 78, 0.48);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 251, 0.98), rgba(227, 241, 225, 0.94)),
+    rgba(255, 255, 255, 0.92);
+  color: #1f573c;
+  transform: translateY(-50%) scale(1.03);
+}
+
+.housing-facility-carousel__nav:focus-visible {
+  outline: 3px solid rgba(58, 128, 87, 0.24);
+  outline-offset: 3px;
+}
+
+.housing-facility-carousel__nav:disabled {
+  opacity: 0.34;
+  cursor: default;
+  box-shadow: none;
+}
+
+.housing-facility-carousel__count {
+  position: absolute;
+  right: 38px;
+  bottom: 28px;
+  z-index: 4;
+  min-width: 62px;
+  padding: 7px 10px;
+  border: 1px solid rgba(100, 126, 91, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 249, 0.76);
+  color: rgba(49, 84, 61, 0.72);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-align: center;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
 }
 
 .housing-facility-card {
@@ -28798,6 +28920,15 @@ button.small-apc-receiving-queue__item:hover {
   display: grid;
   grid-template-rows: minmax(330px, 1fr) auto;
   gap: 18px;
+}
+
+.housing-facility-card--detail-clickable {
+  cursor: pointer;
+}
+
+.housing-facility-card--detail-clickable:focus-visible {
+  outline: 3px solid rgba(58, 128, 87, 0.24);
+  outline-offset: 4px;
 }
 
 .housing-facility-card.option-card--housing-facility {
@@ -28859,6 +28990,10 @@ button.small-apc-receiving-queue__item:hover {
   align-items: stretch;
 }
 
+.housing-facility-card__detail-grid--support {
+  grid-template-columns: minmax(0, 1fr) minmax(150px, 0.42fr);
+}
+
 .housing-facility-card__detail-item {
   min-width: 0;
   padding: 13px 15px;
@@ -28872,6 +29007,10 @@ button.small-apc-receiving-queue__item:hover {
 }
 
 .housing-facility-card__detail-item:nth-child(3) {
+  text-align: center;
+}
+
+.housing-facility-card__detail-grid--support .housing-facility-card__detail-item:last-child {
   text-align: center;
 }
 
@@ -35722,6 +35861,68 @@ button.small-apc-receiving-queue__item:hover {
   line-height: 1.25;
 }
 
+.housing-interior-clothing-dirt-meter {
+  width: 100%;
+  display: grid;
+  gap: 5px;
+  margin-top: 2px;
+}
+
+.housing-interior-clothing-dirt-meter__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  color: rgba(45, 70, 53, 0.72);
+  font-size: 0.68rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.housing-interior-clothing-dirt-meter__head span,
+.housing-interior-clothing-dirt-meter__head em {
+  color: inherit;
+  font: inherit;
+  font-style: normal;
+  white-space: nowrap;
+}
+
+.housing-interior-clothing-dirt-meter__track {
+  height: 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(92, 74, 52, 0.14);
+  background:
+    linear-gradient(180deg, rgba(232, 239, 232, 0.8), rgba(246, 244, 236, 0.86));
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(52, 45, 34, 0.1);
+}
+
+.housing-interior-clothing-dirt-meter__track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #c69a5c, #7c4f28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.housing-interior-clothing-dirt-meter.is-clean .housing-interior-clothing-dirt-meter__track i {
+  background: linear-gradient(90deg, #8dc9df, #3a93c5);
+}
+
+.housing-interior-clothing-dirt-meter.is-normal .housing-interior-clothing-dirt-meter__track i {
+  background: linear-gradient(90deg, #b6c89f, #789665);
+}
+
+.housing-interior-clothing-dirt-meter.is-warn .housing-interior-clothing-dirt-meter__track i {
+  background: linear-gradient(90deg, #d7ba76, #9c7741);
+}
+
+.housing-interior-clothing-dirt-meter.is-bad .housing-interior-clothing-dirt-meter__track i,
+.housing-interior-clothing-dirt-meter.is-critical .housing-interior-clothing-dirt-meter__track i {
+  background: linear-gradient(90deg, #b6824c, #6f4526);
+}
+
 .housing-interior-water-source-status-badge {
   display: inline-flex;
   align-items: center;
@@ -37009,9 +37210,67 @@ button.small-apc-receiving-queue__item:hover {
     rgba(255, 255, 250, 0.58);
 }
 
-.housing-interior-exercise-summary div {
+.housing-interior-exercise-summary > div {
   display: grid;
   gap: 4px;
+}
+
+.housing-interior-exercise-quota {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.housing-interior-exercise-quota__group {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+  padding: 9px 10px;
+  border: 1px solid rgba(71, 109, 86, 0.14);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(245, 249, 240, 0.62));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.housing-interior-exercise-quota__group.is-active {
+  border-color: rgba(47, 127, 88, 0.34);
+  background:
+    linear-gradient(180deg, rgba(238, 249, 239, 0.94), rgba(255, 253, 246, 0.72));
+}
+
+.housing-interior-exercise-quota__group span {
+  color: rgba(37, 68, 49, 0.72);
+  font-size: 0.74rem;
+  font-weight: 950;
+}
+
+.housing-interior-exercise-quota__bars {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(28px, 1fr));
+  gap: 6px;
+  align-items: center;
+}
+
+.housing-interior-exercise-quota__group:last-child .housing-interior-exercise-quota__bars {
+  grid-template-columns: minmax(36px, 1fr);
+}
+
+.housing-interior-exercise-quota__bars i {
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(47, 84, 61, 0.16);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.55),
+    0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.housing-interior-exercise-quota__bars i.is-used {
+  background:
+    linear-gradient(90deg, #2f7f58, #6faa64);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 4px 9px rgba(47, 127, 88, 0.22);
 }
 
 .housing-interior-exercise-summary span,
@@ -37516,6 +37775,14 @@ button.small-apc-receiving-queue__item:hover {
   background: linear-gradient(90deg, #d98a62, #ad4b39);
 }
 
+.housing-interior-living-detail-meter__fill.housing-interior-bathroom-cleanliness-fill {
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--bathroom-cleanliness-fill, #4fb7d3) 72%, #ffffff 28%), var(--bathroom-cleanliness-fill, #4fb7d3));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    0 4px 10px color-mix(in srgb, var(--bathroom-cleanliness-fill, #4fb7d3) 36%, transparent);
+}
+
 .housing-interior-living-detail-summary > small,
 .housing-interior-living-detail-item > small {
   color: #72877a;
@@ -37586,6 +37853,467 @@ button.small-apc-receiving-queue__item:hover {
   font-size: 17px;
   font-weight: 900;
   line-height: 1.25;
+}
+
+.housing-interior-tv-panel {
+  display: grid;
+  gap: 16px;
+}
+
+.housing-interior-tv-hero {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(180px, 0.42fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.housing-interior-tv-hero__screen {
+  min-height: 190px;
+  border: 1px solid rgba(41, 71, 64, 0.18);
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(96, 170, 192, 0.24), transparent 42%),
+    linear-gradient(145deg, rgba(27, 45, 45, 0.92), rgba(12, 22, 24, 0.96));
+  box-shadow:
+    0 18px 34px rgba(23, 40, 36, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+}
+
+.housing-interior-tv-hero__screen img {
+  max-width: min(76%, 230px);
+  max-height: 160px;
+  object-fit: contain;
+  filter: drop-shadow(0 16px 22px rgba(0, 0, 0, 0.28));
+}
+
+.housing-interior-tv-hero__screen span {
+  font-size: 64px;
+  filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.32));
+}
+
+.housing-interior-tv-hero__info {
+  min-width: 0;
+  padding: 22px 24px;
+  border: 1px solid rgba(50, 92, 67, 0.14);
+  border-radius: 18px;
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 248, 0.88), rgba(236, 247, 235, 0.58)),
+    rgba(255, 255, 250, 0.5);
+  box-shadow:
+    0 16px 32px rgba(34, 58, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.housing-interior-tv-hero__info span {
+  color: rgba(33, 76, 53, 0.68);
+  font-size: 0.82rem;
+  font-weight: 950;
+}
+
+.housing-interior-tv-hero__info strong {
+  color: #214c35;
+  font-size: 1.45rem;
+  font-weight: 950;
+  line-height: 1.18;
+  overflow-wrap: anywhere;
+}
+
+.housing-interior-tv-hero__info small,
+.housing-interior-tv-hero__info em {
+  color: rgba(33, 76, 53, 0.68);
+  font-size: 0.9rem;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1.45;
+  word-break: keep-all;
+}
+
+.housing-interior-tv-hero__info em {
+  color: #2f7f58;
+  font-weight: 900;
+}
+
+.housing-interior-tv-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.housing-interior-tv-action-card {
+  min-width: 0;
+  min-height: 150px;
+  padding: 16px;
+  border: 1px solid rgba(50, 92, 67, 0.14);
+  border-radius: 16px;
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 7px;
+  color: #214c35;
+  text-align: left;
+  background: rgba(255, 255, 250, 0.72);
+  box-shadow:
+    0 12px 24px rgba(34, 58, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+}
+
+.housing-interior-tv-action-card:hover,
+.housing-interior-tv-action-card:focus-visible {
+  border-color: rgba(47, 127, 88, 0.34);
+  background: rgba(244, 250, 240, 0.9);
+  transform: translateY(-1px);
+}
+
+.housing-interior-tv-action-card:focus-visible {
+  outline: 3px solid rgba(47, 127, 88, 0.18);
+  outline-offset: 2px;
+}
+
+.housing-interior-tv-action-card > span {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: inline-grid;
+  place-items: center;
+  background: rgba(238, 248, 235, 0.9);
+  font-size: 20px;
+}
+
+.housing-interior-tv-action-card strong {
+  color: currentColor;
+  font-size: 1rem;
+  font-weight: 950;
+}
+
+.housing-interior-tv-action-card small,
+.housing-interior-tv-action-card em,
+.housing-interior-tv-action-card b {
+  color: rgba(33, 76, 53, 0.66);
+  font-size: 0.78rem;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1.35;
+  word-break: keep-all;
+}
+
+.housing-interior-tv-action-card em {
+  color: #2f7f58;
+  font-weight: 950;
+}
+
+.housing-interior-tv-action-card b {
+  align-self: end;
+  padding-top: 4px;
+  color: rgba(33, 76, 53, 0.52);
+}
+
+.housing-interior-tv-action-card.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.housing-interior-tv-weather {
+  padding: 16px;
+  border: 1px solid rgba(50, 92, 67, 0.12);
+  border-radius: 18px;
+  background:
+    linear-gradient(145deg, rgba(245, 252, 249, 0.72), rgba(255, 251, 240, 0.54)),
+    rgba(255, 255, 250, 0.48);
+}
+
+.housing-interior-tv-weather__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  color: #214c35;
+}
+
+.housing-interior-tv-weather__head span,
+.housing-interior-tv-weather__head strong {
+  font-size: 0.95rem;
+  font-weight: 950;
+}
+
+.housing-interior-tv-weather__grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.housing-interior-tv-weather-card {
+  min-width: 0;
+  min-height: 120px;
+  padding: 12px 10px;
+  border: 1px solid rgba(50, 92, 67, 0.12);
+  border-radius: 14px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 5px;
+  text-align: center;
+  background: rgba(255, 255, 250, 0.62);
+}
+
+.housing-interior-tv-weather-card span {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.housing-interior-tv-weather-card strong {
+  color: #214c35;
+  font-size: 0.86rem;
+  font-weight: 950;
+  line-height: 1.2;
+}
+
+.housing-interior-tv-weather-card small,
+.housing-interior-tv-weather-card em,
+.housing-interior-tv-weather-card b {
+  color: rgba(33, 76, 53, 0.62);
+  font-size: 0.7rem;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1.25;
+  word-break: keep-all;
+}
+
+.housing-interior-tv-weather-card em {
+  color: rgba(33, 76, 53, 0.76);
+}
+
+.housing-interior-bathroom-source-panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  min-height: 300px;
+  align-items: stretch;
+}
+
+.housing-interior-bathroom-source-card-wrap {
+  position: relative;
+  min-width: 0;
+  display: grid;
+}
+
+.housing-interior-bathroom-source-card {
+  width: 100%;
+  min-height: 270px;
+  padding: 28px 24px;
+  border: 1px solid rgba(50, 92, 67, 0.16);
+  border-radius: 18px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 12px;
+  color: #244d38;
+  text-align: center;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 248, 0.9), rgba(236, 247, 235, 0.62)),
+    rgba(255, 255, 250, 0.5);
+  box-shadow:
+    0 16px 32px rgba(34, 58, 42, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.76);
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.housing-interior-bathroom-source-card-wrap.has-pager .housing-interior-bathroom-source-card {
+  padding-inline: 64px;
+}
+
+.housing-interior-bathroom-source-card:hover,
+.housing-interior-bathroom-source-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(47, 124, 77, 0.34);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 248, 0.96), rgba(222, 243, 226, 0.74)),
+    rgba(255, 255, 250, 0.62);
+  box-shadow:
+    0 20px 38px rgba(34, 58, 42, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.84);
+}
+
+.housing-interior-bathroom-source-card:focus-visible {
+  outline: 3px solid rgba(55, 126, 84, 0.24);
+  outline-offset: 3px;
+}
+
+.housing-interior-bathroom-source-card.is-disabled {
+  color: rgba(72, 86, 74, 0.48);
+  background: rgba(240, 241, 235, 0.54);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
+}
+
+.housing-interior-bathroom-source-card.is-disabled:hover {
+  transform: none;
+  border-color: rgba(50, 92, 67, 0.12);
+}
+
+.housing-interior-bathroom-source-card__icon {
+  width: 74px;
+  height: 74px;
+  border-radius: 20px;
+  display: inline-grid;
+  place-items: center;
+  font-size: 36px;
+  background: rgba(255, 255, 251, 0.72);
+  border: 1px solid rgba(50, 92, 67, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+}
+
+.housing-interior-bathroom-source-card strong {
+  color: currentColor;
+  font-size: 24px;
+  font-weight: 950;
+  line-height: 1.18;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.housing-interior-bathroom-source-card strong span {
+  font-size: 1.08em;
+  line-height: 1;
+}
+
+.housing-interior-bathroom-source-card em {
+  color: currentColor;
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 850;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.housing-interior-bathroom-source-card small {
+  max-width: 260px;
+  color: rgba(83, 100, 88, 0.72);
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.45;
+  word-break: keep-all;
+}
+
+.housing-interior-bathroom-source-nav {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  width: 42px;
+  height: 68px;
+  padding: 0 0 6px;
+  border: 1px solid rgba(50, 92, 67, 0.16);
+  border-radius: 16px;
+  display: inline-grid;
+  place-items: center;
+  color: #2f7758;
+  font-family: inherit;
+  font-size: 42px;
+  font-weight: 900;
+  line-height: 0.82;
+  background: rgba(255, 255, 250, 0.72);
+  box-shadow:
+    0 12px 24px rgba(34, 58, 42, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.74);
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.housing-interior-bathroom-source-nav:hover,
+.housing-interior-bathroom-source-nav:focus-visible {
+  color: #245f45;
+  border-color: rgba(47, 124, 77, 0.32);
+  background: rgba(255, 255, 250, 0.9);
+  transform: translateY(-50%) scale(1.04);
+}
+
+.housing-interior-bathroom-source-nav:focus-visible {
+  outline: 3px solid rgba(55, 126, 84, 0.24);
+  outline-offset: 2px;
+}
+
+.housing-interior-bathroom-source-nav--prev {
+  left: 14px;
+}
+
+.housing-interior-bathroom-source-nav--next {
+  right: 14px;
+}
+
+.housing-interior-bathroom-source-count {
+  position: absolute;
+  right: 18px;
+  bottom: 16px;
+  z-index: 2;
+  padding: 4px 9px;
+  border-radius: 999px;
+  color: rgba(43, 80, 58, 0.84);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  background: rgba(255, 255, 250, 0.68);
+  border: 1px solid rgba(50, 92, 67, 0.12);
+}
+
+@media (max-width: 720px) {
+  .housing-interior-tv-hero,
+  .housing-interior-tv-actions,
+  .housing-interior-tv-weather__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .housing-interior-tv-hero__screen {
+    min-height: 150px;
+  }
+
+  .housing-interior-bathroom-source-panel {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .housing-interior-bathroom-source-card {
+    min-height: 180px;
+    padding: 22px 18px;
+  }
+
+  .housing-interior-bathroom-source-card-wrap.has-pager .housing-interior-bathroom-source-card {
+    padding-inline: 52px;
+  }
+
+  .housing-interior-bathroom-source-nav {
+    width: 36px;
+    height: 58px;
+    font-size: 36px;
+  }
+
+  .housing-interior-bathroom-source-nav--prev {
+    left: 10px;
+  }
+
+  .housing-interior-bathroom-source-nav--next {
+    right: 10px;
+  }
 }
 
 .confirm-modal--housing-indoor-temperature {
@@ -37659,6 +38387,42 @@ button.small-apc-receiving-queue__item:hover {
   color: rgba(33, 76, 53, 0.72);
   font-size: 0.86rem;
   font-weight: 900;
+}
+
+.housing-interior-day-advance-head {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  min-height: 30px;
+}
+
+.housing-interior-help-button {
+  width: 28px;
+  height: 28px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid rgba(47, 127, 88, 0.22);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.72);
+  color: #2f6f4e;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 950;
+  line-height: 1;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.housing-interior-help-button:hover {
+  border-color: rgba(47, 127, 88, 0.42);
+  background: rgba(237, 248, 235, 0.92);
+  transform: translateY(-1px);
+}
+
+.housing-interior-help-button:focus-visible {
+  outline: 3px solid rgba(47, 127, 88, 0.18);
+  outline-offset: 2px;
 }
 
 .housing-interior-day-advance-control {
@@ -37784,6 +38548,193 @@ button.small-apc-receiving-queue__item:hover {
   font-size: 1.16rem;
   font-weight: 950;
   line-height: 1;
+}
+
+.housing-interior-day-advance-settings {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  width: min(680px, 100%);
+  margin: 2px auto 0;
+  padding: 14px;
+  border: 1px solid rgba(71, 109, 86, 0.14);
+  border-radius: 16px;
+  background: rgba(255, 255, 251, 0.52);
+}
+
+.housing-interior-day-advance-settings__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 12px;
+  width: 100%;
+  color: rgba(33, 76, 53, 0.68);
+  text-align: center;
+}
+
+.housing-interior-day-advance-settings__head span,
+.housing-interior-day-advance-settings__head strong {
+  font-size: 0.86rem;
+  font-weight: 900;
+}
+
+.housing-interior-day-advance-settings__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+.housing-interior-day-advance-settings__grid--pending {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.housing-interior-day-advance-toggle {
+  min-width: 0;
+  min-height: 64px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid rgba(71, 109, 86, 0.16);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #214c35;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.housing-interior-day-advance-toggle:hover {
+  border-color: rgba(47, 127, 88, 0.36);
+  background: rgba(245, 250, 241, 0.9);
+}
+
+.housing-interior-day-advance-toggle i {
+  width: 28px;
+  height: 28px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(237, 248, 235, 0.92);
+  font-style: normal;
+}
+
+.housing-interior-day-advance-toggle span {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.housing-interior-day-advance-toggle strong {
+  color: #214c35;
+  font-size: 0.88rem;
+  font-weight: 950;
+}
+
+.housing-interior-day-advance-toggle em {
+  color: rgba(33, 76, 53, 0.58);
+  font-size: 0.74rem;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.housing-interior-day-advance-toggle b {
+  min-width: 42px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(47, 127, 88, 0.12);
+  color: #2f6f4e;
+  font-size: 0.72rem;
+  font-weight: 950;
+  text-align: center;
+}
+
+.housing-interior-day-advance-toggle.is-off {
+  opacity: 0.72;
+}
+
+.housing-interior-day-advance-toggle.is-off b {
+  background: rgba(120, 129, 115, 0.12);
+  color: rgba(33, 76, 53, 0.56);
+}
+
+.housing-interior-day-advance-toggle.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.housing-interior-day-advance-meal-settings {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+}
+
+.housing-interior-day-advance-meal-settings__priority {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+}
+
+.housing-interior-day-advance-meal-settings__priority button {
+  min-height: 34px;
+  border: 1px solid rgba(71, 109, 86, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.68);
+  color: rgba(33, 76, 53, 0.72);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.housing-interior-day-advance-meal-settings__priority button.is-selected {
+  border-color: rgba(47, 127, 88, 0.54);
+  background: rgba(47, 127, 88, 0.94);
+  color: #fffdf6;
+}
+
+.housing-interior-help-modal {
+  width: min(460px, calc(100vw - 48px));
+  max-height: calc(100vh - 48px);
+  overflow: hidden;
+  z-index: 130;
+}
+
+.housing-interior-help-modal__body {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  max-height: calc(100vh - 210px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.housing-interior-help-modal__item {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid rgba(71, 109, 86, 0.14);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.48);
+}
+
+.housing-interior-help-modal__item strong {
+  color: #214c35;
+  font-size: 0.92rem;
+  font-weight: 950;
+}
+
+.housing-interior-help-modal__item span {
+  color: rgba(33, 76, 53, 0.7);
+  font-size: 0.84rem;
+  font-weight: 750;
+  line-height: 1.45;
 }
 
 .housing-pc-desktop {
@@ -39009,6 +39960,16 @@ button.small-apc-receiving-queue__item:hover {
   }
 
   .housing-interior-day-advance-calendar__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .housing-interior-day-advance-settings__grid,
+  .housing-interior-day-advance-settings__grid--pending,
+  .housing-interior-day-advance-settings__grid--meal {
+    grid-template-columns: 1fr;
+  }
+
+  .housing-interior-day-advance-meal-settings__priority {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -51831,18 +52792,19 @@ button.small-apc-receiving-queue__item:hover {
       rgba(49, 82, 62, 0.08) 34px 58px
     );
   box-shadow: 0 8px 16px rgba(26, 52, 40, 0.16);
+  animation: vehicle-travel-road-flow 460ms linear infinite;
 }
 
 .vehicle-travel-transition__vehicle-wrap {
   position: absolute;
   left: 50%;
   bottom: 20px;
-  width: min(680px, 92%);
+  width: min(520px, 72%);
   height: min(220px, 64vw);
-  transform: translateX(-50%);
+  transform: translateX(-180%);
   animation:
-    vehicle-travel-drive var(--vehicle-travel-duration) linear both,
-    vehicle-travel-body-float 680ms ease-in-out infinite alternate;
+    vehicle-travel-drive 1450ms cubic-bezier(0.22, 0.78, 0.24, 1) infinite,
+    vehicle-travel-body-float 620ms ease-in-out infinite alternate;
 }
 
 .vehicle-travel-transition__vehicle {
@@ -51852,7 +52814,17 @@ button.small-apc-receiving-queue__item:hover {
   object-fit: contain;
   user-select: none;
   pointer-events: none;
-  filter: drop-shadow(0 18px 18px rgba(17, 39, 28, 0.2));
+  opacity: 0.96;
+  filter:
+    brightness(0)
+    saturate(100%)
+    invert(31%)
+    sepia(34%)
+    saturate(881%)
+    hue-rotate(94deg)
+    brightness(92%)
+    contrast(88%)
+    drop-shadow(0 18px 18px rgba(17, 39, 28, 0.2));
 }
 
 .vehicle-travel-transition__gauge {
@@ -51911,19 +52883,28 @@ button.small-apc-receiving-queue__item:hover {
 
 @keyframes vehicle-travel-drive {
   0% {
-    transform: translateX(-78%);
+    transform: translateX(-185%);
   }
   100% {
-    transform: translateX(-22%);
+    transform: translateX(85%);
   }
 }
 
 @keyframes vehicle-travel-body-float {
-  from {
-    bottom: 20px;
+  0% {
+    bottom: 18px;
   }
-  to {
-    bottom: 25px;
+  100% {
+    bottom: 24px;
+  }
+}
+
+@keyframes vehicle-travel-road-flow {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: -58px 0;
   }
 }
 
@@ -51967,7 +52948,7 @@ button.small-apc-receiving-queue__item:hover {
   }
 
   .vehicle-travel-transition__vehicle-wrap {
-    width: 110%;
+    width: 82%;
     height: 170px;
   }
 }

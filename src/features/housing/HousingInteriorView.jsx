@@ -249,10 +249,13 @@ export default function HousingInteriorView({
   updateHousingInteriorHvacSetting,
   housingInteriorFridgeSetting,
   updateHousingInteriorFridgeSetting,
+  housingDayAdvanceSettings = null,
+  updateHousingDayAdvanceSettings = null,
   toggleHousingInteriorPowerControl,
   playControlPanelSwitchSound = null,
   housingInteriorPendingObject,
   housingBathroomInfo = null,
+  housingBathroomAccessOptions = null,
   housingInteriorFridgeStoredRows,
   housingInteriorFreezerStoredRows = [],
   housingInteriorColdStorageCapacityInfo = null,
@@ -264,6 +267,7 @@ export default function HousingInteriorView({
   housingInteriorApplianceSlotRows = [],
   housingInteriorClothingSlotRows = [],
   housingInteriorClothingActivityInfo = null,
+  housingInteriorClothingDirt = {},
   housingInteriorClothingStorageRows = [],
   housingInteriorFurnitureSlotRows = [],
   housingInteriorInstallSourceRows = [],
@@ -277,6 +281,7 @@ export default function HousingInteriorView({
   housingInteriorStorageSourceRows = [],
   housingMealInfo,
   housingExerciseInfo = null,
+  housingTvInfo = null,
   housingWaterInfo = null,
   isHousingInteriorWindowPreviewOpen,
   weatherSceneImage,
@@ -296,8 +301,11 @@ export default function HousingInteriorView({
   advanceMultipleDays,
   eatHousingMeal,
   exerciseHousing,
+  watchHousingTv,
+  moveHousingBathroomOutdoorOption,
+  selectHousingBathroomSource,
   showerHousingBathroom,
-  washHousingBathroomAfterWork,
+  washHousingClothing,
   cleanHousingBathroom,
   cookHousingMeal,
   plateHousingMeal,
@@ -326,6 +334,7 @@ export default function HousingInteriorView({
 }) {
   const [bedPanelMode, setBedPanelMode] = React.useState('main');
   const [dayAdvanceDraft, setDayAdvanceDraft] = React.useState('7');
+  const [dayAdvanceHelpOpen, setDayAdvanceHelpOpen] = React.useState(false);
   const [farmLogFilter, setFarmLogFilter] = React.useState('all');
   const [farmLogDateFilter, setFarmLogDateFilter] = React.useState('all');
   const [farmLogTypingActive, setFarmLogTypingActive] = React.useState(false);
@@ -426,6 +435,35 @@ export default function HousingInteriorView({
     const nextDays = Math.max(1, Math.min(14, Math.floor(Number(daysRaw) || 1)));
     setDayAdvanceDraft(String(nextDays));
   }, []);
+  const dayAdvanceSettings = housingDayAdvanceSettings && typeof housingDayAdvanceSettings === 'object'
+    ? housingDayAdvanceSettings
+    : {};
+  const dayAdvanceSettingEnabled = React.useCallback((key, fallback = true) => (
+    Object.prototype.hasOwnProperty.call(dayAdvanceSettings, key) ? Boolean(dayAdvanceSettings[key]) : fallback
+  ), [dayAdvanceSettings]);
+  const updateDayAdvanceSetting = React.useCallback((patch = {}) => {
+    if (!updateHousingDayAdvanceSettings) return;
+    updateHousingDayAdvanceSettings(patch);
+  }, [updateHousingDayAdvanceSettings]);
+  const toggleDayAdvanceSetting = React.useCallback((key, fallback = true) => {
+    updateDayAdvanceSetting({ [key]: !dayAdvanceSettingEnabled(key, fallback) });
+  }, [dayAdvanceSettingEnabled, updateDayAdvanceSetting]);
+  const dayAdvanceSettingRows = React.useMemo(() => ([
+    { key: 'autoMeal', icon: '🍚', label: '자동 식사', detail: '부족한 끼니를 보관 음식으로 채움', fallback: true },
+    { key: 'autoSleep', icon: '🛏️', label: '자동 수면', detail: '수면품질과 실내온도 건강 영향 반영', fallback: true },
+    { key: 'autoLifeSupply', icon: '🧴', label: '생필품 소비', detail: '냉장실 생활용품을 하루 단위로 사용', fallback: true },
+    { key: 'autoWater', icon: '🚰', label: '생활수 사용', detail: '하루 생활수 필요량 자동 차감', fallback: true }
+  ]), []);
+  const dayAdvancePendingSettingRows = React.useMemo(() => ([
+    { key: 'autoDishWash', icon: '🫧', label: '자동 설거지', detail: '준비중', fallback: false, disabled: true },
+    { key: 'autoWasteCleanup', icon: '🗑️', label: '쓰레기 정리', detail: '준비중', fallback: false, disabled: true }
+  ]), []);
+  const mealPriorityOptions = React.useMemo(() => ([
+    { key: 'oldest', label: '기본', title: '보관된 식사 목록 순서대로 자동 소비합니다.' },
+    { key: 'labor', label: '노동력', title: '노동력 회복량이 높은 음식부터 자동 소비합니다.' },
+    { key: 'health', label: '건강', title: '건강 보정이 좋은 음식부터 자동 소비합니다.' },
+    { key: 'any', label: '빠르게', title: '첫 번째로 사용 가능한 음식을 바로 자동 소비합니다.' }
+  ]), []);
   const farmLogTypingTimerRef = React.useRef(null);
   const fridgeMoveTimerRef = React.useRef(null);
   const boilerInstallPaymentTimerRef = React.useRef(null);
@@ -790,7 +828,23 @@ export default function HousingInteriorView({
   const healthStatus = playerStatusStepForValue(PLAYER_HEALTH_STATUS_STEPS, healthValue);
   const laborStatus = playerStatusStepForValue(PLAYER_SELF_LABOR_STATUS_STEPS, laborValue);
   const livingDetailText = String(housingLivingConditionInfo?.detail || '');
-  const hasHousingBathroom = housingHasBathroomOfFacility(housingInteriorFacilityKey);
+  const hasHousingBathroomAccessOption = Boolean(
+    housingBathroomAccessOptions?.internal?.available
+    || housingBathroomAccessOptions?.outdoor?.available
+  );
+  const hasHousingBathroom = Boolean(housingBathroomInfo?.hasBathroom)
+    || hasHousingBathroomAccessOption
+    || housingHasBathroomOfFacility(housingInteriorFacilityKey);
+  const bathroomCleanlinessValue = Math.max(0, Math.min(100, Math.round(Number(housingBathroomInfo?.cleanliness) || 0)));
+  const housingClothingDirtTotal = Object.values(housingInteriorClothingDirt || {})
+    .reduce((sum, value) => sum + Math.max(0, Number(value) || 0), 0);
+  const bathroomCleanlinessFillColor = (() => {
+    if (bathroomCleanlinessValue >= 85) return '#2f9fe3';
+    if (bathroomCleanlinessValue >= 65) return '#4fb7d3';
+    if (bathroomCleanlinessValue >= 45) return '#78aaa1';
+    if (bathroomCleanlinessValue >= 25) return '#a38455';
+    return '#8a5a2b';
+  })();
   const housingInteriorInstalledApplianceSlotKeySet = React.useMemo(() => new Set(
     (Array.isArray(housingInteriorApplianceSlotRows) ? housingInteriorApplianceSlotRows : [])
       .filter((slot) => Boolean(slot?.installed))
@@ -806,6 +860,9 @@ export default function HousingInteriorView({
   const housingInteriorHasInstalledBed = housingInteriorInstalledFurnitureSlotKeySet.has('bed');
   const housingInteriorHasInstalledPc = housingInteriorInstalledApplianceSlotKeySet.has('pc');
   const housingInteriorHasInstalledTv = housingInteriorInstalledApplianceSlotKeySet.has('tv');
+  const housingInteriorTvUsable = Boolean(housingTvInfo?.hasTv || housingInteriorHasInstalledTv)
+    && housingTvInfo?.tvOperational !== false
+    && housingTvInfo?.powerOn !== false;
   const housingHvacCoolingDeviceRows = React.useMemo(() => (
     (Array.isArray(housingInteriorApplianceSlotRows) ? housingInteriorApplianceSlotRows : [])
       .filter((slot) => Boolean(slot?.installed) && ['airConditioner', 'fan'].includes(String(slot?.type || '')))
@@ -841,6 +898,12 @@ export default function HousingInteriorView({
       detail: Number(livingSupplyInfo.essentialDays) >= 1 ? '생활여건에 반영 중' : '생필품 부족'
     },
     {
+      key: 'sleep',
+      label: '수면품질',
+      value: housingSleepQualityInfo ? `${housingSleepQualityInfo.label || '-'} · ${Math.max(0, Math.min(100, Number(housingSleepQualityInfo.score) || 0))}/100` : '-',
+      detail: housingSleepQualityInfo?.reason || '수면품질 계산 대기'
+    },
+    {
       key: 'power',
       label: '실내전기',
       value: housingInteriorPowerInfo?.label || '-',
@@ -864,6 +927,7 @@ export default function HousingInteriorView({
     housing: livingScoreFactors.housing,
     food: livingScoreFactors.food,
     essential: livingScoreFactors.essential,
+    sleep: livingScoreFactors.sleep,
     power: livingScoreFactors.power,
     internet: livingScoreFactors.internet,
     indoor: livingScoreFactors.hvac
@@ -988,7 +1052,7 @@ export default function HousingInteriorView({
     if (housingInteriorPendingObject?.key === 'pc' && !housingInteriorHasInstalledPc) {
       closeHousingInteriorPendingModal?.();
     }
-    if (housingInteriorPendingObject?.key === 'tv' && !housingInteriorHasInstalledTv) {
+    if (housingInteriorPendingObject?.key === 'tv' && !housingInteriorTvUsable) {
       closeHousingInteriorPendingModal?.();
     }
     if (housingInteriorPendingObject?.key === 'hvac' && !housingInteriorHasInstalledHvacDevice) {
@@ -999,6 +1063,7 @@ export default function HousingInteriorView({
     housingInteriorHasInstalledHvacDevice,
     housingInteriorHasInstalledPc,
     housingInteriorHasInstalledTv,
+    housingInteriorTvUsable,
     housingInteriorPendingObject?.key
   ]);
   React.useEffect(() => () => {
@@ -3153,14 +3218,18 @@ export default function HousingInteriorView({
                 const disabled = (itemKey === 'bathroom' && !hasHousingBathroom)
                   || (itemKey === 'hvac' && !housingInteriorHasInstalledHvacDevice)
                   || (itemKey === 'pc' && !housingInteriorHasInstalledPc)
-                  || (itemKey === 'tv' && !housingInteriorHasInstalledTv);
+                  || (itemKey === 'tv' && !housingInteriorTvUsable);
                 const disabledTitle = itemKey === 'bathroom'
-                  ? '이 하우징에는 욕실이 없습니다.'
+                  ? '이 하우징 내부나 현재 토지에 사용할 화장실이 없습니다.'
                   : (itemKey === 'hvac'
                       ? '에어컨, 선풍기, 난방기구 중 하나를 설치해야 사용할 수 있습니다.'
                       : (itemKey === 'pc'
                         ? 'PC 자리에 컴퓨터를 설치해야 사용할 수 있습니다.'
-                        : (itemKey === 'tv' ? 'TV 자리에 TV를 설치해야 사용할 수 있습니다.' : item.hint)));
+                        : (itemKey === 'tv'
+                          ? (!housingInteriorHasInstalledTv
+                              ? 'TV 자리에 TV를 설치해야 사용할 수 있습니다.'
+                              : (housingTvInfo?.powerOn === false ? '실내 전기가 OFF라 TV를 사용할 수 없습니다.' : 'TV 내구도 확인이 필요합니다.'))
+                          : item.hint)));
                 return (
                   <button
                     key={item.key}
@@ -3288,15 +3357,73 @@ export default function HousingInteriorView({
                 </div>
               </>
             ) : null}
+            {dayAdvanceHelpOpen ? (
+              <>
+                <div className="confirm-modal-backdrop confirm-modal-backdrop--nested" onClick={() => setDayAdvanceHelpOpen(false)} />
+                <div className="confirm-modal housing-interior-help-modal" role="dialog" aria-modal="true" aria-labelledby="housing-day-advance-help-title">
+                  <div className="confirm-modal__title" id="housing-day-advance-help-title">일자진행 도움말</div>
+                  <div className="housing-interior-help-modal__body">
+                    <div className="housing-interior-help-modal__item">
+                      <strong>진행 범위</strong>
+                      <span>한 번에 1일부터 14일까지 진행할 수 있습니다.</span>
+                    </div>
+                    <div className="housing-interior-help-modal__item">
+                      <strong>날짜 선택</strong>
+                      <span>숫자를 입력하거나 달력 칸을 눌러 목표 날짜를 고릅니다.</span>
+                    </div>
+                    <div className="housing-interior-help-modal__item">
+                      <strong>진행 처리</strong>
+                      <span>진행한 날짜만큼 날씨, 작물 생육, 시설 상태, 보관품 변화가 함께 반영됩니다.</span>
+                    </div>
+                    <div className="housing-interior-help-modal__item">
+                      <strong>생활 처리</strong>
+                      <span>넘기는 동안 캐릭터는 현재 하우징에서 휴식하고, 부족한 끼니가 있으면 준비된 식사를 하루 목표치까지 자동으로 먹습니다.</span>
+                    </div>
+                    <div className="housing-interior-help-modal__item">
+                      <strong>식사 조건</strong>
+                      <span>자동 식사는 이미 만들어 둔 식사만 소비합니다. 냉장고 재료를 자동으로 조리하지는 않습니다.</span>
+                    </div>
+                    <div className="housing-interior-help-modal__item">
+                      <strong>식사 우선순위</strong>
+                      <span>기본은 보관 순서, 노동력은 회복량 높은 음식, 건강은 건강 보정 좋은 음식, 빠르게는 첫 사용 가능 음식을 우선 소비합니다.</span>
+                    </div>
+                    <div className="housing-interior-help-modal__item">
+                      <strong>주의</strong>
+                      <span>수면품질, 건강, 실내온도, 생활여건도 날짜마다 반영되며 이미 시작된 날짜 진행은 중간에 되돌릴 수 없습니다.</span>
+                    </div>
+                  </div>
+                  <div className="footer-actions">
+                    <button
+                      type="button"
+                      className="button button--primary"
+                      onClick={() => setDayAdvanceHelpOpen(false)}
+                    >
+                      확인
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : null}
             <SmoothHeightPanel
               className="housing-interior-modal-body-motion"
-              watchKey={`${housingInteriorPendingObject.key}:${bedPanelMode}:${kitchenTab}:${storageTab}:${facilitySubTab}:${housingStorageDetailOpen ? 'storageDetail' : 'storageSimple'}:${fridgeStorageModeOn ? 'fridgeStorageOn' : 'fridgeStorageOff'}`}
+              watchKey={`${housingInteriorPendingObject.key}:${bedPanelMode}:${kitchenTab}:${storageTab}:${facilitySubTab}:${housingStorageDetailOpen ? 'storageDetail' : 'storageSimple'}:${fridgeStorageModeOn ? 'fridgeStorageOn' : 'fridgeStorageOff'}:${JSON.stringify(dayAdvanceSettings)}`}
             >
               {housingInteriorPendingObject.key === 'bed' ? (
                 bedPanelMode === 'dayAdvance' ? (
                   <div className="housing-interior-day-advance-view">
                   <div className="housing-interior-day-advance-panel">
-                    <label htmlFor="housing-interior-day-advance-input">진행 일수</label>
+                    <div className="housing-interior-day-advance-head">
+                      <label htmlFor="housing-interior-day-advance-input">진행 일수</label>
+                      <button
+                        type="button"
+                        className="housing-interior-help-button"
+                        onClick={() => setDayAdvanceHelpOpen(true)}
+                        aria-label="일자진행 도움말"
+                        title="일자진행 도움말"
+                      >
+                        ?
+                      </button>
+                    </div>
                     <div className="housing-interior-day-advance-control">
                       <input
                         id="housing-interior-day-advance-input"
@@ -3336,6 +3463,105 @@ export default function HousingInteriorView({
                             <em>{row.dateText}</em>
                           </button>
                         ))}
+                      </div>
+                    </div>
+                    <div className="housing-interior-day-advance-settings">
+                      <div className="housing-interior-day-advance-settings__head">
+                        <span>⚙️ 진행 설정</span>
+                        <strong>날짜 진행 자동 처리</strong>
+                      </div>
+                      <div className="housing-interior-day-advance-settings__grid">
+                        {dayAdvanceSettingRows.map((row) => {
+                          const enabled = dayAdvanceSettingEnabled(row.key, row.fallback);
+                          return (
+                            <button
+                              key={`day-advance-setting-${row.key}`}
+                              type="button"
+                              className={`housing-interior-day-advance-toggle ${enabled ? 'is-on' : 'is-off'}`.trim()}
+                              onClick={() => toggleDayAdvanceSetting(row.key, row.fallback)}
+                              aria-pressed={enabled}
+                            >
+                              <i aria-hidden="true">{row.icon}</i>
+                              <span>
+                                <strong>{row.label}</strong>
+                                <em>{row.detail}</em>
+                              </span>
+                              <b>{enabled ? 'ON' : 'OFF'}</b>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {dayAdvanceSettingEnabled('autoMeal', true) ? (
+                        <div className="housing-interior-day-advance-meal-settings">
+                          <div className="housing-interior-day-advance-meal-settings__priority" role="group" aria-label="자동 식사 우선순위">
+                            {mealPriorityOptions.map((option) => {
+                              const selected = String(dayAdvanceSettings.mealPriority || 'oldest') === option.key;
+                              return (
+                                <button
+                                  key={`day-advance-meal-priority-${option.key}`}
+                                  type="button"
+                                  className={selected ? 'is-selected' : ''}
+                                  onClick={() => updateDayAdvanceSetting({ mealPriority: option.key })}
+                                  aria-pressed={selected}
+                                  aria-label={`${option.label}: ${option.title}`}
+                                  title={option.title}
+                                >
+                                  {option.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          <div className="housing-interior-day-advance-settings__grid housing-interior-day-advance-settings__grid--meal">
+                            <button
+                              type="button"
+                              className={`housing-interior-day-advance-toggle ${dayAdvanceSettingEnabled('allowDisposableKitchenware', true) ? 'is-on' : 'is-off'}`.trim()}
+                              onClick={() => toggleDayAdvanceSetting('allowDisposableKitchenware', true)}
+                              aria-pressed={dayAdvanceSettingEnabled('allowDisposableKitchenware', true)}
+                            >
+                              <i aria-hidden="true">🥡</i>
+                              <span>
+                                <strong>일회용 식기 허용</strong>
+                                <em>재사용 식기가 없으면 일회용 사용</em>
+                              </span>
+                              <b>{dayAdvanceSettingEnabled('allowDisposableKitchenware', true) ? 'ON' : 'OFF'}</b>
+                            </button>
+                            <button
+                              type="button"
+                              className={`housing-interior-day-advance-toggle ${dayAdvanceSettingEnabled('skipMealWhenKitchenwareMissing', false) ? 'is-on' : 'is-off'}`.trim()}
+                              onClick={() => toggleDayAdvanceSetting('skipMealWhenKitchenwareMissing', false)}
+                              aria-pressed={dayAdvanceSettingEnabled('skipMealWhenKitchenwareMissing', false)}
+                            >
+                              <i aria-hidden="true">🍽️</i>
+                              <span>
+                                <strong>식기 없으면 건너뜀</strong>
+                                <em>OFF면 식기 부족 로그로 중단</em>
+                              </span>
+                              <b>{dayAdvanceSettingEnabled('skipMealWhenKitchenwareMissing', false) ? 'ON' : 'OFF'}</b>
+                            </button>
+                          </div>
+                        </div>
+                      ) : null}
+                      <div className="housing-interior-day-advance-settings__grid housing-interior-day-advance-settings__grid--pending">
+                        {dayAdvancePendingSettingRows.map((row) => {
+                          const enabled = dayAdvanceSettingEnabled(row.key, row.fallback);
+                          return (
+                            <button
+                              key={`day-advance-setting-${row.key}`}
+                              type="button"
+                              className={`housing-interior-day-advance-toggle ${enabled ? 'is-on' : 'is-off'} ${row.disabled ? 'is-disabled' : ''}`.trim()}
+                              onClick={() => (row.disabled ? null : toggleDayAdvanceSetting(row.key, row.fallback))}
+                              aria-pressed={enabled}
+                              disabled={row.disabled}
+                            >
+                              <i aria-hidden="true">{row.icon}</i>
+                              <span>
+                                <strong>{row.label}</strong>
+                                <em>{row.detail}</em>
+                              </span>
+                              <b>{row.disabled ? '준비중' : (enabled ? 'ON' : 'OFF')}</b>
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
@@ -3541,6 +3767,60 @@ export default function HousingInteriorView({
                   냉방은 현재 온도보다 낮출 때만, 난방은 현재 온도보다 높일 때만 작동합니다. 자동은 목표온도 기준으로 선택된 기구 중 필요한 계열만 켭니다.
                 </p>
               </div>
+            ) : housingInteriorPendingObject.key === 'tv' ? (
+              <div className="housing-interior-tv-panel">
+                <div className="housing-interior-tv-hero">
+                  <div className="housing-interior-tv-hero__screen">
+                    {housingTvInfo?.imageSrc ? <img src={housingTvInfo.imageSrc} alt="" loading="lazy" /> : <span aria-hidden="true">📺</span>}
+                  </div>
+                  <div className="housing-interior-tv-hero__info">
+                    <span>📺 TV 상태</span>
+                    <strong>{housingTvInfo?.tvName || 'TV 없음'}</strong>
+                    <small>{[
+                      housingTvInfo?.screenText,
+                      housingTvInfo?.resolutionText,
+                      housingTvInfo?.smartTv ? '스마트 TV' : '일반 방송',
+                      housingTvInfo?.hasInternet ? '인터넷 연결' : '인터넷 없음'
+                    ].filter(Boolean).join(' · ')}</small>
+                    <em>{housingTvInfo?.activeBuffText || '적용 중인 TV 방송 보정 없음'}</em>
+                  </div>
+                </div>
+                <div className="housing-interior-tv-actions">
+                  {(housingTvInfo?.actionRows || []).map((action) => (
+                    <button
+                      key={`housing-tv-action-${action.key}`}
+                      type="button"
+                      className={`housing-interior-tv-action-card ${action.enabled ? 'is-enabled' : 'is-disabled'}`.trim()}
+                      onClick={() => watchHousingTv?.(action.key)}
+                      disabled={!action.enabled}
+                      title={action.enabled ? `${action.name} 시청` : action.reason}
+                    >
+                      <span aria-hidden="true">{action.icon}</span>
+                      <strong>{action.name}</strong>
+                      <small>{action.detail}</small>
+                      <em>{action.effectText}</em>
+                      <b>{`${action.used}/${action.dailyLimit} · ${action.kwhText}`}</b>
+                    </button>
+                  ))}
+                </div>
+                <div className="housing-interior-tv-weather">
+                  <div className="housing-interior-tv-weather__head">
+                    <span>🌦️ 날씨 방송</span>
+                    <strong>{`${housingTvInfo?.todayWeather?.weather || game?.weather || '-'}${Number.isFinite(Number(housingTvInfo?.todayWeather?.temperatureC)) ? ` · ${housingTvInfo.todayWeather.temperatureC}°C` : ''}`}</strong>
+                  </div>
+                  <div className="housing-interior-tv-weather__grid">
+                    {(housingTvInfo?.forecastRows || []).map((row) => (
+                      <div key={row.key} className="housing-interior-tv-weather-card">
+                        <span>{row.icon}</span>
+                        <strong>{row.weather}</strong>
+                        <small>{row.dateText}</small>
+                        <em>{`${row.temperatureText} · ${row.riskText}`}</em>
+                        <b>{`정확도 ${row.accuracyText}`}</b>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             ) : housingInteriorPendingObject.key === 'livingDetail' ? (
               <div className="housing-interior-living-detail-panel">
                 <div className={`housing-interior-living-detail-summary is-${housingLivingConditionInfo?.tone || 'normal'}`.trim()}>
@@ -3574,44 +3854,90 @@ export default function HousingInteriorView({
                   ))}
                 </div>
               </div>
+            ) : housingInteriorPendingObject.key === 'bathroomSelect' ? (
+              <div className="housing-interior-bathroom-source-panel">
+                {[
+                  ['internal', '🚿', '내부 화장실', housingBathroomAccessOptions?.internal],
+                  ['outdoor', '🚻', '야외 화장실', housingBathroomAccessOptions?.outdoor]
+                ].map(([sourceKey, icon, title, option]) => {
+                  const available = Boolean(option?.available);
+                  const optionCount = Math.max(0, Number(option?.count) || 0);
+                  const optionIndex = Math.max(0, Number(option?.index) || 0);
+                  const optionTotal = Math.max(0, Number(option?.total) || 0);
+                  const hasOutdoorPager = sourceKey === 'outdoor' && optionTotal > 1;
+                  return (
+                    <div
+                      key={`housing-bathroom-source-${sourceKey}`}
+                      className={`housing-interior-bathroom-source-card-wrap ${hasOutdoorPager ? 'has-pager' : ''}`.trim()}
+                    >
+                      <button
+                        type="button"
+                        className={`housing-interior-bathroom-source-card ${available ? 'is-available' : 'is-disabled'}`.trim()}
+                        disabled={!available}
+                        title={available ? `${option?.label || title} 사용` : option?.detail || `${title} 사용 불가`}
+                        onClick={() => selectHousingBathroomSource?.(sourceKey)}
+                      >
+                        <span className="housing-interior-bathroom-source-card__icon" aria-hidden="true">{icon}</span>
+                        <strong>
+                          <span aria-hidden="true">{icon}</span>
+                          {title}
+                        </strong>
+                        <em>{option?.label || (available ? title : `${title} 없음`)}{sourceKey === 'outdoor' && optionCount > 1 ? ` ${optionCount.toLocaleString('ko-KR')}동` : ''}</em>
+                        <small>{option?.detail || ''}</small>
+                      </button>
+                      {hasOutdoorPager ? (
+                        <>
+                          <button
+                            type="button"
+                            className="housing-interior-bathroom-source-nav housing-interior-bathroom-source-nav--prev"
+                            title="이전 야외 화장실"
+                            onClick={(event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              moveHousingBathroomOutdoorOption?.(-1);
+                            }}
+                          >
+                            {'‹'}
+                          </button>
+                          <button
+                            type="button"
+                            className="housing-interior-bathroom-source-nav housing-interior-bathroom-source-nav--next"
+                            title="다음 야외 화장실"
+                            onClick={(event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              moveHousingBathroomOutdoorOption?.(1);
+                            }}
+                          >
+                            {'›'}
+                          </button>
+                          <span className="housing-interior-bathroom-source-count">{`${optionIndex + 1} / ${optionTotal}`}</span>
+                        </>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
             ) : housingInteriorPendingObject.key === 'bathroom' ? (
               <div className="housing-interior-bathroom-panel">
                 <div className={`housing-interior-living-detail-summary is-${housingBathroomInfo?.cleanlinessTone || 'normal'}`.trim()}>
-                  <span>욕실 상태</span>
-                  <strong>{`${housingBathroomInfo?.tierLabel || '욕실 없음'} · 청결 ${Math.round(Number(housingBathroomInfo?.cleanliness) || 0)}/100`}</strong>
-                  <small>{`현재 상태: ${housingBathroomInfo?.cleanlinessLabel || '확인 필요'}`}</small>
-                </div>
-                <div className="housing-interior-living-detail-grid">
-                  <div className="housing-interior-living-detail-item">
-                    <div className="housing-interior-living-detail-item__head">
-                      <span>오늘 샤워</span>
-                      <em className={`housing-interior-living-detail-delta ${housingBathroomInfo?.showeredToday ? 'is-plus' : 'is-zero'}`.trim()}>
-                        {housingBathroomInfo?.showeredToday ? '완료' : '대기'}
-                      </em>
+                  <span>🚿 욕실 상태</span>
+                  <div className="housing-interior-living-detail-meter">
+                    <div className="housing-interior-living-detail-meter__head">
+                      <strong>{`🚻 ${housingBathroomInfo?.tierLabel || '욕실 없음'}`}</strong>
+                      <em>{`🧼 청결 ${bathroomCleanlinessValue}/100`}</em>
                     </div>
-                    <strong>{housingBathroomInfo?.showeredToday ? '씻음' : '안 함'}</strong>
-                    <small>자가노동력 회복 없이 개인 청결 상태만 정리합니다.</small>
-                  </div>
-                  <div className="housing-interior-living-detail-item">
-                    <div className="housing-interior-living-detail-item__head">
-                      <span>작업 후 세척</span>
-                      <em className={`housing-interior-living-detail-delta ${housingBathroomInfo?.chemicalWashedToday ? 'is-plus' : 'is-zero'}`.trim()}>
-                        {housingBathroomInfo?.chemicalWashedToday ? '완료' : '대기'}
-                      </em>
+                    <div className="housing-interior-living-detail-meter__track" aria-hidden="true">
+                      <span
+                        className="housing-interior-living-detail-meter__fill housing-interior-bathroom-cleanliness-fill"
+                        style={{
+                          width: `${bathroomCleanlinessValue}%`,
+                          '--bathroom-cleanliness-fill': bathroomCleanlinessFillColor
+                        }}
+                      />
                     </div>
-                    <strong>{housingBathroomInfo?.chemicalWashedToday ? '세척 기록 있음' : '세척 기록 없음'}</strong>
-                    <small>농약 작업 후 피부와 작업복 표면 오염을 씻어낸 기록입니다.</small>
                   </div>
-                  <div className="housing-interior-living-detail-item">
-                    <div className="housing-interior-living-detail-item__head">
-                      <span>욕실 청소</span>
-                      <em className={`housing-interior-living-detail-delta ${housingBathroomInfo?.cleanedToday ? 'is-plus' : 'is-zero'}`.trim()}>
-                        {housingBathroomInfo?.cleanedToday ? '오늘 완료' : '필요 시'}
-                      </em>
-                    </div>
-                    <strong>{housingBathroomInfo?.cleanedDay ? `${housingBathroomInfo.cleanedDay}일차` : '기록 없음'}</strong>
-                    <small>청소는 자가노동력 2를 소모하고 욕실 청결도를 올립니다.</small>
-                  </div>
+                  <small>{`📋 현재 상태: ${housingBathroomInfo?.cleanlinessLabel || '확인 필요'}`}</small>
                 </div>
                 <div className="housing-interior-bed-actions">
                   <button
@@ -3620,27 +3946,28 @@ export default function HousingInteriorView({
                     onClick={showerHousingBathroom}
                     disabled={!housingBathroomInfo?.hasBathroom || housingBathroomInfo?.showeredToday}
                   >
-                    샤워하기
+                    🚿 샤워하기
                   </button>
                   <button
                     type="button"
                     className="button button--ghost"
-                    onClick={washHousingBathroomAfterWork}
-                    disabled={!housingBathroomInfo?.hasBathroom || housingBathroomInfo?.chemicalWashedToday}
+                    onClick={washHousingClothing}
+                    title={housingClothingDirtTotal <= 0 ? '세척할 오염 의류가 없습니다.' : '착용 의류 오염도를 낮춥니다.'}
+                    disabled={!housingBathroomInfo?.hasBathroom || housingBathroomInfo?.clothingWashedToday || housingClothingDirtTotal <= 0}
                   >
-                    작업 후 세척
+                    🧺 의류 세척
                   </button>
                   <button
                     type="button"
-                    className="button button--primary"
+                    className="button button--ghost"
                     onClick={cleanHousingBathroom}
                     disabled={!housingBathroomInfo?.hasBathroom || Number(game?.labor || 0) < 2 || Number(housingBathroomInfo?.cleanliness || 0) >= 100}
                   >
-                    욕실 청소
+                    🧼 욕실 청소
                   </button>
                 </div>
                 <p className="housing-interior-hvac-note">
-                  욕실 행동은 자가노동력을 회복하지 않습니다. 샤워와 작업 후 세척은 위생 기록만 남기고, 청소는 욕실 청결 유지용입니다.
+                  📌 욕실 행동은 자가노동력을 회복하지 않습니다. 샤워는 개인 청결 기록, 의류 세척은 작업복과 착용 의류 오염 정리, 청소는 욕실 청결 유지용입니다.
                 </p>
               </div>
             ) : housingInteriorPendingObject.key === 'pc' ? (
@@ -5106,7 +5433,7 @@ export default function HousingInteriorView({
                           <strong>{`활동성 ${Math.max(0, Math.round(Number(housingInteriorClothingActivityInfo?.activity) || 100))}/100`}</strong>
                           <small>{`작업효율 -${Math.max(0, Math.round((1 - Math.max(0, Number(housingInteriorClothingActivityInfo?.efficiencyMultiplier) || 1)) * 100))}%`}</small>
                         </div>
-                        <span>{`편안함 ${Math.max(0, Math.round(Number(housingInteriorClothingActivityInfo?.totalComfort) || 0))} · 불편함 ${Math.max(0, Math.round(Number(housingInteriorClothingActivityInfo?.totalDiscomfort) || 0))} · 움직임 제약 ${Math.max(0, Math.round(Number(housingInteriorClothingActivityInfo?.totalMobilityPenalty) || 0))}`}</span>
+                        <span>{`편안함 ${Math.max(0, Math.round(Number(housingInteriorClothingActivityInfo?.totalComfort) || 0))} · 불편함 ${Math.max(0, Math.round(Number(housingInteriorClothingActivityInfo?.totalDiscomfort) || 0))} · 움직임 제약 ${Math.max(0, Math.round(Number(housingInteriorClothingActivityInfo?.totalMobilityPenalty) || 0))} · 평균 오염 ${Math.max(0, Math.round(Number(housingInteriorClothingActivityInfo?.averageDirt) || 0))}/100`}</span>
                       </div>
                     ) : null}
                     <div className="housing-interior-placeholder-grid housing-interior-placeholder-grid--storage housing-interior-placeholder-grid--clothing-slots">
@@ -5134,6 +5461,15 @@ export default function HousingInteriorView({
                               ) : null}
                               <span>{slot.name}</span>
                               <small>{`편안함 +${Math.round(Number(slot.comfort) || 0)} · 불편함 -${Math.round(Number(slot.discomfort) || 0)} · 활동성 -${Number(slot.activityPenalty || 0).toFixed(1)}`}</small>
+                              <div className={`housing-interior-clothing-dirt-meter is-${slot.dirtTone || 'clean'}`.trim()} title={`오염 ${Math.max(0, Math.round(Number(slot.dirt) || 0))}/100 · ${slot.dirtLabel || '깨끗함'}`}>
+                                <div className="housing-interior-clothing-dirt-meter__head">
+                                  <span>🧺 의류 오염</span>
+                                  <em>{`${Math.max(0, Math.round(Number(slot.dirt) || 0))}/100`}</em>
+                                </div>
+                                <div className="housing-interior-clothing-dirt-meter__track" aria-hidden="true">
+                                  <i style={{ width: `${Math.max(0, Math.min(100, Math.round(Number(slot.dirt) || 0)))}%` }} />
+                                </div>
+                              </div>
                             </div>
                           ) : (
                             <div className="housing-interior-appliance-slot-card__empty">
@@ -5566,9 +5902,33 @@ export default function HousingInteriorView({
             ) : housingInteriorPendingObject.key === 'exercise' ? (
               <div className="housing-interior-exercise-panel">
                 <div className="housing-interior-exercise-summary">
-                  <div>
-                    <span>{`${housingExerciseInfo?.phaseLabel || '주간'} 운동`}</span>
-                    <strong>{`${Math.max(0, Number(housingExerciseInfo?.count) || 0)}/${Math.max(1, Number(housingExerciseInfo?.limit) || 1)}`}</strong>
+                  <div className="housing-interior-exercise-quota" aria-label="운동 가능 횟수">
+                    {[
+                      {
+                        key: 'day',
+                        label: '주간',
+                        count: Math.max(0, Number(housingExerciseInfo?.dayCount) || 0),
+                        limit: Math.max(1, Number(housingExerciseInfo?.dayLimit) || 2)
+                      },
+                      {
+                        key: 'night',
+                        label: '야간',
+                        count: Math.max(0, Number(housingExerciseInfo?.nightCount) || 0),
+                        limit: Math.max(1, Number(housingExerciseInfo?.nightLimit) || 1)
+                      }
+                    ].map((quota) => (
+                      <div key={`housing-exercise-quota-${quota.key}`} className={`housing-interior-exercise-quota__group ${housingExerciseInfo?.phase === quota.key ? 'is-active' : ''}`.trim()}>
+                        <span>{quota.label}</span>
+                        <div className="housing-interior-exercise-quota__bars" aria-label={`${quota.label} 운동 ${quota.count}/${quota.limit}`}>
+                          {Array.from({ length: quota.limit }, (_, index) => (
+                            <i
+                              key={`housing-exercise-quota-${quota.key}-${index}`}
+                              className={index < quota.count ? 'is-used' : ''}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                   <div>
                     <span>현재 몸상태</span>

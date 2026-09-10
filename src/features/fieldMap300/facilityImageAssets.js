@@ -1,5 +1,12 @@
-const FIELD_MAP_300_IMAGE_MODULES = import.meta.glob(
+const FIELD_MAP_300_OBJECT_IMAGE_MODULES = import.meta.glob(
   '../../assets/images/농지맵 사물 이미지/*.{png,jpg,jpeg,webp,gif,avif}',
+  {
+    eager: true,
+    import: 'default'
+  }
+);
+const FIELD_MAP_300_FACILITY_IMAGE_MODULES = import.meta.glob(
+  '../../assets/images/시설/**/*.{png,jpg,jpeg,webp,gif,avif}',
   {
     eager: true,
     import: 'default'
@@ -12,7 +19,10 @@ function basenameOf(path) {
 
 const FIELD_MAP_300_IMAGE_URL_BY_NAME = Object.freeze(
   Object.fromEntries(
-    Object.entries(FIELD_MAP_300_IMAGE_MODULES).map(([filePath, url]) => [
+    Object.entries({
+      ...FIELD_MAP_300_OBJECT_IMAGE_MODULES,
+      ...FIELD_MAP_300_FACILITY_IMAGE_MODULES
+    }).map(([filePath, url]) => [
       basenameOf(filePath),
       String(url || '')
     ])

@@ -662,11 +662,13 @@ export const clothingActivityStatsOfItem = (itemRaw = null, slotKeyRaw = '') => 
   };
 };
 
-export const clothingActivityInfoOfEquipments = (equipmentsRaw = {}) => {
+export const clothingActivityInfoOfEquipments = (equipmentsRaw = {}, dirtRaw = {}) => {
   const equipments = normalizeHousingClothingEquipments(equipmentsRaw || {});
+  const dirtBySlot = normalizeHousingClothingDirtBySlotKey(dirtRaw || {}, equipments);
   const rows = HOUSING_CLOTHING_SLOT_DEFS.map((slot) => {
     const itemKey = String(equipments?.[slot.key] || '');
     const item = CLOTHING_ITEM_BY_KEY[itemKey] || null;
+    const dirt = Math.max(0, Math.min(100, Math.round(Number(dirtBySlot?.[slot.key]) || 0)));
     if (!item) {
       return {
         slotKey: slot.key,
@@ -677,23 +679,32 @@ export const clothingActivityInfoOfEquipments = (equipmentsRaw = {}) => {
         comfort: 0,
         discomfort: 0,
         mobilityPenalty: 0,
+        dirt: 0,
+        dirtPenalty: 0,
         penalty: 0
       };
     }
     const stats = clothingActivityStatsOfItem(item, slot.key);
+    const dirtPenalty = Math.round(dirt * stats.slotWeight * 0.08 * 10) / 10;
     return {
       slotKey: slot.key,
       slotLabel: slot.label,
       itemKey,
       name: String(item?.name || itemKey),
       equipped: true,
+      dirt,
+      dirtPenalty,
       ...stats
     };
   });
   const totalComfort = rows.reduce((sum, row) => sum + Math.max(0, Number(row?.comfort) || 0), 0);
   const totalDiscomfort = rows.reduce((sum, row) => sum + Math.max(0, Number(row?.discomfort) || 0), 0);
   const totalMobilityPenalty = rows.reduce((sum, row) => sum + Math.max(0, Number(row?.mobilityPenalty) || 0), 0);
-  const totalPenalty = rows.reduce((sum, row) => sum + Math.max(0, Number(row?.penalty) || 0), 0);
+  const totalDirt = rows.reduce((sum, row) => sum + Math.max(0, Number(row?.dirt) || 0), 0);
+  const equippedCount = rows.filter((row) => row.equipped).length;
+  const averageDirt = equippedCount > 0 ? Math.round(totalDirt / equippedCount) : 0;
+  const totalDirtPenalty = rows.reduce((sum, row) => sum + Math.max(0, Number(row?.dirtPenalty) || 0), 0);
+  const totalPenalty = rows.reduce((sum, row) => sum + Math.max(0, Number(row?.penalty) || 0), 0) + totalDirtPenalty;
   const activity = clamp(Math.round(100 - totalPenalty), 35, 100);
   const efficiencyMultiplier = clamp(1 - ((100 - activity) * 0.003), 0.75, 1);
   return {
@@ -702,6 +713,8 @@ export const clothingActivityInfoOfEquipments = (equipmentsRaw = {}) => {
     totalComfort,
     totalDiscomfort,
     totalMobilityPenalty,
+    averageDirt,
+    totalDirtPenalty: Math.round(totalDirtPenalty * 10) / 10,
     totalPenalty: Math.round(totalPenalty * 10) / 10,
     rows
   };
@@ -709,12 +722,13 @@ export const clothingActivityInfoOfEquipments = (equipmentsRaw = {}) => {
 
 export const clothingActivityInfoOfField = (field = null, facilityKeyRaw = '') => {
   const byFacility = field?.housingClothingEquipmentsByFacilityKey || {};
+  const dirtByFacility = field?.housingClothingDirtByFacilityKey || {};
   const facilityKey = String(facilityKeyRaw || '');
   if (facilityKey && byFacility?.[facilityKey]) {
-    return clothingActivityInfoOfEquipments(byFacility[facilityKey] || {});
+    return clothingActivityInfoOfEquipments(byFacility[facilityKey] || {}, dirtByFacility?.[facilityKey] || {});
   }
-  const firstEquipped = Object.values(byFacility || {}).find((entry) => Object.keys(normalizeHousingClothingEquipments(entry || {})).length > 0);
-  return clothingActivityInfoOfEquipments(firstEquipped || {});
+  const firstFacilityKey = Object.keys(byFacility || {}).find((key) => Object.keys(normalizeHousingClothingEquipments(byFacility?.[key] || {})).length > 0) || '';
+  return clothingActivityInfoOfEquipments(byFacility?.[firstFacilityKey] || {}, dirtByFacility?.[firstFacilityKey] || {});
 };
 
 const HOUSING_APPLIANCE_SLOT_BY_KEY = HOUSING_APPLIANCE_SLOT_DEFS.reduce((acc, slot) => ({
@@ -894,6 +908,37 @@ export const normalizeHousingClothingStorageByItemKey = (raw = {}) => {
   return next;
 };
 
+export const normalizeHousingClothingDirtBySlotKey = (raw = {}, equipmentsRaw = {}) => {
+  const source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+  const equipments = normalizeHousingClothingEquipments(equipmentsRaw || {});
+  const next = {};
+  HOUSING_CLOTHING_SLOT_DEFS.forEach((slot) => {
+    const slotKey = String(slot?.key || '');
+    if (!slotKey || !equipments?.[slotKey]) return;
+    const value = clamp(Number(source?.[slotKey]), 0, 100);
+    next[slotKey] = Number.isFinite(value) ? Math.round(value) : 0;
+  });
+  return next;
+};
+
+export const clothingDirtLabelOf = (valueRaw = 0) => {
+  const value = clamp(Number(valueRaw) || 0, 0, 100);
+  if (value >= 86) return '오염 심각';
+  if (value >= 61) return '심하게 더러움';
+  if (value >= 31) return '더러움';
+  if (value >= 1) return '약간 더러움';
+  return '깨끗함';
+};
+
+export const clothingDirtToneOf = (valueRaw = 0) => {
+  const value = clamp(Number(valueRaw) || 0, 0, 100);
+  if (value >= 86) return 'critical';
+  if (value >= 61) return 'bad';
+  if (value >= 31) return 'warn';
+  if (value >= 1) return 'normal';
+  return 'clean';
+};
+
 export const normalizeHousingWaterTankInstallations = (raw = {}, facilityKeyRaw = '') => {
   const source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
   const slotKeySet = new Set(housingWaterTankSlotDefsOfFacility(facilityKeyRaw).map((slot) => String(slot.key || '')));
@@ -917,6 +962,10 @@ export const housingFacilityEmojiOf = (facilityKeyRaw = '') => {
 };
 
 export const HOUSING_BATHROOM_TIER_BY_FACILITY = Object.freeze({
+  portableToilet: 1,
+  outdoorToilet: 2,
+  workerRestroom: 3,
+  hygieneShowerUnit: 3,
   sandwichPanelDorm4: 0,
   farmContainer20Used: 0,
   usedSiteOffice5: 0,
@@ -986,6 +1035,7 @@ export const housingBathroomInfoOf = ({
         : 'bad';
   return {
     ...state,
+    facilityKey,
     tier,
     tierLabel: housingBathroomTierLabelOf(tier),
     hasBathroom: tier > 0,
@@ -994,6 +1044,7 @@ export const housingBathroomInfoOf = ({
     cleanlinessTone,
     showeredToday: state.showeredDay === Math.max(1, Math.floor(Number(day) || 1)),
     chemicalWashedToday: state.chemicalWashDay === Math.max(1, Math.floor(Number(day) || 1)),
+    clothingWashedToday: state.chemicalWashDay === Math.max(1, Math.floor(Number(day) || 1)),
     cleanedToday: state.cleanedDay === Math.max(1, Math.floor(Number(day) || 1))
   };
 };
@@ -1971,7 +2022,7 @@ export const housingSleepQualityInfoOf = ({
   const temp = Number(indoorInfo?.temperatureC);
   const stability = clamp(Number(indoorInfo?.stability) || 0, 0, 0.95);
   const housingQualityScore = clamp(Math.round(Number(facilityQualityInfo?.adjust) || 0), 0, 100);
-  const housingAdjust = clamp(Math.round((housingQualityScore - 44) * 0.44), -12, 24);
+  const housingAdjust = clamp(Math.round((housingQualityScore - 44) * 0.44), 0, 24);
   const powerAdjust = powerInfo?.tone === 'off' ? -14 : 3;
   const hvacAdjust = indoorInfo?.activeHvacMode && indoorInfo.activeHvacMode !== 'off' && indoorInfo.activeHvacMode !== 'idle' ? 5 : 0;
   const fanAdjust = Math.round(Number(fanInfo?.adjust) || 0);
@@ -2005,7 +2056,7 @@ export const housingSleepQualityInfoOf = ({
     + hvacAdjust
     + fanAdjust
     + weatherAdjust
-  ), 0, 100);
+  ), 5, 100);
   const label = normalized >= 92 ? '최상'
     : normalized >= 82 ? '매우 좋음'
       : normalized >= 70 ? '좋음'
@@ -3741,11 +3792,9 @@ export const consumeHousingPreparedMealsForField = ({
 
 export const housingSleepQualityScoreAdjustmentOf = (sleepQualityInfo = null) => {
   const sleepScore = Math.max(0, Math.min(100, Number(sleepQualityInfo?.score) || 0));
-  if (sleepScore >= 90) return 10;
-  if (sleepScore >= 75) return 5;
-  if (sleepScore >= 55) return 0;
-  if (sleepScore >= 35) return -10;
-  return -20;
+  return sleepScore >= 50
+    ? Math.round((sleepScore - 50) / 5)
+    : Math.round((sleepScore - 50) / 10);
 };
 
 export const housingLivingConditionInfoOf = ({
@@ -3774,8 +3823,9 @@ export const housingLivingConditionInfoOf = ({
   const wastePenalty = Math.max(0, Math.floor(Number(wasteInfo?.penalty) || 0));
   const wasteAdjust = -wastePenalty;
   const satisfactionAdjust = Math.max(0, Math.min(3, Math.floor(Number(satisfactionBuffInfo?.value) || 0)));
+  const sleepAdjust = housingSleepQualityScoreAdjustmentOf(sleepQualityInfo);
   const baseScore = 0;
-  const nextScore = clamp(Math.round(baseScore + facilityAdjust + powerAdjust + hvacAdjust + lifeSupplyAdjust + internetAdjust + wasteAdjust + satisfactionAdjust), 0, 100);
+  const nextScore = clamp(Math.round(baseScore + facilityAdjust + powerAdjust + hvacAdjust + lifeSupplyAdjust + internetAdjust + wasteAdjust + satisfactionAdjust + sleepAdjust), 0, 100);
   const nextLabel = nextScore >= 95 ? '최상'
     : nextScore >= 88 ? '매우 좋음'
       : nextScore >= 80 ? '좋음'
@@ -3815,8 +3865,9 @@ export const housingLivingConditionInfoOf = ({
       power: powerAdjust,
       internet: internetAdjust,
       waste: wasteAdjust,
+      sleep: sleepAdjust,
       hvac: hvacAdjust,
-      total: facilityAdjust + powerAdjust + hvacAdjust + lifeSupplyAdjust + internetAdjust + wasteAdjust + satisfactionAdjust
+      total: facilityAdjust + powerAdjust + hvacAdjust + lifeSupplyAdjust + internetAdjust + wasteAdjust + satisfactionAdjust + sleepAdjust
     }
   };
 };

@@ -93,6 +93,13 @@ const CONSTRUCTION_FACILITY_IMAGE_MODULES = {
     }
   ),
   ...import.meta.glob(
+    '../../assets/images/시설/야외화장실/*.{png,jpg,jpeg,webp,avif}',
+    {
+      eager: true,
+      import: 'default'
+    }
+  ),
+  ...import.meta.glob(
     '../../assets/images/하우징/**/*.{png,jpg,jpeg,webp,avif}',
     {
       eager: true,
@@ -156,6 +163,10 @@ const CONSTRUCTION_FACILITY_IMAGE_NAME_BY_KEY = Object.freeze({
   machineShedLarge: '농기계 보관소 대형.png',
   machineShedLargePlus: '농기계 보관소 특대형.png',
   machineShedXl: '농기계 보관소 특대형.png',
+  portableToilet: '간이 화장실.png',
+  outdoorToilet: '야외 화장실.png',
+  workerRestroom: '작업자 화장실.png',
+  hygieneShowerUnit: '샤워실 포함 위생동.png',
   farmHut6Basic: '농막 6평 기본형.png',
   farmHut6Insulated: '농막 6평 단열형.png',
   farmContainer20Used: '중고 컨테이너 하우스 4평.png',
@@ -848,6 +859,7 @@ export function ConstructionOfficePanel({
   housingOptionKeysOfFacility,
   housingOptionMapOfFacility,
   openFacilityInstallPicker,
+  openFacilityEstimateDetail,
   onBack,
   onClose
 }) {
@@ -919,11 +931,26 @@ export function ConstructionOfficePanel({
             const hasRideMachineBonus = housingOptionKeys.some((key) => Math.max(0, Number(housingOptionMap?.[key]?.rideMachineCapacityBonus) || 0) > 0);
             const totalRideMachineBonus = housingOptionKeys.reduce((sum, key) => sum + Math.max(0, Number(housingOptionMap?.[key]?.rideMachineCapacityBonus) || 0), 0);
             const facilityImageSrc = constructionFacilityImageSrcOf(facility.key);
+            const canOpenEstimateDetail = typeof openFacilityEstimateDetail === 'function';
+            const openEstimateDetail = () => {
+              if (!canOpenEstimateDetail) return;
+              openFacilityEstimateDetail(facility.key);
+            };
 
             return (
               <div
                 key={facility.key}
                 className={`option-card ${facilityImageSrc ? 'shop-tool-card--has-image' : ''}`.trim()}
+                role={canOpenEstimateDetail ? 'button' : undefined}
+                tabIndex={canOpenEstimateDetail ? 0 : undefined}
+                title={canOpenEstimateDetail ? `${facility.name} 상세정보` : undefined}
+                onClick={openEstimateDetail}
+                onKeyDown={(event) => {
+                  if (!canOpenEstimateDetail) return;
+                  if (event.key !== 'Enter' && event.key !== ' ') return;
+                  event.preventDefault();
+                  openEstimateDetail();
+                }}
               >
                 {facilityImageSrc ? (
                   <div className="shop-tool-thumb" aria-hidden="true">
@@ -953,7 +980,10 @@ export function ConstructionOfficePanel({
                     className="button button--ghost day-transition-animate-button"
                     disabled={noTargetField || noMoney}
                     title={noTargetField ? '설치 가능한 보유 토지가 없습니다.' : noMoney ? '설치 가능한 토지 기준 자금이 부족합니다.' : ''}
-                    onClick={() => openFacilityInstallPicker(facility.key)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      openFacilityInstallPicker(facility.key);
+                    }}
                   >
                     건설
                   </button>
