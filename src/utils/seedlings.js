@@ -1,7 +1,9 @@
-import { SEEDLING_KEY_BY_CROP } from '../config/gameConfig';
+import { SHOP_ITEMS } from '../config/game/catalog.js';
 
 export const SEEDLING_SHELF_LIFE_DAYS = 10;
-export const SEEDLING_KEYS = Array.from(new Set(Object.values(SEEDLING_KEY_BY_CROP)));
+export const SEEDLING_KEYS = Array.from(
+  new Set((SHOP_ITEMS.seedling || []).map((item) => String(item?.key || '')).filter(Boolean))
+);
 
 export const seedlingQtyOfBatches = (batches = []) =>
   (batches || []).reduce((sum, batch) => sum + Math.max(0, Math.floor(Number(batch?.qty) || 0)), 0);

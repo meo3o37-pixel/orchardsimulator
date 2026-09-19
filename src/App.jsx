@@ -12,6 +12,8 @@ import HarvestEquipmentModal from './features/harvest/HarvestEquipmentModal';
 import HarvestBreakdownModal from './features/harvest/HarvestBreakdownModal';
 import HarvestPendingLoadSummary from './features/harvest/HarvestPendingLoadSummary';
 import { HarvestQualityStampedCrate } from './features/harvest/HarvestPendingBoxesPanel';
+import CadastrePanel from './features/cadastre/CadastrePanel';
+import { resolveCadastreBoundaryByPoint } from './features/cadastre/cadastreData';
 import { buildHarvestPalletSlotMeta, harvestPalletDisplayBoxIndexOf } from './features/harvest/harvestPalletGrid';
 import { buildHarvestBoxStateLabelParts, formatHarvestBoxStateLabel } from './features/storage/harvestBoxLabel';
 import {
@@ -12427,6 +12429,11 @@ const TOOL_IMAGE_KEYWORDS_BY_ITEM_KEY = {
   seedlingHongro: ['홍로묘목', 'M9홍로', 'M9홍로묘목', '홍로'],
   seedlingGamhong: ['감홍묘목', 'M9감홍', 'M9감홍묘목', '감홍'],
   seedlingSinano: ['시나노골드묘목', 'M9시나노골드', 'M9시나노골드묘목', '시나노골드', '시나노'],
+  seedlingM26Fuji: ['M26후지', 'M26후지묘목'],
+  seedlingM26SummerPrince: ['M26썸머프린스', 'M26썸머프린스묘목'],
+  seedlingM26Hongro: ['M26홍로', 'M26홍로묘목'],
+  seedlingM26Gamhong: ['M26감홍', 'M26감홍묘목'],
+  seedlingM26Sinano: ['M26시나노골드', 'M26시나노골드묘목'],
   pollinationPollenGeneral: ['꽃가루 저가형', '꽃가루', '일반'],
   pollinationPollenPremium: ['꽃가루 프리미엄', '꽃가루', '프리미엄'],
   pollinationPollenTop: ['꽃가루', '최고', '고급'],
@@ -22552,11 +22559,13 @@ export default function App() {
   const [townMoveModal, setTownMoveModal] = useState({ open: false, vehicleInstanceId: '' });
   const [townMoveMapZoom, setTownMoveMapZoom] = useState(EXTERNAL_MAP_TOWN_MOVE_DEFAULT_ZOOM);
   const [townMoveMapCenter, setTownMoveMapCenter] = useState(EXTERNAL_MAP_PRESET.center);
+  const [townMoveMapIsPanning, setTownMoveMapIsPanning] = useState(false);
   const [townMoveMapViewportSize, setTownMoveMapViewportSize] = useState({ width: 0, height: 0 });
   const [townMoveMapTool, setTownMoveMapTool] = useState('pan');
   const [townMoveVillageMarkersVisible, setTownMoveVillageMarkersVisible] = useState(true);
   const [townMoveCityMarkersVisible, setTownMoveCityMarkersVisible] = useState(true);
   const [townMoveFieldMarkersVisible, setTownMoveFieldMarkersVisible] = useState(true);
+  const [townMoveFieldBoundariesVisible, setTownMoveFieldBoundariesVisible] = useState(false);
   const [townMoveLandAreasVisible, setTownMoveLandAreasVisible] = useState(true);
   const [townMoveCoordinateMeasureEnabled, setTownMoveCoordinateMeasureEnabled] = useState(false);
   const [townMoveMarkerPlacementMode, setTownMoveMarkerPlacementMode] = useState('newVillage');
@@ -22591,6 +22600,7 @@ export default function App() {
     centerX: 0,
     centerY: 0
   });
+  const townMoveMapPanFrameRef = useRef({ frameId: 0, center: null });
   const townMoveMapDrawRef = useRef({
     active: false,
     pointerId: -1,
@@ -22870,6 +22880,7 @@ export default function App() {
     externalMapVillageMarkersVisible: townMoveVillageMarkersVisible,
     externalMapCityMarkersVisible: townMoveCityMarkersVisible,
     externalMapFieldMarkersVisible: townMoveFieldMarkersVisible,
+    externalMapFieldBoundariesVisible: townMoveFieldBoundariesVisible,
     externalMapLandAreasVisible: townMoveLandAreasVisible,
     warehouseStorageModal: warehouseRestoreViewStateRef.current,
     quickDrawerOpen,
@@ -22892,6 +22903,7 @@ export default function App() {
     tab,
     tabGroup,
     townMoveCityMarkersVisible,
+    townMoveFieldBoundariesVisible,
     townMoveFieldMarkersVisible,
     townMoveFieldSelectMode,
     townMoveLandAreasVisible,
@@ -25546,23 +25558,24 @@ body { display: flex !important; align-items: center !important; justify-content
   }, [externalFieldMarkerPointByFieldId, selectedField]);
   const canOperateSelectedField = Boolean(selectedField?.owned);
   const farmFocusTabs = canOperateSelectedField
-    ? [['manage', '🌿 생육'], ['cropStatus', '📊 작황'], ['landFacility', '🎛️시설'], ['work', '🛠️ 작업'], ['workOrder', '📢 작업지시']]
-    : [['manage', '🌿 생육'], ['cropStatus', '📊 작황']];
+    ? [['cadastre', '🗺️ 지적도'], ['manage', '🌿 생육'], ['cropStatus', '📊 작황'], ['landFacility', '🎛️시설'], ['work', '🛠️ 작업'], ['workOrder', '📢 작업지시']]
+    : [['cadastre', '🗺️ 지적도'], ['manage', '🌿 생육'], ['cropStatus', '📊 작황']];
   const farmFocusViewKey = useMemo(() => {
     if (focusTab === 'landFacility') return `landFacility:${String(landFacilityMainTab || 'types')}`;
     return String(focusTab || 'manage');
   }, [focusTab, landFacilityMainTab]);
   const farmFocusViewOrderMap = useMemo(
     () => ({
-      manage: 0,
-      cropStatus: 1,
-      housing: 2,
-      'landFacility:types': 3,
-      'landFacility:warehouse': 4,
-      'landFacility:parking': 5,
-      'landFacility:control': 6,
-      work: 7,
-      workOrder: 8
+      cadastre: 0,
+      manage: 1,
+      cropStatus: 2,
+      housing: 3,
+      'landFacility:types': 4,
+      'landFacility:warehouse': 5,
+      'landFacility:parking': 6,
+      'landFacility:control': 7,
+      work: 8,
+      workOrder: 9
     }),
     []
   );
@@ -26088,6 +26101,14 @@ body { display: flex !important; align-items: center !important; justify-content
     if (!fieldId) return normalizeExternalFieldMarkerPoint(null, fallback);
     return normalizeExternalFieldMarkerPoint(townMoveEditableFieldMarkerPointByFieldId?.[fieldId], fallback);
   };
+  const selectedFieldCadastreMarkerPoint = useMemo(() => {
+    const safeFieldIndex = Math.max(0, Math.floor(Number(currentFieldIndex) || 0));
+    const field = game?.fields?.[safeFieldIndex];
+    const fieldId = String(field?.id || '');
+    const fallback = externalFieldMarkerFallbackPoint(safeFieldIndex);
+    if (!fieldId) return normalizeExternalFieldMarkerPoint(null, fallback);
+    return normalizeExternalFieldMarkerPoint(externalFieldMarkerPointByFieldId?.[fieldId], fallback);
+  }, [currentFieldIndex, externalFieldMarkerPointByFieldId, game?.fields]);
   const resolveTownMoveInitialCenter = (locationContext = townMoveLocationContext) => {
     return resolveSettlementMoveInitialCenter({
       locationContext,
@@ -52829,6 +52850,11 @@ body { display: flex !important; align-items: center !important; justify-content
   };
   const closeTownMoveModal = (options = {}) => {
     const preserveLocationContext = Boolean(options?.preserveLocationContext);
+    if (townMoveMapPanFrameRef.current.frameId) {
+      cancelAnimationFrame(townMoveMapPanFrameRef.current.frameId);
+      townMoveMapPanFrameRef.current = { frameId: 0, center: null };
+    }
+    setTownMoveMapIsPanning(false);
     townMoveMapDragRef.current = {
       active: false,
       pointerId: -1,
@@ -52908,6 +52934,7 @@ body { display: flex !important; align-items: center !important; justify-content
   const resetTownMoveMapView = () => {
     setTownMoveMapZoom(EXTERNAL_MAP_TOWN_MOVE_DEFAULT_ZOOM);
     setTownMoveMapCenter(resolveTownMoveInitialCenter());
+    setTownMoveMapIsPanning(false);
     townMoveMapDragRef.current = {
       active: false,
       pointerId: -1,
@@ -52943,6 +52970,9 @@ body { display: flex !important; align-items: center !important; justify-content
       }
       return next;
     });
+  }, []);
+  const toggleTownMoveFieldBoundariesVisible = useCallback(() => {
+    setTownMoveFieldBoundariesVisible((prev) => !prev);
   }, []);
   const toggleTownMoveLandAreasVisible = useCallback(() => {
     setTownMoveLandAreasVisible((prev) => {
@@ -53865,10 +53895,32 @@ body { display: flex !important; align-items: center !important; justify-content
       centerX: Number(townMoveMapCenter?.x) || 0,
       centerY: Number(townMoveMapCenter?.y) || 0
     };
+    setTownMoveMapIsPanning(true);
     event.currentTarget?.setPointerCapture?.(event.pointerId);
   };
+  const scheduleTownMoveMapPanCenter = useCallback((nextCenter) => {
+    townMoveMapPanFrameRef.current.center = nextCenter;
+    if (townMoveMapPanFrameRef.current.frameId) return;
+    townMoveMapPanFrameRef.current.frameId = requestAnimationFrame(() => {
+      const pendingCenter = townMoveMapPanFrameRef.current.center;
+      townMoveMapPanFrameRef.current = { frameId: 0, center: null };
+      if (!pendingCenter) return;
+      setTownMoveMapCenter(pendingCenter);
+    });
+  }, []);
   const onTownMoveMapPointerMove = (event) => {
     const tool = String(townMoveMapTool || 'pan');
+    if (tool === 'pan' && !townMoveCoordinateMeasureEnabled) {
+      const drag = townMoveMapDragRef.current;
+      if (!drag.active || Number(drag.pointerId) !== Number(event.pointerId)) return;
+      const dx = (Number(event.clientX) || 0) - drag.startX;
+      const dy = (Number(event.clientY) || 0) - drag.startY;
+      const pxPerKm = townMoveMapPxPerKm();
+      const nextX = drag.centerX - ((dx / pxPerKm) * EXTERNAL_MAP_PAN_SPEED);
+      const nextY = drag.centerY - ((dy / pxPerKm) * EXTERNAL_MAP_PAN_SPEED);
+      scheduleTownMoveMapPanCenter(clampTownMoveMapCenter(nextX, nextY));
+      return;
+    }
     const mapPoint = screenPointToTownMoveMapPoint(event.clientX, event.clientY);
     const viewportEl = townMoveMapViewportRef.current;
     const rect = viewportEl?.getBoundingClientRect?.();
@@ -53950,7 +54002,7 @@ body { display: flex !important; align-items: center !important; justify-content
     const pxPerKm = townMoveMapPxPerKm();
     const nextX = drag.centerX - ((dx / pxPerKm) * EXTERNAL_MAP_PAN_SPEED);
     const nextY = drag.centerY - ((dy / pxPerKm) * EXTERNAL_MAP_PAN_SPEED);
-    setTownMoveMapCenter(clampTownMoveMapCenter(nextX, nextY));
+    scheduleTownMoveMapPanCenter(clampTownMoveMapCenter(nextX, nextY));
   };
   const onTownMoveMapPointerLeave = () => {
     setTownMoveLandCloseHover(false);
@@ -54000,6 +54052,7 @@ body { display: flex !important; align-items: center !important; justify-content
     const drag = townMoveMapDragRef.current;
     if (Number(drag.pointerId) !== Number(event.pointerId)) return;
     townMoveMapDragRef.current = { ...drag, active: false, pointerId: -1 };
+    setTownMoveMapIsPanning(false);
     event.currentTarget?.releasePointerCapture?.(event.pointerId);
   };
   const onTownMoveMapWheel = useCallback((event) => {
@@ -63674,16 +63727,27 @@ const requestRepairEquipment = (itemKey) => {
       const point = normalizeExternalFieldMarkerPoint(townMoveEditableFieldMarkerPointByFieldId?.[fieldId], fallback);
       const nameLabel = String(field?.name || `토지 ${fieldIndex + 1}`);
       const pyLabel = formatPyAreaLabel(field?.py);
+      const boundarySourcePoints = resolveCadastreBoundaryByPoint({
+        contours: townMoveUserContours,
+        markerPoint: point
+      })?.points || [];
+      const boundaryProjectedPoints = boundarySourcePoints.map((boundaryPoint) => {
+        const x = Number(boundaryPoint?.x) || 0;
+        const y = Number(boundaryPoint?.y) || 0;
+        return townMoveMapProjectPoint(x, y);
+      });
       return {
         fieldId,
         fieldIndex,
         label: nameLabel,
         hoverLabel: `${nameLabel} · ${pyLabel}`,
         pyLabel,
+        py: Number(field?.py) || 0,
         owned: Boolean(field?.owned),
         isCurrent: townMoveLocationContext !== 'town' && fieldIndex === Number(game?.selectedField),
         isPlacementTarget: fieldId === String(townMoveMarkerFieldTargetId || ''),
         point,
+        boundarySourcePoints: boundaryProjectedPoints,
         p: townMoveMapProjectPoint(point.x, point.y)
       };
     })
@@ -68221,6 +68285,7 @@ body { display: flex !important; align-items: center !important; justify-content
         setTownMoveVillageMarkersVisible,
         setTownMoveCityMarkersVisible,
         setTownMoveFieldMarkersVisible,
+        setTownMoveFieldBoundariesVisible,
         setTownMoveLandAreasVisible,
         setTownMoveMarkerMoveTarget,
         setTownMoveMarkerConfirmModal,
@@ -69167,6 +69232,7 @@ body { display: flex !important; align-items: center !important; justify-content
                         <tr>
                           <th>과종</th>
                           <th>품종</th>
+                          <th>대목</th>
                           <th>수령</th>
                           <th>식재 주수</th>
                           <th>생존</th>
@@ -69183,6 +69249,7 @@ body { display: flex !important; align-items: center !important; justify-content
                           <tr key={row.key}>
                             <td>사과</td>
                             <td>{CROPS[row.cropId]?.name || CROPS[selectedField.cropId]?.name || row.cropId || '-'}</td>
+                            <td>M9</td>
                             <td>{row.ageYear}년생</td>
                             <td>{row.trees}주</td>
                             <td>{row.aliveTrees}주</td>
@@ -69201,6 +69268,14 @@ body { display: flex !important; align-items: center !important; justify-content
                   <div className="empty-box">아직 식재 이력이 없습니다. 식재 탭에서 묘목을 심으면 품종/수령 구성이 자동 정리됩니다.</div>
                 )}
               </div>
+            )}
+            {focusTab === 'cadastre' && (
+              <CadastrePanel
+                className={focusTabPanelClassName}
+                selectedField={selectedField}
+                selectedFieldMarkerPoint={selectedFieldCadastreMarkerPoint}
+                contours={townMoveUserContours}
+              />
             )}
             {focusTab === 'manage' && (
               <div className={`meter-grid meter-grid--uniform ${focusTabPanelClassName}`.trim()}>
@@ -82234,11 +82309,13 @@ body { display: flex !important; align-items: center !important; justify-content
             closing={isGenericModalClosing('townMove')}
             isNightPhase={isNightPhase}
             devMode={devMode}
+            isPanning={townMoveMapIsPanning}
             zoom={townMoveMapZoom}
             mapTool={townMoveMapTool}
             villageMarkersVisible={townMoveVillageMarkersVisible}
             cityMarkersVisible={townMoveCityMarkersVisible}
             fieldMarkersVisible={townMoveFieldMarkersVisible}
+            fieldBoundariesVisible={townMoveFieldBoundariesVisible}
             landAreasVisible={townMoveLandAreasVisible}
             coordinateMeasureEnabled={townMoveCoordinateMeasureEnabled}
             markerPlacementMode={townMoveMarkerPlacementMode}
@@ -82251,6 +82328,7 @@ body { display: flex !important; align-items: center !important; justify-content
             onToggleVillageMarkersVisible={toggleTownMoveVillageMarkersVisible}
             onToggleCityMarkersVisible={toggleTownMoveCityMarkersVisible}
             onToggleFieldMarkersVisible={toggleTownMoveFieldMarkersVisible}
+            onToggleFieldBoundariesVisible={toggleTownMoveFieldBoundariesVisible}
             onToggleLandAreasVisible={toggleTownMoveLandAreasVisible}
             onToggleCoordinateMeasureEnabled={toggleTownMoveCoordinateMeasureEnabled}
             onSelectMarkerPlacementMode={setTownMoveMarkerPlacementMode}
@@ -82298,6 +82376,7 @@ body { display: flex !important; align-items: center !important; justify-content
             fieldSelectMode={townMoveFieldSelectMode}
             onOpenMarkerConfirm={openTownMoveMarkerConfirmModal}
             fieldMarkerViews={townMoveFieldMarkersVisible ? townMoveFieldMarkerViews : []}
+            fieldBoundaryViews={townMoveFieldMarkerViews}
             hoverFieldMarkerId={townMoveHoverFieldMarkerId}
             setHoverFieldMarkerId={setTownMoveHoverFieldMarkerId}
             onPickFieldMarker={handleTownMapFieldPick}

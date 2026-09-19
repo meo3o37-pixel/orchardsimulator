@@ -172,46 +172,57 @@ export function createLandPool({
 } = {}) {
   const pool = [];
   let id = 0;
+  const pushGeneratedLand = ({ group, groupIndex, itemIndex, seed, encounter = false }) => {
+    const py = Math.floor(group.minPy + seededRand(seed) * (group.maxPy - group.minPy + 1));
+    const regionOffset = encounter ? 7 : 0;
+    const eup = region.eupMyeon[(itemIndex + groupIndex * 2 + regionOffset) % region.eupMyeon.length];
+    const ri = region.ri[(itemIndex * 3 + groupIndex + regionOffset) % region.ri.length];
+    const mainNo = 10 + ((itemIndex * (encounter ? 53 : 37) + groupIndex * 11 + (encounter ? 211 : 0)) % 490);
+    const subNo = 1 + ((itemIndex * (encounter ? 29 : 19) + groupIndex * 7 + (encounter ? 13 : 0)) % 38);
+    const slopeDeg = pickSlopeDeg(seed);
+    const slopePriceMultiplier = slopePriceMultiplierOf(slopeDeg);
+    const slopeGroundwaterFactor = groundwaterDepthFactorOf(slopeDeg);
+    const unitPriceBase = 100000 + Math.floor(seededRand(seed + 77) * 50001);
+
+    const slopeGroundwaterBonusRatio = (slopeGroundwaterFactor - 0.72) / (1.1 - 0.72);
+    const groundwaterBaseRaw = 1000 + (seededRand(seed + 171) * 2000);
+    const groundwaterDepthAdjusted = groundwaterBaseRaw * (0.86 + (slopeGroundwaterBonusRatio * 0.28));
+    const groundwaterTonsBase = Math.max(1000, Math.min(3000, Math.round(groundwaterDepthAdjusted)));
+    const groundwaterDailyRechargeLiters = Math.max(
+      90,
+      Math.round(
+        groundwaterTonsBase
+        * (0.35 + seededRand(seed + 173) * 0.42)
+      )
+    );
+    const groundwaterPriceBonus = clampPriceMultiplier(0.96 + Math.min(0.09, groundwaterTonsBase / 24000));
+    const unitPrice = Math.round(unitPriceBase * slopePriceMultiplier * groundwaterPriceBonus);
+
+    pool.push({
+      id,
+      group: group.key,
+      name: `청송군 ${eup} ${ri} ${mainNo}-${subNo}`,
+      py,
+      slopeDeg,
+      slopeLaborMultiplier: slopeLaborMultiplierByDeg(slopeDeg),
+      groundwaterTonsBase,
+      groundwaterDailyRechargeLiters,
+      price: py * unitPrice
+    });
+    id += 1;
+  };
 
   landGroups.forEach((group, groupIndex) => {
     for (let i = 0; i < group.count; i += 1) {
       const seed = (groupIndex + 1) * 1000 + i * 17;
-      const py = Math.floor(group.minPy + seededRand(seed) * (group.maxPy - group.minPy + 1));
-      const eup = region.eupMyeon[(i + groupIndex * 2) % region.eupMyeon.length];
-      const ri = region.ri[(i * 3 + groupIndex) % region.ri.length];
-      const mainNo = 10 + ((i * 37 + groupIndex * 11) % 490);
-      const subNo = 1 + ((i * 19 + groupIndex * 7) % 38);
-      const slopeDeg = pickSlopeDeg(seed);
-      const slopePriceMultiplier = slopePriceMultiplierOf(slopeDeg);
-      const slopeGroundwaterFactor = groundwaterDepthFactorOf(slopeDeg);
-      const unitPriceBase = 100000 + Math.floor(seededRand(seed + 77) * 50001);
+      pushGeneratedLand({ group, groupIndex, itemIndex: i, seed });
+    }
+  });
 
-      const slopeGroundwaterBonusRatio = (slopeGroundwaterFactor - 0.72) / (1.1 - 0.72);
-      const groundwaterBaseRaw = 1000 + (seededRand(seed + 171) * 2000);
-      const groundwaterDepthAdjusted = groundwaterBaseRaw * (0.86 + (slopeGroundwaterBonusRatio * 0.28));
-      const groundwaterTonsBase = Math.max(1000, Math.min(3000, Math.round(groundwaterDepthAdjusted)));
-      const groundwaterDailyRechargeLiters = Math.max(
-        90,
-        Math.round(
-          groundwaterTonsBase
-          * (0.35 + seededRand(seed + 173) * 0.42)
-        )
-      );
-      const groundwaterPriceBonus = clampPriceMultiplier(0.96 + Math.min(0.09, groundwaterTonsBase / 24000));
-      const unitPrice = Math.round(unitPriceBase * slopePriceMultiplier * groundwaterPriceBonus);
-
-      pool.push({
-        id,
-        group: group.key,
-        name: `청송군 ${eup} ${ri} ${mainNo}-${subNo}`,
-        py,
-        slopeDeg,
-        slopeLaborMultiplier: slopeLaborMultiplierByDeg(slopeDeg),
-        groundwaterTonsBase,
-        groundwaterDailyRechargeLiters,
-        price: py * unitPrice
-      });
-      id += 1;
+  landGroups.forEach((group, groupIndex) => {
+    for (let i = 0; i < group.count; i += 1) {
+      const seed = (groupIndex + 5) * 10000 + i * 31;
+      pushGeneratedLand({ group, groupIndex, itemIndex: i, seed, encounter: true });
     }
   });
 

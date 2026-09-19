@@ -43,15 +43,86 @@ const MARKER_PLACEMENT_OPTIONS = [
   { key: 'move', label: '\uB9C8\uCEE4 \uC6C0\uAE30\uAE30' }
 ];
 
+const clampBoundarySize = (value, min, max) => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return min;
+  return Math.max(min, Math.min(max, numeric));
+};
+
+const hashStringToUnit = (value) => {
+  const text = String(value || '');
+  let hash = 2166136261;
+  for (let i = 0; i < text.length; i += 1) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return ((hash >>> 0) % 10000) / 10000;
+};
+
+const terrainPolygonPointsOf = (marker, radius, squish = 0.9) => {
+  const centerX = Number(marker?.p?.x) || 0;
+  const centerY = Number(marker?.p?.y) || 0;
+  const seed = hashStringToUnit(marker?.fieldId || marker?.label || '');
+  const angleOffset = seed * Math.PI * 2;
+  const shapeSeed = hashStringToUnit(`${marker?.fieldId || ''}:shape`);
+  const formatPoint = (x, y) => `${x.toFixed(1)},${y.toFixed(1)}`;
+  const rotatePoint = (x, y, angle) => ({
+    x: centerX + (x * Math.cos(angle)) - (y * Math.sin(angle)),
+    y: centerY + (x * Math.sin(angle)) + (y * Math.cos(angle))
+  });
+  if (shapeSeed < 0.16) {
+    const width = radius * (1.02 + (hashStringToUnit(`${marker?.fieldId || ''}:w`) * 0.22));
+    const height = radius * (0.92 + (hashStringToUnit(`${marker?.fieldId || ''}:h`) * 0.2));
+    const skew = (hashStringToUnit(`${marker?.fieldId || ''}:skew`) - 0.5) * radius * 0.16;
+    const angle = (seed - 0.5) * 0.38;
+    const halfW = width / 2;
+    const halfH = height / 2;
+    return [
+      rotatePoint(-halfW + skew, -halfH, angle),
+      rotatePoint(halfW + (skew * 0.35), -halfH, angle),
+      rotatePoint(halfW - skew, halfH, angle),
+      rotatePoint(-halfW - (skew * 0.35), halfH, angle)
+    ].map((point) => formatPoint(point.x, point.y)).join(' ');
+  }
+  const pointCount = shapeSeed < 0.78
+    ? 5 + Math.floor(hashStringToUnit(`${marker?.fieldId || ''}:edges`) * 4)
+    : 8 + Math.floor(seed * 3);
+  return Array.from({ length: pointCount }, (_, index) => {
+    const turn = index / pointCount;
+    const roughA = hashStringToUnit(`${marker?.fieldId || ''}:a:${index}`);
+    const roughB = hashStringToUnit(`${marker?.fieldId || ''}:b:${index}`);
+    const roughness = shapeSeed < 0.78 ? 0.16 : 0.22;
+    const pointRadius = radius * ((1 - roughness) + (roughA * roughness));
+    const angle = angleOffset + (turn * Math.PI * 2) + ((roughB - 0.5) * (shapeSeed < 0.78 ? 0.14 : 0.18));
+    const x = centerX + (Math.cos(angle) * pointRadius);
+    const y = centerY + (Math.sin(angle) * pointRadius * squish);
+    return formatPoint(x, y);
+  }).join(' ');
+};
+
+const boundaryPolygonPointsOf = (marker) => {
+  const points = Array.isArray(marker?.boundarySourcePoints) ? marker.boundarySourcePoints : [];
+  if (points.length < 3) return '';
+  return points.map((point) => {
+    const projected = point?.p || point;
+    const x = Number(projected?.x);
+    const y = Number(projected?.y);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return '';
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).filter(Boolean).join(' ');
+};
+
 export default function TownMoveMapModal({
   closing = false,
   isNightPhase = false,
   devMode,
+  isPanning = false,
   zoom,
   mapTool,
   villageMarkersVisible,
   cityMarkersVisible,
   fieldMarkersVisible,
+  fieldBoundariesVisible,
   landAreasVisible,
   coordinateMeasureEnabled,
   markerPlacementMode,
@@ -64,6 +135,7 @@ export default function TownMoveMapModal({
   onToggleVillageMarkersVisible,
   onToggleCityMarkersVisible,
   onToggleFieldMarkersVisible,
+  onToggleFieldBoundariesVisible,
   onToggleLandAreasVisible,
   onToggleCoordinateMeasureEnabled,
   onSelectMarkerPlacementMode,
@@ -108,6 +180,7 @@ export default function TownMoveMapModal({
   fieldSelectMode,
   onOpenMarkerConfirm,
   fieldMarkerViews,
+  fieldBoundaryViews,
   hoverFieldMarkerId,
   setHoverFieldMarkerId,
   onPickFieldMarker,
@@ -121,12 +194,55 @@ export default function TownMoveMapModal({
   const isMarkerInteractionEnabled = mapTool !== 'road' && mapTool !== 'river';
   const resolvedCenterTileImageSrc = String(centerTileImageSrc || '');
   const shouldShowCenterTileLoading = Boolean(centerTileImageView) && Boolean(resolvedCenterTileImageSrc) && !isCenterTileImageReady;
+  const useFastFieldMarkerLayer = Boolean(isPanning)
+    && !devMode
+    && !coordinateMeasureEnabled
+    && (Array.isArray(fieldMarkerViews) ? fieldMarkerViews.length : 0) > 320;
   const ownedFieldRows = React.useMemo(() => (
     (Array.isArray(fieldMarkerViews) ? fieldMarkerViews : [])
       .filter((marker) => marker?.owned)
       .slice()
       .sort((a, b) => Number(Boolean(b?.isCurrent)) - Number(Boolean(a?.isCurrent)))
   ), [fieldMarkerViews]);
+  const safeFieldBoundaryViews = React.useMemo(() => (
+    Array.isArray(fieldBoundaryViews) ? fieldBoundaryViews : []
+  ), [fieldBoundaryViews]);
+  const fieldBoundaryPolygonViews = React.useMemo(() => (
+    safeFieldBoundaryViews.map((marker) => {
+      const boundaryPoints = boundaryPolygonPointsOf(marker);
+      if (boundaryPoints) {
+        return {
+          ...marker,
+          boundaryPoints
+        };
+      }
+      const centerX = Number(marker?.p?.x) || 0;
+      const centerY = Number(marker?.p?.y) || 0;
+      const nearestDistance = safeFieldBoundaryViews.reduce((best, other) => {
+        if (String(other?.fieldId || '') === String(marker?.fieldId || '')) return best;
+        const dx = centerX - (Number(other?.p?.x) || 0);
+        const dy = centerY - (Number(other?.p?.y) || 0);
+        const distance = Math.hypot(dx, dy);
+        return distance > 0 ? Math.min(best, distance) : best;
+      }, Number.POSITIVE_INFINITY);
+      const areaPy = Math.max(0, Number(marker?.py) || 0);
+      const areaRadius = clampBoundarySize(Math.sqrt(areaPy || 900) * 0.92, 32, 92);
+      const spacingRadius = Number.isFinite(nearestDistance)
+        ? clampBoundarySize(nearestDistance * 0.36, 18, 92)
+        : areaRadius;
+      const edgeDistance = Math.max(18, Math.min(
+        centerX,
+        centerY,
+        Math.max(0, Number(viewportWidth) - centerX),
+        Math.max(0, Number(viewportHeight) - centerY)
+      ));
+      const radius = Math.max(16, Math.min(areaRadius, spacingRadius, edgeDistance * 0.92));
+      return {
+        ...marker,
+        boundaryPoints: terrainPolygonPointsOf(marker, radius)
+      };
+    })
+  ), [safeFieldBoundaryViews, viewportHeight, viewportWidth]);
   const settlementQuickRows = React.useMemo(() => (
     (Array.isArray(markerViews) ? markerViews : [])
       .slice()
@@ -313,6 +429,13 @@ export default function TownMoveMapModal({
               </button>
               <button
                 type="button"
+                className={`button button--ghost button--compact ${fieldBoundariesVisible ? 'is-active' : ''}`.trim()}
+                onClick={onToggleFieldBoundariesVisible}
+              >
+                {fieldBoundariesVisible ? '토지 경계 표시 ON' : '토지 경계 표시 OFF'}
+              </button>
+              <button
+                type="button"
                 className={`button button--ghost button--compact ${villageMarkersVisible ? 'is-active' : ''}`.trim()}
                 onClick={onToggleVillageMarkersVisible}
               >
@@ -349,6 +472,17 @@ export default function TownMoveMapModal({
         {devMode ? (
           <div className="external-map-viewer__meta">
             {`\uB3C4\uAD6C: ${toolLabelOf(mapTool)}${mapTool === 'marker' ? ` / ${markerPlacementLabelOf(markerPlacementMode)}` : ''} / \uD1A0\uC9C0 ${contourCount} \u00B7 \uB3C4\uB85C ${roadCount} \u00B7 \uAC15 ${riverCount} \u00B7 \uB9C8\uCEE4 ${markerCount} / \uB4DC\uB798\uD504\uD2B8 ${draftPointCount}\uC810`}
+          </div>
+        ) : null}
+        {!devMode ? (
+          <div className="external-map-viewer__view-options">
+            <button
+              type="button"
+              className={`button button--ghost button--compact ${fieldBoundariesVisible ? 'is-active' : ''}`.trim()}
+              onClick={onToggleFieldBoundariesVisible}
+            >
+              {fieldBoundariesVisible ? '토지 경계 표시 ON' : '토지 경계 표시 OFF'}
+            </button>
           </div>
         ) : null}
         <div
@@ -552,6 +686,20 @@ export default function TownMoveMapModal({
             )) : null}
             {roadPaths.map((r) => <path key={r.key} d={r.d} className="external-map-viewer__draw external-map-viewer__draw--road" />)}
             {riverPaths.map((r) => <path key={r.key} d={r.d} className="external-map-viewer__draw external-map-viewer__draw--river" />)}
+            {fieldBoundariesVisible ? fieldBoundaryPolygonViews.map((marker) => {
+              const isHovered = isMarkerInteractionEnabled && String(hoverFieldMarkerId || '') === String(marker.fieldId || '');
+              const isPlacementTarget = isFieldPlacementMode && String(marker.fieldId || '') === String(fieldPlacementTargetId || '');
+              const isPendingTarget = String(pendingTargetFieldId || '') === String(marker.fieldId || '');
+              return (
+                <g
+                  key={`field-boundary-${marker.fieldId}`}
+                  className={`external-map-viewer__field-boundary ${marker.owned ? 'is-owned' : 'is-unowned'} ${marker.isCurrent ? 'is-current' : ''} ${isHovered ? 'is-hovered' : ''} ${isPendingTarget ? 'is-pending-target' : ''} ${isPlacementTarget ? 'is-placement-target' : ''}`.trim()}
+                  aria-hidden="true"
+                >
+                  <polygon points={marker.boundaryPoints} />
+                </g>
+              );
+            }) : null}
             {draftPath ? (
               <path
                 d={draftPath}
@@ -680,7 +828,19 @@ export default function TownMoveMapModal({
                 </g>
               );
             })}
-            {fieldMarkerViews.map((marker) => {
+            {useFastFieldMarkerLayer ? (
+              <g className="external-map-viewer__field-marker-fast-layer" aria-hidden="true">
+                {fieldMarkerViews.map((marker) => (
+                  <circle
+                    key={`field-marker-fast-${marker.fieldId}`}
+                    className={`external-map-viewer__field-marker-fast-dot ${marker.owned ? 'is-owned' : 'is-unowned'} ${marker.isCurrent ? 'is-current' : ''}`.trim()}
+                    cx={marker.p.x}
+                    cy={marker.p.y}
+                    r={marker.isCurrent ? 8.2 : marker.owned ? 6.8 : 4.6}
+                  />
+                ))}
+              </g>
+            ) : fieldMarkerViews.map((marker) => {
               const isHovered = isMarkerInteractionEnabled && String(hoverFieldMarkerId || '') === String(marker.fieldId || '');
               const isPlacementTarget = isFieldPlacementMode && String(marker.fieldId || '') === String(fieldPlacementTargetId || '');
               const isPendingTarget = String(pendingTargetFieldId || '') === String(marker.fieldId || '');

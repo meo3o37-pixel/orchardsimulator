@@ -14557,641 +14557,641 @@
     {
       "fieldId": "1",
       "fieldIndex": 2,
-      "label": "후지토지",
+      "label": "청송군 파천면 신기리 47-20",
       "owned": true,
       "isCurrent": true,
-      "x": -6.23,
-      "y": -12.82
+      "x": 15.14,
+      "y": 6.09
     },
     {
       "fieldId": "2",
       "fieldIndex": 3,
-      "label": "청송군 안덕면 중기리 84-1",
+      "label": "청송군 현동면 중기리 84-1",
       "owned": false,
       "isCurrent": false,
-      "x": 4.25,
-      "y": 13.87
+      "x": 0.15,
+      "y": 17.67
     },
     {
       "fieldId": "3",
       "fieldIndex": 4,
-      "label": "청송군 현동면 각산리 121-20",
+      "label": "청송군 안덕면 오목리 121-20",
       "owned": false,
       "isCurrent": false,
-      "x": 12.11,
-      "y": -7.89
+      "x": 10.44,
+      "y": -6.93
     },
     {
       "fieldId": "4",
       "fieldIndex": 5,
-      "label": "청송군 부남면 송전리 158-1",
+      "label": "청송군 부남면 상평리 158-1",
       "owned": false,
       "isCurrent": false,
-      "x": 22.03,
-      "y": -13.4
+      "x": -10.37,
+      "y": 6.9
     },
     {
       "fieldId": "5",
       "fieldIndex": 6,
-      "label": "청송군 주왕산면 중기리 195-20",
+      "label": "청송군 주왕산면 장전리 195-20",
       "owned": false,
       "isCurrent": false,
-      "x": 19.02,
-      "y": 17.92
+      "x": -22.1,
+      "y": 12.86
     },
     {
       "fieldId": "6",
       "fieldIndex": 7,
-      "label": "청송군 청송읍 각산리 232-1",
+      "label": "청송군 청송읍 월전리 232-1",
       "owned": false,
       "isCurrent": false,
-      "x": 17.83,
-      "y": 9.23
+      "x": -1.79,
+      "y": -4.01
     },
     {
       "fieldId": "7",
       "fieldIndex": 8,
-      "label": "청송군 진보면 송전리 269-20",
+      "label": "청송군 현서면 상리 269-20",
       "owned": false,
       "isCurrent": false,
-      "x": 16.31,
-      "y": 4.98
+      "x": 14.77,
+      "y": 1.41
     },
     {
       "fieldId": "8",
       "fieldIndex": 9,
-      "label": "청송군 파천면 중기리 306-1",
+      "label": "청송군 영덕읍 오산리 306-1",
       "owned": false,
       "isCurrent": false,
-      "x": 18.93,
-      "y": -5.33
+      "x": -9.09,
+      "y": -13.64
     },
     {
       "fieldId": "9",
       "fieldIndex": 10,
-      "label": "테스트 토지",
+      "label": "청송군 지품면 청운리 343-20",
       "owned": true,
       "isCurrent": false,
-      "x": 15.08,
-      "y": 6.14
+      "x": 25.02,
+      "y": -10.26
     },
     {
       "fieldId": "10",
       "fieldIndex": 11,
-      "label": "청송군 현동면 송전리 380-1",
+      "label": "청송군 달산면 안심리 380-1",
       "owned": false,
       "isCurrent": false,
-      "x": 15.25,
-      "y": -16.81
+      "x": 1.18,
+      "y": 3.41
     },
     {
       "fieldId": "11",
       "fieldIndex": 12,
-      "label": "청송군 부남면 중기리 417-20",
+      "label": "청송군 강구면 도평리 417-20",
       "owned": false,
       "isCurrent": false,
-      "x": -13.52,
-      "y": -13.58
+      "x": 13.11,
+      "y": -12.15
     },
     {
       "fieldId": "12",
       "fieldIndex": 13,
-      "label": "청송군 주왕산면 각산리 454-1",
+      "label": "청송군 병곡면 각산리 454-1",
       "owned": false,
       "isCurrent": false,
-      "x": 8.24,
-      "y": -8.63
+      "x": -11.01,
+      "y": -6.68
     },
     {
       "fieldId": "13",
       "fieldIndex": 14,
-      "label": "청송군 청송읍 송전리 491-20",
+      "label": "청송군 축산면 신기리 491-20",
       "owned": false,
       "isCurrent": false,
-      "x": 25.55,
-      "y": -7.95
+      "x": 23.84,
+      "y": 8.4
     },
     {
       "fieldId": "14",
       "fieldIndex": 15,
-      "label": "청송군 진보면 중기리 38-1",
+      "label": "청송군 남정면 중기리 38-1",
       "owned": false,
       "isCurrent": false,
-      "x": 9.98,
-      "y": 4.06
+      "x": -6.63,
+      "y": 13.58
     },
     {
       "fieldId": "15",
       "fieldIndex": 16,
-      "label": "청송군 파천면 각산리 75-20",
+      "label": "청송군 의성읍 오목리 75-20",
       "owned": false,
       "isCurrent": false,
-      "x": 21.25,
-      "y": -8.25
+      "x": 18.99,
+      "y": -4.68
     },
     {
       "fieldId": "16",
       "fieldIndex": 17,
-      "label": "청송군 안덕면 송전리 112-1",
+      "label": "청송군 단촌면 상평리 112-1",
       "owned": false,
       "isCurrent": false,
-      "x": 21.12,
-      "y": -5.26
+      "x": -14.81,
+      "y": 4.16
     },
     {
       "fieldId": "17",
       "fieldIndex": 18,
-      "label": "청송군 현동면 중기리 149-20",
+      "label": "청송군 봉양면 장전리 149-20",
       "owned": false,
       "isCurrent": false,
-      "x": 23.38,
-      "y": -3.84
+      "x": 22,
+      "y": 17.93
     },
     {
       "fieldId": "18",
       "fieldIndex": 19,
-      "label": "청송군 부남면 각산리 186-1",
+      "label": "청송군 옥산면 월전리 186-1",
       "owned": false,
       "isCurrent": false,
-      "x": -10.04,
-      "y": -1.79
+      "x": 7.61,
+      "y": -11.39
     },
     {
       "fieldId": "19",
       "fieldIndex": 20,
-      "label": "청송군 주왕산면 송전리 223-20",
+      "label": "청송군 춘산면 상리 223-20",
       "owned": false,
       "isCurrent": false,
-      "x": -26.66,
-      "y": 5.17
+      "x": 8.01,
+      "y": 8.35
     },
     {
       "fieldId": "20",
       "fieldIndex": 21,
-      "label": "청송군 청송읍 중기리 260-1",
+      "label": "청송군 진보면 오산리 260-1",
       "owned": false,
       "isCurrent": false,
-      "x": -12.24,
-      "y": -7.39
+      "x": -10.5,
+      "y": -11.59
     },
     {
       "fieldId": "21",
       "fieldIndex": 22,
-      "label": "청송군 진보면 각산리 297-20",
+      "label": "청송군 파천면 청운리 297-20",
       "owned": false,
       "isCurrent": false,
-      "x": -21.25,
-      "y": -12.77
+      "x": -22.54,
+      "y": -8.91
     },
     {
       "fieldId": "22",
       "fieldIndex": 23,
-      "label": "청송군 파천면 송전리 334-1",
+      "label": "청송군 현동면 안심리 334-1",
       "owned": false,
       "isCurrent": false,
-      "x": 14.6,
-      "y": -11.99
+      "x": -10.79,
+      "y": 12.15
     },
     {
       "fieldId": "23",
       "fieldIndex": 24,
-      "label": "청송군 안덕면 중기리 371-20",
+      "label": "청송군 안덕면 도평리 371-20",
       "owned": false,
       "isCurrent": false,
-      "x": 19.8,
-      "y": -10.09
+      "x": 12.96,
+      "y": 15.33
     },
     {
       "fieldId": "24",
       "fieldIndex": 25,
-      "label": "청송군 현동면 각산리 408-1",
+      "label": "청송군 부남면 각산리 408-1",
       "owned": false,
       "isCurrent": false,
-      "x": 21.64,
-      "y": -10.02
+      "x": -11.9,
+      "y": -0.98
     },
     {
       "fieldId": "25",
       "fieldIndex": 26,
-      "label": "청송군 부남면 송전리 445-20",
+      "label": "청송군 주왕산면 신기리 445-20",
       "owned": false,
       "isCurrent": false,
-      "x": 5.81,
-      "y": -13.4
+      "x": -24.4,
+      "y": 2.5
     },
     {
       "fieldId": "26",
       "fieldIndex": 27,
-      "label": "청송군 주왕산면 중기리 482-1",
+      "label": "청송군 청송읍 중기리 482-1",
       "owned": false,
       "isCurrent": false,
-      "x": 9.01,
-      "y": 10.71
+      "x": -0.88,
+      "y": -14.64
     },
     {
       "fieldId": "27",
       "fieldIndex": 28,
-      "label": "청송군 청송읍 각산리 29-20",
+      "label": "청송군 현서면 오목리 29-20",
       "owned": false,
       "isCurrent": false,
-      "x": 21.44,
-      "y": -5.52
+      "x": -6.71,
+      "y": 16.17
     },
     {
       "fieldId": "28",
       "fieldIndex": 29,
-      "label": "청송군 진보면 송전리 66-1",
+      "label": "청송군 영덕읍 상평리 66-1",
       "owned": false,
       "isCurrent": false,
-      "x": -22,
-      "y": 13.86
+      "x": -11.26,
+      "y": 4.8
     },
     {
       "fieldId": "29",
       "fieldIndex": 30,
-      "label": "청송군 파천면 중기리 103-20",
+      "label": "청송군 지품면 장전리 103-20",
       "owned": false,
       "isCurrent": false,
-      "x": -10.69,
-      "y": -3.85
+      "x": -23.98,
+      "y": -11.15
     },
     {
       "fieldId": "30",
       "fieldIndex": 31,
-      "label": "청송군 안덕면 용전리 21-8",
+      "label": "청송군 달산면 월전리 140-1",
       "owned": false,
       "isCurrent": false,
-      "x": -7.4,
-      "y": -2.56
+      "x": -5.66,
+      "y": -9.23
     },
     {
       "fieldId": "31",
       "fieldIndex": 32,
-      "label": "청송군 현동면 거대리 58-27",
+      "label": "청송군 강구면 상리 177-20",
       "owned": false,
       "isCurrent": false,
-      "x": -4,
-      "y": 1.4
+      "x": 22.59,
+      "y": 6.62
     },
     {
       "fieldId": "32",
       "fieldIndex": 33,
-      "label": "청송군 부남면 오정리 95-8",
+      "label": "청송군 병곡면 오산리 214-1",
       "owned": false,
       "isCurrent": false,
-      "x": 25.87,
-      "y": -9.54
+      "x": -12.68,
+      "y": 11.42
     },
     {
       "fieldId": "33",
       "fieldIndex": 34,
-      "label": "청송군 주왕산면 용전리 132-27",
+      "label": "청송군 축산면 청운리 251-20",
       "owned": false,
       "isCurrent": false,
-      "x": 11.36,
-      "y": 7.68
+      "x": 17.01,
+      "y": -1.83
     },
     {
       "fieldId": "34",
       "fieldIndex": 35,
-      "label": "청송군 청송읍 거대리 169-8",
+      "label": "청송군 남정면 안심리 288-1",
       "owned": false,
       "isCurrent": false,
-      "x": 6.27,
-      "y": 5.61
+      "x": 3.91,
+      "y": 0.49
     },
     {
       "fieldId": "35",
       "fieldIndex": 36,
-      "label": "청송군 진보면 오정리 206-27",
+      "label": "청송군 의성읍 도평리 325-20",
       "owned": false,
       "isCurrent": false,
-      "x": 28.21,
-      "y": 5.35
+      "x": 16.24,
+      "y": -14.86
     },
     {
       "fieldId": "36",
       "fieldIndex": 37,
-      "label": "청송군 파천면 용전리 243-8",
+      "label": "청송군 단촌면 각산리 362-1",
       "owned": false,
       "isCurrent": false,
-      "x": 15.79,
-      "y": -3.33
+      "x": -9.83,
+      "y": -10.71
     },
     {
       "fieldId": "37",
       "fieldIndex": 38,
-      "label": "청송군 안덕면 거대리 280-27",
+      "label": "청송군 봉양면 신기리 399-20",
       "owned": false,
       "isCurrent": false,
-      "x": 7.4,
-      "y": 8.19
+      "x": -17.38,
+      "y": 1.03
     },
     {
       "fieldId": "38",
       "fieldIndex": 39,
-      "label": "청송군 현동면 오정리 317-8",
+      "label": "청송군 옥산면 중기리 436-1",
       "owned": false,
       "isCurrent": false,
-      "x": -5.76,
-      "y": 4.74
+      "x": -1.76,
+      "y": -10.68
     },
     {
       "fieldId": "39",
       "fieldIndex": 40,
-      "label": "청송군 부남면 용전리 354-27",
+      "label": "청송군 춘산면 오목리 473-20",
       "owned": false,
       "isCurrent": false,
-      "x": -19.28,
-      "y": 4
+      "x": -17,
+      "y": -12.1
     },
     {
       "fieldId": "40",
       "fieldIndex": 41,
-      "label": "청송군 주왕산면 거대리 391-8",
+      "label": "청송군 진보면 상평리 20-1",
       "owned": false,
       "isCurrent": false,
-      "x": -8.2,
-      "y": 8.26
+      "x": -14.78,
+      "y": 10.65
     },
     {
       "fieldId": "41",
       "fieldIndex": 42,
-      "label": "청송군 청송읍 오정리 428-27",
+      "label": "청송군 파천면 장전리 57-20",
       "owned": false,
       "isCurrent": false,
-      "x": 13.21,
-      "y": -16.42
+      "x": 24.21,
+      "y": 11.1
     },
     {
       "fieldId": "42",
       "fieldIndex": 43,
-      "label": "청송군 진보면 용전리 465-8",
+      "label": "청송군 현동면 월전리 94-1",
       "owned": false,
       "isCurrent": false,
-      "x": 26.58,
-      "y": -11.38
+      "x": 8.61,
+      "y": -6.38
     },
     {
       "fieldId": "43",
       "fieldIndex": 44,
-      "label": "청송군 파천면 거대리 12-27",
+      "label": "청송군 안덕면 상리 131-20",
       "owned": false,
       "isCurrent": false,
-      "x": 16.76,
-      "y": -12.28
+      "x": 1.83,
+      "y": -2.19
     },
     {
       "fieldId": "44",
       "fieldIndex": 45,
-      "label": "청송군 안덕면 오정리 49-8",
+      "label": "청송군 부남면 오산리 168-1",
       "owned": false,
       "isCurrent": false,
-      "x": 7.66,
-      "y": 6.81
+      "x": -18.41,
+      "y": 17.5
     },
     {
       "fieldId": "45",
       "fieldIndex": 46,
-      "label": "청송군 현동면 용전리 86-27",
+      "label": "청송군 주왕산면 청운리 205-20",
       "owned": false,
       "isCurrent": false,
-      "x": 18.38,
-      "y": 4.16
+      "x": 22.27,
+      "y": 4.21
     },
     {
       "fieldId": "46",
       "fieldIndex": 47,
-      "label": "청송군 부남면 거대리 123-8",
+      "label": "청송군 청송읍 안심리 242-1",
       "owned": false,
       "isCurrent": false,
-      "x": 22.51,
-      "y": -4.81
+      "x": -4.49,
+      "y": 8.28
     },
     {
       "fieldId": "47",
       "fieldIndex": 48,
-      "label": "청송군 주왕산면 오정리 160-27",
+      "label": "청송군 현서면 도평리 279-20",
       "owned": false,
       "isCurrent": false,
-      "x": -9.98,
-      "y": 13.67
+      "x": 11.53,
+      "y": -13.36
     },
     {
       "fieldId": "48",
       "fieldIndex": 49,
-      "label": "청송군 청송읍 용전리 197-8",
+      "label": "청송군 영덕읍 각산리 316-1",
       "owned": false,
       "isCurrent": false,
-      "x": -18.89,
-      "y": -3.92
+      "x": -13.65,
+      "y": -7.32
     },
     {
       "fieldId": "49",
       "fieldIndex": 50,
-      "label": "청송군 진보면 거대리 234-27",
+      "label": "청송군 지품면 신기리 353-20",
       "owned": false,
       "isCurrent": false,
-      "x": -22.03,
-      "y": 7.45
+      "x": 7.29,
+      "y": -4.83
     },
     {
       "fieldId": "50",
       "fieldIndex": 51,
-      "label": "청송군 부남면 구산리 32-15",
+      "label": "청송군 달산면 중기리 390-1",
       "owned": false,
       "isCurrent": false,
-      "x": -5.75,
-      "y": -12.42
+      "x": -2.79,
+      "y": 10.54
     },
     {
       "fieldId": "51",
       "fieldIndex": 52,
-      "label": "청송군 주왕산면 내룡리 69-34",
+      "label": "청송군 강구면 오목리 427-20",
       "owned": false,
       "isCurrent": false,
-      "x": -4.84,
-      "y": -11.54
+      "x": 9.23,
+      "y": -1.05
     },
     {
       "fieldId": "52",
       "fieldIndex": 53,
-      "label": "청송군 청송읍 기곡리 106-15",
+      "label": "청송군 병곡면 상평리 464-1",
       "owned": false,
       "isCurrent": false,
-      "x": 26.68,
-      "y": -10.28
+      "x": -12.99,
+      "y": 3.83
     },
     {
       "fieldId": "53",
       "fieldIndex": 54,
-      "label": "청송군 진보면 구산리 143-34",
+      "label": "청송군 축산면 장전리 11-20",
       "owned": false,
       "isCurrent": false,
-      "x": 25.26,
-      "y": -6.73
+      "x": -25.41,
+      "y": 14.07
     },
     {
       "fieldId": "54",
       "fieldIndex": 55,
-      "label": "청송군 파천면 내룡리 180-15",
+      "label": "청송군 남정면 월전리 48-1",
       "owned": false,
       "isCurrent": false,
-      "x": 16.67,
-      "y": 5.38
+      "x": 0.45,
+      "y": -12.29
     },
     {
       "fieldId": "55",
       "fieldIndex": 56,
-      "label": "청송군 안덕면 기곡리 217-34",
+      "label": "청송군 의성읍 상리 85-20",
       "owned": false,
       "isCurrent": false,
-      "x": 8.37,
-      "y": 9.07
+      "x": 12.5,
+      "y": 8.19
     },
     {
       "fieldId": "56",
       "fieldIndex": 57,
-      "label": "청송군 현동면 구산리 254-15",
+      "label": "청송군 단촌면 오산리 122-1",
       "owned": false,
       "isCurrent": false,
-      "x": 21.45,
-      "y": -3.36
+      "x": -20.42,
+      "y": -10.58
     },
     {
       "fieldId": "57",
       "fieldIndex": 58,
-      "label": "청송군 부남면 내룡리 291-34",
+      "label": "청송군 봉양면 청운리 159-20",
       "owned": false,
       "isCurrent": false,
-      "x": -15.28,
-      "y": 6.77
+      "x": 26.96,
+      "y": -5.07
     },
     {
       "fieldId": "58",
       "fieldIndex": 59,
-      "label": "청송군 주왕산면 기곡리 328-15",
+      "label": "청송군 옥산면 안심리 196-1",
       "owned": false,
       "isCurrent": false,
-      "x": -16.05,
-      "y": -3.43
+      "x": 4.18,
+      "y": 6.11
     },
     {
       "fieldId": "59",
       "fieldIndex": 60,
-      "label": "청송군 청송읍 구산리 365-34",
+      "label": "청송군 춘산면 도평리 233-20",
       "owned": false,
       "isCurrent": false,
-      "x": -13.24,
-      "y": 0.33
+      "x": 8.07,
+      "y": 10.45
     },
     {
       "fieldId": "60",
       "fieldIndex": 61,
-      "label": "청송군 진보면 내룡리 402-15",
+      "label": "청송군 진보면 각산리 270-1",
       "owned": false,
       "isCurrent": false,
-      "x": -8.56,
-      "y": -7.5
+      "x": -5.53,
+      "y": -0.64
     },
     {
       "fieldId": "61",
       "fieldIndex": 62,
-      "label": "청송군 파천면 기곡리 439-34",
+      "label": "청송군 파천면 신기리 307-20",
       "owned": false,
       "isCurrent": false,
-      "x": -11.4,
-      "y": -6.05
+      "x": -24.1,
+      "y": 6.83
     },
     {
       "fieldId": "62",
       "fieldIndex": 63,
-      "label": "청송군 청송읍 송전리 43-22",
+      "label": "청송군 현동면 중기리 344-1",
       "owned": false,
       "isCurrent": false,
-      "x": 6.75,
-      "y": -8.12
+      "x": 1.04,
+      "y": -14.94
     },
     {
       "fieldId": "63",
       "fieldIndex": 64,
-      "label": "청송군 진보면 중기리 80-3",
+      "label": "청송군 안덕면 오목리 381-20",
       "owned": false,
       "isCurrent": false,
-      "x": 7.28,
-      "y": 11.74
+      "x": 18,
+      "y": -7.78
     },
     {
       "fieldId": "64",
       "fieldIndex": 65,
-      "label": "청송군 파천면 각산리 117-22",
+      "label": "청송군 부남면 상평리 418-1",
       "owned": false,
       "isCurrent": false,
-      "x": 22.67,
-      "y": -0.96
+      "x": 20.59,
+      "y": -12.71
     },
     {
       "fieldId": "65",
       "fieldIndex": 66,
-      "label": "청송군 안덕면 송전리 154-3",
+      "label": "청송군 주왕산면 장전리 455-20",
       "owned": false,
       "isCurrent": false,
-      "x": 10.3,
-      "y": 10.13
+      "x": 5.18,
+      "y": 5.65
     },
     {
       "fieldId": "66",
       "fieldIndex": 67,
-      "label": "청송군 현동면 중기리 191-22",
+      "label": "청송군 청송읍 월전리 492-1",
       "owned": false,
       "isCurrent": false,
-      "x": 19.93,
-      "y": -7.92
+      "x": -0.1,
+      "y": -5.55
     },
     {
       "fieldId": "67",
       "fieldIndex": 68,
-      "label": "청송군 부남면 각산리 228-3",
+      "label": "청송군 현서면 상리 39-20",
       "owned": false,
       "isCurrent": false,
-      "x": 27.68,
-      "y": -2.51
+      "x": 6.28,
+      "y": 9.37
     },
     {
       "fieldId": "68",
       "fieldIndex": 69,
-      "label": "청송군 주왕산면 송전리 265-22",
+      "label": "청송군 영덕읍 오산리 76-1",
       "owned": false,
       "isCurrent": false,
-      "x": -8.62,
-      "y": 5.39
+      "x": -4.46,
+      "y": 14.81
     },
     {
       "fieldId": "69",
       "fieldIndex": 70,
-      "label": "청송군 청송읍 중기리 302-3",
+      "label": "청송군 지품면 청운리 113-20",
       "owned": false,
       "isCurrent": false,
-      "x": -12.56,
-      "y": 4.29
+      "x": -20.25,
+      "y": -2.33
     },
     {
       "fieldId": "70",
       "fieldIndex": 71,
-      "label": "청송군 진보면 각산리 339-22",
+      "label": "청송군 달산면 안심리 150-1",
       "owned": false,
       "isCurrent": false,
-      "x": -9.66,
-      "y": -6.37
+      "x": -5.11,
+      "y": 2.76
     },
     {
       "fieldId": "71",
       "fieldIndex": 72,
-      "label": "청송군 파천면 송전리 376-3",
+      "label": "청송군 강구면 도평리 187-20",
       "owned": false,
       "isCurrent": false,
-      "x": -18.77,
-      "y": -7.47
+      "x": 16.45,
+      "y": 14.75
     },
     {
       "fieldId": "72",
@@ -15199,8 +15199,8 @@
       "label": "청송군 병곡면 각산리 224-1",
       "owned": false,
       "isCurrent": false,
-      "x": -18.1,
-      "y": -9.42
+      "x": -17.92,
+      "y": -8.12
     },
     {
       "fieldId": "73",
@@ -15208,8 +15208,8 @@
       "label": "청송군 축산면 신기리 261-20",
       "owned": false,
       "isCurrent": false,
-      "x": 15.24,
-      "y": 0.23
+      "x": 21.22,
+      "y": 6.79
     },
     {
       "fieldId": "74",
@@ -15217,8 +15217,8 @@
       "label": "청송군 남정면 중기리 298-1",
       "owned": false,
       "isCurrent": false,
-      "x": -5,
-      "y": 15.15
+      "x": 5.65,
+      "y": -11.67
     },
     {
       "fieldId": "75",
@@ -15226,8 +15226,8 @@
       "label": "청송군 의성읍 오목리 335-20",
       "owned": false,
       "isCurrent": false,
-      "x": 25.09,
-      "y": -6.06
+      "x": 5.19,
+      "y": -10.43
     },
     {
       "fieldId": "76",
@@ -15235,8 +15235,8 @@
       "label": "청송군 단촌면 상평리 372-1",
       "owned": false,
       "isCurrent": false,
-      "x": -10.97,
-      "y": 7.45
+      "x": -16.98,
+      "y": 7.13
     },
     {
       "fieldId": "77",
@@ -15244,8 +15244,8 @@
       "label": "청송군 봉양면 장전리 409-20",
       "owned": false,
       "isCurrent": false,
-      "x": 19.98,
-      "y": -12.71
+      "x": -23.46,
+      "y": 13.58
     },
     {
       "fieldId": "78",
@@ -15253,8 +15253,8 @@
       "label": "청송군 옥산면 월전리 446-1",
       "owned": false,
       "isCurrent": false,
-      "x": 4.09,
-      "y": -0.42
+      "x": -3.9,
+      "y": -3.55
     },
     {
       "fieldId": "79",
@@ -15262,8 +15262,8 @@
       "label": "청송군 춘산면 상리 483-20",
       "owned": false,
       "isCurrent": false,
-      "x": -20.07,
-      "y": 7.96
+      "x": 23.54,
+      "y": -1
     },
     {
       "fieldId": "80",
@@ -15271,8 +15271,8 @@
       "label": "청송군 진보면 오산리 30-1",
       "owned": false,
       "isCurrent": false,
-      "x": -19.1,
-      "y": -11.15
+      "x": -18.92,
+      "y": 13.22
     },
     {
       "fieldId": "81",
@@ -15280,8 +15280,8 @@
       "label": "청송군 파천면 청운리 67-20",
       "owned": false,
       "isCurrent": false,
-      "x": 10.84,
-      "y": -14.59
+      "x": 6.8,
+      "y": -13.03
     },
     {
       "fieldId": "82",
@@ -15289,8 +15289,8 @@
       "label": "청송군 현동면 안심리 104-1",
       "owned": false,
       "isCurrent": false,
-      "x": -3.18,
-      "y": -3.46
+      "x": 8.58,
+      "y": -10.61
     },
     {
       "fieldId": "83",
@@ -15298,8 +15298,8 @@
       "label": "청송군 안덕면 도평리 141-20",
       "owned": false,
       "isCurrent": false,
-      "x": 27.04,
-      "y": 13.8
+      "x": 9.62,
+      "y": -12.96
     },
     {
       "fieldId": "84",
@@ -15307,8 +15307,8 @@
       "label": "청송군 부남면 각산리 178-1",
       "owned": false,
       "isCurrent": false,
-      "x": -6.33,
-      "y": -5.64
+      "x": -9.1,
+      "y": -3.88
     },
     {
       "fieldId": "85",
@@ -15316,8 +15316,8 @@
       "label": "청송군 주왕산면 신기리 215-20",
       "owned": false,
       "isCurrent": false,
-      "x": 17.94,
-      "y": 0.1
+      "x": -3.75,
+      "y": -5.36
     },
     {
       "fieldId": "86",
@@ -15325,8 +15325,8 @@
       "label": "청송군 청송읍 중기리 252-1",
       "owned": false,
       "isCurrent": false,
-      "x": -3.41,
-      "y": 14.28
+      "x": -2.23,
+      "y": 12.13
     },
     {
       "fieldId": "87",
@@ -15334,8 +15334,8 @@
       "label": "청송군 현서면 오목리 289-20",
       "owned": false,
       "isCurrent": false,
-      "x": -22.42,
-      "y": -5.08
+      "x": 16.19,
+      "y": 0.47
     },
     {
       "fieldId": "88",
@@ -15343,8 +15343,8 @@
       "label": "청송군 영덕읍 상평리 326-1",
       "owned": false,
       "isCurrent": false,
-      "x": -11.44,
-      "y": 11.2
+      "x": -16.54,
+      "y": 3.66
     },
     {
       "fieldId": "89",
@@ -15352,8 +15352,8 @@
       "label": "청송군 지품면 장전리 363-20",
       "owned": false,
       "isCurrent": false,
-      "x": 12.08,
-      "y": -14.62
+      "x": 18.3,
+      "y": -15
     },
     {
       "fieldId": "90",
@@ -15361,8 +15361,8 @@
       "label": "청송군 달산면 월전리 400-1",
       "owned": false,
       "isCurrent": false,
-      "x": 4.03,
-      "y": -14.56
+      "x": -1.74,
+      "y": -12.87
     },
     {
       "fieldId": "91",
@@ -15370,8 +15370,8 @@
       "label": "청송군 강구면 상리 437-20",
       "owned": false,
       "isCurrent": false,
-      "x": 26.05,
-      "y": 3.93
+      "x": 6.82,
+      "y": 1.95
     },
     {
       "fieldId": "92",
@@ -15379,8 +15379,8 @@
       "label": "청송군 병곡면 오산리 474-1",
       "owned": false,
       "isCurrent": false,
-      "x": -13.69,
-      "y": 12.84
+      "x": -15.78,
+      "y": -13.35
     },
     {
       "fieldId": "93",
@@ -15388,8 +15388,8 @@
       "label": "청송군 축산면 청운리 21-20",
       "owned": false,
       "isCurrent": false,
-      "x": 25.42,
-      "y": -7.37
+      "x": -21.53,
+      "y": -6.65
     },
     {
       "fieldId": "94",
@@ -15397,8 +15397,8 @@
       "label": "청송군 남정면 안심리 58-1",
       "owned": false,
       "isCurrent": false,
-      "x": 3.15,
-      "y": 1.73
+      "x": 0.55,
+      "y": 9.43
     },
     {
       "fieldId": "95",
@@ -15406,8 +15406,8 @@
       "label": "청송군 의성읍 도평리 95-20",
       "owned": false,
       "isCurrent": false,
-      "x": -24.61,
-      "y": -14.67
+      "x": -12.97,
+      "y": 5.85
     },
     {
       "fieldId": "96",
@@ -15415,8 +15415,8 @@
       "label": "청송군 단촌면 각산리 132-1",
       "owned": false,
       "isCurrent": false,
-      "x": -15.39,
-      "y": -0.59
+      "x": -14.46,
+      "y": -3.43
     },
     {
       "fieldId": "97",
@@ -15424,8 +15424,8 @@
       "label": "청송군 봉양면 신기리 169-20",
       "owned": false,
       "isCurrent": false,
-      "x": 7.69,
-      "y": 6.16
+      "x": 20.12,
+      "y": -0.83
     },
     {
       "fieldId": "98",
@@ -15433,8 +15433,8 @@
       "label": "청송군 옥산면 중기리 206-1",
       "owned": false,
       "isCurrent": false,
-      "x": -2.67,
-      "y": 17.61
+      "x": 5.76,
+      "y": 15.61
     },
     {
       "fieldId": "99",
@@ -15442,8 +15442,8 @@
       "label": "청송군 춘산면 오목리 243-20",
       "owned": false,
       "isCurrent": false,
-      "x": 26.96,
-      "y": -8.23
+      "x": 12.79,
+      "y": -9.74
     },
     {
       "fieldId": "100",
@@ -15451,8 +15451,8 @@
       "label": "청송군 진보면 상평리 280-1",
       "owned": false,
       "isCurrent": false,
-      "x": -5.4,
-      "y": 3.56
+      "x": -3.66,
+      "y": 6.59
     },
     {
       "fieldId": "101",
@@ -15460,8 +15460,8 @@
       "label": "청송군 파천면 장전리 317-20",
       "owned": false,
       "isCurrent": false,
-      "x": 22.93,
-      "y": 17.51
+      "x": 26.02,
+      "y": 16.01
     },
     {
       "fieldId": "102",
@@ -15469,8 +15469,8 @@
       "label": "청송군 현동면 월전리 354-1",
       "owned": false,
       "isCurrent": false,
-      "x": -1.88,
-      "y": -6.99
+      "x": 1.91,
+      "y": -9.4
     },
     {
       "fieldId": "103",
@@ -15478,8 +15478,8 @@
       "label": "청송군 안덕면 상리 391-20",
       "owned": false,
       "isCurrent": false,
-      "x": -20.64,
-      "y": 5.55
+      "x": 20.56,
+      "y": 8.43
     },
     {
       "fieldId": "104",
@@ -15487,8 +15487,8 @@
       "label": "청송군 부남면 오산리 428-1",
       "owned": false,
       "isCurrent": false,
-      "x": -17.57,
-      "y": -14.49
+      "x": -17.48,
+      "y": 15.41
     },
     {
       "fieldId": "105",
@@ -15496,8 +15496,8 @@
       "label": "청송군 주왕산면 청운리 465-20",
       "owned": false,
       "isCurrent": false,
-      "x": 10.25,
-      "y": 1.23
+      "x": 22.66,
+      "y": -5.71
     },
     {
       "fieldId": "106",
@@ -15505,8 +15505,8 @@
       "label": "청송군 청송읍 안심리 12-1",
       "owned": false,
       "isCurrent": false,
-      "x": 0.3,
-      "y": 14.24
+      "x": 10.55,
+      "y": -2.07
     },
     {
       "fieldId": "107",
@@ -15514,8 +15514,8 @@
       "label": "청송군 현서면 도평리 49-20",
       "owned": false,
       "isCurrent": false,
-      "x": 26.92,
-      "y": -14.39
+      "x": 5.13,
+      "y": 18.03
     },
     {
       "fieldId": "108",
@@ -15523,8 +15523,8 @@
       "label": "청송군 영덕읍 각산리 86-1",
       "owned": false,
       "isCurrent": false,
-      "x": -9.78,
-      "y": -13.6
+      "x": -12.06,
+      "y": -10.68
     },
     {
       "fieldId": "109",
@@ -15532,8 +15532,8 @@
       "label": "청송군 지품면 신기리 123-20",
       "owned": false,
       "isCurrent": false,
-      "x": 17.93,
-      "y": 1.16
+      "x": -20.35,
+      "y": 8.98
     },
     {
       "fieldId": "110",
@@ -15541,8 +15541,8 @@
       "label": "청송군 달산면 중기리 160-1",
       "owned": false,
       "isCurrent": false,
-      "x": 0.53,
-      "y": 10.9
+      "x": 20.99,
+      "y": 15.79
     },
     {
       "fieldId": "111",
@@ -15550,8 +15550,8 @@
       "label": "청송군 강구면 오목리 197-20",
       "owned": false,
       "isCurrent": false,
-      "x": -21.68,
-      "y": -9.36
+      "x": 21.01,
+      "y": -9.56
     },
     {
       "fieldId": "112",
@@ -15559,8 +15559,8 @@
       "label": "청송군 병곡면 상평리 234-1",
       "owned": false,
       "isCurrent": false,
-      "x": -10.89,
-      "y": 1.05
+      "x": 23.53,
+      "y": -7.44
     },
     {
       "fieldId": "113",
@@ -15568,8 +15568,8 @@
       "label": "청송군 축산면 장전리 271-20",
       "owned": false,
       "isCurrent": false,
-      "x": 15.26,
-      "y": 15.41
+      "x": 17.16,
+      "y": 12.87
     },
     {
       "fieldId": "114",
@@ -15577,8 +15577,8 @@
       "label": "청송군 남정면 월전리 308-1",
       "owned": false,
       "isCurrent": false,
-      "x": -1.77,
-      "y": -2.4
+      "x": 2.94,
+      "y": 1.69
     },
     {
       "fieldId": "115",
@@ -15586,8 +15586,8 @@
       "label": "청송군 의성읍 상리 345-20",
       "owned": false,
       "isCurrent": false,
-      "x": -24.66,
-      "y": 5.13
+      "x": 7.72,
+      "y": -0.49
     },
     {
       "fieldId": "116",
@@ -15595,8 +15595,8 @@
       "label": "청송군 단촌면 오산리 382-1",
       "owned": false,
       "isCurrent": false,
-      "x": -14.62,
-      "y": 17.17
+      "x": -8.89,
+      "y": 14.99
     },
     {
       "fieldId": "117",
@@ -15604,8 +15604,8 @@
       "label": "청송군 봉양면 청운리 419-20",
       "owned": false,
       "isCurrent": false,
-      "x": 21.12,
-      "y": -7.82
+      "x": -3.33,
+      "y": 12.29
     },
     {
       "fieldId": "118",
@@ -15613,8 +15613,8 @@
       "label": "청송군 옥산면 안심리 456-1",
       "owned": false,
       "isCurrent": false,
-      "x": -0.6,
-      "y": -2.37
+      "x": -1.64,
+      "y": 1.2
     },
     {
       "fieldId": "119",
@@ -15622,8 +15622,8 @@
       "label": "청송군 춘산면 도평리 493-20",
       "owned": false,
       "isCurrent": false,
-      "x": -22.33,
-      "y": 15.86
+      "x": 9.81,
+      "y": -11.89
     },
     {
       "fieldId": "120",
@@ -15631,8 +15631,8 @@
       "label": "청송군 진보면 각산리 40-1",
       "owned": false,
       "isCurrent": false,
-      "x": -18.51,
-      "y": -4.1
+      "x": -10.22,
+      "y": -5.8
     },
     {
       "fieldId": "121",
@@ -15640,8 +15640,8 @@
       "label": "청송군 파천면 신기리 77-20",
       "owned": false,
       "isCurrent": false,
-      "x": 8.97,
-      "y": 6.84
+      "x": 19.73,
+      "y": 9.92
     },
     {
       "fieldId": "122",
@@ -15649,8 +15649,8 @@
       "label": "청송군 현동면 중기리 114-1",
       "owned": false,
       "isCurrent": false,
-      "x": 3.14,
-      "y": -14.18
+      "x": 5.16,
+      "y": 13.38
     },
     {
       "fieldId": "123",
@@ -15658,8 +15658,8 @@
       "label": "청송군 안덕면 오목리 151-20",
       "owned": false,
       "isCurrent": false,
-      "x": 26.96,
-      "y": -5.47
+      "x": 15.69,
+      "y": -6.91
     },
     {
       "fieldId": "124",
@@ -15667,8 +15667,8 @@
       "label": "청송군 부남면 상평리 188-1",
       "owned": false,
       "isCurrent": false,
-      "x": -5.27,
-      "y": 8.97
+      "x": -4.54,
+      "y": -0.3
     },
     {
       "fieldId": "125",
@@ -15676,8 +15676,8 @@
       "label": "청송군 주왕산면 장전리 225-20",
       "owned": false,
       "isCurrent": false,
-      "x": 23.77,
-      "y": 17.5
+      "x": -24.86,
+      "y": -13.45
     },
     {
       "fieldId": "126",
@@ -15685,8 +15685,8 @@
       "label": "청송군 청송읍 월전리 262-1",
       "owned": false,
       "isCurrent": false,
-      "x": 7.14,
-      "y": -12.39
+      "x": -4.79,
+      "y": -11.79
     },
     {
       "fieldId": "127",
@@ -15694,8 +15694,8 @@
       "label": "청송군 현서면 상리 299-20",
       "owned": false,
       "isCurrent": false,
-      "x": -15.64,
-      "y": 2.86
+      "x": 21.32,
+      "y": 3.17
     },
     {
       "fieldId": "128",
@@ -15703,8 +15703,8 @@
       "label": "청송군 영덕읍 오산리 336-1",
       "owned": false,
       "isCurrent": false,
-      "x": -24.14,
-      "y": 11.56
+      "x": -18.12,
+      "y": -14.55
     },
     {
       "fieldId": "129",
@@ -15712,8 +15712,8 @@
       "label": "청송군 지품면 청운리 373-20",
       "owned": false,
       "isCurrent": false,
-      "x": 9.33,
-      "y": -3.2
+      "x": -1.31,
+      "y": -9.59
     },
     {
       "fieldId": "130",
@@ -15721,8 +15721,8 @@
       "label": "청송군 달산면 안심리 410-1",
       "owned": false,
       "isCurrent": false,
-      "x": -5.87,
-      "y": 10.38
+      "x": -7.37,
+      "y": -14.43
     },
     {
       "fieldId": "131",
@@ -15730,8 +15730,8 @@
       "label": "청송군 강구면 도평리 447-20",
       "owned": false,
       "isCurrent": false,
-      "x": 27.02,
-      "y": 16.6
+      "x": 14.15,
+      "y": 10.56
     },
     {
       "fieldId": "132",
@@ -15739,8 +15739,8 @@
       "label": "청송군 병곡면 각산리 484-1",
       "owned": false,
       "isCurrent": false,
-      "x": -19.49,
-      "y": -3.64
+      "x": -8.47,
+      "y": -5.2
     },
     {
       "fieldId": "133",
@@ -15748,8 +15748,8 @@
       "label": "청송군 축산면 신기리 31-20",
       "owned": false,
       "isCurrent": false,
-      "x": 12.85,
-      "y": 7.28
+      "x": 25.18,
+      "y": 1.48
     },
     {
       "fieldId": "134",
@@ -15757,8 +15757,8 @@
       "label": "청송군 남정면 중기리 68-1",
       "owned": false,
       "isCurrent": false,
-      "x": -1.16,
-      "y": -14.61
+      "x": -6.72,
+      "y": 10.99
     },
     {
       "fieldId": "135",
@@ -15766,8 +15766,8 @@
       "label": "청송군 의성읍 오목리 105-20",
       "owned": false,
       "isCurrent": false,
-      "x": 24.11,
-      "y": -10.62
+      "x": 20.85,
+      "y": -10.85
     },
     {
       "fieldId": "136",
@@ -15775,8 +15775,8 @@
       "label": "청송군 단촌면 상평리 142-1",
       "owned": false,
       "isCurrent": false,
-      "x": -10.54,
-      "y": -0.27
+      "x": -14.06,
+      "y": 5.66
     },
     {
       "fieldId": "137",
@@ -15784,8 +15784,8 @@
       "label": "청송군 봉양면 장전리 179-20",
       "owned": false,
       "isCurrent": false,
-      "x": 16.12,
-      "y": 13.43
+      "x": 13.64,
+      "y": -9.12
     },
     {
       "fieldId": "138",
@@ -15793,8 +15793,8 @@
       "label": "청송군 옥산면 월전리 216-1",
       "owned": false,
       "isCurrent": false,
-      "x": -4.53,
-      "y": -10.64
+      "x": 3.56,
+      "y": -11.98
     },
     {
       "fieldId": "139",
@@ -15802,8 +15802,8 @@
       "label": "청송군 춘산면 상리 253-20",
       "owned": false,
       "isCurrent": false,
-      "x": 25.43,
-      "y": 6.51
+      "x": 2.6,
+      "y": 3.67
     },
     {
       "fieldId": "140",
@@ -15811,8 +15811,8 @@
       "label": "청송군 진보면 오산리 290-1",
       "owned": false,
       "isCurrent": false,
-      "x": -3.77,
-      "y": 13.87
+      "x": -8.47,
+      "y": 9.24
     },
     {
       "fieldId": "141",
@@ -15820,8 +15820,8 @@
       "label": "청송군 파천면 청운리 327-20",
       "owned": false,
       "isCurrent": false,
-      "x": 13.87,
-      "y": -5.78
+      "x": -23.67,
+      "y": -1.78
     },
     {
       "fieldId": "142",
@@ -15829,8 +15829,8 @@
       "label": "청송군 현동면 안심리 364-1",
       "owned": false,
       "isCurrent": false,
-      "x": 11.09,
-      "y": 7.24
+      "x": 15.54,
+      "y": -4.33
     },
     {
       "fieldId": "143",
@@ -15838,8 +15838,8 @@
       "label": "청송군 안덕면 도평리 401-20",
       "owned": false,
       "isCurrent": false,
-      "x": -22.57,
-      "y": 17.57
+      "x": 14.25,
+      "y": 14.53
     },
     {
       "fieldId": "144",
@@ -15847,8 +15847,8 @@
       "label": "청송군 부남면 각산리 438-1",
       "owned": false,
       "isCurrent": false,
-      "x": -14.44,
-      "y": -13.03
+      "x": -21.16,
+      "y": -9.15
     },
     {
       "fieldId": "145",
@@ -15856,8 +15856,8 @@
       "label": "청송군 주왕산면 신기리 475-20",
       "owned": false,
       "isCurrent": false,
-      "x": 16.31,
-      "y": 3.57
+      "x": 0.09,
+      "y": -10.33
     },
     {
       "fieldId": "146",
@@ -15865,8 +15865,8 @@
       "label": "청송군 청송읍 중기리 22-1",
       "owned": false,
       "isCurrent": false,
-      "x": -9.87,
-      "y": 11.28
+      "x": 11.69,
+      "y": 9.65
     },
     {
       "fieldId": "147",
@@ -15874,8 +15874,8 @@
       "label": "청송군 현서면 오목리 59-20",
       "owned": false,
       "isCurrent": false,
-      "x": 27.11,
-      "y": -1.77
+      "x": 12.02,
+      "y": -1.15
     },
     {
       "fieldId": "148",
@@ -15883,8 +15883,8 @@
       "label": "청송군 영덕읍 상평리 96-1",
       "owned": false,
       "isCurrent": false,
-      "x": -8.49,
-      "y": 4.6
+      "x": -18.43,
+      "y": -7.22
     },
     {
       "fieldId": "149",
@@ -15892,8 +15892,8 @@
       "label": "청송군 지품면 장전리 133-20",
       "owned": false,
       "isCurrent": false,
-      "x": 23.16,
-      "y": 17.47
+      "x": -3.84,
+      "y": 10.31
     },
     {
       "fieldId": "150",
@@ -15901,8 +15901,8 @@
       "label": "청송군 달산면 월전리 170-1",
       "owned": false,
       "isCurrent": false,
-      "x": -3.15,
-      "y": -0.2
+      "x": -1.78,
+      "y": -0.62
     },
     {
       "fieldId": "151",
@@ -15910,8 +15910,8 @@
       "label": "청송군 강구면 상리 207-20",
       "owned": false,
       "isCurrent": false,
-      "x": -22.84,
-      "y": 6.31
+      "x": 20.1,
+      "y": 1
     },
     {
       "fieldId": "152",
@@ -15919,8 +15919,8 @@
       "label": "청송군 병곡면 오산리 244-1",
       "owned": false,
       "isCurrent": false,
-      "x": -17.77,
-      "y": -11.16
+      "x": -11.21,
+      "y": 15.26
     },
     {
       "fieldId": "153",
@@ -15928,8 +15928,8 @@
       "label": "청송군 축산면 청운리 281-20",
       "owned": false,
       "isCurrent": false,
-      "x": 7.81,
-      "y": -12.36
+      "x": 18.89,
+      "y": -11.18
     },
     {
       "fieldId": "154",
@@ -15937,8 +15937,8 @@
       "label": "청송군 남정면 안심리 318-1",
       "owned": false,
       "isCurrent": false,
-      "x": -0.19,
-      "y": 6.78
+      "x": 9.54,
+      "y": 6.7
     },
     {
       "fieldId": "155",
@@ -15946,8 +15946,8 @@
       "label": "청송군 의성읍 도평리 355-20",
       "owned": false,
       "isCurrent": false,
-      "x": 23.32,
-      "y": 14.88
+      "x": 13.03,
+      "y": 17.53
     },
     {
       "fieldId": "156",
@@ -15955,8 +15955,8 @@
       "label": "청송군 단촌면 각산리 392-1",
       "owned": false,
       "isCurrent": false,
-      "x": -11.4,
-      "y": -1.62
+      "x": -14.56,
+      "y": -4.43
     },
     {
       "fieldId": "157",
@@ -15964,8 +15964,8 @@
       "label": "청송군 봉양면 신기리 429-20",
       "owned": false,
       "isCurrent": false,
-      "x": 18.13,
-      "y": 4.37
+      "x": 25.98,
+      "y": 8.95
     },
     {
       "fieldId": "158",
@@ -15973,8 +15973,8 @@
       "label": "청송군 옥산면 중기리 466-1",
       "owned": false,
       "isCurrent": false,
-      "x": 10.06,
-      "y": 17.58
+      "x": 16.57,
+      "y": 9.89
     },
     {
       "fieldId": "159",
@@ -15982,8 +15982,8 @@
       "label": "청송군 춘산면 오목리 13-20",
       "owned": false,
       "isCurrent": false,
-      "x": -24.71,
-      "y": 3.64
+      "x": 14.4,
+      "y": -4.4
     },
     {
       "fieldId": "160",
@@ -15991,8 +15991,8 @@
       "label": "청송군 진보면 상평리 50-1",
       "owned": false,
       "isCurrent": false,
-      "x": -15.99,
-      "y": 13.47
+      "x": -22.86,
+      "y": 0.55
     },
     {
       "fieldId": "161",
@@ -16000,8 +16000,8 @@
       "label": "청송군 파천면 장전리 87-20",
       "owned": false,
       "isCurrent": false,
-      "x": 11.76,
-      "y": -8.66
+      "x": 27.22,
+      "y": 17.34
     },
     {
       "fieldId": "162",
@@ -16009,8 +16009,8 @@
       "label": "청송군 현동면 월전리 124-1",
       "owned": false,
       "isCurrent": false,
-      "x": -7.85,
-      "y": -10.16
+      "x": 6,
+      "y": -8.45
     },
     {
       "fieldId": "163",
@@ -16018,8 +16018,8 @@
       "label": "청송군 안덕면 상리 161-20",
       "owned": false,
       "isCurrent": false,
-      "x": 18.31,
-      "y": -2.21
+      "x": 7.56,
+      "y": 4.69
     },
     {
       "fieldId": "164",
@@ -16027,8 +16027,8 @@
       "label": "청송군 부남면 오산리 198-1",
       "owned": false,
       "isCurrent": false,
-      "x": -10.36,
-      "y": 14.11
+      "x": -4.06,
+      "y": -10.51
     },
     {
       "fieldId": "165",
@@ -16036,8 +16036,8 @@
       "label": "청송군 주왕산면 청운리 235-20",
       "owned": false,
       "isCurrent": false,
-      "x": 11.92,
-      "y": -7.44
+      "x": 16.5,
+      "y": 6.56
     },
     {
       "fieldId": "166",
@@ -16045,8 +16045,8 @@
       "label": "청송군 청송읍 안심리 272-1",
       "owned": false,
       "isCurrent": false,
-      "x": 0.67,
-      "y": 7.44
+      "x": 1.68,
+      "y": 7.6
     },
     {
       "fieldId": "167",
@@ -16054,8 +16054,8 @@
       "label": "청송군 현서면 도평리 309-20",
       "owned": false,
       "isCurrent": false,
-      "x": -24.68,
-      "y": 12.92
+      "x": 15.39,
+      "y": 12.81
     },
     {
       "fieldId": "168",
@@ -16063,8 +16063,8 @@
       "label": "청송군 영덕읍 각산리 346-1",
       "owned": false,
       "isCurrent": false,
-      "x": -19.5,
-      "y": -2.14
+      "x": -16.3,
+      "y": -3.1
     },
     {
       "fieldId": "169",
@@ -16072,8 +16072,8 @@
       "label": "청송군 지품면 신기리 383-20",
       "owned": false,
       "isCurrent": false,
-      "x": 17.25,
-      "y": 3.91
+      "x": 11.5,
+      "y": -3.26
     },
     {
       "fieldId": "170",
@@ -16081,8 +16081,8 @@
       "label": "청송군 달산면 중기리 420-1",
       "owned": false,
       "isCurrent": false,
-      "x": -3.44,
-      "y": -14.52
+      "x": 3.63,
+      "y": 13.96
     },
     {
       "fieldId": "171",
@@ -16090,8 +16090,8 @@
       "label": "청송군 강구면 오목리 457-20",
       "owned": false,
       "isCurrent": false,
-      "x": -24.74,
-      "y": -6.53
+      "x": 8.63,
+      "y": -12.97
     },
     {
       "fieldId": "172",
@@ -16099,8 +16099,8 @@
       "label": "청송군 병곡면 상평리 494-1",
       "owned": false,
       "isCurrent": false,
-      "x": -2.02,
-      "y": 4.06
+      "x": -18.79,
+      "y": -0.03
     },
     {
       "fieldId": "173",
@@ -16108,8 +16108,8 @@
       "label": "청송군 축산면 장전리 41-20",
       "owned": false,
       "isCurrent": false,
-      "x": 14.71,
-      "y": 15.99
+      "x": 23.41,
+      "y": -12.44
     },
     {
       "fieldId": "174",
@@ -16117,8 +16117,8 @@
       "label": "청송군 남정면 월전리 78-1",
       "owned": false,
       "isCurrent": false,
-      "x": 10.46,
-      "y": -4.18
+      "x": 12.98,
+      "y": -10.79
     },
     {
       "fieldId": "175",
@@ -16126,8 +16126,8 @@
       "label": "청송군 의성읍 상리 115-20",
       "owned": false,
       "isCurrent": false,
-      "x": -19.17,
-      "y": 5.45
+      "x": 12.9,
+      "y": 10.54
     },
     {
       "fieldId": "176",
@@ -16135,8 +16135,8 @@
       "label": "청송군 단촌면 오산리 152-1",
       "owned": false,
       "isCurrent": false,
-      "x": -18.36,
-      "y": -14.38
+      "x": -15.61,
+      "y": 15.19
     },
     {
       "fieldId": "177",
@@ -16144,8 +16144,8 @@
       "label": "청송군 봉양면 청운리 189-20",
       "owned": false,
       "isCurrent": false,
-      "x": 5.67,
-      "y": -5.2
+      "x": 27.85,
+      "y": -5.47
     },
     {
       "fieldId": "178",
@@ -16153,8 +16153,8 @@
       "label": "청송군 옥산면 안심리 226-1",
       "owned": false,
       "isCurrent": false,
-      "x": -4.32,
-      "y": 7.16
+      "x": -0.69,
+      "y": -2.71
     },
     {
       "fieldId": "179",
@@ -16162,8 +16162,8 @@
       "label": "청송군 춘산면 도평리 263-20",
       "owned": false,
       "isCurrent": false,
-      "x": 26.99,
-      "y": -14.53
+      "x": 12.05,
+      "y": 16.46
     },
     {
       "fieldId": "180",
@@ -16171,8 +16171,8 @@
       "label": "청송군 현동면 송전리 21-8",
       "owned": false,
       "isCurrent": false,
-      "x": -13,
-      "y": -6.49
+      "x": -3.42,
+      "y": -7.46
     },
     {
       "fieldId": "181",
@@ -16180,8 +16180,8 @@
       "label": "청송군 안덕면 거대리 58-27",
       "owned": false,
       "isCurrent": false,
-      "x": 23.75,
-      "y": 6.79
+      "x": -24.25,
+      "y": 4.64
     },
     {
       "fieldId": "182",
@@ -16189,8 +16189,8 @@
       "label": "청송군 부남면 다정리 95-8",
       "owned": false,
       "isCurrent": false,
-      "x": 7.64,
-      "y": 13.32
+      "x": -17.83,
+      "y": -11.29
     },
     {
       "fieldId": "183",
@@ -16198,8 +16198,8 @@
       "label": "청송군 주왕산면 송강리 132-27",
       "owned": false,
       "isCurrent": false,
-      "x": -24.73,
-      "y": -5.05
+      "x": 17.47,
+      "y": -6.28
     },
     {
       "fieldId": "184",
@@ -16207,8 +16207,8 @@
       "label": "청송군 청송읍 하평리 169-8",
       "owned": false,
       "isCurrent": false,
-      "x": -10.7,
-      "y": 3.62
+      "x": -22.82,
+      "y": -6.02
     },
     {
       "fieldId": "185",
@@ -16216,8 +16216,8 @@
       "label": "청송군 현서면 신촌리 206-27",
       "owned": false,
       "isCurrent": false,
-      "x": 11.75,
-      "y": 14.92
+      "x": 24.96,
+      "y": 14.6
     },
     {
       "fieldId": "186",
@@ -16225,8 +16225,8 @@
       "label": "청송군 영덕읍 덕천리 243-8",
       "owned": false,
       "isCurrent": false,
-      "x": -5.77,
-      "y": -4.11
+      "x": 3.4,
+      "y": -2.25
     },
     {
       "fieldId": "187",
@@ -16234,8 +16234,8 @@
       "label": "청송군 지품면 하리 280-27",
       "owned": false,
       "isCurrent": false,
-      "x": -23.05,
-      "y": 10.12
+      "x": 12.25,
+      "y": 2.91
     },
     {
       "fieldId": "188",
@@ -16243,8 +16243,8 @@
       "label": "청송군 달산면 노루실리 317-8",
       "owned": false,
       "isCurrent": false,
-      "x": -3.14,
-      "y": 17.58
+      "x": 27.49,
+      "y": -1.44
     },
     {
       "fieldId": "189",
@@ -16252,8 +16252,8 @@
       "label": "청송군 강구면 명당리 354-27",
       "owned": false,
       "isCurrent": false,
-      "x": 27.05,
-      "y": -14.35
+      "x": 26.49,
+      "y": -10.3
     },
     {
       "fieldId": "190",
@@ -16261,8 +16261,8 @@
       "label": "청송군 병곡면 호명리 391-8",
       "owned": false,
       "isCurrent": false,
-      "x": 10.66,
-      "y": -2.42
+      "x": 19.23,
+      "y": -6.36
     },
     {
       "fieldId": "191",
@@ -16270,8 +16270,8 @@
       "label": "청송군 축산면 화전리 428-27",
       "owned": false,
       "isCurrent": false,
-      "x": -24.75,
-      "y": 12.73
+      "x": -13.16,
+      "y": 2.84
     },
     {
       "fieldId": "192",
@@ -16279,8 +16279,8 @@
       "label": "청송군 남정면 송전리 465-8",
       "owned": false,
       "isCurrent": false,
-      "x": -23.94,
-      "y": -4.51
+      "x": -17.18,
+      "y": -4.87
     },
     {
       "fieldId": "193",
@@ -16288,8 +16288,8 @@
       "label": "청송군 의성읍 거대리 12-27",
       "owned": false,
       "isCurrent": false,
-      "x": 3.88,
-      "y": 6.84
+      "x": 26.57,
+      "y": 5.27
     },
     {
       "fieldId": "194",
@@ -16297,8 +16297,8 @@
       "label": "청송군 단촌면 다정리 49-8",
       "owned": false,
       "isCurrent": false,
-      "x": -0.46,
-      "y": 13.38
+      "x": 2.74,
+      "y": 13.25
     },
     {
       "fieldId": "195",
@@ -16306,8 +16306,8 @@
       "label": "청송군 봉양면 송강리 86-27",
       "owned": false,
       "isCurrent": false,
-      "x": 18.95,
-      "y": -0.13
+      "x": 5.53,
+      "y": -3.25
     },
     {
       "fieldId": "196",
@@ -16315,8 +16315,8 @@
       "label": "청송군 옥산면 하평리 123-8",
       "owned": false,
       "isCurrent": false,
-      "x": -9.57,
-      "y": 4.61
+      "x": -23.73,
+      "y": -3.71
     },
     {
       "fieldId": "197",
@@ -16324,8 +16324,8 @@
       "label": "청송군 춘산면 신촌리 160-27",
       "owned": false,
       "isCurrent": false,
-      "x": 10.42,
-      "y": -12.97
+      "x": -24.42,
+      "y": 16.46
     },
     {
       "fieldId": "198",
@@ -16333,8 +16333,8 @@
       "label": "청송군 진보면 덕천리 197-8",
       "owned": false,
       "isCurrent": false,
-      "x": 0.64,
-      "y": -11.19
+      "x": -0.1,
+      "y": -7.38
     },
     {
       "fieldId": "199",
@@ -16342,8 +16342,8 @@
       "label": "청송군 파천면 하리 234-27",
       "owned": false,
       "isCurrent": false,
-      "x": 25.34,
-      "y": -0.62
+      "x": 17.04,
+      "y": 5.33
     },
     {
       "fieldId": "200",
@@ -16351,8 +16351,8 @@
       "label": "청송군 현동면 노루실리 271-8",
       "owned": false,
       "isCurrent": false,
-      "x": -17.05,
-      "y": 16.69
+      "x": -21.69,
+      "y": 6.78
     },
     {
       "fieldId": "201",
@@ -16360,8 +16360,8 @@
       "label": "청송군 안덕면 명당리 308-27",
       "owned": false,
       "isCurrent": false,
-      "x": 6.05,
-      "y": -3.07
+      "x": 25.59,
+      "y": -3.16
     },
     {
       "fieldId": "202",
@@ -16369,8 +16369,8 @@
       "label": "청송군 부남면 호명리 345-8",
       "owned": false,
       "isCurrent": false,
-      "x": -6.2,
-      "y": 10
+      "x": 7.94,
+      "y": -2.59
     },
     {
       "fieldId": "203",
@@ -16378,8 +16378,8 @@
       "label": "청송군 주왕산면 화전리 382-27",
       "owned": false,
       "isCurrent": false,
-      "x": 26.57,
-      "y": 14.69
+      "x": 2.88,
+      "y": 15.83
     },
     {
       "fieldId": "204",
@@ -16387,8 +16387,8 @@
       "label": "청송군 청송읍 송전리 419-8",
       "owned": false,
       "isCurrent": false,
-      "x": -6.75,
-      "y": -4.34
+      "x": -4.64,
+      "y": 10.97
     },
     {
       "fieldId": "205",
@@ -16396,8 +16396,8 @@
       "label": "청송군 현서면 거대리 456-27",
       "owned": false,
       "isCurrent": false,
-      "x": 18.1,
-      "y": 8.64
+      "x": -0.44,
+      "y": -0.21
     },
     {
       "fieldId": "206",
@@ -16405,8 +16405,8 @@
       "label": "청송군 영덕읍 다정리 493-8",
       "owned": false,
       "isCurrent": false,
-      "x": 9.75,
-      "y": -12.21
+      "x": 23.04,
+      "y": 13.16
     },
     {
       "fieldId": "207",
@@ -16414,8 +16414,8 @@
       "label": "청송군 지품면 송강리 40-27",
       "owned": false,
       "isCurrent": false,
-      "x": -21.8,
-      "y": -8.1
+      "x": 14.36,
+      "y": -7.07
     },
     {
       "fieldId": "208",
@@ -16423,8 +16423,8 @@
       "label": "청송군 달산면 하평리 77-8",
       "owned": false,
       "isCurrent": false,
-      "x": -17.25,
-      "y": 1.57
+      "x": -18.7,
+      "y": 5.33
     },
     {
       "fieldId": "209",
@@ -16432,8 +16432,8 @@
       "label": "청송군 강구면 신촌리 114-27",
       "owned": false,
       "isCurrent": false,
-      "x": 16.48,
-      "y": 14.67
+      "x": 17.02,
+      "y": -13.43
     },
     {
       "fieldId": "210",
@@ -16441,8 +16441,8 @@
       "label": "청송군 병곡면 덕천리 151-8",
       "owned": false,
       "isCurrent": false,
-      "x": -0.79,
-      "y": -4.11
+      "x": 1.93,
+      "y": -8.2
     },
     {
       "fieldId": "211",
@@ -16450,8 +16450,8 @@
       "label": "청송군 축산면 하리 188-27",
       "owned": false,
       "isCurrent": false,
-      "x": 20.65,
-      "y": 6.24
+      "x": 13.53,
+      "y": 12.02
     },
     {
       "fieldId": "212",
@@ -16459,8 +16459,8 @@
       "label": "청송군 남정면 노루실리 225-8",
       "owned": false,
       "isCurrent": false,
-      "x": -4.36,
-      "y": -14.63
+      "x": -16.88,
+      "y": 8.87
     },
     {
       "fieldId": "213",
@@ -16468,8 +16468,8 @@
       "label": "청송군 의성읍 명당리 262-27",
       "owned": false,
       "isCurrent": false,
-      "x": 20.32,
-      "y": -2.78
+      "x": -24.61,
+      "y": -2.86
     },
     {
       "fieldId": "214",
@@ -16477,8 +16477,8 @@
       "label": "청송군 단촌면 호명리 299-8",
       "owned": false,
       "isCurrent": false,
-      "x": -0.54,
-      "y": 8.44
+      "x": -20.74,
+      "y": 12.17
     },
     {
       "fieldId": "215",
@@ -16486,8 +16486,8 @@
       "label": "청송군 봉양면 화전리 336-27",
       "owned": false,
       "isCurrent": false,
-      "x": -19.36,
-      "y": -13.15
+      "x": 4.3,
+      "y": 11.68
     },
     {
       "fieldId": "216",
@@ -16495,8 +16495,8 @@
       "label": "청송군 옥산면 송전리 373-8",
       "owned": false,
       "isCurrent": false,
-      "x": -15.62,
-      "y": -13.54
+      "x": -13.36,
+      "y": -13.4
     },
     {
       "fieldId": "217",
@@ -16504,8 +16504,8 @@
       "label": "청송군 춘산면 거대리 410-27",
       "owned": false,
       "isCurrent": false,
-      "x": 20.25,
-      "y": 1.92
+      "x": -1.42,
+      "y": -5.18
     },
     {
       "fieldId": "218",
@@ -16513,8 +16513,8 @@
       "label": "청송군 진보면 다정리 447-8",
       "owned": false,
       "isCurrent": false,
-      "x": -3.39,
-      "y": 8.75
+      "x": -1.33,
+      "y": -11.7
     },
     {
       "fieldId": "219",
@@ -16522,8 +16522,8 @@
       "label": "청송군 파천면 송강리 484-27",
       "owned": false,
       "isCurrent": false,
-      "x": 24.23,
-      "y": -4.98
+      "x": 11.04,
+      "y": -5.59
     },
     {
       "fieldId": "220",
@@ -16531,8 +16531,8 @@
       "label": "청송군 현동면 하평리 31-8",
       "owned": false,
       "isCurrent": false,
-      "x": -12.15,
-      "y": 2.19
+      "x": -5.21,
+      "y": 4.96
     },
     {
       "fieldId": "221",
@@ -16540,8 +16540,8 @@
       "label": "청송군 안덕면 신촌리 68-27",
       "owned": false,
       "isCurrent": false,
-      "x": 21.29,
-      "y": -14.58
+      "x": -5.89,
+      "y": 9.09
     },
     {
       "fieldId": "222",
@@ -16549,8 +16549,8 @@
       "label": "청송군 부남면 덕천리 105-8",
       "owned": false,
       "isCurrent": false,
-      "x": 8.69,
-      "y": -4.98
+      "x": 14.36,
+      "y": 16.95
     },
     {
       "fieldId": "223",
@@ -16558,8 +16558,8 @@
       "label": "청송군 주왕산면 하리 142-27",
       "owned": false,
       "isCurrent": false,
-      "x": -24.12,
-      "y": 5.15
+      "x": -22.22,
+      "y": -0.94
     },
     {
       "fieldId": "224",
@@ -16567,8 +16567,8 @@
       "label": "청송군 청송읍 노루실리 179-8",
       "owned": false,
       "isCurrent": false,
-      "x": -12.82,
-      "y": -12.06
+      "x": -13.22,
+      "y": 13.01
     },
     {
       "fieldId": "225",
@@ -16576,8 +16576,8 @@
       "label": "청송군 현서면 명당리 216-27",
       "owned": false,
       "isCurrent": false,
-      "x": 12.77,
-      "y": -11.44
+      "x": 22.06,
+      "y": -12.97
     },
     {
       "fieldId": "226",
@@ -16585,8 +16585,8 @@
       "label": "청송군 영덕읍 호명리 253-8",
       "owned": false,
       "isCurrent": false,
-      "x": -7.21,
-      "y": -0.43
+      "x": -1.11,
+      "y": 7.5
     },
     {
       "fieldId": "227",
@@ -16594,8 +16594,8 @@
       "label": "청송군 지품면 화전리 290-27",
       "owned": false,
       "isCurrent": false,
-      "x": 23.63,
-      "y": 11.96
+      "x": 27.34,
+      "y": -8.87
     },
     {
       "fieldId": "228",
@@ -16603,8 +16603,8 @@
       "label": "청송군 달산면 송전리 327-8",
       "owned": false,
       "isCurrent": false,
-      "x": -18.04,
-      "y": -7.41
+      "x": -14.37,
+      "y": -1.56
     },
     {
       "fieldId": "229",
@@ -16612,8 +16612,8 @@
       "label": "청송군 강구면 거대리 364-27",
       "owned": false,
       "isCurrent": false,
-      "x": 21.53,
-      "y": 3.33
+      "x": 27.53,
+      "y": 9.71
     },
     {
       "fieldId": "230",
@@ -16621,8 +16621,8 @@
       "label": "청송군 병곡면 다정리 401-8",
       "owned": false,
       "isCurrent": false,
-      "x": 6.21,
-      "y": -14.64
+      "x": 15.29,
+      "y": 8.25
     },
     {
       "fieldId": "231",
@@ -16630,8 +16630,8 @@
       "label": "청송군 축산면 송강리 438-27",
       "owned": false,
       "isCurrent": false,
-      "x": -19.5,
-      "y": 0.62
+      "x": 12.65,
+      "y": -0.02
     },
     {
       "fieldId": "232",
@@ -16639,8 +16639,8 @@
       "label": "청송군 남정면 하평리 475-8",
       "owned": false,
       "isCurrent": false,
-      "x": -16.42,
-      "y": 8.13
+      "x": -12.38,
+      "y": 1.31
     },
     {
       "fieldId": "233",
@@ -16648,8 +16648,8 @@
       "label": "청송군 의성읍 신촌리 22-27",
       "owned": false,
       "isCurrent": false,
-      "x": 8.13,
-      "y": 17.53
+      "x": 22.37,
+      "y": -13.92
     },
     {
       "fieldId": "234",
@@ -16657,8 +16657,8 @@
       "label": "청송군 단촌면 덕천리 59-8",
       "owned": false,
       "isCurrent": false,
-      "x": -7.75,
-      "y": -11.84
+      "x": -9.29,
+      "y": -1.67
     },
     {
       "fieldId": "235",
@@ -16666,8 +16666,8 @@
       "label": "청송군 봉양면 하리 96-27",
       "owned": false,
       "isCurrent": false,
-      "x": 22.65,
-      "y": 1.1
+      "x": 8.55,
+      "y": 3.21
     },
     {
       "fieldId": "236",
@@ -16675,8 +16675,8 @@
       "label": "청송군 옥산면 노루실리 133-8",
       "owned": false,
       "isCurrent": false,
-      "x": -7.9,
-      "y": 14.1
+      "x": -15.86,
+      "y": -14.36
     },
     {
       "fieldId": "237",
@@ -16684,8 +16684,8 @@
       "label": "청송군 춘산면 명당리 170-27",
       "owned": false,
       "isCurrent": false,
-      "x": 20.94,
-      "y": -5.46
+      "x": 24.51,
+      "y": -6.94
     },
     {
       "fieldId": "238",
@@ -16693,8 +16693,8 @@
       "label": "청송군 진보면 호명리 207-8",
       "owned": false,
       "isCurrent": false,
-      "x": 11.71,
-      "y": 4.51
+      "x": 19.17,
+      "y": -3.05
     },
     {
       "fieldId": "239",
@@ -16702,8 +16702,8 @@
       "label": "청송군 파천면 화전리 244-27",
       "owned": false,
       "isCurrent": false,
-      "x": -24.76,
-      "y": -14.6
+      "x": -20.22,
+      "y": 4.93
     },
     {
       "fieldId": "240",
@@ -16711,8 +16711,8 @@
       "label": "청송군 현동면 송전리 281-8",
       "owned": false,
       "isCurrent": false,
-      "x": -14.83,
-      "y": -2.06
+      "x": -18.29,
+      "y": -5.9
     },
     {
       "fieldId": "241",
@@ -16720,8 +16720,8 @@
       "label": "청송군 안덕면 거대리 318-27",
       "owned": false,
       "isCurrent": false,
-      "x": 14.39,
-      "y": 10.06
+      "x": 23.88,
+      "y": 2.84
     },
     {
       "fieldId": "242",
@@ -16729,8 +16729,8 @@
       "label": "청송군 부남면 다정리 355-8",
       "owned": false,
       "isCurrent": false,
-      "x": -0.83,
-      "y": -13.73
+      "x": 14.43,
+      "y": 0.46
     },
     {
       "fieldId": "243",
@@ -16738,8 +16738,8 @@
       "label": "청송군 주왕산면 송강리 392-27",
       "owned": false,
       "isCurrent": false,
-      "x": 20.34,
-      "y": -14.67
+      "x": 9.34,
+      "y": -9.79
     },
     {
       "fieldId": "244",
@@ -16747,8 +16747,8 @@
       "label": "청송군 청송읍 하평리 429-8",
       "owned": false,
       "isCurrent": false,
-      "x": -15.91,
-      "y": -3.06
+      "x": -7.1,
+      "y": 7.57
     },
     {
       "fieldId": "245",
@@ -16756,8 +16756,8 @@
       "label": "청송군 현서면 신촌리 466-27",
       "owned": false,
       "isCurrent": false,
-      "x": 22.68,
-      "y": 10.06
+      "x": -21.49,
+      "y": -15.02
     },
     {
       "fieldId": "246",
@@ -16765,8 +16765,8 @@
       "label": "청송군 영덕읍 덕천리 13-8",
       "owned": false,
       "isCurrent": false,
-      "x": 9.9,
-      "y": -11.73
+      "x": -4.13,
+      "y": -6.53
     },
     {
       "fieldId": "247",
@@ -16774,8 +16774,8 @@
       "label": "청송군 지품면 하리 50-27",
       "owned": false,
       "isCurrent": false,
-      "x": -24.3,
-      "y": 8.02
+      "x": -12.6,
+      "y": -7.72
     },
     {
       "fieldId": "248",
@@ -16783,8 +16783,8 @@
       "label": "청송군 달산면 노루실리 87-8",
       "owned": false,
       "isCurrent": false,
-      "x": -14.26,
-      "y": 15.9
+      "x": -10.25,
+      "y": 10.37
     },
     {
       "fieldId": "249",
@@ -16792,8 +16792,8 @@
       "label": "청송군 강구면 명당리 124-27",
       "owned": false,
       "isCurrent": false,
-      "x": 8.59,
-      "y": -7.66
+      "x": 26.29,
+      "y": 0.55
     },
     {
       "fieldId": "250",
@@ -16801,8 +16801,8 @@
       "label": "청송군 병곡면 호명리 161-8",
       "owned": false,
       "isCurrent": false,
-      "x": -3.73,
-      "y": 3.76
+      "x": 6.45,
+      "y": 5.45
     },
     {
       "fieldId": "251",
@@ -16810,8 +16810,8 @@
       "label": "청송군 축산면 화전리 198-27",
       "owned": false,
       "isCurrent": false,
-      "x": -24.68,
-      "y": -14.61
+      "x": 6.22,
+      "y": 14.47
     },
     {
       "fieldId": "252",
@@ -16819,8 +16819,8 @@
       "label": "청송군 남정면 송전리 235-8",
       "owned": false,
       "isCurrent": false,
-      "x": -5.21,
-      "y": -14.51
+      "x": -20.53,
+      "y": 14.51
     },
     {
       "fieldId": "253",
@@ -16828,8 +16828,8 @@
       "label": "청송군 의성읍 거대리 272-27",
       "owned": false,
       "isCurrent": false,
-      "x": 25.54,
-      "y": 0.32
+      "x": -20.98,
+      "y": 4.09
     },
     {
       "fieldId": "254",
@@ -16837,8 +16837,8 @@
       "label": "청송군 단촌면 다정리 309-8",
       "owned": false,
       "isCurrent": false,
-      "x": 11.5,
-      "y": 15.28
+      "x": 19.44,
+      "y": 12.86
     },
     {
       "fieldId": "255",
@@ -16846,8 +16846,8 @@
       "label": "청송군 봉양면 송강리 346-27",
       "owned": false,
       "isCurrent": false,
-      "x": -24.18,
-      "y": -10.4
+      "x": -22.8,
+      "y": -9.86
     },
     {
       "fieldId": "256",
@@ -16855,8 +16855,8 @@
       "label": "청송군 옥산면 하평리 383-8",
       "owned": false,
       "isCurrent": false,
-      "x": -17.21,
-      "y": 2.53
+      "x": -23.97,
+      "y": 8.15
     },
     {
       "fieldId": "257",
@@ -16864,8 +16864,8 @@
       "label": "청송군 춘산면 신촌리 420-27",
       "owned": false,
       "isCurrent": false,
-      "x": 1.43,
-      "y": -14.56
+      "x": -2.83,
+      "y": 8.35
     },
     {
       "fieldId": "258",
@@ -16873,8 +16873,8 @@
       "label": "청송군 진보면 덕천리 457-8",
       "owned": false,
       "isCurrent": false,
-      "x": -4.69,
-      "y": -0.07
+      "x": 1.49,
+      "y": -4.96
     },
     {
       "fieldId": "259",
@@ -16882,8 +16882,8 @@
       "label": "청송군 파천면 하리 494-27",
       "owned": false,
       "isCurrent": false,
-      "x": 21.09,
-      "y": 9.77
+      "x": -10.35,
+      "y": -4.45
     },
     {
       "fieldId": "260",
@@ -16891,8 +16891,8 @@
       "label": "청송군 현동면 노루실리 41-8",
       "owned": false,
       "isCurrent": false,
-      "x": -6.82,
-      "y": -13.27
+      "x": -12.91,
+      "y": 16.83
     },
     {
       "fieldId": "261",
@@ -16900,8 +16900,8 @@
       "label": "청송군 안덕면 명당리 78-27",
       "owned": false,
       "isCurrent": false,
-      "x": 10.6,
-      "y": -9.78
+      "x": 26.02,
+      "y": -7.46
     },
     {
       "fieldId": "262",
@@ -16909,8 +16909,8 @@
       "label": "청송군 부남면 호명리 115-8",
       "owned": false,
       "isCurrent": false,
-      "x": 4.04,
-      "y": -0.07
+      "x": 10.4,
+      "y": -9.78
     },
     {
       "fieldId": "263",
@@ -16918,8 +16918,8 @@
       "label": "청송군 주왕산면 화전리 152-27",
       "owned": false,
       "isCurrent": false,
-      "x": -21.9,
-      "y": 10.56
+      "x": -17.78,
+      "y": 1.97
     },
     {
       "fieldId": "264",
@@ -16927,8 +16927,8 @@
       "label": "청송군 청송읍 송전리 189-8",
       "owned": false,
       "isCurrent": false,
-      "x": -12.49,
-      "y": -8.61
+      "x": -14.81,
+      "y": -8.29
     },
     {
       "fieldId": "265",
@@ -16936,8 +16936,8 @@
       "label": "청송군 현서면 거대리 226-27",
       "owned": false,
       "isCurrent": false,
-      "x": 15.06,
-      "y": 5.08
+      "x": 26.39,
+      "y": 11.82
     },
     {
       "fieldId": "266",
@@ -16945,8 +16945,8 @@
       "label": "청송군 영덕읍 다정리 263-8",
       "owned": false,
       "isCurrent": false,
-      "x": -3.69,
-      "y": 17.45
+      "x": 9.43,
+      "y": 12.01
     },
     {
       "fieldId": "267",
@@ -16954,8 +16954,8 @@
       "label": "청송군 지품면 송강리 300-27",
       "owned": false,
       "isCurrent": false,
-      "x": 26.66,
-      "y": -2.2
+      "x": 2.66,
+      "y": -3.63
     },
     {
       "fieldId": "268",
@@ -16963,8 +16963,8 @@
       "label": "청송군 달산면 하평리 337-8",
       "owned": false,
       "isCurrent": false,
-      "x": -8.47,
-      "y": 11.39
+      "x": -8.72,
+      "y": 4.63
     },
     {
       "fieldId": "269",
@@ -16972,8 +16972,8 @@
       "label": "청송군 강구면 신촌리 374-27",
       "owned": false,
       "isCurrent": false,
-      "x": 15.22,
-      "y": -12.28
+      "x": 25.28,
+      "y": 17.2
     },
     {
       "fieldId": "270",
@@ -16981,8 +16981,8 @@
       "label": "청송군 병곡면 덕천리 411-8",
       "owned": false,
       "isCurrent": false,
-      "x": 8.31,
-      "y": -8.85
+      "x": -3.64,
+      "y": -12.01
     },
     {
       "fieldId": "271",
@@ -16990,8 +16990,8 @@
       "label": "청송군 축산면 하리 448-27",
       "owned": false,
       "isCurrent": false,
-      "x": -19.93,
-      "y": 0.09
+      "x": 18.41,
+      "y": 7.33
     },
     {
       "fieldId": "272",
@@ -16999,8 +16999,8 @@
       "label": "청송군 남정면 노루실리 485-8",
       "owned": false,
       "isCurrent": false,
-      "x": -12.31,
-      "y": 14.12
+      "x": -18.56,
+      "y": 16.23
     },
     {
       "fieldId": "273",
@@ -17008,8 +17008,8 @@
       "label": "청송군 의성읍 명당리 32-27",
       "owned": false,
       "isCurrent": false,
-      "x": 3.26,
-      "y": -6.64
+      "x": 6.13,
+      "y": 16.82
     },
     {
       "fieldId": "274",
@@ -17017,8 +17017,8 @@
       "label": "청송군 단촌면 호명리 69-8",
       "owned": false,
       "isCurrent": false,
-      "x": -6.62,
-      "y": 0.34
+      "x": 2.41,
+      "y": 11.15
     },
     {
       "fieldId": "275",
@@ -17026,8 +17026,8 @@
       "label": "청송군 봉양면 화전리 106-27",
       "owned": false,
       "isCurrent": false,
-      "x": 17.41,
-      "y": 17.5
+      "x": 16.52,
+      "y": 11.1
     },
     {
       "fieldId": "276",
@@ -17035,8 +17035,8 @@
       "label": "청송군 옥산면 송전리 143-8",
       "owned": false,
       "isCurrent": false,
-      "x": -6.71,
-      "y": -3.15
+      "x": -24.94,
+      "y": 11.28
     },
     {
       "fieldId": "277",
@@ -17044,8 +17044,8 @@
       "label": "청송군 춘산면 거대리 180-27",
       "owned": false,
       "isCurrent": false,
-      "x": 21.65,
-      "y": 11.85
+      "x": -21.92,
+      "y": 2.98
     },
     {
       "fieldId": "278",
@@ -17053,8 +17053,8 @@
       "label": "청송군 진보면 다정리 217-8",
       "owned": false,
       "isCurrent": false,
-      "x": 1.83,
-      "y": 17.44
+      "x": -9.63,
+      "y": 12.86
     },
     {
       "fieldId": "279",
@@ -17062,8 +17062,8 @@
       "label": "청송군 파천면 송강리 254-27",
       "owned": false,
       "isCurrent": false,
-      "x": -22.16,
-      "y": -6.08
+      "x": -16.79,
+      "y": 17.58
     },
     {
       "fieldId": "280",
@@ -17071,8 +17071,8 @@
       "label": "청송군 현동면 하평리 291-8",
       "owned": false,
       "isCurrent": false,
-      "x": -16.6,
-      "y": -0.23
+      "x": 26.36,
+      "y": -8.82
     },
     {
       "fieldId": "281",
@@ -17080,8 +17080,8 @@
       "label": "청송군 안덕면 신촌리 328-27",
       "owned": false,
       "isCurrent": false,
-      "x": 6.66,
-      "y": 11.31
+      "x": 25.42,
+      "y": -8.46
     },
     {
       "fieldId": "282",
@@ -17089,8 +17089,8 @@
       "label": "청송군 부남면 덕천리 365-8",
       "owned": false,
       "isCurrent": false,
-      "x": 4.53,
-      "y": -3.03
+      "x": 3.97,
+      "y": -3.84
     },
     {
       "fieldId": "283",
@@ -17098,8 +17098,8 @@
       "label": "청송군 주왕산면 하리 402-27",
       "owned": false,
       "isCurrent": false,
-      "x": 26.41,
-      "y": 1.87
+      "x": -6.16,
+      "y": -3.01
     },
     {
       "fieldId": "284",
@@ -17107,8 +17107,8 @@
       "label": "청송군 청송읍 노루실리 439-8",
       "owned": false,
       "isCurrent": false,
-      "x": -5.03,
-      "y": 17.53
+      "x": -9.6,
+      "y": 11.75
     },
     {
       "fieldId": "285",
@@ -17116,8 +17116,8 @@
       "label": "청송군 부남면 구산리 32-15",
       "owned": false,
       "isCurrent": false,
-      "x": 13.7,
-      "y": -5.45
+      "x": -5.06,
+      "y": 12.86
     },
     {
       "fieldId": "286",
@@ -17125,8 +17125,8 @@
       "label": "청송군 주왕산면 대율리 69-34",
       "owned": false,
       "isCurrent": false,
-      "x": 9.46,
-      "y": 7.37
+      "x": -1.84,
+      "y": 2.42
     },
     {
       "fieldId": "287",
@@ -17134,8 +17134,8 @@
       "label": "청송군 청송읍 기곡리 106-15",
       "owned": false,
       "isCurrent": false,
-      "x": -24.78,
-      "y": -14.6
+      "x": 21.09,
+      "y": 13.99
     },
     {
       "fieldId": "288",
@@ -17143,8 +17143,8 @@
       "label": "청송군 현서면 금곡리 143-34",
       "owned": false,
       "isCurrent": false,
-      "x": -17.46,
-      "y": -4.78
+      "x": -20.13,
+      "y": -8.81
     },
     {
       "fieldId": "289",
@@ -17152,8 +17152,8 @@
       "label": "청송군 영덕읍 본촌리 180-15",
       "owned": false,
       "isCurrent": false,
-      "x": 14.8,
-      "y": 0.95
+      "x": 17.86,
+      "y": 6.31
     },
     {
       "fieldId": "290",
@@ -17161,8 +17161,8 @@
       "label": "청송군 지품면 용전리 217-34",
       "owned": false,
       "isCurrent": false,
-      "x": -1.8,
-      "y": 14.1
+      "x": -7.46,
+      "y": -8.58
     },
     {
       "fieldId": "291",
@@ -17170,8 +17170,8 @@
       "label": "청송군 달산면 사촌리 254-15",
       "owned": false,
       "isCurrent": false,
-      "x": 18.61,
-      "y": -4.72
+      "x": -5.71,
+      "y": -7.99
     },
     {
       "fieldId": "292",
@@ -17179,8 +17179,8 @@
       "label": "청송군 강구면 수락리 291-34",
       "owned": false,
       "isCurrent": false,
-      "x": -7.86,
-      "y": 7.99
+      "x": -5.85,
+      "y": 11.76
     },
     {
       "fieldId": "293",
@@ -17188,8 +17188,8 @@
       "label": "청송군 병곡면 감곡리 328-15",
       "owned": false,
       "isCurrent": false,
-      "x": 10.36,
-      "y": -14.49
+      "x": -13.36,
+      "y": -12.34
     },
     {
       "fieldId": "294",
@@ -17197,8 +17197,8 @@
       "label": "청송군 축산면 백자리 365-34",
       "owned": false,
       "isCurrent": false,
-      "x": 6.17,
-      "y": -2.42
+      "x": -2.78,
+      "y": -2.1
     },
     {
       "fieldId": "295",
@@ -17206,8 +17206,8 @@
       "label": "청송군 남정면 매곡리 402-15",
       "owned": false,
       "isCurrent": false,
-      "x": -24.77,
-      "y": 11.48
+      "x": 21.7,
+      "y": -1.74
     },
     {
       "fieldId": "296",
@@ -17215,8 +17215,8 @@
       "label": "청송군 의성읍 율현리 439-34",
       "owned": false,
       "isCurrent": false,
-      "x": -12,
-      "y": 17.54
+      "x": 27.88,
+      "y": -0.13
     },
     {
       "fieldId": "297",
@@ -17224,8 +17224,8 @@
       "label": "청송군 단촌면 구산리 476-15",
       "owned": false,
       "isCurrent": false,
-      "x": 12.24,
-      "y": -13.24
+      "x": -25.48,
+      "y": -6.94
     },
     {
       "fieldId": "298",
@@ -17233,8 +17233,8 @@
       "label": "청송군 봉양면 대율리 23-34",
       "owned": false,
       "isCurrent": false,
-      "x": 4.04,
-      "y": 4.2
+      "x": 8.61,
+      "y": -4.66
     },
     {
       "fieldId": "299",
@@ -17242,8 +17242,8 @@
       "label": "청송군 옥산면 기곡리 60-15",
       "owned": false,
       "isCurrent": false,
-      "x": 19.92,
-      "y": 11.98
+      "x": 5.35,
+      "y": -14.25
     },
     {
       "fieldId": "300",
@@ -17251,8 +17251,8 @@
       "label": "청송군 춘산면 금곡리 97-34",
       "owned": false,
       "isCurrent": false,
-      "x": -11.76,
-      "y": -9.22
+      "x": -7.44,
+      "y": -7.44
     },
     {
       "fieldId": "301",
@@ -17260,8 +17260,8 @@
       "label": "청송군 진보면 본촌리 134-15",
       "owned": false,
       "isCurrent": false,
-      "x": 15.28,
-      "y": 7.39
+      "x": 21.92,
+      "y": 9.38
     },
     {
       "fieldId": "302",
@@ -17269,8 +17269,8 @@
       "label": "청송군 파천면 용전리 171-34",
       "owned": false,
       "isCurrent": false,
-      "x": 2.94,
-      "y": 15.8
+      "x": 3.13,
+      "y": 9.65
     },
     {
       "fieldId": "303",
@@ -17278,8 +17278,8 @@
       "label": "청송군 현동면 사촌리 208-15",
       "owned": false,
       "isCurrent": false,
-      "x": -22.02,
-      "y": -4.74
+      "x": -19.98,
+      "y": 11.65
     },
     {
       "fieldId": "304",
@@ -17287,8 +17287,8 @@
       "label": "청송군 안덕면 수락리 245-34",
       "owned": false,
       "isCurrent": false,
-      "x": -14.84,
-      "y": 11.82
+      "x": -15.48,
+      "y": 5.3
     },
     {
       "fieldId": "305",
@@ -17296,8 +17296,8 @@
       "label": "청송군 부남면 감곡리 282-15",
       "owned": false,
       "isCurrent": false,
-      "x": 6.53,
-      "y": 17.58
+      "x": 10.27,
+      "y": -3.06
     },
     {
       "fieldId": "306",
@@ -17305,8 +17305,8 @@
       "label": "청송군 주왕산면 백자리 319-34",
       "owned": false,
       "isCurrent": false,
-      "x": -7.58,
-      "y": -9.33
+      "x": 7.7,
+      "y": 15.49
     },
     {
       "fieldId": "307",
@@ -17314,8 +17314,8 @@
       "label": "청송군 청송읍 매곡리 356-15",
       "owned": false,
       "isCurrent": false,
-      "x": 24.17,
-      "y": -1.62
+      "x": 6.56,
+      "y": 4.03
     },
     {
       "fieldId": "308",
@@ -17323,8 +17323,8 @@
       "label": "청송군 현서면 율현리 393-34",
       "owned": false,
       "isCurrent": false,
-      "x": -5.34,
-      "y": 17.36
+      "x": -21.78,
+      "y": 9.74
     },
     {
       "fieldId": "309",
@@ -17332,8 +17332,8 @@
       "label": "청송군 영덕읍 구산리 430-15",
       "owned": false,
       "isCurrent": false,
-      "x": 24.28,
-      "y": -8.83
+      "x": 14.22,
+      "y": 3.78
     },
     {
       "fieldId": "310",
@@ -17341,8 +17341,8 @@
       "label": "청송군 지품면 대율리 467-34",
       "owned": false,
       "isCurrent": false,
-      "x": 1.34,
-      "y": 9.97
+      "x": -18.58,
+      "y": -13.51
     },
     {
       "fieldId": "311",
@@ -17350,8 +17350,8 @@
       "label": "청송군 달산면 기곡리 14-15",
       "owned": false,
       "isCurrent": false,
-      "x": -24.69,
-      "y": 17.17
+      "x": 13.7,
+      "y": 13.6
     },
     {
       "fieldId": "312",
@@ -17359,8 +17359,8 @@
       "label": "청송군 강구면 금곡리 51-34",
       "owned": false,
       "isCurrent": false,
-      "x": -9.56,
-      "y": -0.95
+      "x": -19.39,
+      "y": -2.74
     },
     {
       "fieldId": "313",
@@ -17368,8 +17368,8 @@
       "label": "청송군 병곡면 본촌리 88-15",
       "owned": false,
       "isCurrent": false,
-      "x": 13.98,
-      "y": 11.45
+      "x": 19.08,
+      "y": 2.13
     },
     {
       "fieldId": "314",
@@ -17377,8 +17377,8 @@
       "label": "청송군 축산면 용전리 125-34",
       "owned": false,
       "isCurrent": false,
-      "x": -4.28,
-      "y": -12.16
+      "x": 9.75,
+      "y": -14.83
     },
     {
       "fieldId": "315",
@@ -17386,8 +17386,8 @@
       "label": "청송군 남정면 사촌리 162-15",
       "owned": false,
       "isCurrent": false,
-      "x": -23.47,
-      "y": -6.09
+      "x": -9.83,
+      "y": 14.01
     },
     {
       "fieldId": "316",
@@ -17395,8 +17395,8 @@
       "label": "청송군 의성읍 수락리 199-34",
       "owned": false,
       "isCurrent": false,
-      "x": -4.48,
-      "y": 0.17
+      "x": -14.26,
+      "y": 1.55
     },
     {
       "fieldId": "317",
@@ -17404,8 +17404,8 @@
       "label": "청송군 단촌면 감곡리 236-15",
       "owned": false,
       "isCurrent": false,
-      "x": 24.01,
-      "y": 17.6
+      "x": 25.25,
+      "y": -14.34
     },
     {
       "fieldId": "318",
@@ -17413,8 +17413,8 @@
       "label": "청송군 봉양면 백자리 273-34",
       "owned": false,
       "isCurrent": false,
-      "x": 6.63,
-      "y": -7.86
+      "x": -5.26,
+      "y": -10.44
     },
     {
       "fieldId": "319",
@@ -17422,8 +17422,8 @@
       "label": "청송군 옥산면 매곡리 310-15",
       "owned": false,
       "isCurrent": false,
-      "x": -24.28,
-      "y": 4.59
+      "x": 25.47,
+      "y": 7.75
     },
     {
       "fieldId": "320",
@@ -17431,8 +17431,8 @@
       "label": "청송군 춘산면 율현리 347-34",
       "owned": false,
       "isCurrent": false,
-      "x": -20.11,
-      "y": 17.52
+      "x": 6.43,
+      "y": -14.37
     },
     {
       "fieldId": "321",
@@ -17440,8 +17440,8 @@
       "label": "청송군 진보면 구산리 384-15",
       "owned": false,
       "isCurrent": false,
-      "x": 13.8,
-      "y": 1.3
+      "x": 24.09,
+      "y": -1.8
     },
     {
       "fieldId": "322",
@@ -17449,8 +17449,8 @@
       "label": "청송군 파천면 대율리 421-34",
       "owned": false,
       "isCurrent": false,
-      "x": -8.22,
-      "y": 13.85
+      "x": -3.05,
+      "y": -0.48
     },
     {
       "fieldId": "323",
@@ -17458,8 +17458,8 @@
       "label": "청송군 현동면 기곡리 458-15",
       "owned": false,
       "isCurrent": false,
-      "x": 27,
-      "y": -8.94
+      "x": 10.39,
+      "y": 12.98
     },
     {
       "fieldId": "324",
@@ -17467,8 +17467,8 @@
       "label": "청송군 안덕면 금곡리 495-34",
       "owned": false,
       "isCurrent": false,
-      "x": -13.38,
-      "y": -11.73
+      "x": -11.61,
+      "y": -13.87
     },
     {
       "fieldId": "325",
@@ -17476,8 +17476,8 @@
       "label": "청송군 부남면 본촌리 42-15",
       "owned": false,
       "isCurrent": false,
-      "x": 15.28,
-      "y": -3.68
+      "x": 26.4,
+      "y": 7.65
     },
     {
       "fieldId": "326",
@@ -17485,8 +17485,8 @@
       "label": "청송군 주왕산면 용전리 79-34",
       "owned": false,
       "isCurrent": false,
-      "x": 3.25,
-      "y": 8.64
+      "x": -16.96,
+      "y": -6.31
     },
     {
       "fieldId": "327",
@@ -17494,8 +17494,8 @@
       "label": "청송군 청송읍 사촌리 116-15",
       "owned": false,
       "isCurrent": false,
-      "x": -21.74,
-      "y": -9.64
+      "x": 8.15,
+      "y": -14.24
     },
     {
       "fieldId": "328",
@@ -17503,8 +17503,8 @@
       "label": "청송군 현서면 수락리 153-34",
       "owned": false,
       "isCurrent": false,
-      "x": -19.47,
-      "y": 2.19
+      "x": -14.48,
+      "y": 7.07
     },
     {
       "fieldId": "329",
@@ -17512,8 +17512,8 @@
       "label": "청송군 영덕읍 감곡리 190-15",
       "owned": false,
       "isCurrent": false,
-      "x": 9.75,
-      "y": 17.53
+      "x": -22.68,
+      "y": 7.86
     },
     {
       "fieldId": "330",
@@ -17521,8 +17521,8 @@
       "label": "청송군 지품면 백자리 227-34",
       "owned": false,
       "isCurrent": false,
-      "x": 3.7,
-      "y": -1.46
+      "x": 9.34,
+      "y": 10.31
     },
     {
       "fieldId": "331",
@@ -17530,8 +17530,8 @@
       "label": "청송군 달산면 매곡리 264-15",
       "owned": false,
       "isCurrent": false,
-      "x": 21.15,
-      "y": 3.95
+      "x": 12.47,
+      "y": 1.19
     },
     {
       "fieldId": "332",
@@ -17539,8 +17539,8 @@
       "label": "청송군 강구면 율현리 301-34",
       "owned": false,
       "isCurrent": false,
-      "x": -8.31,
-      "y": -14.65
+      "x": -9.2,
+      "y": 17.32
     },
     {
       "fieldId": "333",
@@ -17548,8 +17548,8 @@
       "label": "청송군 병곡면 구산리 338-15",
       "owned": false,
       "isCurrent": false,
-      "x": 22.6,
-      "y": -10.31
+      "x": 23.05,
+      "y": -6.67
     },
     {
       "fieldId": "334",
@@ -17557,8 +17557,8 @@
       "label": "청송군 축산면 대율리 375-34",
       "owned": false,
       "isCurrent": false,
-      "x": 5.58,
-      "y": -2.85
+      "x": 14.3,
+      "y": -8.29
     },
     {
       "fieldId": "335",
@@ -17566,8 +17566,8 @@
       "label": "청송군 남정면 기곡리 412-15",
       "owned": false,
       "isCurrent": false,
-      "x": -18.58,
-      "y": 11.6
+      "x": 24.5,
+      "y": -11.65
     },
     {
       "fieldId": "336",
@@ -17575,8 +17575,8 @@
       "label": "청송군 의성읍 금곡리 449-34",
       "owned": false,
       "isCurrent": false,
-      "x": -13.39,
-      "y": -4.16
+      "x": 20.14,
+      "y": -13.83
     },
     {
       "fieldId": "337",
@@ -17584,8 +17584,8 @@
       "label": "청송군 단촌면 본촌리 486-15",
       "owned": false,
       "isCurrent": false,
-      "x": 8.36,
-      "y": 8.55
+      "x": -1.76,
+      "y": 5.88
     },
     {
       "fieldId": "338",
@@ -17593,8 +17593,8 @@
       "label": "청송군 봉양면 용전리 33-34",
       "owned": false,
       "isCurrent": false,
-      "x": -8.98,
-      "y": 14.17
+      "x": 0.36,
+      "y": 12.79
     },
     {
       "fieldId": "339",
@@ -17602,8 +17602,8 @@
       "label": "청송군 옥산면 사촌리 70-15",
       "owned": false,
       "isCurrent": false,
-      "x": 21.53,
-      "y": -4.51
+      "x": -14.88,
+      "y": 8.32
     },
     {
       "fieldId": "340",
@@ -17611,8 +17611,8 @@
       "label": "청송군 춘산면 수락리 107-34",
       "owned": false,
       "isCurrent": false,
-      "x": -9.99,
-      "y": 5
+      "x": -19.73,
+      "y": -4.07
     },
     {
       "fieldId": "341",
@@ -17620,8 +17620,8 @@
       "label": "청송군 진보면 감곡리 144-15",
       "owned": false,
       "isCurrent": false,
-      "x": 15.41,
-      "y": 17.59
+      "x": 23.39,
+      "y": 10.17
     },
     {
       "fieldId": "342",
@@ -17629,8 +17629,8 @@
       "label": "청송군 청송읍 신기리 43-22",
       "owned": false,
       "isCurrent": false,
-      "x": -1.34,
-      "y": -6.03
+      "x": -9.4,
+      "y": -8.81
     },
     {
       "fieldId": "343",
@@ -17638,8 +17638,8 @@
       "label": "청송군 현서면 중기리 80-3",
       "owned": false,
       "isCurrent": false,
-      "x": -22.93,
-      "y": -0.97
+      "x": 14.78,
+      "y": 7.5
     },
     {
       "fieldId": "344",
@@ -17647,8 +17647,8 @@
       "label": "청송군 영덕읍 오목리 117-22",
       "owned": false,
       "isCurrent": false,
-      "x": -12.22,
-      "y": 10.52
+      "x": -15.49,
+      "y": -12.19
     },
     {
       "fieldId": "345",
@@ -17656,8 +17656,8 @@
       "label": "청송군 지품면 상평리 154-3",
       "owned": false,
       "isCurrent": false,
-      "x": 10.8,
-      "y": -9.18
+      "x": 20.06,
+      "y": -10.06
     },
     {
       "fieldId": "346",
@@ -17665,8 +17665,8 @@
       "label": "청송군 달산면 장전리 191-22",
       "owned": false,
       "isCurrent": false,
-      "x": -6.19,
-      "y": 7.02
+      "x": 1.64,
+      "y": 9.47
     },
     {
       "fieldId": "347",
@@ -17674,8 +17674,8 @@
       "label": "청송군 강구면 월전리 228-3",
       "owned": false,
       "isCurrent": false,
-      "x": -24.64,
-      "y": 15.19
+      "x": 10.17,
+      "y": 14.36
     },
     {
       "fieldId": "348",
@@ -17683,8 +17683,8 @@
       "label": "청송군 병곡면 상리 265-22",
       "owned": false,
       "isCurrent": false,
-      "x": -7.67,
-      "y": -2.53
+      "x": -10.6,
+      "y": -1.99
     },
     {
       "fieldId": "349",
@@ -17692,8 +17692,8 @@
       "label": "청송군 축산면 오산리 302-3",
       "owned": false,
       "isCurrent": false,
-      "x": 23.74,
-      "y": 7.08
+      "x": 0.85,
+      "y": -6.26
     },
     {
       "fieldId": "350",
@@ -17701,8 +17701,8 @@
       "label": "청송군 남정면 청운리 339-22",
       "owned": false,
       "isCurrent": false,
-      "x": 12.97,
-      "y": -14.58
+      "x": 3.52,
+      "y": 17.2
     },
     {
       "fieldId": "351",
@@ -17710,8 +17710,8 @@
       "label": "청송군 의성읍 안심리 376-3",
       "owned": false,
       "isCurrent": false,
-      "x": 27.12,
-      "y": -9.58
+      "x": 15.44,
+      "y": -12.03
     },
     {
       "fieldId": "352",
@@ -17719,8 +17719,8 @@
       "label": "청송군 단촌면 도평리 413-22",
       "owned": false,
       "isCurrent": false,
-      "x": -19.86,
-      "y": 2.46
+      "x": -13.22,
+      "y": 8.89
     },
     {
       "fieldId": "353",
@@ -17728,8 +17728,8 @@
       "label": "청송군 봉양면 각산리 450-3",
       "owned": false,
       "isCurrent": false,
-      "x": 12.13,
-      "y": 12.66
+      "x": 21.29,
+      "y": -14.11
     },
     {
       "fieldId": "354",
@@ -17737,8 +17737,8 @@
       "label": "청송군 옥산면 신기리 487-22",
       "owned": false,
       "isCurrent": false,
-      "x": 0.72,
-      "y": -7.94
+      "x": -7.39,
+      "y": 2.59
     },
     {
       "fieldId": "355",
@@ -17746,8 +17746,8 @@
       "label": "청송군 춘산면 중기리 34-3",
       "owned": false,
       "isCurrent": false,
-      "x": 16.9,
-      "y": 8.6
+      "x": -19.56,
+      "y": -14.19
     },
     {
       "fieldId": "356",
@@ -17755,8 +17755,8 @@
       "label": "청송군 진보면 오목리 71-22",
       "owned": false,
       "isCurrent": false,
-      "x": -14.86,
-      "y": 17.47
+      "x": -19.85,
+      "y": 7.18
     },
     {
       "fieldId": "357",
@@ -17764,8 +17764,8 @@
       "label": "청송군 파천면 상평리 108-3",
       "owned": false,
       "isCurrent": false,
-      "x": 17.38,
-      "y": -4.67
+      "x": -18.27,
+      "y": -2.18
     },
     {
       "fieldId": "358",
@@ -17773,8 +17773,8 @@
       "label": "청송군 현동면 장전리 145-22",
       "owned": false,
       "isCurrent": false,
-      "x": 5.61,
-      "y": 10.7
+      "x": -6.66,
+      "y": 4.61
     },
     {
       "fieldId": "359",
@@ -17782,8 +17782,8 @@
       "label": "청송군 안덕면 월전리 182-3",
       "owned": false,
       "isCurrent": false,
-      "x": 27.13,
-      "y": -12.59
+      "x": 21,
+      "y": -4.11
     },
     {
       "fieldId": "360",
@@ -17791,8 +17791,8 @@
       "label": "청송군 부남면 상리 219-22",
       "owned": false,
       "isCurrent": false,
-      "x": -17.96,
-      "y": -9.25
+      "x": -16.39,
+      "y": -9.16
     },
     {
       "fieldId": "361",
@@ -17800,8 +17800,8 @@
       "label": "청송군 주왕산면 오산리 256-3",
       "owned": false,
       "isCurrent": false,
-      "x": 17.06,
-      "y": -0.49
+      "x": -23.43,
+      "y": 2.3
     },
     {
       "fieldId": "362",
@@ -17809,8 +17809,8 @@
       "label": "청송군 청송읍 청운리 293-22",
       "owned": false,
       "isCurrent": false,
-      "x": -0.12,
-      "y": 9.59
+      "x": 9.73,
+      "y": 8.82
     },
     {
       "fieldId": "363",
@@ -17818,8 +17818,8 @@
       "label": "청송군 현서면 안심리 330-3",
       "owned": false,
       "isCurrent": false,
-      "x": -22.92,
-      "y": -8.04
+      "x": -11.41,
+      "y": 16.19
     },
     {
       "fieldId": "364",
@@ -17827,8 +17827,8 @@
       "label": "청송군 영덕읍 도평리 367-22",
       "owned": false,
       "isCurrent": false,
-      "x": -13.16,
-      "y": 5.79
+      "x": -7.7,
+      "y": 10.17
     },
     {
       "fieldId": "365",
@@ -17836,8 +17836,8 @@
       "label": "청송군 지품면 각산리 404-3",
       "owned": false,
       "isCurrent": false,
-      "x": 25.82,
-      "y": 15.49
+      "x": -1.05,
+      "y": 5.03
     },
     {
       "fieldId": "366",
@@ -17845,8 +17845,8 @@
       "label": "청송군 달산면 신기리 441-22",
       "owned": false,
       "isCurrent": false,
-      "x": 2.48,
-      "y": -5
+      "x": 0.2,
+      "y": -1.73
     },
     {
       "fieldId": "367",
@@ -17854,8 +17854,8 @@
       "label": "청송군 강구면 중기리 478-3",
       "owned": false,
       "isCurrent": false,
-      "x": -22.27,
-      "y": 5.84
+      "x": 12.57,
+      "y": -3.06
     },
     {
       "fieldId": "368",
@@ -17863,8 +17863,8 @@
       "label": "청송군 병곡면 오목리 25-22",
       "owned": false,
       "isCurrent": false,
-      "x": -11.44,
-      "y": -12.07
+      "x": -2.57,
+      "y": 6.71
     },
     {
       "fieldId": "369",
@@ -17872,8 +17872,8 @@
       "label": "청송군 축산면 상평리 62-3",
       "owned": false,
       "isCurrent": false,
-      "x": 13.09,
-      "y": -11.8
+      "x": 2.08,
+      "y": 17.94
     },
     {
       "fieldId": "370",
@@ -17881,8 +17881,8 @@
       "label": "청송군 남정면 장전리 99-22",
       "owned": false,
       "isCurrent": false,
-      "x": 2.4,
-      "y": 1.49
+      "x": 3.74,
+      "y": 4.1
     },
     {
       "fieldId": "371",
@@ -17890,8 +17890,3356 @@
       "label": "청송군 의성읍 월전리 136-3",
       "owned": false,
       "isCurrent": false,
-      "x": 22.2,
+      "x": 8.57,
+      "y": -11.98
+    },
+    {
+      "fieldId": "372",
+      "fieldIndex": 373,
+      "label": "청송군 현서면 다정리 221-14",
+      "owned": false,
+      "isCurrent": false,
+      "x": -12.82,
+      "y": -6.03
+    },
+    {
+      "fieldId": "373",
+      "fieldIndex": 374,
+      "label": "청송군 영덕읍 송강리 274-5",
+      "owned": false,
+      "isCurrent": false,
+      "x": -19.32,
+      "y": 3.62
+    },
+    {
+      "fieldId": "374",
+      "fieldIndex": 375,
+      "label": "청송군 지품면 하평리 327-34",
+      "owned": false,
+      "isCurrent": false,
+      "x": -5.59,
+      "y": 10.51
+    },
+    {
+      "fieldId": "375",
+      "fieldIndex": 376,
+      "label": "청송군 달산면 신촌리 380-25",
+      "owned": false,
+      "isCurrent": false,
+      "x": 16.45,
+      "y": -4.77
+    },
+    {
+      "fieldId": "376",
+      "fieldIndex": 377,
+      "label": "청송군 강구면 덕천리 433-16",
+      "owned": false,
+      "isCurrent": false,
+      "x": -19.62,
+      "y": 2.66
+    },
+    {
+      "fieldId": "377",
+      "fieldIndex": 378,
+      "label": "청송군 병곡면 하리 486-7",
+      "owned": false,
+      "isCurrent": false,
+      "x": 27.71,
+      "y": 12.08
+    },
+    {
+      "fieldId": "378",
+      "fieldIndex": 379,
+      "label": "청송군 축산면 노루실리 49-36",
+      "owned": false,
+      "isCurrent": false,
+      "x": 11.13,
+      "y": 15.62
+    },
+    {
+      "fieldId": "379",
+      "fieldIndex": 380,
+      "label": "청송군 남정면 명당리 102-27",
+      "owned": false,
+      "isCurrent": false,
+      "x": 15.75,
+      "y": 4.52
+    },
+    {
+      "fieldId": "380",
+      "fieldIndex": 381,
+      "label": "청송군 의성읍 호명리 155-18",
+      "owned": false,
+      "isCurrent": false,
+      "x": 5.66,
+      "y": -6.88
+    },
+    {
+      "fieldId": "381",
+      "fieldIndex": 382,
+      "label": "청송군 단촌면 화전리 208-9",
+      "owned": false,
+      "isCurrent": false,
+      "x": 2.71,
+      "y": -15.04
+    },
+    {
+      "fieldId": "382",
+      "fieldIndex": 383,
+      "label": "청송군 봉양면 송전리 261-38",
+      "owned": false,
+      "isCurrent": false,
+      "x": -16.72,
+      "y": -13.59
+    },
+    {
+      "fieldId": "383",
+      "fieldIndex": 384,
+      "label": "청송군 옥산면 거대리 314-29",
+      "owned": false,
+      "isCurrent": false,
+      "x": 15.22,
+      "y": 14.43
+    },
+    {
+      "fieldId": "384",
+      "fieldIndex": 385,
+      "label": "청송군 춘산면 다정리 367-20",
+      "owned": false,
+      "isCurrent": false,
+      "x": -0.71,
+      "y": 6.66
+    },
+    {
+      "fieldId": "385",
+      "fieldIndex": 386,
+      "label": "청송군 진보면 송강리 420-11",
+      "owned": false,
+      "isCurrent": false,
+      "x": -2.07,
+      "y": -1.53
+    },
+    {
+      "fieldId": "386",
+      "fieldIndex": 387,
+      "label": "청송군 파천면 하평리 473-2",
+      "owned": false,
+      "isCurrent": false,
+      "x": 0.46,
+      "y": 15.81
+    },
+    {
+      "fieldId": "387",
+      "fieldIndex": 388,
+      "label": "청송군 현동면 신촌리 36-31",
+      "owned": false,
+      "isCurrent": false,
+      "x": 27.2,
+      "y": 2.01
+    },
+    {
+      "fieldId": "388",
+      "fieldIndex": 389,
+      "label": "청송군 안덕면 덕천리 89-22",
+      "owned": false,
+      "isCurrent": false,
+      "x": -0.91,
+      "y": 16.64
+    },
+    {
+      "fieldId": "389",
+      "fieldIndex": 390,
+      "label": "청송군 부남면 하리 142-13",
+      "owned": false,
+      "isCurrent": false,
+      "x": -24.86,
+      "y": 17.94
+    },
+    {
+      "fieldId": "390",
+      "fieldIndex": 391,
+      "label": "청송군 주왕산면 노루실리 195-4",
+      "owned": false,
+      "isCurrent": false,
+      "x": -3.19,
+      "y": -4.65
+    },
+    {
+      "fieldId": "391",
+      "fieldIndex": 392,
+      "label": "청송군 청송읍 명당리 248-33",
+      "owned": false,
+      "isCurrent": false,
+      "x": -16.06,
+      "y": -4.25
+    },
+    {
+      "fieldId": "392",
+      "fieldIndex": 393,
+      "label": "청송군 현서면 호명리 301-24",
+      "owned": false,
+      "isCurrent": false,
+      "x": -13.02,
+      "y": 14.43
+    },
+    {
+      "fieldId": "393",
+      "fieldIndex": 394,
+      "label": "청송군 영덕읍 화전리 354-15",
+      "owned": false,
+      "isCurrent": false,
+      "x": 27.49,
+      "y": -6.56
+    },
+    {
+      "fieldId": "394",
+      "fieldIndex": 395,
+      "label": "청송군 지품면 송전리 407-6",
+      "owned": false,
+      "isCurrent": false,
+      "x": 23.19,
+      "y": 11.67
+    },
+    {
+      "fieldId": "395",
+      "fieldIndex": 396,
+      "label": "청송군 달산면 거대리 460-35",
+      "owned": false,
+      "isCurrent": false,
+      "x": 3.39,
+      "y": -13.36
+    },
+    {
+      "fieldId": "396",
+      "fieldIndex": 397,
+      "label": "청송군 강구면 다정리 23-26",
+      "owned": false,
+      "isCurrent": false,
+      "x": -10.8,
+      "y": -9.19
+    },
+    {
+      "fieldId": "397",
+      "fieldIndex": 398,
+      "label": "청송군 병곡면 송강리 76-17",
+      "owned": false,
+      "isCurrent": false,
+      "x": -7.83,
+      "y": -10.88
+    },
+    {
+      "fieldId": "398",
+      "fieldIndex": 399,
+      "label": "청송군 축산면 하평리 129-8",
+      "owned": false,
+      "isCurrent": false,
+      "x": -6.38,
+      "y": -11.02
+    },
+    {
+      "fieldId": "399",
+      "fieldIndex": 400,
+      "label": "청송군 남정면 신촌리 182-37",
+      "owned": false,
+      "isCurrent": false,
+      "x": 13,
+      "y": -4.46
+    },
+    {
+      "fieldId": "400",
+      "fieldIndex": 401,
+      "label": "청송군 의성읍 덕천리 235-28",
+      "owned": false,
+      "isCurrent": false,
+      "x": -13.91,
+      "y": 7.9
+    },
+    {
+      "fieldId": "401",
+      "fieldIndex": 402,
+      "label": "청송군 단촌면 하리 288-19",
+      "owned": false,
+      "isCurrent": false,
+      "x": 24.34,
+      "y": 16.38
+    },
+    {
+      "fieldId": "402",
+      "fieldIndex": 403,
+      "label": "청송군 봉양면 노루실리 341-10",
+      "owned": false,
+      "isCurrent": false,
+      "x": 9.16,
+      "y": 16.05
+    },
+    {
+      "fieldId": "403",
+      "fieldIndex": 404,
+      "label": "청송군 옥산면 명당리 394-1",
+      "owned": false,
+      "isCurrent": false,
+      "x": -6.4,
+      "y": -4.61
+    },
+    {
+      "fieldId": "404",
+      "fieldIndex": 405,
+      "label": "청송군 춘산면 호명리 447-30",
+      "owned": false,
+      "isCurrent": false,
+      "x": -8.54,
+      "y": 16.05
+    },
+    {
+      "fieldId": "405",
+      "fieldIndex": 406,
+      "label": "청송군 진보면 화전리 10-21",
+      "owned": false,
+      "isCurrent": false,
+      "x": -22.84,
+      "y": -12.77
+    },
+    {
+      "fieldId": "406",
+      "fieldIndex": 407,
+      "label": "청송군 파천면 송전리 63-12",
+      "owned": false,
+      "isCurrent": false,
+      "x": 13.88,
+      "y": -5.91
+    },
+    {
+      "fieldId": "407",
+      "fieldIndex": 408,
+      "label": "청송군 현동면 거대리 116-3",
+      "owned": false,
+      "isCurrent": false,
+      "x": 16.08,
+      "y": -11.32
+    },
+    {
+      "fieldId": "408",
+      "fieldIndex": 409,
+      "label": "청송군 안덕면 다정리 169-32",
+      "owned": false,
+      "isCurrent": false,
+      "x": -12.92,
+      "y": -3.84
+    },
+    {
+      "fieldId": "409",
+      "fieldIndex": 410,
+      "label": "청송군 부남면 송강리 222-23",
+      "owned": false,
+      "isCurrent": false,
+      "x": 10.73,
+      "y": -13.81
+    },
+    {
+      "fieldId": "410",
+      "fieldIndex": 411,
+      "label": "청송군 주왕산면 하평리 275-14",
+      "owned": false,
+      "isCurrent": false,
+      "x": -7.27,
+      "y": -2.1
+    },
+    {
+      "fieldId": "411",
+      "fieldIndex": 412,
+      "label": "청송군 청송읍 신촌리 328-5",
+      "owned": false,
+      "isCurrent": false,
+      "x": 6.35,
+      "y": -3.72
+    },
+    {
+      "fieldId": "412",
+      "fieldIndex": 413,
+      "label": "청송군 현서면 덕천리 381-34",
+      "owned": false,
+      "isCurrent": false,
+      "x": -5.37,
+      "y": 0.72
+    },
+    {
+      "fieldId": "413",
+      "fieldIndex": 414,
+      "label": "청송군 영덕읍 하리 434-25",
+      "owned": false,
+      "isCurrent": false,
+      "x": -6.56,
+      "y": 3.58
+    },
+    {
+      "fieldId": "414",
+      "fieldIndex": 415,
+      "label": "청송군 지품면 노루실리 487-16",
+      "owned": false,
+      "isCurrent": false,
+      "x": -3.13,
+      "y": -10.89
+    },
+    {
+      "fieldId": "415",
+      "fieldIndex": 416,
+      "label": "청송군 달산면 명당리 50-7",
+      "owned": false,
+      "isCurrent": false,
+      "x": -21.69,
+      "y": -13.48
+    },
+    {
+      "fieldId": "416",
+      "fieldIndex": 417,
+      "label": "청송군 강구면 호명리 103-36",
+      "owned": false,
+      "isCurrent": false,
+      "x": -21.66,
+      "y": -10.04
+    },
+    {
+      "fieldId": "417",
+      "fieldIndex": 418,
+      "label": "청송군 병곡면 화전리 156-27",
+      "owned": false,
+      "isCurrent": false,
+      "x": 21.34,
+      "y": -7.54
+    },
+    {
+      "fieldId": "418",
+      "fieldIndex": 419,
+      "label": "청송군 축산면 송전리 209-18",
+      "owned": false,
+      "isCurrent": false,
+      "x": 6.35,
+      "y": 7.69
+    },
+    {
+      "fieldId": "419",
+      "fieldIndex": 420,
+      "label": "청송군 남정면 거대리 262-9",
+      "owned": false,
+      "isCurrent": false,
+      "x": -8.19,
+      "y": -12.92
+    },
+    {
+      "fieldId": "420",
+      "fieldIndex": 421,
+      "label": "청송군 의성읍 다정리 315-38",
+      "owned": false,
+      "isCurrent": false,
+      "x": -23.4,
+      "y": 10.97
+    },
+    {
+      "fieldId": "421",
+      "fieldIndex": 422,
+      "label": "청송군 단촌면 송강리 368-29",
+      "owned": false,
+      "isCurrent": false,
+      "x": 27.26,
+      "y": 3.03
+    },
+    {
+      "fieldId": "422",
+      "fieldIndex": 423,
+      "label": "청송군 봉양면 하평리 421-20",
+      "owned": false,
+      "isCurrent": false,
+      "x": -5.35,
+      "y": -14
+    },
+    {
+      "fieldId": "423",
+      "fieldIndex": 424,
+      "label": "청송군 옥산면 신촌리 474-11",
+      "owned": false,
+      "isCurrent": false,
+      "x": -14.34,
+      "y": -13.7
+    },
+    {
+      "fieldId": "424",
+      "fieldIndex": 425,
+      "label": "청송군 춘산면 덕천리 37-2",
+      "owned": false,
+      "isCurrent": false,
+      "x": 23.28,
+      "y": -8.75
+    },
+    {
+      "fieldId": "425",
+      "fieldIndex": 426,
+      "label": "청송군 진보면 하리 90-31",
+      "owned": false,
+      "isCurrent": false,
+      "x": 5.05,
+      "y": 6.78
+    },
+    {
+      "fieldId": "426",
+      "fieldIndex": 427,
+      "label": "청송군 파천면 노루실리 143-22",
+      "owned": false,
+      "isCurrent": false,
+      "x": 6.09,
+      "y": -5.83
+    },
+    {
+      "fieldId": "427",
+      "fieldIndex": 428,
+      "label": "청송군 현동면 명당리 196-13",
+      "owned": false,
+      "isCurrent": false,
+      "x": 1.62,
+      "y": 13.37
+    },
+    {
+      "fieldId": "428",
+      "fieldIndex": 429,
+      "label": "청송군 안덕면 호명리 249-4",
+      "owned": false,
+      "isCurrent": false,
+      "x": -11.32,
+      "y": 13.38
+    },
+    {
+      "fieldId": "429",
+      "fieldIndex": 430,
+      "label": "청송군 부남면 화전리 302-33",
+      "owned": false,
+      "isCurrent": false,
+      "x": 19.71,
+      "y": 5.53
+    },
+    {
+      "fieldId": "430",
+      "fieldIndex": 431,
+      "label": "청송군 주왕산면 송전리 355-24",
+      "owned": false,
+      "isCurrent": false,
+      "x": 0.48,
+      "y": 1.1
+    },
+    {
+      "fieldId": "431",
+      "fieldIndex": 432,
+      "label": "청송군 청송읍 거대리 408-15",
+      "owned": false,
+      "isCurrent": false,
+      "x": 12.63,
+      "y": -14.67
+    },
+    {
+      "fieldId": "432",
+      "fieldIndex": 433,
+      "label": "청송군 현서면 다정리 461-6",
+      "owned": false,
+      "isCurrent": false,
+      "x": 22.16,
+      "y": 15.15
+    },
+    {
+      "fieldId": "433",
+      "fieldIndex": 434,
+      "label": "청송군 영덕읍 송강리 24-35",
+      "owned": false,
+      "isCurrent": false,
+      "x": 23.22,
+      "y": 4.08
+    },
+    {
+      "fieldId": "434",
+      "fieldIndex": 435,
+      "label": "청송군 지품면 하평리 77-26",
+      "owned": false,
+      "isCurrent": false,
+      "x": 12.88,
+      "y": 5.73
+    },
+    {
+      "fieldId": "435",
+      "fieldIndex": 436,
+      "label": "청송군 달산면 신촌리 130-17",
+      "owned": false,
+      "isCurrent": false,
+      "x": -11.33,
+      "y": -15.11
+    },
+    {
+      "fieldId": "436",
+      "fieldIndex": 437,
+      "label": "청송군 강구면 덕천리 183-8",
+      "owned": false,
+      "isCurrent": false,
+      "x": -18.82,
+      "y": -11.69
+    },
+    {
+      "fieldId": "437",
+      "fieldIndex": 438,
+      "label": "청송군 병곡면 하리 236-37",
+      "owned": false,
+      "isCurrent": false,
+      "x": -25.39,
+      "y": 10.5
+    },
+    {
+      "fieldId": "438",
+      "fieldIndex": 439,
+      "label": "청송군 축산면 노루실리 289-28",
+      "owned": false,
+      "isCurrent": false,
+      "x": -15.68,
+      "y": 8.83
+    },
+    {
+      "fieldId": "439",
+      "fieldIndex": 440,
+      "label": "청송군 남정면 명당리 342-19",
+      "owned": false,
+      "isCurrent": false,
+      "x": 9.92,
+      "y": 0.37
+    },
+    {
+      "fieldId": "440",
+      "fieldIndex": 441,
+      "label": "청송군 의성읍 호명리 395-10",
+      "owned": false,
+      "isCurrent": false,
+      "x": -19.52,
+      "y": 14.62
+    },
+    {
+      "fieldId": "441",
+      "fieldIndex": 442,
+      "label": "청송군 단촌면 화전리 448-1",
+      "owned": false,
+      "isCurrent": false,
+      "x": 8.69,
+      "y": -15.09
+    },
+    {
+      "fieldId": "442",
+      "fieldIndex": 443,
+      "label": "청송군 봉양면 송전리 11-30",
+      "owned": false,
+      "isCurrent": false,
+      "x": 8.59,
+      "y": 5.73
+    },
+    {
+      "fieldId": "443",
+      "fieldIndex": 444,
+      "label": "청송군 옥산면 거대리 64-21",
+      "owned": false,
+      "isCurrent": false,
+      "x": 13.89,
+      "y": -10.21
+    },
+    {
+      "fieldId": "444",
+      "fieldIndex": 445,
+      "label": "청송군 춘산면 다정리 117-12",
+      "owned": false,
+      "isCurrent": false,
+      "x": 19.81,
+      "y": -8.26
+    },
+    {
+      "fieldId": "445",
+      "fieldIndex": 446,
+      "label": "청송군 진보면 송강리 170-3",
+      "owned": false,
+      "isCurrent": false,
+      "x": -18.93,
+      "y": 10.24
+    },
+    {
+      "fieldId": "446",
+      "fieldIndex": 447,
+      "label": "청송군 파천면 하평리 223-32",
+      "owned": false,
+      "isCurrent": false,
+      "x": -4.4,
+      "y": 9.27
+    },
+    {
+      "fieldId": "447",
+      "fieldIndex": 448,
+      "label": "청송군 현동면 신촌리 276-23",
+      "owned": false,
+      "isCurrent": false,
+      "x": 14.19,
+      "y": -1.1
+    },
+    {
+      "fieldId": "448",
+      "fieldIndex": 449,
+      "label": "청송군 안덕면 덕천리 329-14",
+      "owned": false,
+      "isCurrent": false,
+      "x": -17.36,
+      "y": -3.5
+    },
+    {
+      "fieldId": "449",
+      "fieldIndex": 450,
+      "label": "청송군 부남면 하리 382-5",
+      "owned": false,
+      "isCurrent": false,
+      "x": 25.03,
+      "y": -12.87
+    },
+    {
+      "fieldId": "450",
+      "fieldIndex": 451,
+      "label": "청송군 주왕산면 노루실리 435-34",
+      "owned": false,
+      "isCurrent": false,
+      "x": 4.43,
+      "y": -8.62
+    },
+    {
+      "fieldId": "451",
+      "fieldIndex": 452,
+      "label": "청송군 청송읍 명당리 488-25",
+      "owned": false,
+      "isCurrent": false,
+      "x": 10.4,
+      "y": 4.85
+    },
+    {
+      "fieldId": "452",
+      "fieldIndex": 453,
+      "label": "청송군 현서면 호명리 51-16",
+      "owned": false,
+      "isCurrent": false,
+      "x": 12.07,
+      "y": 14.72
+    },
+    {
+      "fieldId": "453",
+      "fieldIndex": 454,
+      "label": "청송군 영덕읍 화전리 104-7",
+      "owned": false,
+      "isCurrent": false,
+      "x": -15.33,
+      "y": -9.51
+    },
+    {
+      "fieldId": "454",
+      "fieldIndex": 455,
+      "label": "청송군 지품면 송전리 157-36",
+      "owned": false,
+      "isCurrent": false,
+      "x": 12.4,
+      "y": -8.23
+    },
+    {
+      "fieldId": "455",
+      "fieldIndex": 456,
+      "label": "청송군 달산면 거대리 210-27",
+      "owned": false,
+      "isCurrent": false,
+      "x": 19.42,
+      "y": 11.51
+    },
+    {
+      "fieldId": "456",
+      "fieldIndex": 457,
+      "label": "청송군 강구면 다정리 263-18",
+      "owned": false,
+      "isCurrent": false,
+      "x": 27.16,
+      "y": 11.4
+    },
+    {
+      "fieldId": "457",
+      "fieldIndex": 458,
+      "label": "청송군 병곡면 송강리 316-9",
+      "owned": false,
+      "isCurrent": false,
+      "x": 5.26,
+      "y": 11.09
+    },
+    {
+      "fieldId": "458",
+      "fieldIndex": 459,
+      "label": "청송군 축산면 하평리 369-38",
+      "owned": false,
+      "isCurrent": false,
+      "x": -13.82,
+      "y": -2.75
+    },
+    {
+      "fieldId": "459",
+      "fieldIndex": 460,
+      "label": "청송군 남정면 신촌리 422-29",
+      "owned": false,
+      "isCurrent": false,
+      "x": -25.17,
+      "y": 4.49
+    },
+    {
+      "fieldId": "460",
+      "fieldIndex": 461,
+      "label": "청송군 의성읍 덕천리 475-20",
+      "owned": false,
+      "isCurrent": false,
+      "x": -23.82,
+      "y": -6.07
+    },
+    {
+      "fieldId": "461",
+      "fieldIndex": 462,
+      "label": "청송군 단촌면 하리 38-11",
+      "owned": false,
+      "isCurrent": false,
+      "x": 1.08,
+      "y": 5.32
+    },
+    {
+      "fieldId": "462",
+      "fieldIndex": 463,
+      "label": "청송군 봉양면 노루실리 91-2",
+      "owned": false,
+      "isCurrent": false,
+      "x": -9.13,
+      "y": 5.63
+    },
+    {
+      "fieldId": "463",
+      "fieldIndex": 464,
+      "label": "청송군 옥산면 명당리 144-31",
+      "owned": false,
+      "isCurrent": false,
+      "x": -21.74,
+      "y": -8.29
+    },
+    {
+      "fieldId": "464",
+      "fieldIndex": 465,
+      "label": "청송군 춘산면 호명리 197-22",
+      "owned": false,
+      "isCurrent": false,
+      "x": -16.31,
+      "y": 12.07
+    },
+    {
+      "fieldId": "465",
+      "fieldIndex": 466,
+      "label": "청송군 진보면 화전리 250-13",
+      "owned": false,
+      "isCurrent": false,
+      "x": 22.35,
+      "y": -0.93
+    },
+    {
+      "fieldId": "466",
+      "fieldIndex": 467,
+      "label": "청송군 파천면 송전리 303-4",
+      "owned": false,
+      "isCurrent": false,
+      "x": 6.38,
+      "y": 0.86
+    },
+    {
+      "fieldId": "467",
+      "fieldIndex": 468,
+      "label": "청송군 현동면 거대리 356-33",
+      "owned": false,
+      "isCurrent": false,
+      "x": 10.94,
+      "y": 17.43
+    },
+    {
+      "fieldId": "468",
+      "fieldIndex": 469,
+      "label": "청송군 안덕면 다정리 409-24",
+      "owned": false,
+      "isCurrent": false,
+      "x": -24.97,
+      "y": 12.41
+    },
+    {
+      "fieldId": "469",
+      "fieldIndex": 470,
+      "label": "청송군 부남면 송강리 462-15",
+      "owned": false,
+      "isCurrent": false,
+      "x": -14.42,
+      "y": 0.61
+    },
+    {
+      "fieldId": "470",
+      "fieldIndex": 471,
+      "label": "청송군 주왕산면 하평리 25-6",
+      "owned": false,
+      "isCurrent": false,
+      "x": -5.99,
+      "y": -12.64
+    },
+    {
+      "fieldId": "471",
+      "fieldIndex": 472,
+      "label": "청송군 청송읍 신촌리 78-35",
+      "owned": false,
+      "isCurrent": false,
+      "x": -20.09,
+      "y": -11.97
+    },
+    {
+      "fieldId": "472",
+      "fieldIndex": 473,
+      "label": "청송군 현서면 덕천리 131-26",
+      "owned": false,
+      "isCurrent": false,
+      "x": -10.43,
+      "y": -14.33
+    },
+    {
+      "fieldId": "473",
+      "fieldIndex": 474,
+      "label": "청송군 영덕읍 하리 184-17",
+      "owned": false,
+      "isCurrent": false,
+      "x": 27.37,
+      "y": 14.65
+    },
+    {
+      "fieldId": "474",
+      "fieldIndex": 475,
+      "label": "청송군 지품면 노루실리 237-8",
+      "owned": false,
+      "isCurrent": false,
+      "x": -15.01,
+      "y": 11.46
+    },
+    {
+      "fieldId": "475",
+      "fieldIndex": 476,
+      "label": "청송군 달산면 명당리 290-37",
+      "owned": false,
+      "isCurrent": false,
+      "x": 5.35,
+      "y": 1.34
+    },
+    {
+      "fieldId": "476",
+      "fieldIndex": 477,
+      "label": "청송군 강구면 호명리 343-28",
+      "owned": false,
+      "isCurrent": false,
+      "x": 22.55,
+      "y": -7.42
+    },
+    {
+      "fieldId": "477",
+      "fieldIndex": 478,
+      "label": "청송군 병곡면 화전리 396-19",
+      "owned": false,
+      "isCurrent": false,
+      "x": -19.31,
+      "y": -10.47
+    },
+    {
+      "fieldId": "478",
+      "fieldIndex": 479,
+      "label": "청송군 축산면 송전리 449-10",
+      "owned": false,
+      "isCurrent": false,
+      "x": 2.23,
+      "y": 6.35
+    },
+    {
+      "fieldId": "479",
+      "fieldIndex": 480,
+      "label": "청송군 남정면 거대리 12-1",
+      "owned": false,
+      "isCurrent": false,
+      "x": 21.09,
+      "y": 16.84
+    },
+    {
+      "fieldId": "480",
+      "fieldIndex": 481,
+      "label": "청송군 의성읍 다정리 65-30",
+      "owned": false,
+      "isCurrent": false,
+      "x": 17.47,
+      "y": -14.69
+    },
+    {
+      "fieldId": "481",
+      "fieldIndex": 482,
+      "label": "청송군 단촌면 송강리 118-21",
+      "owned": false,
+      "isCurrent": false,
+      "x": 17.07,
+      "y": 9.2
+    },
+    {
+      "fieldId": "482",
+      "fieldIndex": 483,
+      "label": "청송군 봉양면 하평리 171-12",
+      "owned": false,
+      "isCurrent": false,
+      "x": -21.09,
+      "y": 17.8
+    },
+    {
+      "fieldId": "483",
+      "fieldIndex": 484,
+      "label": "청송군 옥산면 신촌리 224-3",
+      "owned": false,
+      "isCurrent": false,
+      "x": -17.53,
+      "y": 4.23
+    },
+    {
+      "fieldId": "484",
+      "fieldIndex": 485,
+      "label": "청송군 춘산면 덕천리 277-32",
+      "owned": false,
+      "isCurrent": false,
+      "x": -25.53,
+      "y": -12.39
+    },
+    {
+      "fieldId": "485",
+      "fieldIndex": 486,
+      "label": "청송군 진보면 하리 330-23",
+      "owned": false,
+      "isCurrent": false,
+      "x": -7.58,
+      "y": -0.41
+    },
+    {
+      "fieldId": "486",
+      "fieldIndex": 487,
+      "label": "청송군 파천면 노루실리 383-14",
+      "owned": false,
+      "isCurrent": false,
+      "x": -1.1,
+      "y": -8.76
+    },
+    {
+      "fieldId": "487",
+      "fieldIndex": 488,
+      "label": "청송군 현동면 명당리 436-5",
+      "owned": false,
+      "isCurrent": false,
+      "x": 12.77,
+      "y": 7.22
+    },
+    {
+      "fieldId": "488",
+      "fieldIndex": 489,
+      "label": "청송군 안덕면 호명리 489-34",
+      "owned": false,
+      "isCurrent": false,
+      "x": 3.57,
+      "y": -10.53
+    },
+    {
+      "fieldId": "489",
+      "fieldIndex": 490,
+      "label": "청송군 부남면 화전리 52-25",
+      "owned": false,
+      "isCurrent": false,
+      "x": -22.66,
+      "y": -2.13
+    },
+    {
+      "fieldId": "490",
+      "fieldIndex": 491,
+      "label": "청송군 주왕산면 송전리 105-16",
+      "owned": false,
+      "isCurrent": false,
+      "x": 3.56,
+      "y": 11.06
+    },
+    {
+      "fieldId": "491",
+      "fieldIndex": 492,
+      "label": "청송군 청송읍 거대리 158-7",
+      "owned": false,
+      "isCurrent": false,
+      "x": -5.37,
+      "y": 14.33
+    },
+    {
+      "fieldId": "492",
+      "fieldIndex": 493,
+      "label": "청송군 현서면 다정리 211-36",
+      "owned": false,
+      "isCurrent": false,
+      "x": -13.26,
+      "y": -4.61
+    },
+    {
+      "fieldId": "493",
+      "fieldIndex": 494,
+      "label": "청송군 영덕읍 송강리 264-27",
+      "owned": false,
+      "isCurrent": false,
+      "x": -20.88,
+      "y": 0.4
+    },
+    {
+      "fieldId": "494",
+      "fieldIndex": 495,
+      "label": "청송군 지품면 하평리 317-18",
+      "owned": false,
+      "isCurrent": false,
+      "x": 3.28,
+      "y": -14.3
+    },
+    {
+      "fieldId": "495",
+      "fieldIndex": 496,
+      "label": "청송군 달산면 신촌리 370-9",
+      "owned": false,
+      "isCurrent": false,
+      "x": 15.81,
+      "y": -8.34
+    },
+    {
+      "fieldId": "496",
+      "fieldIndex": 497,
+      "label": "청송군 강구면 덕천리 423-38",
+      "owned": false,
+      "isCurrent": false,
+      "x": -21.02,
+      "y": 2.77
+    },
+    {
+      "fieldId": "497",
+      "fieldIndex": 498,
+      "label": "청송군 병곡면 하리 476-29",
+      "owned": false,
+      "isCurrent": false,
+      "x": -4.45,
+      "y": 16.58
+    },
+    {
+      "fieldId": "498",
+      "fieldIndex": 499,
+      "label": "청송군 축산면 노루실리 39-20",
+      "owned": false,
+      "isCurrent": false,
+      "x": 17.1,
+      "y": 17.46
+    },
+    {
+      "fieldId": "499",
+      "fieldIndex": 500,
+      "label": "청송군 남정면 명당리 92-11",
+      "owned": false,
+      "isCurrent": false,
+      "x": 15.23,
+      "y": 9.92
+    },
+    {
+      "fieldId": "500",
+      "fieldIndex": 501,
+      "label": "청송군 의성읍 호명리 145-2",
+      "owned": false,
+      "isCurrent": false,
+      "x": -9.91,
+      "y": 7.66
+    },
+    {
+      "fieldId": "501",
+      "fieldIndex": 502,
+      "label": "청송군 단촌면 화전리 198-31",
+      "owned": false,
+      "isCurrent": false,
+      "x": 10.53,
+      "y": 7.85
+    },
+    {
+      "fieldId": "502",
+      "fieldIndex": 503,
+      "label": "청송군 봉양면 송전리 251-22",
+      "owned": false,
+      "isCurrent": false,
+      "x": -2.15,
+      "y": 0.4
+    },
+    {
+      "fieldId": "503",
+      "fieldIndex": 504,
+      "label": "청송군 옥산면 거대리 304-13",
+      "owned": false,
+      "isCurrent": false,
+      "x": 13.69,
+      "y": -13.43
+    },
+    {
+      "fieldId": "504",
+      "fieldIndex": 505,
+      "label": "청송군 춘산면 다정리 357-4",
+      "owned": false,
+      "isCurrent": false,
+      "x": 26.22,
+      "y": 16.84
+    },
+    {
+      "fieldId": "505",
+      "fieldIndex": 506,
+      "label": "청송군 진보면 송강리 410-33",
+      "owned": false,
+      "isCurrent": false,
+      "x": -22.6,
+      "y": 5.98
+    },
+    {
+      "fieldId": "506",
+      "fieldIndex": 507,
+      "label": "청송군 파천면 하평리 463-24",
+      "owned": false,
+      "isCurrent": false,
+      "x": -17.98,
+      "y": 11.18
+    },
+    {
+      "fieldId": "507",
+      "fieldIndex": 508,
+      "label": "청송군 현동면 신촌리 26-15",
+      "owned": false,
+      "isCurrent": false,
+      "x": 11.25,
+      "y": -4.67
+    },
+    {
+      "fieldId": "508",
+      "fieldIndex": 509,
+      "label": "청송군 안덕면 덕천리 79-6",
+      "owned": false,
+      "isCurrent": false,
+      "x": -15.53,
+      "y": 10.11
+    },
+    {
+      "fieldId": "509",
+      "fieldIndex": 510,
+      "label": "청송군 부남면 하리 132-35",
+      "owned": false,
+      "isCurrent": false,
+      "x": 25.27,
+      "y": 13.47
+    },
+    {
+      "fieldId": "510",
+      "fieldIndex": 511,
+      "label": "청송군 주왕산면 노루실리 185-26",
+      "owned": false,
+      "isCurrent": false,
+      "x": -3.58,
+      "y": -2.63
+    },
+    {
+      "fieldId": "511",
+      "fieldIndex": 512,
+      "label": "청송군 청송읍 명당리 238-17",
+      "owned": false,
+      "isCurrent": false,
+      "x": 16.08,
+      "y": -2.28
+    },
+    {
+      "fieldId": "512",
+      "fieldIndex": 513,
+      "label": "청송군 현서면 호명리 291-8",
+      "owned": false,
+      "isCurrent": false,
+      "x": -24.27,
+      "y": -14.14
+    },
+    {
+      "fieldId": "513",
+      "fieldIndex": 514,
+      "label": "청송군 영덕읍 화전리 344-37",
+      "owned": false,
+      "isCurrent": false,
+      "x": 20.64,
+      "y": -11.78
+    },
+    {
+      "fieldId": "514",
+      "fieldIndex": 515,
+      "label": "청송군 지품면 송전리 397-28",
+      "owned": false,
+      "isCurrent": false,
+      "x": -14.24,
       "y": 13.78
+    },
+    {
+      "fieldId": "515",
+      "fieldIndex": 516,
+      "label": "청송군 달산면 거대리 450-19",
+      "owned": false,
+      "isCurrent": false,
+      "x": 7.31,
+      "y": 16.41
+    },
+    {
+      "fieldId": "516",
+      "fieldIndex": 517,
+      "label": "청송군 강구면 다정리 13-10",
+      "owned": false,
+      "isCurrent": false,
+      "x": -21.71,
+      "y": -11.24
+    },
+    {
+      "fieldId": "517",
+      "fieldIndex": 518,
+      "label": "청송군 병곡면 송강리 66-1",
+      "owned": false,
+      "isCurrent": false,
+      "x": 10.49,
+      "y": -0.86
+    },
+    {
+      "fieldId": "518",
+      "fieldIndex": 519,
+      "label": "청송군 축산면 하평리 119-30",
+      "owned": false,
+      "isCurrent": false,
+      "x": 1.03,
+      "y": 10.79
+    },
+    {
+      "fieldId": "519",
+      "fieldIndex": 520,
+      "label": "청송군 남정면 신촌리 172-21",
+      "owned": false,
+      "isCurrent": false,
+      "x": -15.74,
+      "y": 14.29
+    },
+    {
+      "fieldId": "520",
+      "fieldIndex": 521,
+      "label": "청송군 의성읍 덕천리 225-12",
+      "owned": false,
+      "isCurrent": false,
+      "x": 5.69,
+      "y": 10.25
+    },
+    {
+      "fieldId": "521",
+      "fieldIndex": 522,
+      "label": "청송군 단촌면 하리 278-3",
+      "owned": false,
+      "isCurrent": false,
+      "x": -25.39,
+      "y": 15.09
+    },
+    {
+      "fieldId": "522",
+      "fieldIndex": 523,
+      "label": "청송군 봉양면 노루실리 331-32",
+      "owned": false,
+      "isCurrent": false,
+      "x": 10.28,
+      "y": -11.14
+    },
+    {
+      "fieldId": "523",
+      "fieldIndex": 524,
+      "label": "청송군 옥산면 명당리 384-23",
+      "owned": false,
+      "isCurrent": false,
+      "x": -12.2,
+      "y": -12.79
+    },
+    {
+      "fieldId": "524",
+      "fieldIndex": 525,
+      "label": "청송군 춘산면 호명리 437-14",
+      "owned": false,
+      "isCurrent": false,
+      "x": 23.77,
+      "y": 5.13
+    },
+    {
+      "fieldId": "525",
+      "fieldIndex": 526,
+      "label": "청송군 진보면 화전리 490-5",
+      "owned": false,
+      "isCurrent": false,
+      "x": -25.06,
+      "y": -1.24
+    },
+    {
+      "fieldId": "526",
+      "fieldIndex": 527,
+      "label": "청송군 파천면 송전리 53-34",
+      "owned": false,
+      "isCurrent": false,
+      "x": -12.23,
+      "y": -11.62
+    },
+    {
+      "fieldId": "527",
+      "fieldIndex": 528,
+      "label": "청송군 현동면 거대리 106-25",
+      "owned": false,
+      "isCurrent": false,
+      "x": -11.83,
+      "y": -5.48
+    },
+    {
+      "fieldId": "528",
+      "fieldIndex": 529,
+      "label": "청송군 안덕면 다정리 159-16",
+      "owned": false,
+      "isCurrent": false,
+      "x": -20.86,
+      "y": -1.73
+    },
+    {
+      "fieldId": "529",
+      "fieldIndex": 530,
+      "label": "청송군 부남면 송강리 212-7",
+      "owned": false,
+      "isCurrent": false,
+      "x": 10.25,
+      "y": 10.59
+    },
+    {
+      "fieldId": "530",
+      "fieldIndex": 531,
+      "label": "청송군 주왕산면 하평리 265-36",
+      "owned": false,
+      "isCurrent": false,
+      "x": 10.5,
+      "y": 5.69
+    },
+    {
+      "fieldId": "531",
+      "fieldIndex": 532,
+      "label": "청송군 청송읍 신촌리 318-27",
+      "owned": false,
+      "isCurrent": false,
+      "x": 11.62,
+      "y": -11.56
+    },
+    {
+      "fieldId": "532",
+      "fieldIndex": 533,
+      "label": "청송군 현서면 덕천리 371-18",
+      "owned": false,
+      "isCurrent": false,
+      "x": -3.62,
+      "y": 5.52
+    },
+    {
+      "fieldId": "533",
+      "fieldIndex": 534,
+      "label": "청송군 영덕읍 하리 424-9",
+      "owned": false,
+      "isCurrent": false,
+      "x": -23.6,
+      "y": -14.72
+    },
+    {
+      "fieldId": "534",
+      "fieldIndex": 535,
+      "label": "청송군 지품면 노루실리 477-38",
+      "owned": false,
+      "isCurrent": false,
+      "x": -2.51,
+      "y": -5.9
+    },
+    {
+      "fieldId": "535",
+      "fieldIndex": 536,
+      "label": "청송군 달산면 명당리 40-29",
+      "owned": false,
+      "isCurrent": false,
+      "x": -13.17,
+      "y": -2.02
+    },
+    {
+      "fieldId": "536",
+      "fieldIndex": 537,
+      "label": "청송군 강구면 호명리 93-20",
+      "owned": false,
+      "isCurrent": false,
+      "x": 7.13,
+      "y": -7.9
+    },
+    {
+      "fieldId": "537",
+      "fieldIndex": 538,
+      "label": "청송군 병곡면 화전리 146-11",
+      "owned": false,
+      "isCurrent": false,
+      "x": 24.55,
+      "y": -4.77
+    },
+    {
+      "fieldId": "538",
+      "fieldIndex": 539,
+      "label": "청송군 축산면 송전리 199-2",
+      "owned": false,
+      "isCurrent": false,
+      "x": 2.42,
+      "y": 2.82
+    },
+    {
+      "fieldId": "539",
+      "fieldIndex": 540,
+      "label": "청송군 남정면 거대리 252-31",
+      "owned": false,
+      "isCurrent": false,
+      "x": 6.38,
+      "y": 18.02
+    },
+    {
+      "fieldId": "540",
+      "fieldIndex": 541,
+      "label": "청송군 의성읍 다정리 305-22",
+      "owned": false,
+      "isCurrent": false,
+      "x": -18.45,
+      "y": 14.9
+    },
+    {
+      "fieldId": "541",
+      "fieldIndex": 542,
+      "label": "청송군 단촌면 송강리 358-13",
+      "owned": false,
+      "isCurrent": false,
+      "x": 19.46,
+      "y": 15.99
+    },
+    {
+      "fieldId": "542",
+      "fieldIndex": 543,
+      "label": "청송군 봉양면 하평리 411-4",
+      "owned": false,
+      "isCurrent": false,
+      "x": 13.85,
+      "y": 6.14
+    },
+    {
+      "fieldId": "543",
+      "fieldIndex": 544,
+      "label": "청송군 옥산면 신촌리 464-33",
+      "owned": false,
+      "isCurrent": false,
+      "x": -14.13,
+      "y": 15.25
+    },
+    {
+      "fieldId": "544",
+      "fieldIndex": 545,
+      "label": "청송군 춘산면 덕천리 27-24",
+      "owned": false,
+      "isCurrent": false,
+      "x": 24.71,
+      "y": -3.72
+    },
+    {
+      "fieldId": "545",
+      "fieldIndex": 546,
+      "label": "청송군 진보면 하리 80-15",
+      "owned": false,
+      "isCurrent": false,
+      "x": 3.76,
+      "y": 8.96
+    },
+    {
+      "fieldId": "546",
+      "fieldIndex": 547,
+      "label": "청송군 파천면 노루실리 133-6",
+      "owned": false,
+      "isCurrent": false,
+      "x": 17.01,
+      "y": 16.16
+    },
+    {
+      "fieldId": "547",
+      "fieldIndex": 548,
+      "label": "청송군 현동면 명당리 186-35",
+      "owned": false,
+      "isCurrent": false,
+      "x": -8.35,
+      "y": -1.43
+    },
+    {
+      "fieldId": "548",
+      "fieldIndex": 549,
+      "label": "청송군 안덕면 호명리 239-26",
+      "owned": false,
+      "isCurrent": false,
+      "x": -4.7,
+      "y": 17.58
+    },
+    {
+      "fieldId": "549",
+      "fieldIndex": 550,
+      "label": "청송군 부남면 화전리 292-17",
+      "owned": false,
+      "isCurrent": false,
+      "x": 27.44,
+      "y": -11.01
+    },
+    {
+      "fieldId": "550",
+      "fieldIndex": 551,
+      "label": "청송군 주왕산면 송전리 345-8",
+      "owned": false,
+      "isCurrent": false,
+      "x": 17.71,
+      "y": -8.79
+    },
+    {
+      "fieldId": "551",
+      "fieldIndex": 552,
+      "label": "청송군 청송읍 거대리 398-37",
+      "owned": false,
+      "isCurrent": false,
+      "x": -16.72,
+      "y": 5.03
+    },
+    {
+      "fieldId": "552",
+      "fieldIndex": 553,
+      "label": "청송군 지품면 기곡리 232-21",
+      "owned": false,
+      "isCurrent": false,
+      "x": -8.74,
+      "y": -7.51
+    },
+    {
+      "fieldId": "553",
+      "fieldIndex": 554,
+      "label": "청송군 달산면 금곡리 285-12",
+      "owned": false,
+      "isCurrent": false,
+      "x": 9.89,
+      "y": -4.87
+    },
+    {
+      "fieldId": "554",
+      "fieldIndex": 555,
+      "label": "청송군 강구면 본촌리 338-3",
+      "owned": false,
+      "isCurrent": false,
+      "x": 8.66,
+      "y": 11.33
+    },
+    {
+      "fieldId": "555",
+      "fieldIndex": 556,
+      "label": "청송군 병곡면 용전리 391-32",
+      "owned": false,
+      "isCurrent": false,
+      "x": 11.29,
+      "y": 1.15
+    },
+    {
+      "fieldId": "556",
+      "fieldIndex": 557,
+      "label": "청송군 축산면 사촌리 444-23",
+      "owned": false,
+      "isCurrent": false,
+      "x": -1.83,
+      "y": 4.43
+    },
+    {
+      "fieldId": "557",
+      "fieldIndex": 558,
+      "label": "청송군 남정면 수락리 497-14",
+      "owned": false,
+      "isCurrent": false,
+      "x": 5.19,
+      "y": -9.19
+    },
+    {
+      "fieldId": "558",
+      "fieldIndex": 559,
+      "label": "청송군 의성읍 감곡리 60-5",
+      "owned": false,
+      "isCurrent": false,
+      "x": 19.14,
+      "y": 13.85
+    },
+    {
+      "fieldId": "559",
+      "fieldIndex": 560,
+      "label": "청송군 단촌면 백자리 113-34",
+      "owned": false,
+      "isCurrent": false,
+      "x": 22.85,
+      "y": 2.33
+    },
+    {
+      "fieldId": "560",
+      "fieldIndex": 561,
+      "label": "청송군 봉양면 매곡리 166-25",
+      "owned": false,
+      "isCurrent": false,
+      "x": 25.16,
+      "y": 6.15
+    },
+    {
+      "fieldId": "561",
+      "fieldIndex": 562,
+      "label": "청송군 옥산면 율현리 219-16",
+      "owned": false,
+      "isCurrent": false,
+      "x": -25.43,
+      "y": -8.76
+    },
+    {
+      "fieldId": "562",
+      "fieldIndex": 563,
+      "label": "청송군 춘산면 구산리 272-7",
+      "owned": false,
+      "isCurrent": false,
+      "x": -10.33,
+      "y": 17.89
+    },
+    {
+      "fieldId": "563",
+      "fieldIndex": 564,
+      "label": "청송군 진보면 대율리 325-36",
+      "owned": false,
+      "isCurrent": false,
+      "x": 6.78,
+      "y": 15.67
+    },
+    {
+      "fieldId": "564",
+      "fieldIndex": 565,
+      "label": "청송군 파천면 기곡리 378-27",
+      "owned": false,
+      "isCurrent": false,
+      "x": -19.7,
+      "y": 12.87
+    },
+    {
+      "fieldId": "565",
+      "fieldIndex": 566,
+      "label": "청송군 현동면 금곡리 431-18",
+      "owned": false,
+      "isCurrent": false,
+      "x": -19.75,
+      "y": -1.45
+    },
+    {
+      "fieldId": "566",
+      "fieldIndex": 567,
+      "label": "청송군 안덕면 본촌리 484-9",
+      "owned": false,
+      "isCurrent": false,
+      "x": -6.2,
+      "y": -14.67
+    },
+    {
+      "fieldId": "567",
+      "fieldIndex": 568,
+      "label": "청송군 부남면 용전리 47-38",
+      "owned": false,
+      "isCurrent": false,
+      "x": 18.56,
+      "y": -9.01
+    },
+    {
+      "fieldId": "568",
+      "fieldIndex": 569,
+      "label": "청송군 주왕산면 사촌리 100-29",
+      "owned": false,
+      "isCurrent": false,
+      "x": 4.69,
+      "y": -13.23
+    },
+    {
+      "fieldId": "569",
+      "fieldIndex": 570,
+      "label": "청송군 청송읍 수락리 153-20",
+      "owned": false,
+      "isCurrent": false,
+      "x": 6.63,
+      "y": -10.59
+    },
+    {
+      "fieldId": "570",
+      "fieldIndex": 571,
+      "label": "청송군 현서면 감곡리 206-11",
+      "owned": false,
+      "isCurrent": false,
+      "x": 14.67,
+      "y": -14.47
+    },
+    {
+      "fieldId": "571",
+      "fieldIndex": 572,
+      "label": "청송군 영덕읍 백자리 259-2",
+      "owned": false,
+      "isCurrent": false,
+      "x": -22.32,
+      "y": 18.02
+    },
+    {
+      "fieldId": "572",
+      "fieldIndex": 573,
+      "label": "청송군 지품면 매곡리 312-31",
+      "owned": false,
+      "isCurrent": false,
+      "x": -18.45,
+      "y": 12.46
+    },
+    {
+      "fieldId": "573",
+      "fieldIndex": 574,
+      "label": "청송군 달산면 율현리 365-22",
+      "owned": false,
+      "isCurrent": false,
+      "x": -0.51,
+      "y": 4.16
+    },
+    {
+      "fieldId": "574",
+      "fieldIndex": 575,
+      "label": "청송군 강구면 구산리 418-13",
+      "owned": false,
+      "isCurrent": false,
+      "x": -5.28,
+      "y": 4.02
+    },
+    {
+      "fieldId": "575",
+      "fieldIndex": 576,
+      "label": "청송군 병곡면 대율리 471-4",
+      "owned": false,
+      "isCurrent": false,
+      "x": -18.86,
+      "y": 1.05
+    },
+    {
+      "fieldId": "576",
+      "fieldIndex": 577,
+      "label": "청송군 축산면 기곡리 34-33",
+      "owned": false,
+      "isCurrent": false,
+      "x": 24.19,
+      "y": 12
+    },
+    {
+      "fieldId": "577",
+      "fieldIndex": 578,
+      "label": "청송군 남정면 금곡리 87-24",
+      "owned": false,
+      "isCurrent": false,
+      "x": -11.64,
+      "y": 3.35
+    },
+    {
+      "fieldId": "578",
+      "fieldIndex": 579,
+      "label": "청송군 의성읍 본촌리 140-15",
+      "owned": false,
+      "isCurrent": false,
+      "x": -3.14,
+      "y": -9.79
+    },
+    {
+      "fieldId": "579",
+      "fieldIndex": 580,
+      "label": "청송군 단촌면 용전리 193-6",
+      "owned": false,
+      "isCurrent": false,
+      "x": 16.18,
+      "y": 17.24
+    },
+    {
+      "fieldId": "580",
+      "fieldIndex": 581,
+      "label": "청송군 봉양면 사촌리 246-35",
+      "owned": false,
+      "isCurrent": false,
+      "x": -11.08,
+      "y": 10.61
+    },
+    {
+      "fieldId": "581",
+      "fieldIndex": 582,
+      "label": "청송군 옥산면 수락리 299-26",
+      "owned": false,
+      "isCurrent": false,
+      "x": 17.36,
+      "y": -9.68
+    },
+    {
+      "fieldId": "582",
+      "fieldIndex": 583,
+      "label": "청송군 춘산면 감곡리 352-17",
+      "owned": false,
+      "isCurrent": false,
+      "x": -4.47,
+      "y": -7.35
+    },
+    {
+      "fieldId": "583",
+      "fieldIndex": 584,
+      "label": "청송군 진보면 백자리 405-8",
+      "owned": false,
+      "isCurrent": false,
+      "x": 19.95,
+      "y": 2.2
+    },
+    {
+      "fieldId": "584",
+      "fieldIndex": 585,
+      "label": "청송군 파천면 매곡리 458-37",
+      "owned": false,
+      "isCurrent": false,
+      "x": -18.15,
+      "y": 13.62
+    },
+    {
+      "fieldId": "585",
+      "fieldIndex": 586,
+      "label": "청송군 현동면 율현리 21-28",
+      "owned": false,
+      "isCurrent": false,
+      "x": 8.18,
+      "y": 13.01
+    },
+    {
+      "fieldId": "586",
+      "fieldIndex": 587,
+      "label": "청송군 안덕면 구산리 74-19",
+      "owned": false,
+      "isCurrent": false,
+      "x": 5.39,
+      "y": 2.82
+    },
+    {
+      "fieldId": "587",
+      "fieldIndex": 588,
+      "label": "청송군 부남면 대율리 127-10",
+      "owned": false,
+      "isCurrent": false,
+      "x": -11.09,
+      "y": 0.99
+    },
+    {
+      "fieldId": "588",
+      "fieldIndex": 589,
+      "label": "청송군 주왕산면 기곡리 180-1",
+      "owned": false,
+      "isCurrent": false,
+      "x": -14.58,
+      "y": -6.71
+    },
+    {
+      "fieldId": "589",
+      "fieldIndex": 590,
+      "label": "청송군 청송읍 금곡리 233-30",
+      "owned": false,
+      "isCurrent": false,
+      "x": 23.93,
+      "y": 6.04
+    },
+    {
+      "fieldId": "590",
+      "fieldIndex": 591,
+      "label": "청송군 현서면 본촌리 286-21",
+      "owned": false,
+      "isCurrent": false,
+      "x": 26.54,
+      "y": -12.96
+    },
+    {
+      "fieldId": "591",
+      "fieldIndex": 592,
+      "label": "청송군 영덕읍 용전리 339-12",
+      "owned": false,
+      "isCurrent": false,
+      "x": 16.34,
+      "y": -1.05
+    },
+    {
+      "fieldId": "592",
+      "fieldIndex": 593,
+      "label": "청송군 지품면 사촌리 392-3",
+      "owned": false,
+      "isCurrent": false,
+      "x": -15.14,
+      "y": -0.02
+    },
+    {
+      "fieldId": "593",
+      "fieldIndex": 594,
+      "label": "청송군 달산면 수락리 445-32",
+      "owned": false,
+      "isCurrent": false,
+      "x": 5.23,
+      "y": -0.8
+    },
+    {
+      "fieldId": "594",
+      "fieldIndex": 595,
+      "label": "청송군 강구면 감곡리 498-23",
+      "owned": false,
+      "isCurrent": false,
+      "x": 1.98,
+      "y": -14.1
+    },
+    {
+      "fieldId": "595",
+      "fieldIndex": 596,
+      "label": "청송군 병곡면 백자리 61-14",
+      "owned": false,
+      "isCurrent": false,
+      "x": 14.12,
+      "y": 8.51
+    },
+    {
+      "fieldId": "596",
+      "fieldIndex": 597,
+      "label": "청송군 축산면 매곡리 114-5",
+      "owned": false,
+      "isCurrent": false,
+      "x": -19.1,
+      "y": 1.96
+    },
+    {
+      "fieldId": "597",
+      "fieldIndex": 598,
+      "label": "청송군 남정면 율현리 167-34",
+      "owned": false,
+      "isCurrent": false,
+      "x": -24.26,
+      "y": -7.33
+    },
+    {
+      "fieldId": "598",
+      "fieldIndex": 599,
+      "label": "청송군 의성읍 구산리 220-25",
+      "owned": false,
+      "isCurrent": false,
+      "x": 15.6,
+      "y": -10.13
+    },
+    {
+      "fieldId": "599",
+      "fieldIndex": 600,
+      "label": "청송군 단촌면 대율리 273-16",
+      "owned": false,
+      "isCurrent": false,
+      "x": -17.06,
+      "y": 13.74
+    },
+    {
+      "fieldId": "600",
+      "fieldIndex": 601,
+      "label": "청송군 봉양면 기곡리 326-7",
+      "owned": false,
+      "isCurrent": false,
+      "x": 3.44,
+      "y": 5.42
+    },
+    {
+      "fieldId": "601",
+      "fieldIndex": 602,
+      "label": "청송군 옥산면 금곡리 379-36",
+      "owned": false,
+      "isCurrent": false,
+      "x": -11.29,
+      "y": 9.08
+    },
+    {
+      "fieldId": "602",
+      "fieldIndex": 603,
+      "label": "청송군 춘산면 본촌리 432-27",
+      "owned": false,
+      "isCurrent": false,
+      "x": 9.68,
+      "y": 4.48
+    },
+    {
+      "fieldId": "603",
+      "fieldIndex": 604,
+      "label": "청송군 진보면 용전리 485-18",
+      "owned": false,
+      "isCurrent": false,
+      "x": 2.19,
+      "y": -4.59
+    },
+    {
+      "fieldId": "604",
+      "fieldIndex": 605,
+      "label": "청송군 파천면 사촌리 48-9",
+      "owned": false,
+      "isCurrent": false,
+      "x": 21.69,
+      "y": 5.69
+    },
+    {
+      "fieldId": "605",
+      "fieldIndex": 606,
+      "label": "청송군 현동면 수락리 101-38",
+      "owned": false,
+      "isCurrent": false,
+      "x": 24.82,
+      "y": 3
+    },
+    {
+      "fieldId": "606",
+      "fieldIndex": 607,
+      "label": "청송군 안덕면 감곡리 154-29",
+      "owned": false,
+      "isCurrent": false,
+      "x": -0.71,
+      "y": -4.56
+    },
+    {
+      "fieldId": "607",
+      "fieldIndex": 608,
+      "label": "청송군 부남면 백자리 207-20",
+      "owned": false,
+      "isCurrent": false,
+      "x": 22.46,
+      "y": 5.19
+    },
+    {
+      "fieldId": "608",
+      "fieldIndex": 609,
+      "label": "청송군 주왕산면 매곡리 260-11",
+      "owned": false,
+      "isCurrent": false,
+      "x": -20.24,
+      "y": 15.87
+    },
+    {
+      "fieldId": "609",
+      "fieldIndex": 610,
+      "label": "청송군 청송읍 율현리 313-2",
+      "owned": false,
+      "isCurrent": false,
+      "x": -3.31,
+      "y": 11.34
+    },
+    {
+      "fieldId": "610",
+      "fieldIndex": 611,
+      "label": "청송군 현서면 구산리 366-31",
+      "owned": false,
+      "isCurrent": false,
+      "x": 11.91,
+      "y": 2.2
+    },
+    {
+      "fieldId": "611",
+      "fieldIndex": 612,
+      "label": "청송군 영덕읍 대율리 419-22",
+      "owned": false,
+      "isCurrent": false,
+      "x": 11.59,
+      "y": -14.63
+    },
+    {
+      "fieldId": "612",
+      "fieldIndex": 613,
+      "label": "청송군 지품면 기곡리 472-13",
+      "owned": false,
+      "isCurrent": false,
+      "x": -4.82,
+      "y": -9.25
+    },
+    {
+      "fieldId": "613",
+      "fieldIndex": 614,
+      "label": "청송군 달산면 금곡리 35-4",
+      "owned": false,
+      "isCurrent": false,
+      "x": -2.48,
+      "y": -9.32
+    },
+    {
+      "fieldId": "614",
+      "fieldIndex": 615,
+      "label": "청송군 강구면 본촌리 88-33",
+      "owned": false,
+      "isCurrent": false,
+      "x": -7.88,
+      "y": 15.19
+    },
+    {
+      "fieldId": "615",
+      "fieldIndex": 616,
+      "label": "청송군 병곡면 용전리 141-24",
+      "owned": false,
+      "isCurrent": false,
+      "x": -9.19,
+      "y": -15.1
+    },
+    {
+      "fieldId": "616",
+      "fieldIndex": 617,
+      "label": "청송군 축산면 사촌리 194-15",
+      "owned": false,
+      "isCurrent": false,
+      "x": 27.07,
+      "y": -4.11
+    },
+    {
+      "fieldId": "617",
+      "fieldIndex": 618,
+      "label": "청송군 남정면 수락리 247-6",
+      "owned": false,
+      "isCurrent": false,
+      "x": 26.59,
+      "y": 14.04
+    },
+    {
+      "fieldId": "618",
+      "fieldIndex": 619,
+      "label": "청송군 의성읍 감곡리 300-35",
+      "owned": false,
+      "isCurrent": false,
+      "x": 11.01,
+      "y": 10.92
+    },
+    {
+      "fieldId": "619",
+      "fieldIndex": 620,
+      "label": "청송군 단촌면 백자리 353-26",
+      "owned": false,
+      "isCurrent": false,
+      "x": 13.36,
+      "y": -1.61
+    },
+    {
+      "fieldId": "620",
+      "fieldIndex": 621,
+      "label": "청송군 봉양면 매곡리 406-17",
+      "owned": false,
+      "isCurrent": false,
+      "x": 27.33,
+      "y": 4.18
+    },
+    {
+      "fieldId": "621",
+      "fieldIndex": 622,
+      "label": "청송군 옥산면 율현리 459-8",
+      "owned": false,
+      "isCurrent": false,
+      "x": 24.5,
+      "y": -9.35
+    },
+    {
+      "fieldId": "622",
+      "fieldIndex": 623,
+      "label": "청송군 춘산면 구산리 22-37",
+      "owned": false,
+      "isCurrent": false,
+      "x": -18.94,
+      "y": 15.52
+    },
+    {
+      "fieldId": "623",
+      "fieldIndex": 624,
+      "label": "청송군 진보면 대율리 75-28",
+      "owned": false,
+      "isCurrent": false,
+      "x": 17.54,
+      "y": -10.69
+    },
+    {
+      "fieldId": "624",
+      "fieldIndex": 625,
+      "label": "청송군 파천면 기곡리 128-19",
+      "owned": false,
+      "isCurrent": false,
+      "x": -12.47,
+      "y": -13.76
+    },
+    {
+      "fieldId": "625",
+      "fieldIndex": 626,
+      "label": "청송군 현동면 금곡리 181-10",
+      "owned": false,
+      "isCurrent": false,
+      "x": -2.3,
+      "y": -7.15
+    },
+    {
+      "fieldId": "626",
+      "fieldIndex": 627,
+      "label": "청송군 안덕면 본촌리 234-1",
+      "owned": false,
+      "isCurrent": false,
+      "x": -6.16,
+      "y": -6.18
+    },
+    {
+      "fieldId": "627",
+      "fieldIndex": 628,
+      "label": "청송군 부남면 용전리 287-30",
+      "owned": false,
+      "isCurrent": false,
+      "x": 10.09,
+      "y": 1.44
+    },
+    {
+      "fieldId": "628",
+      "fieldIndex": 629,
+      "label": "청송군 주왕산면 사촌리 340-21",
+      "owned": false,
+      "isCurrent": false,
+      "x": -9.95,
+      "y": -0.42
+    },
+    {
+      "fieldId": "629",
+      "fieldIndex": 630,
+      "label": "청송군 청송읍 수락리 393-12",
+      "owned": false,
+      "isCurrent": false,
+      "x": -20.95,
+      "y": 17.03
+    },
+    {
+      "fieldId": "630",
+      "fieldIndex": 631,
+      "label": "청송군 현서면 감곡리 446-3",
+      "owned": false,
+      "isCurrent": false,
+      "x": 14.35,
+      "y": 17.82
+    },
+    {
+      "fieldId": "631",
+      "fieldIndex": 632,
+      "label": "청송군 영덕읍 백자리 499-32",
+      "owned": false,
+      "isCurrent": false,
+      "x": -14.24,
+      "y": -10.39
+    },
+    {
+      "fieldId": "632",
+      "fieldIndex": 633,
+      "label": "청송군 지품면 매곡리 62-23",
+      "owned": false,
+      "isCurrent": false,
+      "x": 19.59,
+      "y": 7.49
+    },
+    {
+      "fieldId": "633",
+      "fieldIndex": 634,
+      "label": "청송군 달산면 율현리 115-14",
+      "owned": false,
+      "isCurrent": false,
+      "x": 22.11,
+      "y": -6.39
+    },
+    {
+      "fieldId": "634",
+      "fieldIndex": 635,
+      "label": "청송군 강구면 구산리 168-5",
+      "owned": false,
+      "isCurrent": false,
+      "x": -7.37,
+      "y": -12.27
+    },
+    {
+      "fieldId": "635",
+      "fieldIndex": 636,
+      "label": "청송군 병곡면 대율리 221-34",
+      "owned": false,
+      "isCurrent": false,
+      "x": 11.11,
+      "y": 8.78
+    },
+    {
+      "fieldId": "636",
+      "fieldIndex": 637,
+      "label": "청송군 축산면 기곡리 274-25",
+      "owned": false,
+      "isCurrent": false,
+      "x": -7.84,
+      "y": -4.01
+    },
+    {
+      "fieldId": "637",
+      "fieldIndex": 638,
+      "label": "청송군 남정면 금곡리 327-16",
+      "owned": false,
+      "isCurrent": false,
+      "x": 21.26,
+      "y": 12.18
+    },
+    {
+      "fieldId": "638",
+      "fieldIndex": 639,
+      "label": "청송군 의성읍 본촌리 380-7",
+      "owned": false,
+      "isCurrent": false,
+      "x": 5.35,
+      "y": 16.51
+    },
+    {
+      "fieldId": "639",
+      "fieldIndex": 640,
+      "label": "청송군 단촌면 용전리 433-36",
+      "owned": false,
+      "isCurrent": false,
+      "x": -23.29,
+      "y": 15.86
+    },
+    {
+      "fieldId": "640",
+      "fieldIndex": 641,
+      "label": "청송군 봉양면 사촌리 486-27",
+      "owned": false,
+      "isCurrent": false,
+      "x": 9.07,
+      "y": 0.2
+    },
+    {
+      "fieldId": "641",
+      "fieldIndex": 642,
+      "label": "청송군 옥산면 수락리 49-18",
+      "owned": false,
+      "isCurrent": false,
+      "x": -21.22,
+      "y": -1.03
+    },
+    {
+      "fieldId": "642",
+      "fieldIndex": 643,
+      "label": "청송군 춘산면 감곡리 102-9",
+      "owned": false,
+      "isCurrent": false,
+      "x": 0.3,
+      "y": -8.82
+    },
+    {
+      "fieldId": "643",
+      "fieldIndex": 644,
+      "label": "청송군 진보면 백자리 155-38",
+      "owned": false,
+      "isCurrent": false,
+      "x": 7.28,
+      "y": 6.76
+    },
+    {
+      "fieldId": "644",
+      "fieldIndex": 645,
+      "label": "청송군 파천면 매곡리 208-29",
+      "owned": false,
+      "isCurrent": false,
+      "x": -8.55,
+      "y": 12.23
+    },
+    {
+      "fieldId": "645",
+      "fieldIndex": 646,
+      "label": "청송군 현동면 율현리 261-20",
+      "owned": false,
+      "isCurrent": false,
+      "x": -21.03,
+      "y": -6.03
+    },
+    {
+      "fieldId": "646",
+      "fieldIndex": 647,
+      "label": "청송군 안덕면 구산리 314-11",
+      "owned": false,
+      "isCurrent": false,
+      "x": -8.86,
+      "y": 3.03
+    },
+    {
+      "fieldId": "647",
+      "fieldIndex": 648,
+      "label": "청송군 부남면 대율리 367-2",
+      "owned": false,
+      "isCurrent": false,
+      "x": 19.13,
+      "y": 16.77
+    },
+    {
+      "fieldId": "648",
+      "fieldIndex": 649,
+      "label": "청송군 주왕산면 기곡리 420-31",
+      "owned": false,
+      "isCurrent": false,
+      "x": -10.92,
+      "y": -8.29
+    },
+    {
+      "fieldId": "649",
+      "fieldIndex": 650,
+      "label": "청송군 청송읍 금곡리 473-22",
+      "owned": false,
+      "isCurrent": false,
+      "x": -21.83,
+      "y": 5.6
+    },
+    {
+      "fieldId": "650",
+      "fieldIndex": 651,
+      "label": "청송군 현서면 본촌리 36-13",
+      "owned": false,
+      "isCurrent": false,
+      "x": -22.04,
+      "y": 16.99
+    },
+    {
+      "fieldId": "651",
+      "fieldIndex": 652,
+      "label": "청송군 영덕읍 용전리 89-4",
+      "owned": false,
+      "isCurrent": false,
+      "x": -23.6,
+      "y": 3.83
+    },
+    {
+      "fieldId": "652",
+      "fieldIndex": 653,
+      "label": "청송군 지품면 사촌리 142-33",
+      "owned": false,
+      "isCurrent": false,
+      "x": 0.94,
+      "y": -11.16
+    },
+    {
+      "fieldId": "653",
+      "fieldIndex": 654,
+      "label": "청송군 달산면 수락리 195-24",
+      "owned": false,
+      "isCurrent": false,
+      "x": 16.48,
+      "y": -7.04
+    },
+    {
+      "fieldId": "654",
+      "fieldIndex": 655,
+      "label": "청송군 강구면 감곡리 248-15",
+      "owned": false,
+      "isCurrent": false,
+      "x": 19.96,
+      "y": -3.79
+    },
+    {
+      "fieldId": "655",
+      "fieldIndex": 656,
+      "label": "청송군 병곡면 백자리 301-6",
+      "owned": false,
+      "isCurrent": false,
+      "x": -19.54,
+      "y": -0.4
+    },
+    {
+      "fieldId": "656",
+      "fieldIndex": 657,
+      "label": "청송군 축산면 매곡리 354-35",
+      "owned": false,
+      "isCurrent": false,
+      "x": 22.55,
+      "y": 3.46
+    },
+    {
+      "fieldId": "657",
+      "fieldIndex": 658,
+      "label": "청송군 강구면 오목리 243-28",
+      "owned": false,
+      "isCurrent": false,
+      "x": -24.69,
+      "y": -12.6
+    },
+    {
+      "fieldId": "658",
+      "fieldIndex": 659,
+      "label": "청송군 병곡면 상평리 296-19",
+      "owned": false,
+      "isCurrent": false,
+      "x": 1.97,
+      "y": 1.72
+    },
+    {
+      "fieldId": "659",
+      "fieldIndex": 660,
+      "label": "청송군 축산면 장전리 349-10",
+      "owned": false,
+      "isCurrent": false,
+      "x": -9.14,
+      "y": 7.25
+    },
+    {
+      "fieldId": "660",
+      "fieldIndex": 661,
+      "label": "청송군 남정면 월전리 402-1",
+      "owned": false,
+      "isCurrent": false,
+      "x": -10,
+      "y": -7.07
+    },
+    {
+      "fieldId": "661",
+      "fieldIndex": 662,
+      "label": "청송군 의성읍 상리 455-30",
+      "owned": false,
+      "isCurrent": false,
+      "x": 18.62,
+      "y": -12.87
+    },
+    {
+      "fieldId": "662",
+      "fieldIndex": 663,
+      "label": "청송군 단촌면 오산리 18-21",
+      "owned": false,
+      "isCurrent": false,
+      "x": -16.24,
+      "y": -5.09
+    },
+    {
+      "fieldId": "663",
+      "fieldIndex": 664,
+      "label": "청송군 봉양면 청운리 71-12",
+      "owned": false,
+      "isCurrent": false,
+      "x": 3.14,
+      "y": -7.65
+    },
+    {
+      "fieldId": "664",
+      "fieldIndex": 665,
+      "label": "청송군 옥산면 안심리 124-3",
+      "owned": false,
+      "isCurrent": false,
+      "x": -24.3,
+      "y": -0.91
+    },
+    {
+      "fieldId": "665",
+      "fieldIndex": 666,
+      "label": "청송군 춘산면 도평리 177-32",
+      "owned": false,
+      "isCurrent": false,
+      "x": 4.06,
+      "y": -4.89
+    },
+    {
+      "fieldId": "666",
+      "fieldIndex": 667,
+      "label": "청송군 진보면 각산리 230-23",
+      "owned": false,
+      "isCurrent": false,
+      "x": 6.6,
+      "y": -11.65
+    },
+    {
+      "fieldId": "667",
+      "fieldIndex": 668,
+      "label": "청송군 파천면 신기리 283-14",
+      "owned": false,
+      "isCurrent": false,
+      "x": -19.26,
+      "y": 17.65
+    },
+    {
+      "fieldId": "668",
+      "fieldIndex": 669,
+      "label": "청송군 현동면 중기리 336-5",
+      "owned": false,
+      "isCurrent": false,
+      "x": 7.45,
+      "y": 13.67
+    },
+    {
+      "fieldId": "669",
+      "fieldIndex": 670,
+      "label": "청송군 안덕면 오목리 389-34",
+      "owned": false,
+      "isCurrent": false,
+      "x": -20.88,
+      "y": -8.1
+    },
+    {
+      "fieldId": "670",
+      "fieldIndex": 671,
+      "label": "청송군 부남면 상평리 442-25",
+      "owned": false,
+      "isCurrent": false,
+      "x": -1.49,
+      "y": 8.46
+    },
+    {
+      "fieldId": "671",
+      "fieldIndex": 672,
+      "label": "청송군 주왕산면 장전리 495-16",
+      "owned": false,
+      "isCurrent": false,
+      "x": 18.02,
+      "y": 16.24
+    },
+    {
+      "fieldId": "672",
+      "fieldIndex": 673,
+      "label": "청송군 청송읍 월전리 58-7",
+      "owned": false,
+      "isCurrent": false,
+      "x": -16.67,
+      "y": 0.4
+    },
+    {
+      "fieldId": "673",
+      "fieldIndex": 674,
+      "label": "청송군 현서면 상리 111-36",
+      "owned": false,
+      "isCurrent": false,
+      "x": 21.22,
+      "y": 0.72
+    },
+    {
+      "fieldId": "674",
+      "fieldIndex": 675,
+      "label": "청송군 영덕읍 오산리 164-27",
+      "owned": false,
+      "isCurrent": false,
+      "x": 4.02,
+      "y": 14.95
+    },
+    {
+      "fieldId": "675",
+      "fieldIndex": 676,
+      "label": "청송군 지품면 청운리 217-18",
+      "owned": false,
+      "isCurrent": false,
+      "x": -24.93,
+      "y": 5.89
+    },
+    {
+      "fieldId": "676",
+      "fieldIndex": 677,
+      "label": "청송군 달산면 안심리 270-9",
+      "owned": false,
+      "isCurrent": false,
+      "x": -8.39,
+      "y": 8.2
+    },
+    {
+      "fieldId": "677",
+      "fieldIndex": 678,
+      "label": "청송군 강구면 도평리 323-38",
+      "owned": false,
+      "isCurrent": false,
+      "x": 26.62,
+      "y": -0.72
+    },
+    {
+      "fieldId": "678",
+      "fieldIndex": 679,
+      "label": "청송군 병곡면 각산리 376-29",
+      "owned": false,
+      "isCurrent": false,
+      "x": 1.77,
+      "y": 0.25
+    },
+    {
+      "fieldId": "679",
+      "fieldIndex": 680,
+      "label": "청송군 축산면 신기리 429-20",
+      "owned": false,
+      "isCurrent": false,
+      "x": 12.65,
+      "y": 4.26
+    },
+    {
+      "fieldId": "680",
+      "fieldIndex": 681,
+      "label": "청송군 남정면 중기리 482-11",
+      "owned": false,
+      "isCurrent": false,
+      "x": -24.17,
+      "y": 9.46
+    },
+    {
+      "fieldId": "681",
+      "fieldIndex": 682,
+      "label": "청송군 의성읍 오목리 45-2",
+      "owned": false,
+      "isCurrent": false,
+      "x": 0.22,
+      "y": 3.07
+    },
+    {
+      "fieldId": "682",
+      "fieldIndex": 683,
+      "label": "청송군 단촌면 상평리 98-31",
+      "owned": false,
+      "isCurrent": false,
+      "x": -11.98,
+      "y": 10.9
+    },
+    {
+      "fieldId": "683",
+      "fieldIndex": 684,
+      "label": "청송군 봉양면 장전리 151-22",
+      "owned": false,
+      "isCurrent": false,
+      "x": 8.34,
+      "y": 14.9
+    },
+    {
+      "fieldId": "684",
+      "fieldIndex": 685,
+      "label": "청송군 옥산면 월전리 204-13",
+      "owned": false,
+      "isCurrent": false,
+      "x": -12.22,
+      "y": -8.59
+    },
+    {
+      "fieldId": "685",
+      "fieldIndex": 686,
+      "label": "청송군 춘산면 상리 257-4",
+      "owned": false,
+      "isCurrent": false,
+      "x": 22.46,
+      "y": 7.69
+    },
+    {
+      "fieldId": "686",
+      "fieldIndex": 687,
+      "label": "청송군 진보면 오산리 310-33",
+      "owned": false,
+      "isCurrent": false,
+      "x": 22.75,
+      "y": 16.05
+    },
+    {
+      "fieldId": "687",
+      "fieldIndex": 688,
+      "label": "청송군 파천면 청운리 363-24",
+      "owned": false,
+      "isCurrent": false,
+      "x": 19.35,
+      "y": -1.03
+    },
+    {
+      "fieldId": "688",
+      "fieldIndex": 689,
+      "label": "청송군 현동면 안심리 416-15",
+      "owned": false,
+      "isCurrent": false,
+      "x": 17.31,
+      "y": -5.1
+    },
+    {
+      "fieldId": "689",
+      "fieldIndex": 690,
+      "label": "청송군 안덕면 도평리 469-6",
+      "owned": false,
+      "isCurrent": false,
+      "x": 11.62,
+      "y": -8.71
+    },
+    {
+      "fieldId": "690",
+      "fieldIndex": 691,
+      "label": "청송군 부남면 각산리 32-35",
+      "owned": false,
+      "isCurrent": false,
+      "x": 17.85,
+      "y": 11.77
+    },
+    {
+      "fieldId": "691",
+      "fieldIndex": 692,
+      "label": "청송군 주왕산면 신기리 85-26",
+      "owned": false,
+      "isCurrent": false,
+      "x": -23.04,
+      "y": 14.66
+    },
+    {
+      "fieldId": "692",
+      "fieldIndex": 693,
+      "label": "청송군 청송읍 중기리 138-17",
+      "owned": false,
+      "isCurrent": false,
+      "x": -23.32,
+      "y": -0.69
+    },
+    {
+      "fieldId": "693",
+      "fieldIndex": 694,
+      "label": "청송군 현서면 오목리 191-8",
+      "owned": false,
+      "isCurrent": false,
+      "x": -6.48,
+      "y": 14.93
+    },
+    {
+      "fieldId": "694",
+      "fieldIndex": 695,
+      "label": "청송군 영덕읍 상평리 244-37",
+      "owned": false,
+      "isCurrent": false,
+      "x": -3.54,
+      "y": 3.76
+    },
+    {
+      "fieldId": "695",
+      "fieldIndex": 696,
+      "label": "청송군 지품면 장전리 297-28",
+      "owned": false,
+      "isCurrent": false,
+      "x": -15.61,
+      "y": 2.47
+    },
+    {
+      "fieldId": "696",
+      "fieldIndex": 697,
+      "label": "청송군 달산면 월전리 350-19",
+      "owned": false,
+      "isCurrent": false,
+      "x": 20.46,
+      "y": -8.97
+    },
+    {
+      "fieldId": "697",
+      "fieldIndex": 698,
+      "label": "청송군 강구면 상리 403-10",
+      "owned": false,
+      "isCurrent": false,
+      "x": 9.39,
+      "y": -8.28
+    },
+    {
+      "fieldId": "698",
+      "fieldIndex": 699,
+      "label": "청송군 병곡면 오산리 456-1",
+      "owned": false,
+      "isCurrent": false,
+      "x": 6.82,
+      "y": 10.39
+    },
+    {
+      "fieldId": "699",
+      "fieldIndex": 700,
+      "label": "청송군 축산면 청운리 19-30",
+      "owned": false,
+      "isCurrent": false,
+      "x": 3.93,
+      "y": 1.3
+    },
+    {
+      "fieldId": "700",
+      "fieldIndex": 701,
+      "label": "청송군 남정면 안심리 72-21",
+      "owned": false,
+      "isCurrent": false,
+      "x": -0.44,
+      "y": 13.67
+    },
+    {
+      "fieldId": "701",
+      "fieldIndex": 702,
+      "label": "청송군 의성읍 도평리 125-12",
+      "owned": false,
+      "isCurrent": false,
+      "x": 17.74,
+      "y": 1.75
+    },
+    {
+      "fieldId": "702",
+      "fieldIndex": 703,
+      "label": "청송군 단촌면 각산리 178-3",
+      "owned": false,
+      "isCurrent": false,
+      "x": 4.07,
+      "y": -7.65
+    },
+    {
+      "fieldId": "703",
+      "fieldIndex": 704,
+      "label": "청송군 봉양면 신기리 231-32",
+      "owned": false,
+      "isCurrent": false,
+      "x": 13.66,
+      "y": -11.21
+    },
+    {
+      "fieldId": "704",
+      "fieldIndex": 705,
+      "label": "청송군 옥산면 중기리 284-23",
+      "owned": false,
+      "isCurrent": false,
+      "x": 21.51,
+      "y": 8.24
+    },
+    {
+      "fieldId": "705",
+      "fieldIndex": 706,
+      "label": "청송군 춘산면 오목리 337-14",
+      "owned": false,
+      "isCurrent": false,
+      "x": 1.43,
+      "y": 2.47
+    },
+    {
+      "fieldId": "706",
+      "fieldIndex": 707,
+      "label": "청송군 진보면 상평리 390-5",
+      "owned": false,
+      "isCurrent": false,
+      "x": 1.11,
+      "y": -9.32
+    },
+    {
+      "fieldId": "707",
+      "fieldIndex": 708,
+      "label": "청송군 파천면 장전리 443-34",
+      "owned": false,
+      "isCurrent": false,
+      "x": -7.58,
+      "y": 17.02
+    },
+    {
+      "fieldId": "708",
+      "fieldIndex": 709,
+      "label": "청송군 현동면 월전리 496-25",
+      "owned": false,
+      "isCurrent": false,
+      "x": -9.8,
+      "y": 1.24
+    },
+    {
+      "fieldId": "709",
+      "fieldIndex": 710,
+      "label": "청송군 안덕면 상리 59-16",
+      "owned": false,
+      "isCurrent": false,
+      "x": 12.88,
+      "y": 14.55
+    },
+    {
+      "fieldId": "710",
+      "fieldIndex": 711,
+      "label": "청송군 부남면 오산리 112-7",
+      "owned": false,
+      "isCurrent": false,
+      "x": 2.29,
+      "y": 12.17
+    },
+    {
+      "fieldId": "711",
+      "fieldIndex": 712,
+      "label": "청송군 주왕산면 청운리 165-36",
+      "owned": false,
+      "isCurrent": false,
+      "x": -25.19,
+      "y": 0.31
+    },
+    {
+      "fieldId": "712",
+      "fieldIndex": 713,
+      "label": "청송군 청송읍 안심리 218-27",
+      "owned": false,
+      "isCurrent": false,
+      "x": -13.95,
+      "y": 4.3
+    },
+    {
+      "fieldId": "713",
+      "fieldIndex": 714,
+      "label": "청송군 현서면 도평리 271-18",
+      "owned": false,
+      "isCurrent": false,
+      "x": 11.29,
+      "y": 4.31
+    },
+    {
+      "fieldId": "714",
+      "fieldIndex": 715,
+      "label": "청송군 축산면 송강리 254-35",
+      "owned": false,
+      "isCurrent": false,
+      "x": 4.68,
+      "y": -2.13
+    },
+    {
+      "fieldId": "715",
+      "fieldIndex": 716,
+      "label": "청송군 남정면 하평리 307-26",
+      "owned": false,
+      "isCurrent": false,
+      "x": -22.22,
+      "y": -14.23
+    },
+    {
+      "fieldId": "716",
+      "fieldIndex": 717,
+      "label": "청송군 의성읍 신촌리 360-17",
+      "owned": false,
+      "isCurrent": false,
+      "x": -19.97,
+      "y": 6.08
+    },
+    {
+      "fieldId": "717",
+      "fieldIndex": 718,
+      "label": "청송군 단촌면 덕천리 413-8",
+      "owned": false,
+      "isCurrent": false,
+      "x": 20.18,
+      "y": 13.95
+    },
+    {
+      "fieldId": "718",
+      "fieldIndex": 719,
+      "label": "청송군 봉양면 하리 466-37",
+      "owned": false,
+      "isCurrent": false,
+      "x": 14.32,
+      "y": -2.63
+    },
+    {
+      "fieldId": "719",
+      "fieldIndex": 720,
+      "label": "청송군 옥산면 노루실리 29-28",
+      "owned": false,
+      "isCurrent": false,
+      "x": -21.84,
+      "y": 1.51
+    },
+    {
+      "fieldId": "720",
+      "fieldIndex": 721,
+      "label": "청송군 춘산면 명당리 82-19",
+      "owned": false,
+      "isCurrent": false,
+      "x": 18.31,
+      "y": 14.01
+    },
+    {
+      "fieldId": "721",
+      "fieldIndex": 722,
+      "label": "청송군 진보면 호명리 135-10",
+      "owned": false,
+      "isCurrent": false,
+      "x": 14.73,
+      "y": 15.9
+    },
+    {
+      "fieldId": "722",
+      "fieldIndex": 723,
+      "label": "청송군 파천면 화전리 188-1",
+      "owned": false,
+      "isCurrent": false,
+      "x": 21.86,
+      "y": 10.89
+    },
+    {
+      "fieldId": "723",
+      "fieldIndex": 724,
+      "label": "청송군 현동면 송전리 241-30",
+      "owned": false,
+      "isCurrent": false,
+      "x": 14.79,
+      "y": -3.66
+    },
+    {
+      "fieldId": "724",
+      "fieldIndex": 725,
+      "label": "청송군 안덕면 거대리 294-21",
+      "owned": false,
+      "isCurrent": false,
+      "x": 10.93,
+      "y": 1.87
+    },
+    {
+      "fieldId": "725",
+      "fieldIndex": 726,
+      "label": "청송군 부남면 다정리 347-12",
+      "owned": false,
+      "isCurrent": false,
+      "x": 13.54,
+      "y": -7.5
+    },
+    {
+      "fieldId": "726",
+      "fieldIndex": 727,
+      "label": "청송군 주왕산면 송강리 400-3",
+      "owned": false,
+      "isCurrent": false,
+      "x": 16.23,
+      "y": 12.65
+    },
+    {
+      "fieldId": "727",
+      "fieldIndex": 728,
+      "label": "청송군 청송읍 하평리 453-32",
+      "owned": false,
+      "isCurrent": false,
+      "x": -18.75,
+      "y": -3.99
+    },
+    {
+      "fieldId": "728",
+      "fieldIndex": 729,
+      "label": "청송군 현서면 신촌리 16-23",
+      "owned": false,
+      "isCurrent": false,
+      "x": -11.99,
+      "y": 8.01
+    },
+    {
+      "fieldId": "729",
+      "fieldIndex": 730,
+      "label": "청송군 영덕읍 덕천리 69-14",
+      "owned": false,
+      "isCurrent": false,
+      "x": 19.82,
+      "y": -11.75
+    },
+    {
+      "fieldId": "730",
+      "fieldIndex": 731,
+      "label": "청송군 지품면 하리 122-5",
+      "owned": false,
+      "isCurrent": false,
+      "x": 4.54,
+      "y": 4.4
+    },
+    {
+      "fieldId": "731",
+      "fieldIndex": 732,
+      "label": "청송군 달산면 노루실리 175-34",
+      "owned": false,
+      "isCurrent": false,
+      "x": 7.13,
+      "y": -13.87
+    },
+    {
+      "fieldId": "732",
+      "fieldIndex": 733,
+      "label": "청송군 강구면 명당리 228-25",
+      "owned": false,
+      "isCurrent": false,
+      "x": -1.26,
+      "y": 3.41
+    },
+    {
+      "fieldId": "733",
+      "fieldIndex": 734,
+      "label": "청송군 병곡면 호명리 281-16",
+      "owned": false,
+      "isCurrent": false,
+      "x": 25.8,
+      "y": 7.02
+    },
+    {
+      "fieldId": "734",
+      "fieldIndex": 735,
+      "label": "청송군 축산면 화전리 334-7",
+      "owned": false,
+      "isCurrent": false,
+      "x": 17.57,
+      "y": 8.18
+    },
+    {
+      "fieldId": "735",
+      "fieldIndex": 736,
+      "label": "청송군 남정면 송전리 387-36",
+      "owned": false,
+      "isCurrent": false,
+      "x": -23.02,
+      "y": 12.48
+    },
+    {
+      "fieldId": "736",
+      "fieldIndex": 737,
+      "label": "청송군 의성읍 거대리 440-27",
+      "owned": false,
+      "isCurrent": false,
+      "x": -3.07,
+      "y": 9.47
+    },
+    {
+      "fieldId": "737",
+      "fieldIndex": 738,
+      "label": "청송군 단촌면 다정리 493-18",
+      "owned": false,
+      "isCurrent": false,
+      "x": 23.24,
+      "y": 14.53
+    },
+    {
+      "fieldId": "738",
+      "fieldIndex": 739,
+      "label": "청송군 봉양면 송강리 56-9",
+      "owned": false,
+      "isCurrent": false,
+      "x": 16.64,
+      "y": 13.57
+    },
+    {
+      "fieldId": "739",
+      "fieldIndex": 740,
+      "label": "청송군 옥산면 하평리 109-38",
+      "owned": false,
+      "isCurrent": false,
+      "x": -8.41,
+      "y": 0.82
+    },
+    {
+      "fieldId": "740",
+      "fieldIndex": 741,
+      "label": "청송군 춘산면 신촌리 162-29",
+      "owned": false,
+      "isCurrent": false,
+      "x": -14.01,
+      "y": -9.39
+    },
+    {
+      "fieldId": "741",
+      "fieldIndex": 742,
+      "label": "청송군 진보면 덕천리 215-20",
+      "owned": false,
+      "isCurrent": false,
+      "x": 6.05,
+      "y": -2.62
+    },
+    {
+      "fieldId": "742",
+      "fieldIndex": 743,
+      "label": "청송군 파천면 하리 268-11",
+      "owned": false,
+      "isCurrent": false,
+      "x": -9.54,
+      "y": 4.76
+    },
+    {
+      "fieldId": "743",
+      "fieldIndex": 744,
+      "label": "청송군 현동면 노루실리 321-2",
+      "owned": false,
+      "isCurrent": false,
+      "x": 11.87,
+      "y": 10.71
     }
   ]
 }
