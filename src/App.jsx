@@ -12,6 +12,8 @@ import HarvestEquipmentModal from './features/harvest/HarvestEquipmentModal';
 import HarvestBreakdownModal from './features/harvest/HarvestBreakdownModal';
 import HarvestPendingLoadSummary from './features/harvest/HarvestPendingLoadSummary';
 import { HarvestQualityStampedCrate } from './features/harvest/HarvestPendingBoxesPanel';
+import CompanyFoundingRoom from './features/companyFounding/CompanyFoundingRoom';
+import useApplePriceBoard from './features/companyFounding/useApplePriceBoard';
 import CadastrePanel from './features/cadastre/CadastrePanel';
 import { resolveCadastreBoundaryByPoint } from './features/cadastre/cadastreData';
 import { buildHarvestPalletSlotMeta, harvestPalletDisplayBoxIndexOf } from './features/harvest/harvestPalletGrid';
@@ -19035,53 +19037,6 @@ const FALL_AMBIENT_TRACKS = [FALL_AMBIENT_1, FALL_AMBIENT_2, FALL_AMBIENT_3, FAL
 const FALL_BIRD_TRACKS = [FALL_BIRD_1, FALL_BIRD_2, FALL_BIRD_3, FALL_BIRD_4];
 const WINTER_AMBIENT_TRACKS = [WINTER_AMBIENT_1, WINTER_AMBIENT_2, WINTER_AMBIENT_3, WINTER_AMBIENT_4];
 const FALL_BIRD_VOLUME_RATIO = 0.34;
-const REAL_APPLE_PRICE_TABS = [
-  {
-    key: 'hongro',
-    label: '홍로',
-    year: '2026',
-    farmName: '바람빛농원 · 바람한조각',
-    address: '청송군 안덕면 당민길 49-51',
-    summary: '정품 4kg/8kg, 소포장, 흠과 기준 가격표',
-    footnote: '8kg는 4kg 2개 금액에서 4천원 뺌',
-    sections: [
-      {
-        key: 'premium',
-        title: '정품 4kg / 8kg',
-        columns: ['다이', '갯수', '가격'],
-        rows: [
-          ['3다이 왕특', '9-10과', '-'],
-          ['4전 특대', '11-12과', '65,000 / 126,000'],
-          ['4후 대', '13-14과', '55,000 / 106,000'],
-          ['5다이 중', '15-16과', '47,000 / 90,000'],
-          ['6다이 소', '18-19과', '45,000 / 86,000'],
-          ['7,8전다이 꼬마과', '20-25과', '40,000 / 76,000']
-        ]
-      },
-      {
-        key: 'small-pack',
-        title: '소포장',
-        columns: ['규격', '분류', '갯수', '가격'],
-        rows: [
-          ['2kg', '중과', '7-8과', '28,500'],
-          ['3kg 4후', '대과', '10과', '45,000'],
-          ['3kg 5다이', '중과', '11-12과', '40,000'],
-          ['3kg 6다이', '소과', '14-15과', '35,000']
-        ]
-      },
-      {
-        key: 'blemished',
-        title: '흠과',
-        columns: ['다이', '분류', '갯수', '가격'],
-        rows: [
-          ['3,4 다이', '큰흠과', '11-13과', '43,000 / 82,000'],
-          ['5,6 다이', '중간흠과', '16-18과', '37,000 / 70,000'],
-          ['7,8다이', '꼬마과', '20-25과', '32,000 / 60,000']
-        ]
-      }
-    ]
-  }
-];
 
 function fillRoundedRect(ctx, x, y, width, height, radius) {
   const normalizedRadius = Math.min(radius, width / 2, height / 2);
@@ -19214,7 +19169,7 @@ function downloadRealApplePriceBoardImage(priceTab) {
   }
   const canvas = document.createElement('canvas');
   canvas.width = 1600;
-  canvas.height = 1280;
+  canvas.height = 420 + (priceTab.sections || []).reduce((height, section) => height + 142 + section.rows.length * 56, 0);
   const ctx = canvas.getContext('2d');
   if (!ctx) {
     return;
@@ -19223,10 +19178,10 @@ function downloadRealApplePriceBoardImage(priceTab) {
   ctx.fillStyle = '#d9ead2';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = '#d9ead2';
-  fillRoundedRect(ctx, 52, 48, 1496, 1184, 30);
+  fillRoundedRect(ctx, 52, 48, 1496, canvas.height - 96, 30);
   ctx.strokeStyle = '#8bb879';
   ctx.lineWidth = 4;
-  strokeRoundedRect(ctx, 52, 48, 1496, 1184, 30);
+  strokeRoundedRect(ctx, 52, 48, 1496, canvas.height - 96, 30);
 
   ctx.fillStyle = '#164529';
   ctx.font = '700 30px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
@@ -19234,7 +19189,7 @@ function downloadRealApplePriceBoardImage(priceTab) {
   ctx.textBaseline = 'middle';
   ctx.fillText(priceTab.farmName || '바람한조각', 116, 116);
   ctx.font = '800 58px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
-  ctx.fillText('추석 사과 가격표 (홍로)', 116, 174);
+  ctx.fillText(priceTab.title || `사과 가격표 (${priceTab.label || '홍로'})`, 116, 174);
   ctx.font = '500 29px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
   ctx.fillStyle = '#45634b';
   ctx.fillText(`${priceTab.year || '2026'} ${priceTab.label || '홍로'} · ${priceTab.summary || '가격표'}`, 116, 228);
@@ -19247,27 +19202,22 @@ function downloadRealApplePriceBoardImage(priceTab) {
   ctx.textAlign = 'center';
   ctx.fillText(priceTab.year || '2026', 800, 210);
 
-  const [premiumSection, smallPackSection, blemishedSection] = priceTab.sections || [];
-  if (premiumSection) {
-    drawRealApplePriceTable(ctx, premiumSection, 116, 286, 1368, 56, 58, 60);
-  }
-  if (smallPackSection) {
-    drawRealApplePriceTable(ctx, smallPackSection, 116, 744, 670, 54, 56, 58);
-  }
-  if (blemishedSection) {
-    drawRealApplePriceTable(ctx, blemishedSection, 814, 744, 670, 54, 56, 58);
-  }
+  let tableY = 286;
+  (priceTab.sections || []).forEach((section) => {
+    drawRealApplePriceTable(ctx, section, 116, tableY, 1368, 56, 58, 60);
+    tableY += 142 + section.rows.length * 56;
+  });
 
   ctx.fillStyle = '#f3faec';
-  fillRoundedRect(ctx, 116, 1152, 1368, 52, 16);
+  fillRoundedRect(ctx, 116, tableY, 1368, 52, 16);
   ctx.strokeStyle = '#9aba8e';
   ctx.setLineDash([8, 7]);
-  strokeRoundedRect(ctx, 116, 1152, 1368, 52, 16);
+  strokeRoundedRect(ctx, 116, tableY, 1368, 52, 16);
   ctx.setLineDash([]);
   ctx.fillStyle = '#173825';
   ctx.font = '800 27px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText(priceTab.footnote || '', 800, 1179);
+  ctx.fillText(priceTab.footnote || '', 800, tableY + 27);
 
   const anchor = document.createElement('a');
   const safeLabel = (priceTab.label || 'apple-price').replace(/[\\/:*?"<>|]/g, '-');
@@ -19730,7 +19680,9 @@ export default function App() {
   const [updateLogModalOpen, setUpdateLogModalOpen] = useState(false);
   const [updateLogModalTab, setUpdateLogModalTab] = useState('log');
   const [realApplePriceModalOpen, setRealApplePriceModalOpen] = useState(false);
-  const [realApplePriceTab, setRealApplePriceTab] = useState(REAL_APPLE_PRICE_TABS[0]?.key || 'wholesale');
+  const [companyFoundingRoomOpen, setCompanyFoundingRoomOpen] = useState(false);
+  const { tabs: realApplePriceTabs, status: realApplePriceStatus } = useApplePriceBoard(realApplePriceModalOpen);
+  const [realApplePriceTab, setRealApplePriceTab] = useState('hongro');
   const [realApplePriceImageSaving, setRealApplePriceImageSaving] = useState(false);
   const realApplePriceModalRef = useRef(null);
   const [updateRuleTab, setUpdateRuleTab] = useState('sorting');
@@ -61238,7 +61190,7 @@ const requestRepairEquipment = (itemKey) => {
       setRealApplePriceImageSaving(false);
     }
   }, [realApplePriceImageSaving]);
-  const activeRealApplePriceTab = REAL_APPLE_PRICE_TABS.find((entry) => entry.key === realApplePriceTab) || REAL_APPLE_PRICE_TABS[0];
+  const activeRealApplePriceTab = realApplePriceTabs.find((entry) => entry.key === realApplePriceTab) || realApplePriceTabs[0];
   const realApplePriceModalNode = realApplePriceModalOpen ? (
     <>
       <div className="confirm-modal-backdrop" onClick={() => setRealApplePriceModalOpen(false)} />
@@ -61246,7 +61198,7 @@ const requestRepairEquipment = (itemKey) => {
         <div className="real-apple-price-modal__hero">
           <div>
             <div className="real-apple-price-modal__eyebrow">{activeRealApplePriceTab?.farmName || '바람한조각'}</div>
-            <div className="confirm-modal__title">추석 사과 가격표 (홍로)</div>
+            <div className="confirm-modal__title">{activeRealApplePriceTab?.title || `사과 가격표 (${activeRealApplePriceTab?.label || '홍로'})`}</div>
             <div className="confirm-modal__desc">
               {activeRealApplePriceTab?.year || '2026'} {activeRealApplePriceTab?.label || '홍로'} · {activeRealApplePriceTab?.summary || '가격표'}
             </div>
@@ -61256,9 +61208,10 @@ const requestRepairEquipment = (itemKey) => {
             <div className="real-apple-price-modal__year">{activeRealApplePriceTab?.year || '2026'}</div>
           </div>
         </div>
-        {REAL_APPLE_PRICE_TABS.length > 1 ? (
+        {realApplePriceStatus !== 'ready' ? <div role="status" className="real-apple-price-modal__note">{realApplePriceStatus === 'loading' ? '최신 가격표를 확인하고 있습니다.' : '최신 가격표 확인에 실패했습니다. 현재 표시된 가격은 이전 자료일 수 있습니다.'}</div> : null}
+        {realApplePriceTabs.length > 1 ? (
           <div className="update-log-modal__tabs real-apple-price-modal__tabs" role="tablist" aria-label="바람한조각 사과 가격표 분류">
-            {REAL_APPLE_PRICE_TABS.map((priceTab) => (
+            {realApplePriceTabs.map((priceTab) => (
               <button
                 key={priceTab.key}
                 type="button"
@@ -61274,7 +61227,7 @@ const requestRepairEquipment = (itemKey) => {
         ) : null}
         <div className="real-apple-price-modal__sections">
           {(activeRealApplePriceTab?.sections || []).map((section) => (
-            <section className={`real-apple-price-section real-apple-price-section--${section.key}`} key={section.key}>
+            <section className={`real-apple-price-section real-apple-price-section--${section.key}${section.columns.length >= 5 ? ' real-apple-price-section--wide' : ''}`} key={section.key}>
               <div className="real-apple-price-section__title">{section.title}</div>
               <div className="real-apple-price-modal__table-wrap">
                 <table className="real-apple-price-modal__table">
@@ -61308,14 +61261,6 @@ const requestRepairEquipment = (itemKey) => {
           {activeRealApplePriceTab?.footnote || '가격 기준은 추후 수정할 수 있습니다.'}
         </div>
       </div>
-      <button
-        type="button"
-        className="real-apple-price-modal__download"
-        onClick={() => downloadRealApplePriceModalImage(activeRealApplePriceTab)}
-        disabled={realApplePriceImageSaving}
-      >
-        {realApplePriceImageSaving ? '저장 중...' : '이미지 저장'}
-      </button>
     </>
   ) : null;
   const bugReportModalNode = bugReportModalOpen ? (
@@ -62214,6 +62159,22 @@ const requestRepairEquipment = (itemKey) => {
           <span className="hero-price-board-launch__text">바람한조각 사과 가격표</span>
           <span className="hero-price-board-launch__detail">시세표 탭 열기</span>
         </button>
+        <button
+          type="button"
+          className="hero-company-room-launch"
+          onClick={() => {
+            if (!authSession?.token) {
+              openAuthModal('login');
+              return;
+            }
+            setCompanyFoundingRoomOpen(true);
+          }}
+          aria-label="바람한조각 법인설립 준비실 열기"
+        >
+          <span className="hero-company-room-launch__mark" aria-hidden="true">㈜</span>
+          <span className="hero-company-room-launch__text">바람한조각 법인설립 준비실</span>
+          <span className="hero-company-room-launch__detail">승인된 멤버만 입장 가능</span>
+        </button>
         <aside className={`hero-chat-card ${chatCollapsed ? 'is-collapsed' : ''}`.trim()} aria-label="실시간 채팅">
           <div className="hero-chat-card__header">
             <div>
@@ -62404,6 +62365,16 @@ const requestRepairEquipment = (itemKey) => {
         {gameAlertModalNode}
         {updateLogModalNode}
         {realApplePriceModalNode}
+        {companyFoundingRoomOpen ? (
+          <CompanyFoundingRoom
+            session={authSession}
+            onClose={() => setCompanyFoundingRoomOpen(false)}
+            onLoginRequest={() => {
+              setCompanyFoundingRoomOpen(false);
+              openAuthModal('login');
+            }}
+          />
+        ) : null}
         {bugReportModalNode}
         {slotDeleteConfirmModalNode}
         {animationLabModalOpen ? (

@@ -3,6 +3,7 @@ import fsSync from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
+import { registerApplePriceApi } from './server/applePriceApi.mjs';
 
 const PROJECT_ROOT = path.resolve(process.cwd());
 const PROJECT_INDEX_HTML = path.join(PROJECT_ROOT, 'index.html');
@@ -19,10 +20,14 @@ const AUTH_LOGIN_LOG_FILE = path.resolve(process.cwd(), 'data/account-login-logs
 const AUTH_SESSIONS_FILE = path.resolve(process.cwd(), 'data/auth-sessions.json');
 const DEV_MODAL_LAYOUT_DIR = path.resolve(process.cwd(), 'data/dev-modal-layout');
 const UPDATE_PLAN_FILE = path.resolve(process.cwd(), 'data/update-plan.json');
+const COMPANY_FOUNDING_ROOM_FILE = path.resolve(process.cwd(), 'data/company-founding-room.json');
 const ACCOUNTS_FILE = path.resolve(process.cwd(), 'data/accounts.json');
 const ACCOUNT_SAVES_DIR = path.resolve(process.cwd(), 'data/account-saves');
 const ACCOUNT_SAVE_SLOT_COUNT = 6;
 const UPDATE_PLAN_ADMIN_USERNAMES = new Set(['meo3o']);
+const COMPANY_FOUNDING_ROOM_OWNER_USERNAMES = new Set(['meo3o']);
+const COMPANY_FOUNDING_ROOM_CATEGORIES = new Set(['discussion', 'revenue', 'decision', 'task']);
+const COMPANY_FOUNDING_ROOM_TASK_STATUSES = new Set(['todo', 'doing', 'done']);
 const normalizeWatchFilePath = (filePath) => path.resolve(String(filePath || '')).replace(/\\/g, '/').toLowerCase();
 const SUPPRESSED_HOT_UPDATES = new Set();
 const ANIMATION_LAB_PRESET_FILE_KEY = normalizeWatchFilePath(ANIMATION_LAB_PRESET_FILE);
@@ -678,6 +683,93 @@ const sanitizeUpdatePlanEntries = (rawEntries) => {
   }).filter((entry) => entry.date || entry.title || entry.items.length || entry.table);
 };
 const isUpdatePlanAdminSession = (session) => UPDATE_PLAN_ADMIN_USERNAMES.has(String(session?.username || '').trim().toLowerCase());
+const companyRoomUsernameKey = (value = '') => String(value || '').trim().toLowerCase();
+let companyRoomRequestQueue = Promise.resolve();
+const isCompanyRoomOwnerSession = (session) => COMPANY_FOUNDING_ROOM_OWNER_USERNAMES.has(companyRoomUsernameKey(session?.username));
+const sanitizeCompanyRoomText = (value, maxLength) => String(value || '').trim().slice(0, maxLength);
+const sanitizeCompanyRoomData = (rawData = {}) => {
+  const safeData = rawData && typeof rawData === 'object' && !Array.isArray(rawData) ? rawData : {};
+  const seenMembers = new Set();
+  const members = (Array.isArray(safeData.members) ? safeData.members : [])
+    .map((entry) => {
+      const username = sanitizeCompanyRoomText(typeof entry === 'string' ? entry : entry?.username, 24);
+      const key = companyRoomUsernameKey(username);
+      if (!key || seenMembers.has(key) || COMPANY_FOUNDING_ROOM_OWNER_USERNAMES.has(key)) return null;
+      seenMembers.add(key);
+      return {
+        username,
+        addedAt: sanitizeCompanyRoomText(entry?.addedAt, 40),
+        addedBy: sanitizeCompanyRoomText(entry?.addedBy, 24)
+      };
+    })
+    .filter(Boolean);
+  const entries = (Array.isArray(safeData.entries) ? safeData.entries : [])
+    .map((entry) => {
+      const category = COMPANY_FOUNDING_ROOM_CATEGORIES.has(String(entry?.category || ''))
+        ? String(entry.category)
+        : 'discussion';
+      const id = sanitizeCompanyRoomText(entry?.id, 100);
+      const title = sanitizeCompanyRoomText(entry?.title, 100);
+      const body = sanitizeCompanyRoomText(entry?.body, 3000);
+      const author = sanitizeCompanyRoomText(entry?.author, 24);
+      if (!id || !title || !author) return null;
+      return {
+        id,
+        category,
+        title,
+        body,
+        pinned: entry?.pinned === true,
+        editedAt: sanitizeCompanyRoomText(entry?.editedAt, 40),
+        comments: (Array.isArray(entry?.comments) ? entry.comments : []).map((comment) => ({
+          id: sanitizeCompanyRoomText(comment?.id, 100),
+          parentId: sanitizeCompanyRoomText(comment?.parentId, 100),
+          body: sanitizeCompanyRoomText(comment?.body, 1500),
+          author: sanitizeCompanyRoomText(comment?.author, 24),
+          createdAt: sanitizeCompanyRoomText(comment?.createdAt, 40)
+        })).filter((comment) => comment.id && comment.body && comment.author),
+        status: category === 'task' && COMPANY_FOUNDING_ROOM_TASK_STATUSES.has(String(entry?.status || ''))
+          ? String(entry.status)
+          : 'todo',
+        author,
+        createdAt: sanitizeCompanyRoomText(entry?.createdAt, 40),
+        updatedAt: sanitizeCompanyRoomText(entry?.updatedAt, 40)
+      };
+    })
+    .filter(Boolean)
+    .slice(-500);
+  return { version: 1, members, entries };
+};
+const readCompanyRoomData = async () => sanitizeCompanyRoomData(await readJsonFile(COMPANY_FOUNDING_ROOM_FILE, {
+  version: 1,
+  members: [],
+  entries: []
+}));
+const isCompanyRoomMemberSession = (session, roomData) => {
+  const usernameKey = companyRoomUsernameKey(session?.username);
+  if (!usernameKey) return false;
+  if (COMPANY_FOUNDING_ROOM_OWNER_USERNAMES.has(usernameKey)) return true;
+  return roomData.members.some((entry) => companyRoomUsernameKey(entry?.username) === usernameKey);
+};
+const buildCompanyRoomPayload = (roomData, session) => {
+  const ownerMembers = [...COMPANY_FOUNDING_ROOM_OWNER_USERNAMES].map((username) => ({
+    username,
+    role: 'owner',
+    addedAt: '',
+    addedBy: ''
+  }));
+  return {
+    ok: true,
+    room: {
+      members: [
+        ...ownerMembers,
+        ...roomData.members.map((entry) => ({ ...entry, role: 'member' }))
+      ],
+      entries: roomData.entries,
+      canManageMembers: isCompanyRoomOwnerSession(session),
+      currentUsername: String(session?.username || '')
+    }
+  };
+};
 const sanitizePercentPosition = (raw = {}) => {
   const x = Number(raw?.xPercent);
   const y = Number(raw?.yPercent);
@@ -1129,6 +1221,7 @@ const staticAssetCacheMiddleware = (mode = 'dev') => (req, res, next) => {
 const animationLabPresetSavePlugin = () => ({
   name: 'animation-lab-preset-save',
   configureServer(server) {
+    registerApplePriceApi(server, { readJsonFile, writeJsonFile, getSessionFromRequest, readCompanyRoomData, isCompanyRoomMemberSession, isCompanyRoomOwnerSession });
     server.middlewares.use(staticAssetCacheMiddleware('dev'));
 
     server.middlewares.use('/__presence/heartbeat', async (req, res) => {
@@ -2103,6 +2196,215 @@ const animationLabPresetSavePlugin = () => ({
       }
     });
 
+    server.middlewares.use(async (req, res, next) => {
+      const requestUrl = new URL(req.url || '/', 'http://localhost');
+      const routePath = requestUrl.pathname;
+      if (!routePath.startsWith('/__company-founding-room')) {
+        next();
+        return;
+      }
+
+      // Serialize read-modify-write requests so simultaneous member edits are preserved.
+      const previousRequest = companyRoomRequestQueue;
+      let releaseRequest;
+      companyRoomRequestQueue = new Promise((resolve) => { releaseRequest = resolve; });
+      await previousRequest;
+
+      const sendJson = (statusCode, payload) => {
+        res.statusCode = statusCode;
+        res.setHeader('Content-Type', 'application/json; charset=utf-8');
+        res.end(JSON.stringify(payload));
+      };
+
+      try {
+        if (req.method === 'POST') {
+          const chunks = [];
+          for await (const chunk of req) chunks.push(chunk);
+          const raw = Buffer.concat(chunks).toString('utf8');
+          req.__body = raw ? JSON.parse(raw) : {};
+        } else {
+          req.__body = {};
+        }
+
+        const session = getSessionFromRequest(req);
+        if (!session) {
+          sendJson(401, buildInvalidSessionPayload(req.__body?.token));
+          return;
+        }
+        const roomData = await readCompanyRoomData();
+        if (!isCompanyRoomMemberSession(session, roomData)) {
+          sendJson(403, { ok: false, error: 'forbidden', detail: 'approved_members_only' });
+          return;
+        }
+
+        if (routePath === '/__company-founding-room' && req.method === 'GET') {
+          sendJson(200, buildCompanyRoomPayload(roomData, session));
+          return;
+        }
+
+        if (routePath === '/__company-founding-room/entry' && req.method === 'POST') {
+          const action = String(req.__body?.action || 'create').trim();
+          let nextRoomData = roomData;
+          if (action === 'create') {
+            const category = String(req.__body?.category || '').trim();
+            const title = sanitizeCompanyRoomText(req.__body?.title, 100);
+            const body = sanitizeCompanyRoomText(req.__body?.body, 3000);
+            if (!COMPANY_FOUNDING_ROOM_CATEGORIES.has(category) || !title) {
+              sendJson(400, { ok: false, error: 'invalid_entry' });
+              return;
+            }
+            const now = new Date().toISOString();
+            const entry = {
+              id: `company-room-${Date.now()}-${randomBytes(5).toString('hex')}`,
+              category,
+              title,
+              body,
+              status: category === 'task' ? 'todo' : 'todo',
+              author: String(session.username || ''),
+              createdAt: now,
+              updatedAt: now
+            };
+            nextRoomData = { ...roomData, entries: [...roomData.entries, entry].slice(-500) };
+          } else if (['edit', 'pin', 'comment'].includes(action)) {
+            const target = roomData.entries.find((entry) => entry.id === req.__body?.entryId);
+            if (!target) {
+              sendJson(404, { ok: false, error: 'entry_not_found' });
+              return;
+            }
+            const isOwner = isCompanyRoomOwnerSession(session);
+            const ownsEntry = companyRoomUsernameKey(target.author) === companyRoomUsernameKey(session.username);
+            if ((action === 'edit' && !ownsEntry && !isOwner) || (action === 'pin' && !isOwner)) {
+              sendJson(403, { ok: false, error: 'forbidden', detail: action === 'pin' ? 'owner_only' : 'entry_owner_only' });
+              return;
+            }
+            const now = new Date().toISOString();
+            let patch;
+            if (action === 'edit') {
+              const title = sanitizeCompanyRoomText(req.__body?.title, 100);
+              if (!title) {
+                sendJson(400, { ok: false, error: 'invalid_entry' });
+                return;
+              }
+              patch = { title, body: sanitizeCompanyRoomText(req.__body?.body, 3000), editedAt: now, updatedAt: now };
+            } else if (action === 'pin') {
+              patch = { pinned: req.__body?.pinned === true };
+            } else {
+              const body = sanitizeCompanyRoomText(req.__body?.body, 1500);
+              const parentId = sanitizeCompanyRoomText(req.__body?.parentId, 100);
+              if (!body || (parentId && !target.comments.some((comment) => comment.id === parentId && !comment.parentId))) {
+                sendJson(400, { ok: false, error: 'invalid_comment' });
+                return;
+              }
+              patch = {
+                comments: [...target.comments, {
+                  id: `comment-${Date.now()}-${randomBytes(5).toString('hex')}`,
+                  parentId, body, author: session.username, createdAt: now
+                }],
+                updatedAt: now
+              };
+            }
+            nextRoomData = { ...roomData, entries: roomData.entries.map((entry) => entry.id === target.id ? { ...entry, ...patch } : entry) };
+          } else if (action === 'delete') {
+            const entryId = sanitizeCompanyRoomText(req.__body?.entryId, 100);
+            const target = roomData.entries.find((entry) => entry.id === entryId);
+            if (!target) {
+              sendJson(404, { ok: false, error: 'entry_not_found' });
+              return;
+            }
+            const ownsEntry = companyRoomUsernameKey(target.author) === companyRoomUsernameKey(session.username);
+            if (!ownsEntry && !isCompanyRoomOwnerSession(session)) {
+              sendJson(403, { ok: false, error: 'forbidden', detail: 'entry_owner_only' });
+              return;
+            }
+            nextRoomData = { ...roomData, entries: roomData.entries.filter((entry) => entry.id !== entryId) };
+          } else if (action === 'status') {
+            const entryId = sanitizeCompanyRoomText(req.__body?.entryId, 100);
+            const status = String(req.__body?.status || '').trim();
+            if (!COMPANY_FOUNDING_ROOM_TASK_STATUSES.has(status)) {
+              sendJson(400, { ok: false, error: 'invalid_status' });
+              return;
+            }
+            let found = false;
+            nextRoomData = {
+              ...roomData,
+              entries: roomData.entries.map((entry) => {
+                if (entry.id !== entryId || entry.category !== 'task') return entry;
+                found = true;
+                return { ...entry, status, updatedAt: new Date().toISOString() };
+              })
+            };
+            if (!found) {
+              sendJson(404, { ok: false, error: 'entry_not_found' });
+              return;
+            }
+          } else {
+            sendJson(400, { ok: false, error: 'invalid_action' });
+            return;
+          }
+          const sanitized = sanitizeCompanyRoomData(nextRoomData);
+          await writeJsonFile(COMPANY_FOUNDING_ROOM_FILE, sanitized);
+          sendJson(200, buildCompanyRoomPayload(sanitized, session));
+          return;
+        }
+
+        if (routePath === '/__company-founding-room/member' && req.method === 'POST') {
+          if (!isCompanyRoomOwnerSession(session)) {
+            sendJson(403, { ok: false, error: 'forbidden', detail: 'owner_only' });
+            return;
+          }
+          const action = String(req.__body?.action || 'add').trim();
+          const requestedUsername = sanitizeCompanyRoomText(req.__body?.username, 24);
+          const requestedKey = companyRoomUsernameKey(requestedUsername);
+          if (!requestedKey) {
+            sendJson(400, { ok: false, error: 'invalid_username' });
+            return;
+          }
+          const accounts = await readJsonFile(ACCOUNTS_FILE, []);
+          const account = accounts.find((entry) => companyRoomUsernameKey(entry?.username) === requestedKey);
+          if (action === 'add' && !account) {
+            sendJson(404, { ok: false, error: 'account_not_found' });
+            return;
+          }
+          if (COMPANY_FOUNDING_ROOM_OWNER_USERNAMES.has(requestedKey)) {
+            sendJson(400, { ok: false, error: 'owner_membership_locked' });
+            return;
+          }
+          let members = roomData.members;
+          if (action === 'add') {
+            if (!members.some((entry) => companyRoomUsernameKey(entry.username) === requestedKey)) {
+              members = [...members, {
+                username: String(account.username || requestedUsername),
+                addedAt: new Date().toISOString(),
+                addedBy: String(session.username || '')
+              }];
+            }
+          } else if (action === 'remove') {
+            members = members.filter((entry) => companyRoomUsernameKey(entry.username) !== requestedKey);
+          } else {
+            sendJson(400, { ok: false, error: 'invalid_action' });
+            return;
+          }
+          const nextRoomData = sanitizeCompanyRoomData({ ...roomData, members });
+          await writeJsonFile(COMPANY_FOUNDING_ROOM_FILE, nextRoomData);
+          sendJson(200, buildCompanyRoomPayload(nextRoomData, session));
+          return;
+        }
+
+        sendJson(req.method === 'GET' || req.method === 'POST' ? 404 : 405, {
+          ok: false,
+          error: req.method === 'GET' || req.method === 'POST' ? 'not_found' : 'method_not_allowed'
+        });
+      } catch (error) {
+        sendJson(500, {
+          ok: false,
+          error: 'company_founding_room_failed',
+          detail: error instanceof Error ? error.message : String(error)
+        });
+      } finally {
+        releaseRequest();
+      }
+    });
+
     server.middlewares.use('/__animation-lab/save-preset', async (req, res) => {
       if (req.method !== 'POST') {
         res.statusCode = 405;
@@ -2521,6 +2823,7 @@ const animationLabPresetSavePlugin = () => ({
     });
   },
   configurePreviewServer(server) {
+    registerApplePriceApi(server, { readJsonFile, writeJsonFile, getSessionFromRequest, readCompanyRoomData, isCompanyRoomMemberSession, isCompanyRoomOwnerSession });
     server.middlewares.use(staticAssetCacheMiddleware('preview'));
   },
   handleHotUpdate(ctx) {
