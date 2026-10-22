@@ -33,3 +33,13 @@ data/bug-reports.jsonl
 data/chat-messages.jsonl
 data/dev-modal-layout/
 
+# Local accounts, sessions, private collaboration and diagnostics
+data/accounts.json
+data/auth-sessions.json*
+data/recovered-*.json
+data/company-founding-room.json
+data/apple-price-board.json.previous
+data/vite-dev.*.log
+.playwright-cli/
+output/*.log
+preview-server-live.log
