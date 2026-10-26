@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ApplePriceEditor from './ApplePriceEditor';
 import CompanyIntroduction from './CompanyIntroduction';
+import { AttachmentList, AttachmentPicker, useRoomAttachments } from './RoomAttachments';
 
 const ENDPOINT = '/__company-founding-room';
 const TABS = [
@@ -44,13 +45,14 @@ const formatRoomTime = (value) => {
   });
 };
 
-function RoomEntry({ entry, room, busy, mutate, onDelete, onStatus, onPromote }) {
+function RoomEntry({ entry, room, session, busy, mutate, onDelete, onStatus, onPromote }) {
   const statusLabels = entry.category === 'documents' ? DOCUMENT_STATUS : TASK_STATUS;
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(entry.title);
   const [body, setBody] = useState(entry.body);
   const [commentDraft, setCommentDraft] = useState('');
   const [replyTo, setReplyTo] = useState(null);
+  const commentAttachments = useRoomAttachments(session);
   const canEdit = room.canManageMembers || String(entry.author).toLowerCase() === String(room.currentUsername).toLowerCase();
   const comments = entry.comments || [];
   const saveEdit = async (event) => {
@@ -60,9 +62,10 @@ function RoomEntry({ entry, room, busy, mutate, onDelete, onStatus, onPromote })
   };
   const submitComment = async (event) => {
     event.preventDefault();
-    if (!commentDraft.trim()) return;
-    if (await mutate('/entry', { action: 'comment', entryId: entry.id, parentId: replyTo?.id || '', body: commentDraft }, '댓글을 등록했습니다.')) {
+    if (!commentDraft.trim() && !commentAttachments.files.length) return;
+    if (await mutate('/entry', async () => ({ action: 'comment', entryId: entry.id, parentId: replyTo?.id || '', body: commentDraft, attachmentIds: await commentAttachments.upload() }), '댓글을 등록했습니다.')) {
       setCommentDraft('');
+      commentAttachments.clear();
       setReplyTo(null);
     }
   };
@@ -72,6 +75,7 @@ function RoomEntry({ entry, room, busy, mutate, onDelete, onStatus, onPromote })
         {!isReply ? <button type="button" disabled={busy} onClick={() => setReplyTo(comment)}>답글</button> : null}
       </div>
       <p>{comment.body}</p>
+      <AttachmentList files={comment.attachments} session={session} />
     </div>
   );
   return (
@@ -83,7 +87,7 @@ function RoomEntry({ entry, room, busy, mutate, onDelete, onStatus, onPromote })
           <strong>{entry.title}</strong>
         </div>
         <div className="company-founding-room__entry-actions">
-          {room.canManageMembers && ['discussion', 'revenue'].includes(entry.category) ? <button type="button" disabled={busy || editing || Boolean(commentDraft.trim())} title={commentDraft.trim() ? '작성 중인 댓글을 등록하거나 비운 뒤 이동해주세요.' : '본문과 댓글을 유지하며 결정사항으로 이동합니다.'} onClick={() => onPromote(entry)}>결정사항으로 이동</button> : null}
+          {room.canManageMembers && ['discussion', 'revenue'].includes(entry.category) ? <button type="button" disabled={busy || editing || Boolean(commentDraft.trim()) || Boolean(commentAttachments.files.length)} title={commentDraft.trim() || commentAttachments.files.length ? '작성 중인 댓글과 첨부파일을 등록하거나 비운 뒤 이동해주세요.' : '본문·댓글·첨부파일을 유지하며 결정사항으로 이동합니다.'} onClick={() => onPromote(entry)}>결정사항으로 이동</button> : null}
           {room.canManageMembers ? <button type="button" disabled={busy} onClick={() => mutate('/entry', { action: 'pin', entryId: entry.id, pinned: !entry.pinned }, entry.pinned ? '고정을 해제했습니다.' : '중요 안건으로 고정했습니다.')}>{entry.pinned ? '고정 해제' : '상단 고정'}</button> : null}
           {canEdit ? <><button type="button" disabled={busy || editing} onClick={() => { setTitle(entry.title); setBody(entry.body); setEditing(true); }}>수정</button><button type="button" className="company-founding-room__delete" disabled={busy} onClick={() => onDelete(entry)}>삭제</button></> : null}
         </div>
@@ -95,6 +99,7 @@ function RoomEntry({ entry, room, busy, mutate, onDelete, onStatus, onPromote })
           <div className="company-founding-room__form-actions"><button type="button" className="button button--ghost button--compact" disabled={busy} onClick={() => setEditing(false)}>취소</button><button type="submit" className="button button--primary button--compact" disabled={busy || !title.trim()}>저장</button></div>
         </form>
       ) : entry.body ? <p>{entry.body}</p> : null}
+      <AttachmentList files={entry.attachments} session={session} />
       <footer><span>{entry.author}</span><time>{formatRoomTime(entry.updatedAt || entry.createdAt)}</time>{entry.editedAt ? <span>수정됨</span> : null}</footer>
       {entry.decidedAt ? <footer><span>결정사항 전환: {entry.decidedBy}</span><time>{formatRoomTime(entry.decidedAt)}</time></footer> : null}
       <section className="company-founding-room__comments" aria-label={`${entry.title} 댓글`}>
@@ -102,10 +107,11 @@ function RoomEntry({ entry, room, busy, mutate, onDelete, onStatus, onPromote })
         {comments.filter((comment) => !comment.parentId).map((comment) => (
           <React.Fragment key={comment.id}>{renderComment(comment)}{comments.filter((reply) => reply.parentId === comment.id).map((reply) => renderComment(reply, true))}</React.Fragment>
         ))}
-        <form className="company-founding-room__comment-form" onSubmit={submitComment}>
+        <form className="company-founding-room__comment-form" onSubmit={submitComment} onPaste={busy ? undefined : commentAttachments.onPaste}>
           {replyTo ? <div className="company-founding-room__reply-target"><span>{replyTo.author}님에게 답글</span><button type="button" disabled={busy} onClick={() => setReplyTo(null)}>취소</button></div> : null}
           <textarea aria-label={replyTo ? '답글 내용' : '댓글 내용'} placeholder={replyTo ? '답글을 입력해주세요.' : '의견을 댓글로 남겨주세요.'} value={commentDraft} onChange={(event) => setCommentDraft(event.target.value)} maxLength={1500} disabled={busy} />
-          <div className="company-founding-room__form-actions"><button type="submit" className="button button--primary button--compact" disabled={busy || !commentDraft.trim()}>{replyTo ? '답글 등록' : '댓글 등록'}</button></div>
+          <AttachmentPicker draft={commentAttachments} disabled={busy} />
+          <div className="company-founding-room__form-actions"><button type="submit" className="button button--primary button--compact" disabled={busy || (!commentDraft.trim() && !commentAttachments.files.length)}>{replyTo ? '답글 등록' : '댓글 등록'}</button></div>
         </form>
       </section>
     </article>
@@ -122,12 +128,16 @@ export default function CompanyFoundingRoom({ session, onClose, onLoginRequest }
   const [memberDraft, setMemberDraft] = useState('');
   const [busy, setBusy] = useState(false);
   const [priceDirty, setPriceDirty] = useState(false);
+  const attachments = useRoomAttachments(session);
   const changeTab = (tab) => {
+    if (busy) return;
     if (tab !== activeTab && priceDirty && !window.confirm('가격표에 저장하지 않은 변경이 있습니다. 변경을 버리고 이동할까요?')) return;
     if (tab !== activeTab) setPriceDirty(false);
     setActiveTab(tab);
   };
   const closeRoom = () => {
+    if (busy) return;
+    if (attachments.files.length && !window.confirm('등록하지 않은 첨부파일이 있습니다. 닫으면 선택 내용이 사라집니다. 닫을까요?')) return;
     if (priceDirty && !window.confirm('가격표에 저장하지 않은 변경이 있습니다. 변경을 버리고 닫을까요?')) return;
     onClose();
   };
@@ -196,7 +206,8 @@ export default function CompanyFoundingRoom({ session, onClose, onLoginRequest }
     setBusy(true);
     setNotice('');
     try {
-      const result = await request(path, { method: 'POST', body: JSON.stringify(payload) });
+      const data = typeof payload === 'function' ? await payload() : payload;
+      const result = await request(path, { method: 'POST', body: JSON.stringify(data) });
       setRoom(result.room || null);
       setNotice(successMessage);
       return true;
@@ -216,15 +227,17 @@ export default function CompanyFoundingRoom({ session, onClose, onLoginRequest }
       setNotice('제목을 입력해주세요.');
       return;
     }
-    const saved = await runMutation('/entry', {
+    const saved = await runMutation('/entry', async () => ({
       action: 'create',
       category: activeTab,
       title,
-      body: bodyDraft.trim()
-    }, '새 항목을 등록했습니다.');
+      body: bodyDraft.trim(),
+      attachmentIds: await attachments.upload()
+    }), '새 항목을 등록했습니다.');
     if (saved) {
       setTitleDraft('');
       setBodyDraft('');
+      attachments.clear();
     }
   };
 
@@ -303,7 +316,7 @@ export default function CompanyFoundingRoom({ session, onClose, onLoginRequest }
               </div>
               <nav className="company-founding-room__tabs" aria-label="준비실 분류">
                 <button type="button" className={activeTab === 'introduction' ? 'is-active' : ''} aria-current={activeTab === 'introduction' ? 'page' : undefined} onClick={() => changeTab('introduction')}><span>사업 소개</span><b aria-hidden="true">↗</b></button>
-                {TABS.map((tab) => (
+                {TABS.filter((tab) => tab.key !== 'documents').map((tab) => (
                   <button
                     key={tab.key}
                     type="button"
@@ -324,6 +337,7 @@ export default function CompanyFoundingRoom({ session, onClose, onLoginRequest }
                     <b>{room.members?.length || 0}</b>
                   </button>
                 ) : null}
+                <button type="button" className={activeTab === 'documents' ? 'is-active' : ''} onClick={() => changeTab('documents')}><span>설립준비 서류</span><b>{(room.entries || []).filter((entry) => entry.category === 'documents').length}</b></button>
                 <button type="button" className={activeTab === 'prices' ? 'is-active' : ''} onClick={() => changeTab('prices')}><span>사과 가격표 조정</span><b>₩</b></button>
               </nav>
             </aside>
@@ -353,14 +367,15 @@ export default function CompanyFoundingRoom({ session, onClose, onLoginRequest }
                     <div><strong>{currentTab.label}</strong><span>{currentTab.key === 'documents' ? '서류별 담당자·제출처·준비 내용을 정리하고 상태 버튼으로 진행 상황을 관리합니다.' : '멤버들과 의견과 진행 상황을 공유합니다.'}</span></div>
                     <button type="button" className="button button--ghost button--compact" onClick={() => loadRoom(false)} disabled={busy}>새로고침</button>
                   </div>
-                  <form className="company-founding-room__composer" onSubmit={submitEntry}>
-                    <input className="text-input" value={titleDraft} onChange={(event) => setTitleDraft(event.target.value)} placeholder={currentTab.key === 'documents' ? '준비할 서류명' : `${currentTab.label} 제목`} maxLength={100} />
-                    <textarea value={bodyDraft} onChange={(event) => setBodyDraft(event.target.value)} placeholder={currentTab.key === 'documents' ? '담당자, 제출처, 준비 기한과 확인할 내용을 적어주세요. 주민등록번호·인감·계좌정보 등 민감정보는 입력하지 마세요.' : '구체적인 내용이나 의견을 적어주세요.'} maxLength={3000} />
-                    <div><span>{bodyDraft.length.toLocaleString()} / 3,000</span><button className="button button--primary" type="submit" disabled={busy}>등록</button></div>
+                  <form className="company-founding-room__composer" onSubmit={submitEntry} onPaste={busy ? undefined : attachments.onPaste}>
+                    <input className="text-input" value={titleDraft} onChange={(event) => setTitleDraft(event.target.value)} placeholder={currentTab.key === 'documents' ? '준비할 서류명' : `${currentTab.label} 제목`} maxLength={100} disabled={busy} />
+                    <textarea value={bodyDraft} onChange={(event) => setBodyDraft(event.target.value)} placeholder={currentTab.key === 'documents' ? '담당자, 제출처, 준비 기한과 확인할 내용을 적어주세요. 주민등록번호·인감·계좌정보 등 민감정보는 입력하지 마세요.' : '구체적인 내용이나 의견을 적어주세요.'} maxLength={3000} disabled={busy} />
+                    <AttachmentPicker draft={attachments} disabled={busy} />
+                    <div><span>{bodyDraft.length.toLocaleString()} / 3,000</span><button className="button button--primary" type="submit" disabled={busy}>{busy ? '등록 중…' : '등록'}</button></div>
                   </form>
                   <div className="company-founding-room__entry-list">
                     {activeEntries.length ? activeEntries.map((entry) => (
-                      <RoomEntry key={entry.id} entry={entry} room={room} busy={busy} mutate={runMutation} onDelete={deleteEntry} onStatus={cycleTaskStatus} onPromote={promoteEntry} />
+                      <RoomEntry key={entry.id} entry={entry} room={room} session={session} busy={busy} mutate={runMutation} onDelete={deleteEntry} onStatus={cycleTaskStatus} onPromote={promoteEntry} />
                     )) : <div className="company-founding-room__empty">{currentTab.empty}</div>}
                   </div>
                 </>

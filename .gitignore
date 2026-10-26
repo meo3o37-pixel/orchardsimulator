@@ -43,3 +43,4 @@ data/vite-dev.*.log
 .playwright-cli/
 output/*.log
 preview-server-live.log
+data/company-room-attachments/

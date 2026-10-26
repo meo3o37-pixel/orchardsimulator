@@ -5,6 +5,7 @@ import path from 'node:path';
 import { hostname } from 'node:os';
 import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { registerApplePriceApi } from './server/applePriceApi.mjs';
+import { createCompanyAttachmentStore, registerCompanyAttachmentApi, sanitizeAttachments } from './server/companyAttachmentApi.mjs';
 
 const PROJECT_ROOT = path.resolve(process.cwd());
 const PROJECT_INDEX_HTML = path.join(PROJECT_ROOT, 'index.html');
@@ -688,6 +689,7 @@ const companyRoomUsernameKey = (value = '') => String(value || '').trim().toLowe
 let companyRoomRequestQueue = Promise.resolve();
 const isCompanyRoomOwnerSession = (session) => COMPANY_FOUNDING_ROOM_OWNER_USERNAMES.has(companyRoomUsernameKey(session?.username));
 const sanitizeCompanyRoomText = (value, maxLength) => String(value || '').trim().slice(0, maxLength);
+const companyAttachmentStore = createCompanyAttachmentStore(path.join(PROJECT_ROOT, 'data/company-room-attachments'));
 const sanitizeCompanyRoomData = (rawData = {}) => {
   const safeData = rawData && typeof rawData === 'object' && !Array.isArray(rawData) ? rawData : {};
   const seenMembers = new Set();
@@ -719,6 +721,7 @@ const sanitizeCompanyRoomData = (rawData = {}) => {
         category,
         title,
         body,
+        attachments: sanitizeAttachments(entry?.attachments),
         pinned: entry?.pinned === true,
         editedAt: sanitizeCompanyRoomText(entry?.editedAt, 40),
         decidedAt: sanitizeCompanyRoomText(entry?.decidedAt, 40),
@@ -727,9 +730,10 @@ const sanitizeCompanyRoomData = (rawData = {}) => {
           id: sanitizeCompanyRoomText(comment?.id, 100),
           parentId: sanitizeCompanyRoomText(comment?.parentId, 100),
           body: sanitizeCompanyRoomText(comment?.body, 1500),
+          attachments: sanitizeAttachments(comment?.attachments),
           author: sanitizeCompanyRoomText(comment?.author, 24),
           createdAt: sanitizeCompanyRoomText(comment?.createdAt, 40)
-        })).filter((comment) => comment.id && comment.body && comment.author),
+        })).filter((comment) => comment.id && (comment.body || comment.attachments.length) && comment.author),
         status: ['task', 'documents'].includes(category) && COMPANY_FOUNDING_ROOM_TASK_STATUSES.has(String(entry?.status || ''))
           ? String(entry.status)
           : 'todo',
@@ -1224,6 +1228,7 @@ const staticAssetCacheMiddleware = (mode = 'dev') => (req, res, next) => {
 const animationLabPresetSavePlugin = () => ({
   name: 'animation-lab-preset-save',
   configureServer(server) {
+    registerCompanyAttachmentApi(server, { store: companyAttachmentStore, getSessionFromRequest, readCompanyRoomData, isCompanyRoomMemberSession });
     registerApplePriceApi(server, { readJsonFile, writeJsonFile, getSessionFromRequest, readCompanyRoomData, isCompanyRoomMemberSession, isCompanyRoomOwnerSession });
     server.middlewares.use(staticAssetCacheMiddleware('dev'));
 
@@ -2262,6 +2267,7 @@ const animationLabPresetSavePlugin = () => ({
               category,
               title,
               body,
+              attachments: await companyAttachmentStore.resolve(req.__body?.attachmentIds, session),
               status: category === 'task' ? 'todo' : 'todo',
               author: String(session.username || ''),
               createdAt: now,
@@ -2300,14 +2306,15 @@ const animationLabPresetSavePlugin = () => ({
             } else {
               const body = sanitizeCompanyRoomText(req.__body?.body, 1500);
               const parentId = sanitizeCompanyRoomText(req.__body?.parentId, 100);
-              if (!body || (parentId && !target.comments.some((comment) => comment.id === parentId && !comment.parentId))) {
+              const attachments = await companyAttachmentStore.resolve(req.__body?.attachmentIds, session);
+              if ((!body && !attachments.length) || (parentId && !target.comments.some((comment) => comment.id === parentId && !comment.parentId))) {
                 sendJson(400, { ok: false, error: 'invalid_comment' });
                 return;
               }
               patch = {
                 comments: [...target.comments, {
                   id: `comment-${Date.now()}-${randomBytes(5).toString('hex')}`,
-                  parentId, body, author: session.username, createdAt: now
+                  parentId, body, attachments, author: session.username, createdAt: now
                 }],
                 updatedAt: now
               };
@@ -2404,7 +2411,7 @@ const animationLabPresetSavePlugin = () => ({
           error: req.method === 'GET' || req.method === 'POST' ? 'not_found' : 'method_not_allowed'
         });
       } catch (error) {
-        sendJson(500, {
+        sendJson(error.status || 500, {
           ok: false,
           error: 'company_founding_room_failed',
           detail: error instanceof Error ? error.message : String(error)
@@ -2832,6 +2839,7 @@ const animationLabPresetSavePlugin = () => ({
     });
   },
   configurePreviewServer(server) {
+    registerCompanyAttachmentApi(server, { store: companyAttachmentStore, getSessionFromRequest, readCompanyRoomData, isCompanyRoomMemberSession });
     registerApplePriceApi(server, { readJsonFile, writeJsonFile, getSessionFromRequest, readCompanyRoomData, isCompanyRoomMemberSession, isCompanyRoomOwnerSession });
     server.middlewares.use(staticAssetCacheMiddleware('preview'));
   },
@@ -2894,6 +2902,7 @@ export default defineConfig(({ mode }) => {
       }
     },
     server: {
+      fs: { deny: ['.env', '.env.*', '*.{crt,pem}', '**/.git/**', '**/data/company-room-attachments/**'] },
       host: '0.0.0.0',
       allowedHosts: true,
       watch: {

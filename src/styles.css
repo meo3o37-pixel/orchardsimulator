@@ -1511,6 +1511,40 @@ button {
   line-height: 1.55;
 }
 
+.company-founding-room .room-attachments {
+  display: grid;
+  gap: 10px;
+  margin: 10px 0;
+  min-width: 0;
+}
+
+.company-founding-room .room-attachments__tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.company-founding-room .room-attachments button {
+  padding: 7px 11px;
+  border: 1px solid #ccd7e5;
+  border-radius: 8px;
+  background: #f4f7fc;
+  color: #314b6b;
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.company-founding-room .room-attachments button:disabled { opacity: 0.55; cursor: wait; }
+.company-founding-room .room-attachments small { color: #73839a; font-size: 0.76rem; }
+.company-founding-room .room-attachments .room-attachments__error { color: #b33e32; }
+.company-founding-room .room-attachments__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 10px; }
+.company-founding-room .room-attachments__grid:empty { display: none; }
+.company-founding-room .room-attachments__item { display: grid; align-content: start; gap: 7px; min-width: 0; padding: 11px; border: 1px solid #dce4ee; border-radius: 12px; background: #f8fafd; }
+.company-founding-room .room-attachments__item strong { color: #314b6b; font-size: 0.85rem; overflow-wrap: anywhere; }
+.company-founding-room .room-attachments__item img { width: 100%; max-height: 240px; object-fit: contain; border-radius: 7px; background: #edf1f6; }
+
 .company-founding-room__composer > div {
   display: flex;
   align-items: center;
