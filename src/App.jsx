@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import MobileHomeMenu from './MobileHomeMenu';
+import MobileMenuDrawer from './MobileMenuDrawer';
 import { toPng } from 'html-to-image';
 import SMALL_CITY_NIGHT_CROWD_MURMUR from './assets/images/효과음/시설/사람들 소리/살짝웅성거리는 소리.mp3';
 import { SAVE_SLOTS } from './config/gameConfig';
@@ -19665,9 +19667,11 @@ export default function App() {
   const [chatStatus, setChatStatus] = useState('idle');
   const [chatError, setChatError] = useState('');
   const [chatDeleteBusyId, setChatDeleteBusyId] = useState('');
-  const [chatCollapsed, setChatCollapsed] = useState(false);
+  const [chatCollapsed, setChatCollapsed] = useState(() => isHeroMenuCollapsibleMobileViewport());
+  const [mobileEntryGuideOpen, setMobileEntryGuideOpen] = useState(() => isHeroMenuCollapsibleMobileViewport());
+  const [mobileMenuDrawerOpen, setMobileMenuDrawerOpen] = useState(false);
   const [heroMobilePanelsCollapsible, setHeroMobilePanelsCollapsible] = useState(() => isHeroMenuCollapsibleMobileViewport());
-  const [presenceCardCollapsed, setPresenceCardCollapsed] = useState(() => isHeroMenuCollapsibleMobileViewport());
+  const [presenceCardCollapsed, setPresenceCardCollapsed] = useState(false);
   const [gpuGuideCollapsed, setGpuGuideCollapsed] = useState(() => isHeroMenuCollapsibleMobileViewport());
   const [bugReportModalOpen, setBugReportModalOpen] = useState(false);
   const [bugReportModalTab, setBugReportModalTab] = useState('write');
@@ -20331,7 +20335,9 @@ export default function App() {
       if (nextCollapsible === heroMobilePanelsCollapsibleRef.current) return;
       heroMobilePanelsCollapsibleRef.current = nextCollapsible;
       setHeroMobilePanelsCollapsible(nextCollapsible);
-      setPresenceCardCollapsed(nextCollapsible);
+      setMobileMenuDrawerOpen(false);
+      setPresenceCardCollapsed(false);
+      setChatCollapsed(nextCollapsible);
       setGpuGuideCollapsed(nextCollapsible);
     };
     syncHeroMobilePanelsCollapsible();
@@ -62087,61 +62093,7 @@ const requestRepairEquipment = (itemKey) => {
     : chatStatus === 'connecting'
       ? '연결 중...'
       : '실시간 대기';
-  if (autoRestoreLoadingState.active) {
-    return (
-      <LoadingScreen
-        progress={autoRestoreLoadingState.progress}
-        label="이전 화면 불러오는 중"
-        detail={autoRestoreLoadingState.detail}
-      />
-    );
-  }
-
-  if (!authReady) {
-    return (
-      <LoadingScreen
-        progress={0.35}
-        label="로그인 상태 확인 중"
-        detail="이전 접속 정보를 확인하고 있습니다."
-      />
-    );
-  }
-
-  if (screen === 'menu') {
-    const menuBurstStyle = menuBurstTransition.active ? {
-      '--burst-x': `${menuBurstTransition.x}px`,
-      '--burst-y': `${menuBurstTransition.y}px`,
-      '--burst-final-radius': `${Math.max(0, Number(menuBurstTransition.finalRadius) || 0)}px`
-    } : undefined;
-    return (
-      <div
-        className={`screen screen--hero ${menuBurstTransition.active && menuBurstTransition.targetScreen === 'menu' ? `screen--burst-enter screen--burst-enter-${menuBurstTransition.phase}` : ''}`.trim()}
-        style={menuBurstStyle}
-      >
-        <div className="screen__glow screen__glow--left" />
-        <div className="screen__glow screen__glow--right" />
-        <div className="hero-bgm-panel" aria-label="메인메뉴 배경음 설정">
-          <div className="hero-bgm-panel__head">
-            <span>메인메뉴 BGM</span>
-            <strong>{Math.round(menuBgmVolume * 100)}%</strong>
-          </div>
-          <div className="control-slider-wrap hero-bgm-panel__slider-wrap">
-            <input
-              className="control-slider hero-bgm-panel__slider"
-              type="range"
-              min="0"
-              max="100"
-              step="1"
-              value={Math.round(menuBgmVolume * 100)}
-              onChange={(event) => {
-                const nextValue = clamp((Number(event.target.value) || 0) / 100, 0, 1);
-                setMenuBgmVolume(nextValue);
-              }}
-              style={{ '--hero-bgm-progress': `${Math.round(menuBgmVolume * 100)}%` }}
-              aria-label="메인메뉴 BGM 볼륨"
-            />
-          </div>
-        </div>
+  const menuQuickLinksNode = (<>
         <a
           className="hero-planner-launch"
           href={ORCHARD_PLANNER_INSTALLER_URL}
@@ -62178,6 +62130,123 @@ const requestRepairEquipment = (itemKey) => {
           <span className="hero-company-room-launch__text">바람한조각 법인설립 준비실</span>
           <span className="hero-company-room-launch__detail">승인된 멤버만 입장 가능</span>
         </button>
+  </>);
+  const menuPresenceNode = (
+        <aside className={`hero-presence-card ${presenceCardCollapsed ? 'is-collapsed' : ''}`.trim()} aria-label="접속자 현황">
+          <div className="hero-presence-card__header">
+            <div className="hero-presence-card__eyebrow">로그인 정보</div>
+            {heroMobilePanelsCollapsible && !mobileMenuDrawerOpen ? (
+              <button
+                type="button"
+                className="hero-panel-toggle"
+                onClick={() => setPresenceCardCollapsed((prev) => !prev)}
+                aria-expanded={!presenceCardCollapsed}
+                aria-label={presenceCardCollapsed ? '로그인 정보 펼치기' : '로그인 정보 접기'}
+                title={presenceCardCollapsed ? '로그인 정보 펼치기' : '로그인 정보 접기'}
+              >
+                {presenceCardCollapsed ? '▾' : '▴'}
+              </button>
+            ) : null}
+          </div>
+          <div className="hero-presence-card__body">
+            <div className="hero-presence-card__account">
+              <span>계정</span>
+              <strong>{authSession?.username || (authReady ? '미로그인' : '확인 중...')}</strong>
+            </div>
+            <div className="hero-presence-card__grid">
+              {shouldShowPresenceUsernames ? (
+                <div className="hero-presence-card__wide">
+                  <span>현재 접속중인 아이디</span>
+                  <strong>{presenceSummary.enabled ? (presenceVisibleUsernames.join(', ') || '-') : '-'}</strong>
+                </div>
+              ) : null}
+            </div>
+            <div className="hero-presence-card__mobile-warning">
+              모바일 환경은 현재 적절하지 않습니다. 화면이 좁아 일부 UI가 겹치거나 조작이 불편할 수 있어 PC 환경 사용을 권장합니다.
+            </div>
+            <div className="hero-presence-card__actions">
+              {authSession ? (
+                <button className="button button--ghost button--compact day-transition-animate-button" onClick={() => { void logoutAccount(); }}>로그아웃</button>
+              ) : (
+                <button className="button button--ghost button--compact" onClick={() => openAuthModal('login')}>로그인</button>
+              )}
+              <button className="button button--ghost button--compact day-transition-animate-button" onClick={openUpdateLogModal}>패치노트</button>
+              <button className="button button--ghost button--compact day-transition-animate-button" onClick={openBugReportModal}>버그 리포트</button>
+            </div>
+          </div>
+        </aside>
+  );
+  const menuBgmControlsNode = (
+    <div className="hero-bgm-panel" aria-label="메인메뉴 배경음 설정">
+      <div className="hero-bgm-panel__head"><span>메인메뉴 BGM</span><strong>{Math.round(menuBgmVolume * 100)}%</strong></div>
+      <div className="control-slider-wrap hero-bgm-panel__slider-wrap">
+        <input className="control-slider hero-bgm-panel__slider" type="range" min="0" max="100" step="1"
+          value={Math.round(menuBgmVolume * 100)}
+          onChange={(event) => setMenuBgmVolume(clamp((Number(event.target.value) || 0) / 100, 0, 1))}
+          style={{ '--hero-bgm-progress': `${Math.round(menuBgmVolume * 100)}%` }} aria-label="메인메뉴 BGM 볼륨" />
+      </div>
+    </div>
+  );
+  if (autoRestoreLoadingState.active) {
+    return (
+      <LoadingScreen
+        progress={autoRestoreLoadingState.progress}
+        label="이전 화면 불러오는 중"
+        detail={autoRestoreLoadingState.detail}
+      />
+    );
+  }
+
+  if (!authReady) {
+    return (
+      <LoadingScreen
+        progress={0.35}
+        label="로그인 상태 확인 중"
+        detail="이전 접속 정보를 확인하고 있습니다."
+      />
+    );
+  }
+
+  if (mobileEntryGuideOpen) {
+    return (
+      <div className="mobile-entry-guide">
+        <MobileHomeMenu
+          plannerUrl={ORCHARD_PLANNER_INSTALLER_URL}
+          onPrice={() => setRealApplePriceModalOpen(true)}
+          onCompany={() => {
+            if (!authSession?.token) { openAuthModal('login'); return; }
+            setCompanyFoundingRoomOpen(true);
+          }}
+          onGame={() => { setScreen('menu'); setMobileEntryGuideOpen(false); }}
+        />
+        {authModalNode}
+        {authForcedLogoutModalNode}
+        {gameAlertModalNode}
+        {realApplePriceModalNode}
+        {companyFoundingRoomOpen ? <CompanyFoundingRoom session={authSession} onClose={() => setCompanyFoundingRoomOpen(false)} onLoginRequest={() => { setCompanyFoundingRoomOpen(false); openAuthModal('login'); }} /> : null}
+      </div>
+    );
+  }
+
+  if (screen === 'menu') {
+    const menuBurstStyle = menuBurstTransition.active ? {
+      '--burst-x': `${menuBurstTransition.x}px`,
+      '--burst-y': `${menuBurstTransition.y}px`,
+      '--burst-final-radius': `${Math.max(0, Number(menuBurstTransition.finalRadius) || 0)}px`
+    } : undefined;
+    return (
+      <div
+        className={`screen screen--hero ${menuBurstTransition.active && menuBurstTransition.targetScreen === 'menu' ? `screen--burst-enter screen--burst-enter-${menuBurstTransition.phase}` : ''}`.trim()}
+        style={menuBurstStyle}
+      >
+        <div className="screen__glow screen__glow--left" />
+        <div className="screen__glow screen__glow--right" />
+        {menuBgmControlsNode}
+        {heroMobilePanelsCollapsible ? <>
+          <button type="button" className="mobile-main-menu-trigger" aria-haspopup="dialog" aria-controls="mobile-main-menu-drawer" aria-expanded={mobileMenuDrawerOpen} onClick={() => { setPresenceCardCollapsed(false); setMobileMenuDrawerOpen(true); }}><span aria-hidden="true">☰</span> 메뉴</button>
+          <MobileMenuDrawer open={mobileMenuDrawerOpen} onClose={() => setMobileMenuDrawerOpen(false)}>{menuPresenceNode}{menuQuickLinksNode}</MobileMenuDrawer>
+        </> : null}
+        {!heroMobilePanelsCollapsible ? menuQuickLinksNode : null}
         <aside className={`hero-chat-card ${chatCollapsed ? 'is-collapsed' : ''}`.trim()} aria-label="실시간 채팅">
           <div className="hero-chat-card__header">
             <div>
@@ -62254,49 +62323,7 @@ const requestRepairEquipment = (itemKey) => {
             ) : null}
           </div>
         </aside>
-        <aside className={`hero-presence-card ${presenceCardCollapsed ? 'is-collapsed' : ''}`.trim()} aria-label="접속자 현황">
-          <div className="hero-presence-card__header">
-            <div className="hero-presence-card__eyebrow">로그인 정보</div>
-            {heroMobilePanelsCollapsible ? (
-              <button
-                type="button"
-                className="hero-panel-toggle"
-                onClick={() => setPresenceCardCollapsed((prev) => !prev)}
-                aria-expanded={!presenceCardCollapsed}
-                aria-label={presenceCardCollapsed ? '로그인 정보 펼치기' : '로그인 정보 접기'}
-                title={presenceCardCollapsed ? '로그인 정보 펼치기' : '로그인 정보 접기'}
-              >
-                {presenceCardCollapsed ? '▾' : '▴'}
-              </button>
-            ) : null}
-          </div>
-          <div className="hero-presence-card__body">
-            <div className="hero-presence-card__account">
-              <span>계정</span>
-              <strong>{authSession?.username || (authReady ? '미로그인' : '확인 중...')}</strong>
-            </div>
-            <div className="hero-presence-card__grid">
-              {shouldShowPresenceUsernames ? (
-                <div className="hero-presence-card__wide">
-                  <span>현재 접속중인 아이디</span>
-                  <strong>{presenceSummary.enabled ? (presenceVisibleUsernames.join(', ') || '-') : '-'}</strong>
-                </div>
-              ) : null}
-            </div>
-            <div className="hero-presence-card__mobile-warning">
-              모바일 환경은 현재 적절하지 않습니다. 화면이 좁아 일부 UI가 겹치거나 조작이 불편할 수 있어 PC 환경 사용을 권장합니다.
-            </div>
-            <div className="hero-presence-card__actions">
-              {authSession ? (
-                <button className="button button--ghost button--compact day-transition-animate-button" onClick={() => { void logoutAccount(); }}>로그아웃</button>
-              ) : (
-                <button className="button button--ghost button--compact" onClick={() => openAuthModal('login')}>로그인</button>
-              )}
-              <button className="button button--ghost button--compact day-transition-animate-button" onClick={openUpdateLogModal}>패치노트</button>
-              <button className="button button--ghost button--compact day-transition-animate-button" onClick={openBugReportModal}>버그 리포트</button>
-            </div>
-          </div>
-        </aside>
+        {!heroMobilePanelsCollapsible ? menuPresenceNode : null}
         <aside className={`hero-gpu-guide ${gpuGuideCollapsed ? 'is-collapsed' : ''}`.trim()} aria-label="GPU 가속 안내">
           <div className="hero-gpu-guide__header">
             <strong>부드러운 애니메이션 프레임 GPU 가속 필요</strong>

@@ -136,6 +136,20 @@ function OrchardLoadingMark() {
   );
 }
 
+export function FirstVisitFrame({ title, subtitle, label, children, className = '' }) {
+  return <div style={shellStyle}>
+    <section className={className} aria-label={label} style={panelStyle}>
+      <OrchardLoadingMark />
+      <div style={{ display: 'grid', gap: 9 }}>
+        <div style={eyebrowStyle}>첫 실행 안내</div>
+        <h1 style={{ margin: 0, fontSize: 30, lineHeight: 1.12, letterSpacing: 0, color: '#fff7df' }}>{title}</h1>
+        <p style={{ margin: 0, color: '#dce7d1', fontSize: 15, lineHeight: 1.65 }}>{subtitle}</p>
+      </div>
+      {children}
+    </section>
+  </div>;
+}
+
 export function LoadingScreen({ progress = 0, label = '게임 준비 중', detail = '필수 리소스를 확인하고 있습니다.' }) {
   const safeProgress = clampProgress(progress);
   const barStyle = useMemo(() => ({
@@ -302,7 +316,9 @@ function CacheConsentScreen({ onAccept, onDecline }) {
 
 export default function GameBootLoader({ children }) {
   const bootPhase = getLoadingPhase('boot');
-  const [cacheConsent, setCacheConsent] = useState(() => getAssetCacheDownloadConsentStatus());
+  const [mobileEntry] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 560);
+  // Mobile entry uses on-demand resources without changing saved desktop consent.
+  const [cacheConsent, setCacheConsent] = useState(() => mobileEntry ? 'declined' : getAssetCacheDownloadConsentStatus());
   const [bootState, setBootState] = useState(() => ({
     ready: false,
     progress: 0,
@@ -430,9 +446,9 @@ export default function GameBootLoader({ children }) {
   }, [bootPhase?.label, cacheConsent]);
 
   useEffect(() => {
-    if (!bootState.ready) return undefined;
+    if (!bootState.ready || mobileEntry) return undefined;
     return schedulePostBootPreload({ force: cacheConsent === 'accepted' });
-  }, [bootState.ready, cacheConsent]);
+  }, [bootState.ready, cacheConsent, mobileEntry]);
 
   if (cacheConsent === 'pending') {
     return (
