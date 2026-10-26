@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ApplePriceEditor from './ApplePriceEditor';
+import CompanyIntroduction from './CompanyIntroduction';
 
 const ENDPOINT = '/__company-founding-room';
 const TABS = [
+  { key: 'documents', label: '설립준비 서류', empty: '아직 등록된 준비 서류가 없습니다. 서류명과 담당자·제출처·준비 내용을 기록해주세요.' },
   { key: 'discussion', label: '논의 사항', empty: '아직 등록된 논의 사항이 없습니다.' },
   { key: 'decision', label: '결정사항', empty: '아직 확정된 결정사항이 없습니다.' },
   { key: 'task', label: '할 일', empty: '아직 등록된 할 일이 없습니다.' }
@@ -11,6 +13,11 @@ const TASK_STATUS = {
   todo: { label: '예정', next: 'doing' },
   doing: { label: '진행 중', next: 'done' },
   done: { label: '완료', next: 'todo' }
+};
+const DOCUMENT_STATUS = {
+  todo: { label: '미준비', next: 'doing' },
+  doing: { label: '준비 중', next: 'done' },
+  done: { label: '준비 완료', next: 'todo' }
 };
 
 const responseMessage = (payload, fallback) => {
@@ -21,6 +28,7 @@ const responseMessage = (payload, fallback) => {
   if (payload?.detail === 'entry_owner_only') return '작성자와 방장만 변경할 수 있습니다.';
   if (payload?.error === 'invalid_comment') return '댓글 내용과 답글 대상을 확인해주세요.';
   if (payload?.error === 'entry_not_found') return '삭제된 글입니다. 목록을 새로고침해주세요.';
+  if (payload?.error === 'invalid_transition') return '이미 이동했거나 결정사항으로 옮길 수 없는 항목입니다. 목록을 새로고침해주세요.';
   return String(payload?.detail || fallback);
 };
 
@@ -36,7 +44,8 @@ const formatRoomTime = (value) => {
   });
 };
 
-function RoomEntry({ entry, room, busy, mutate, onDelete, onStatus }) {
+function RoomEntry({ entry, room, busy, mutate, onDelete, onStatus, onPromote }) {
+  const statusLabels = entry.category === 'documents' ? DOCUMENT_STATUS : TASK_STATUS;
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(entry.title);
   const [body, setBody] = useState(entry.body);
@@ -70,10 +79,11 @@ function RoomEntry({ entry, room, busy, mutate, onDelete, onStatus }) {
       <div className="company-founding-room__entry-head">
         <div>
           {entry.pinned ? <span className="company-founding-room__pin-label">중요 안건</span> : null}
-          {entry.category === 'task' ? <button type="button" className={`company-founding-room__status is-${entry.status}`} onClick={() => onStatus(entry)} disabled={busy}>{TASK_STATUS[entry.status]?.label || '예정'}</button> : null}
+          {['task', 'documents'].includes(entry.category) ? <button type="button" className={`company-founding-room__status is-${entry.status}`} onClick={() => onStatus(entry)} disabled={busy} aria-label={`${entry.title} 상태: ${statusLabels[entry.status]?.label || statusLabels.todo.label}`}>{statusLabels[entry.status]?.label || statusLabels.todo.label}</button> : null}
           <strong>{entry.title}</strong>
         </div>
         <div className="company-founding-room__entry-actions">
+          {room.canManageMembers && ['discussion', 'revenue'].includes(entry.category) ? <button type="button" disabled={busy || editing || Boolean(commentDraft.trim())} title={commentDraft.trim() ? '작성 중인 댓글을 등록하거나 비운 뒤 이동해주세요.' : '본문과 댓글을 유지하며 결정사항으로 이동합니다.'} onClick={() => onPromote(entry)}>결정사항으로 이동</button> : null}
           {room.canManageMembers ? <button type="button" disabled={busy} onClick={() => mutate('/entry', { action: 'pin', entryId: entry.id, pinned: !entry.pinned }, entry.pinned ? '고정을 해제했습니다.' : '중요 안건으로 고정했습니다.')}>{entry.pinned ? '고정 해제' : '상단 고정'}</button> : null}
           {canEdit ? <><button type="button" disabled={busy || editing} onClick={() => { setTitle(entry.title); setBody(entry.body); setEditing(true); }}>수정</button><button type="button" className="company-founding-room__delete" disabled={busy} onClick={() => onDelete(entry)}>삭제</button></> : null}
         </div>
@@ -86,6 +96,7 @@ function RoomEntry({ entry, room, busy, mutate, onDelete, onStatus }) {
         </form>
       ) : entry.body ? <p>{entry.body}</p> : null}
       <footer><span>{entry.author}</span><time>{formatRoomTime(entry.updatedAt || entry.createdAt)}</time>{entry.editedAt ? <span>수정됨</span> : null}</footer>
+      {entry.decidedAt ? <footer><span>결정사항 전환: {entry.decidedBy}</span><time>{formatRoomTime(entry.decidedAt)}</time></footer> : null}
       <section className="company-founding-room__comments" aria-label={`${entry.title} 댓글`}>
         <strong className="company-founding-room__comments-title">댓글 {comments.length}</strong>
         {comments.filter((comment) => !comment.parentId).map((comment) => (
@@ -105,7 +116,7 @@ export default function CompanyFoundingRoom({ session, onClose, onLoginRequest }
   const [room, setRoom] = useState(null);
   const [accessState, setAccessState] = useState('loading');
   const [notice, setNotice] = useState('');
-  const [activeTab, setActiveTab] = useState('discussion');
+  const [activeTab, setActiveTab] = useState('introduction');
   const [titleDraft, setTitleDraft] = useState('');
   const [bodyDraft, setBodyDraft] = useState('');
   const [memberDraft, setMemberDraft] = useState('');
@@ -240,7 +251,11 @@ export default function CompanyFoundingRoom({ session, onClose, onLoginRequest }
 
   const cycleTaskStatus = async (entry) => {
     const nextStatus = TASK_STATUS[entry.status]?.next || 'todo';
-    await runMutation('/entry', { action: 'status', entryId: entry.id, status: nextStatus }, '할 일 상태를 변경했습니다.');
+    await runMutation('/entry', { action: 'status', entryId: entry.id, status: nextStatus }, entry.category === 'documents' ? '서류 준비 상태를 변경했습니다.' : '할 일 상태를 변경했습니다.');
+  };
+  const promoteEntry = async (entry) => {
+    if (!window.confirm(`“${entry.title}” 논의를 결정사항으로 옮길까요? 본문·댓글·작성자 정보는 유지되고 논의 목록에서는 빠집니다.`)) return;
+    if (await runMutation('/entry', { action: 'promote', entryId: entry.id }, '결정사항으로 이동했습니다. 본문과 댓글은 그대로 유지됩니다.')) changeTab('decision');
   };
 
   const currentTab = TABS.find((tab) => tab.key === activeTab) || TABS[0];
@@ -287,6 +302,7 @@ export default function CompanyFoundingRoom({ session, onClose, onLoginRequest }
                 <small>{room.canManageMembers ? '방장' : '승인 멤버'}</small>
               </div>
               <nav className="company-founding-room__tabs" aria-label="준비실 분류">
+                <button type="button" className={activeTab === 'introduction' ? 'is-active' : ''} aria-current={activeTab === 'introduction' ? 'page' : undefined} onClick={() => changeTab('introduction')}><span>사업 소개</span><b aria-hidden="true">↗</b></button>
                 {TABS.map((tab) => (
                   <button
                     key={tab.key}
@@ -313,7 +329,7 @@ export default function CompanyFoundingRoom({ session, onClose, onLoginRequest }
             </aside>
 
             <main className="company-founding-room__main">
-              {activeTab === 'prices' ? <ApplePriceEditor session={session} canEdit={room.canManageMembers} onDirtyChange={setPriceDirty} /> : activeTab === 'members' && room.canManageMembers ? (
+              {activeTab === 'introduction' ? <CompanyIntroduction onDiscuss={() => changeTab('discussion')} /> : activeTab === 'prices' ? <ApplePriceEditor session={session} canEdit={room.canManageMembers} onDirtyChange={setPriceDirty} /> : activeTab === 'members' && room.canManageMembers ? (
                 <>
                   <div className="company-founding-room__section-head">
                     <div><strong>멤버 관리</strong><span>가입된 친구 아이디를 승인하거나 권한을 해제합니다.</span></div>
@@ -334,17 +350,17 @@ export default function CompanyFoundingRoom({ session, onClose, onLoginRequest }
               ) : (
                 <>
                   <div className="company-founding-room__section-head">
-                    <div><strong>{currentTab.label}</strong><span>{currentTab.key === 'revenue' ? '매출, 원가, 판매량과 수익구조에 관한 의견을 기록합니다.' : '멤버들과 의견과 진행 상황을 공유합니다.'}</span></div>
+                    <div><strong>{currentTab.label}</strong><span>{currentTab.key === 'documents' ? '서류별 담당자·제출처·준비 내용을 정리하고 상태 버튼으로 진행 상황을 관리합니다.' : '멤버들과 의견과 진행 상황을 공유합니다.'}</span></div>
                     <button type="button" className="button button--ghost button--compact" onClick={() => loadRoom(false)} disabled={busy}>새로고침</button>
                   </div>
                   <form className="company-founding-room__composer" onSubmit={submitEntry}>
-                    <input className="text-input" value={titleDraft} onChange={(event) => setTitleDraft(event.target.value)} placeholder={`${currentTab.label} 제목`} maxLength={100} />
-                    <textarea value={bodyDraft} onChange={(event) => setBodyDraft(event.target.value)} placeholder="구체적인 내용이나 의견을 적어주세요." maxLength={3000} />
+                    <input className="text-input" value={titleDraft} onChange={(event) => setTitleDraft(event.target.value)} placeholder={currentTab.key === 'documents' ? '준비할 서류명' : `${currentTab.label} 제목`} maxLength={100} />
+                    <textarea value={bodyDraft} onChange={(event) => setBodyDraft(event.target.value)} placeholder={currentTab.key === 'documents' ? '담당자, 제출처, 준비 기한과 확인할 내용을 적어주세요. 주민등록번호·인감·계좌정보 등 민감정보는 입력하지 마세요.' : '구체적인 내용이나 의견을 적어주세요.'} maxLength={3000} />
                     <div><span>{bodyDraft.length.toLocaleString()} / 3,000</span><button className="button button--primary" type="submit" disabled={busy}>등록</button></div>
                   </form>
                   <div className="company-founding-room__entry-list">
                     {activeEntries.length ? activeEntries.map((entry) => (
-                      <RoomEntry key={entry.id} entry={entry} room={room} busy={busy} mutate={runMutation} onDelete={deleteEntry} onStatus={cycleTaskStatus} />
+                      <RoomEntry key={entry.id} entry={entry} room={room} busy={busy} mutate={runMutation} onDelete={deleteEntry} onStatus={cycleTaskStatus} onPromote={promoteEntry} />
                     )) : <div className="company-founding-room__empty">{currentTab.empty}</div>}
                   </div>
                 </>

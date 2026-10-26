@@ -61194,7 +61194,7 @@ const requestRepairEquipment = (itemKey) => {
   const realApplePriceModalNode = realApplePriceModalOpen ? (
     <>
       <div className="confirm-modal-backdrop" onClick={() => setRealApplePriceModalOpen(false)} />
-      <div className="confirm-modal real-apple-price-modal" ref={realApplePriceModalRef}>
+      <div className="confirm-modal real-apple-price-modal" ref={realApplePriceModalRef} data-apple-variety={activeRealApplePriceTab?.key}>
         <div className="real-apple-price-modal__hero">
           <div>
             <div className="real-apple-price-modal__eyebrow">{activeRealApplePriceTab?.farmName || '바람한조각'}</div>
@@ -61217,6 +61217,7 @@ const requestRepairEquipment = (itemKey) => {
                 type="button"
                 role="tab"
                 aria-selected={activeRealApplePriceTab?.key === priceTab.key}
+                data-apple-variety={priceTab.key}
                 className={`focus-tab update-log-modal__tab ${activeRealApplePriceTab?.key === priceTab.key ? 'focus-tab--active' : ''}`.trim()}
                 onClick={() => setRealApplePriceTab(priceTab.key)}
               >
@@ -61236,19 +61237,21 @@ const requestRepairEquipment = (itemKey) => {
                       {section.columns.map((column) => (
                         <th key={`${section.key}-${column}`}>{column}</th>
                       ))}
+                      <th>재고</th>
                     </tr>
                   </thead>
                   <tbody>
                     {section.rows.map((row, rowIndex) => (
-                      <tr key={`${section.key}-${rowIndex}`}>
+                      <tr key={`${section.key}-${rowIndex}`} data-weight={String(row[section.columns.findIndex((column) => column.trim() === '중량')] || '').replace(/\s/g, '').toLowerCase()}>
                         {row.map((cell, cellIndex) => (
                           <td
                             key={`${section.key}-${rowIndex}-${cellIndex}`}
-                            className={cellIndex === row.length - 1 ? 'real-apple-price-modal__price' : ''}
+                            className={cellIndex === row.length - 1 ? 'real-apple-price-modal__price' : section.columns[cellIndex]?.trim() === '중량' ? 'real-apple-price-modal__weight' : ''}
                           >
                             {cell}
                           </td>
                         ))}
+                        <td><span className={`apple-price-stock${section.rowStock?.[rowIndex] === false ? ' apple-price-stock--empty' : ''}`}>{section.rowStock?.[rowIndex] === false ? '재고 없음' : '재고 있음'}</span></td>
                       </tr>
                     ))}
                   </tbody>

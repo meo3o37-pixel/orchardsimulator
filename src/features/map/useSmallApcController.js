@@ -634,13 +634,15 @@ export default function useSmallApcController({
       const ticketNo = String(prev?.ticketNo || '').trim();
       return ticketNo && smallApcPlayerShipmentTicketSet.has(ticketNo) ? prev : null;
     });
-    setSmallApcLiveNoticeQueue((prev) => (
-      (Array.isArray(prev) ? prev : []).filter((notice) => {
+    setSmallApcLiveNoticeQueue((prev) => {
+      const current = Array.isArray(prev) ? prev : [];
+      const next = current.filter((notice) => {
         if (String(notice?.type || '') !== 'sorting-done') return true;
         const ticketNo = String(notice?.ticketNo || '').trim();
         return Boolean(ticketNo && smallApcPlayerShipmentTicketSet.has(ticketNo));
-      })
-    ));
+      });
+      return next.length === current.length ? current : next;
+    });
   }, [smallApcPlayerShipmentTicketSet]);
 
   const sendSmallApcColdStorageToPacking = useCallback((sourceSlotRowKeyRaw = '', options = null) => {
@@ -1078,7 +1080,7 @@ export default function useSmallApcController({
   useEffect(() => {
     if (!smallApcMapOpen) {
       setSmallApcLiveNotice(null);
-      setSmallApcLiveNoticeQueue([]);
+      setSmallApcLiveNoticeQueue((prev) => prev.length ? [] : prev);
       return;
     }
     if (smallApcLiveNotice || !smallApcLiveNoticeQueue.length) return;

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { validateApplePriceTabs } from './applePriceData.mjs';
+import { applePriceRowInStock, editApplePriceRows, validateApplePriceTabs } from './applePriceData.mjs';
 
 const newKey = (prefix) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
 const move = (items, index, delta) => {
@@ -51,8 +51,16 @@ export default function ApplePriceEditor({ session, canEdit, onDirtyChange }) {
     setMessage('');
   };
   const tab = draft?.find((entry) => entry.key === selectedKey) || draft?.[0];
-  const updateTab = (patch) => change((tabs) => tabs.map((entry) => entry.key === tab.key ? { ...entry, ...patch } : entry));
-  const updateSection = (key, update) => updateTab({ sections: tab.sections.map((section) => section.key === key ? update(section) : section) });
+  const updateTab = (patch) => change((tabs) => tabs.map((entry) => entry.key === tab.key
+    ? { ...entry, ...(typeof patch === 'function' ? patch(entry) : patch) }
+    : entry));
+  const updateSection = (key, update) => updateTab((currentTab) => ({
+    sections: currentTab.sections.map((section) => section.key === key ? update(section) : section)
+  }));
+  const updateStock = (sectionKey, rowIndex, inStock) => updateSection(sectionKey, (section) => ({
+    ...section,
+    rowStock: section.rows.map((_, index) => index === rowIndex ? inStock : applePriceRowInStock(section, index))
+  }));
   const field = (name, label, maxLength = 200) => (
     <label key={name}><span>{label}</span><input className="text-input" value={tab[name] || ''} maxLength={maxLength} onChange={(event) => updateTab({ [name]: event.target.value })} /></label>
   );
@@ -99,7 +107,7 @@ export default function ApplePriceEditor({ session, canEdit, onDirtyChange }) {
   return (
     <section className="apple-price-editor">
       <div className="company-founding-room__section-head">
-        <div><strong>바람한조각 사과 가격표 조정</strong><span>{canEdit ? '가격·품목을 편집한 뒤 공개 가격표에 저장하세요.' : '가격표 조회 전용입니다. 방장이 수정하고 저장할 수 있습니다.'}</span></div>
+        <div><strong>바람한조각 사과 가격표 조정</strong><span>{canEdit ? '가격·품목·재고를 편집한 뒤 공개 가격표에 저장하세요.' : '가격표 조회 전용입니다. 방장이 수정하고 저장할 수 있습니다.'}</span></div>
       </div>
       <div className="apple-price-editor__toolbar">
         <span>{dirty ? '저장하지 않은 변경 있음' : savedAt ? `최근 저장 ${new Date(savedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}` : '기존 가격표'}</span>
@@ -117,7 +125,7 @@ export default function ApplePriceEditor({ session, canEdit, onDirtyChange }) {
           {preview ? (
             <div className="apple-price-editor__preview">
               <small>{tab.farmName} · {tab.year}</small><h3>{tab.title || `사과 가격표 (${tab.label})`}</h3><p>{tab.summary}</p>
-              {tab.sections.map((section) => <section key={section.key}><h4>{section.title}</h4><div className="apple-price-editor__table-wrap"><table><thead><tr>{section.columns.map((column, i) => <th key={i}>{column}</th>)}</tr></thead><tbody>{section.rows.map((row, i) => <tr key={i}>{row.map((cell, j) => <td key={j}>{cell || '—'}</td>)}</tr>)}</tbody></table></div></section>)}
+              {tab.sections.map((section) => <section key={section.key}><h4>{section.title}</h4><div className="apple-price-editor__table-wrap"><table><thead><tr>{section.columns.map((column, i) => <th key={i}>{column}</th>)}<th>재고</th></tr></thead><tbody>{section.rows.map((row, i) => <tr key={i}>{row.map((cell, j) => <td key={j}>{cell || '—'}</td>)}<td><span className={`apple-price-stock${applePriceRowInStock(section, i) ? '' : ' apple-price-stock--empty'}`}>{applePriceRowInStock(section, i) ? '재고 있음' : '재고 없음'}</span></td></tr>)}</tbody></table></div></section>)}
               <p className="apple-price-editor__footnote">{tab.footnote}</p>
             </div>
           ) : (
@@ -132,11 +140,11 @@ export default function ApplePriceEditor({ session, canEdit, onDirtyChange }) {
                 <button type="button" className="button button--ghost button--compact" disabled={draft.indexOf(tab) === draft.length - 1} onClick={() => change((tabs) => move(tabs, tabs.indexOf(tab), 1))}>품종 뒤로</button>
                 <button type="button" className="button button--ghost button--compact" disabled={draft.length <= 1} onClick={removeTab}>이 품종 삭제</button>
               </div>
-              <p className="apple-price-editor__help">마지막 열은 가격입니다. 예: 65,000 / 126,000, 가격 미정·판매 중지는 - 를 입력하세요. 행·열 추가와 삭제는 저장 전까지 공개 가격표에 반영되지 않습니다.</p>
+              <p className="apple-price-editor__help">마지막 편집 열은 가격입니다. 예: 65,000 / 126,000, 가격 미정은 - 를 입력하세요. 품목별 재고 있음·없음을 선택할 수 있으며, 변경 내용은 저장 후 공개 가격표에 반영됩니다.</p>
               {tab.sections.map((section, index) => (
                 <section className="apple-price-editor__section" key={section.key}>
                   <div className="apple-price-editor__section-head">
-                    <label><span>상품 분류명</span><input className="text-input" value={section.title} maxLength={100} onChange={(event) => updateSection(section.key, (value) => ({ ...value, title: event.target.value }))} /></label>
+                    <label><span>상품 분류명</span><input className="text-input" value={section.title} maxLength={100} onChange={(event) => { const title = event.currentTarget.value; updateSection(section.key, (value) => ({ ...value, title })); }} /></label>
                     <div className="apple-price-editor__actions">
                       <button type="button" className="button button--ghost button--compact" disabled={index === 0} onClick={() => updateTab({ sections: move(tab.sections, index, -1) })}>위로</button>
                       <button type="button" className="button button--ghost button--compact" disabled={index === tab.sections.length - 1} onClick={() => updateTab({ sections: move(tab.sections, index, 1) })}>아래로</button>
@@ -144,24 +152,21 @@ export default function ApplePriceEditor({ session, canEdit, onDirtyChange }) {
                     </div>
                   </div>
                   <div className="apple-price-editor__table-wrap"><table><thead><tr>
-                    {section.columns.map((column, columnIndex) => <th key={columnIndex}>
-                      <input aria-label={`${section.title} ${columnIndex + 1}번째 열 제목`} value={column} maxLength={40} onChange={(event) => updateSection(section.key, (value) => ({ ...value, columns: value.columns.map((cell, i) => i === columnIndex ? event.target.value : cell) }))} />
-                      {columnIndex === section.columns.length - 1 ? <small>가격 열</small> : <button type="button" disabled={section.columns.length <= 2} onClick={() => { if (window.confirm(`“${column}” 열과 해당 내용을 삭제할까요?`)) updateSection(section.key, (value) => ({ ...value, columns: value.columns.filter((_, i) => i !== columnIndex), rows: value.rows.map((row) => row.filter((_, i) => i !== columnIndex)) })); }} aria-label={`${column} 열 삭제`}>열 삭제</button>}
-                    </th>)}<th>품목 관리</th>
+                    {section.columns.map((column, columnIndex) => <th key={columnIndex} className={column.trim() === '중량' ? 'apple-price-editor__weight-column' : undefined}>
+                      <input aria-label={`${section.title} ${columnIndex + 1}번째 열 제목`} value={column} maxLength={40} onChange={(event) => { const title = event.currentTarget.value; updateSection(section.key, (value) => ({ ...value, columns: value.columns.map((cell, i) => i === columnIndex ? title : cell) })); }} />
+                      {columnIndex === section.columns.length - 1 ? <small>가격 열</small> : null}
+                    </th>)}<th>재고</th>
                   </tr></thead><tbody>
                     {section.rows.map((row, rowIndex) => <tr key={rowIndex}>
-                      {row.map((cell, columnIndex) => <td key={columnIndex}><input aria-label={`${section.title} ${rowIndex + 1}행 ${section.columns[columnIndex]}`} value={cell} maxLength={150} onChange={(event) => updateSection(section.key, (value) => ({ ...value, rows: value.rows.map((r, ri) => ri === rowIndex ? r.map((c, ci) => ci === columnIndex ? event.target.value : c) : r) }))} /></td>)}
-                      <td><div className="apple-price-editor__row-actions">
-                        <button type="button" disabled={rowIndex === 0} aria-label={`${rowIndex + 1}행 위로`} onClick={() => updateSection(section.key, (value) => ({ ...value, rows: move(value.rows, rowIndex, -1) }))}>↑</button>
-                        <button type="button" disabled={rowIndex === section.rows.length - 1} aria-label={`${rowIndex + 1}행 아래로`} onClick={() => updateSection(section.key, (value) => ({ ...value, rows: move(value.rows, rowIndex, 1) }))}>↓</button>
-                        <button type="button" disabled={section.rows.length >= 200} onClick={() => updateSection(section.key, (value) => ({ ...value, rows: [...value.rows.slice(0, rowIndex + 1), [...row], ...value.rows.slice(rowIndex + 1)] }))}>복제</button>
-                        <button type="button" onClick={() => { if (window.confirm(`“${row[0] || '빈 품목'}” 행을 삭제할까요?`)) updateSection(section.key, (value) => ({ ...value, rows: value.rows.filter((_, i) => i !== rowIndex) })); }}>삭제</button>
+                      {row.map((cell, columnIndex) => <td key={columnIndex} className={section.columns[columnIndex]?.trim() === '중량' ? 'apple-price-editor__weight-column' : undefined}><input aria-label={`${section.title} ${rowIndex + 1}행 ${section.columns[columnIndex]}`} value={cell} maxLength={150} onChange={(event) => { const text = event.currentTarget.value; updateSection(section.key, (value) => ({ ...value, rows: value.rows.map((r, ri) => ri === rowIndex ? r.map((c, ci) => ci === columnIndex ? text : c) : r) })); }} /></td>)}
+                      <td><div className="apple-price-editor__stock-options" role="group" aria-label={`${section.title} ${rowIndex + 1}행 재고`}>
+                        <button type="button" aria-pressed={applePriceRowInStock(section, rowIndex)} onClick={() => updateStock(section.key, rowIndex, true)}>재고 있음</button>
+                        <button type="button" aria-pressed={!applePriceRowInStock(section, rowIndex)} onClick={() => updateStock(section.key, rowIndex, false)}>재고 없음</button>
                       </div></td>
                     </tr>)}
                   </tbody></table></div>
                   <div className="apple-price-editor__actions">
-                    <button type="button" className="button button--ghost button--compact" disabled={section.rows.length >= 200} onClick={() => updateSection(section.key, (value) => ({ ...value, rows: [...value.rows, value.columns.map(() => '')] }))}>+ 품목 추가</button>
-                    <button type="button" className="button button--ghost button--compact" disabled={section.columns.length >= 8} onClick={() => updateSection(section.key, (value) => ({ ...value, columns: [...value.columns.slice(0, -1), '새 항목', value.columns.at(-1)], rows: value.rows.map((row) => [...row.slice(0, -1), '', row.at(-1)]) }))}>+ 가격 앞에 열 추가</button>
+                    <button type="button" className="button button--ghost button--compact" disabled={section.rows.length >= 200} onClick={() => updateSection(section.key, (value) => editApplePriceRows(value, 'add'))}>+ 품목 추가</button>
                   </div>
                 </section>
               ))}

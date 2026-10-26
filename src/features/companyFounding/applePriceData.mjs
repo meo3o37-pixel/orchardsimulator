@@ -47,6 +47,23 @@ export const DEFAULT_APPLE_PRICE_TABS = [
   }
 ];
 
+export const applePriceRowInStock = (section, index) => section.rowStock?.[index] !== false;
+
+// Keep stock attached to its item when rows are reordered, copied or removed.
+export function editApplePriceRows(section, action, index = 0) {
+  const items = section.rows.map((row, i) => ({ row, stock: applePriceRowInStock(section, i) }));
+  if (action === 'add') items.push({ row: section.columns.map(() => ''), stock: true });
+  else if (index < 0 || index >= items.length) return section;
+  else if (action === 'delete') items.splice(index, 1);
+  else if (action === 'duplicate') items.splice(index + 1, 0, { row: [...items[index].row], stock: items[index].stock });
+  else if (action === 'up' || action === 'down') {
+    const target = index + (action === 'up' ? -1 : 1);
+    if (target < 0 || target >= items.length) return section;
+    [items[index], items[target]] = [items[target], items[index]];
+  } else return section;
+  return { ...section, rows: items.map((item) => item.row), rowStock: items.map((item) => item.stock) };
+}
+
 export function validateApplePriceTabs(tabs) {
   const fail = (message) => { throw new Error(message); };
   const text = (value, name, max = 200, required = false) => {
@@ -75,10 +92,12 @@ export function validateApplePriceTabs(tabs) {
       sections: tab.sections.map((section) => {
         if (!Array.isArray(section.columns) || section.columns.length < 2 || section.columns.length > 8) fail('각 분류의 열은 2~8개여야 합니다. 마지막 열이 가격입니다.');
         if (!Array.isArray(section.rows) || section.rows.length > 200) fail('한 분류에 품목을 200개까지 등록할 수 있습니다.');
+        if (section.rowStock !== undefined && (!Array.isArray(section.rowStock) || section.rowStock.length !== section.rows.length || section.rowStock.some((stock) => typeof stock !== 'boolean'))) fail('각 품목의 재고 있음을 설정하거나 재고 없음을 선택해주세요.');
         return {
           key: key(section.key, sectionKeys),
           title: text(section.title, '분류명', 100, true),
           columns: section.columns.map((column) => text(column, '열 제목', 40, true)),
+          rowStock: section.rows.map((_, index) => applePriceRowInStock(section, index)),
           rows: section.rows.map((row) => {
             if (!Array.isArray(row) || row.length !== section.columns.length) fail('품목의 칸 수와 열 수가 맞지 않습니다.');
             const cells = row.map((cell) => text(cell, '품목 내용', 150));

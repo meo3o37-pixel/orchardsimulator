@@ -2,6 +2,7 @@ import { defineConfig, loadEnv } from 'vite';
 import fsSync from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { hostname } from 'node:os';
 import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { registerApplePriceApi } from './server/applePriceApi.mjs';
 
@@ -26,7 +27,7 @@ const ACCOUNT_SAVES_DIR = path.resolve(process.cwd(), 'data/account-saves');
 const ACCOUNT_SAVE_SLOT_COUNT = 6;
 const UPDATE_PLAN_ADMIN_USERNAMES = new Set(['meo3o']);
 const COMPANY_FOUNDING_ROOM_OWNER_USERNAMES = new Set(['meo3o']);
-const COMPANY_FOUNDING_ROOM_CATEGORIES = new Set(['discussion', 'revenue', 'decision', 'task']);
+const COMPANY_FOUNDING_ROOM_CATEGORIES = new Set(['discussion', 'revenue', 'decision', 'task', 'documents']);
 const COMPANY_FOUNDING_ROOM_TASK_STATUSES = new Set(['todo', 'doing', 'done']);
 const normalizeWatchFilePath = (filePath) => path.resolve(String(filePath || '')).replace(/\\/g, '/').toLowerCase();
 const SUPPRESSED_HOT_UPDATES = new Set();
@@ -720,6 +721,8 @@ const sanitizeCompanyRoomData = (rawData = {}) => {
         body,
         pinned: entry?.pinned === true,
         editedAt: sanitizeCompanyRoomText(entry?.editedAt, 40),
+        decidedAt: sanitizeCompanyRoomText(entry?.decidedAt, 40),
+        decidedBy: sanitizeCompanyRoomText(entry?.decidedBy, 24),
         comments: (Array.isArray(entry?.comments) ? entry.comments : []).map((comment) => ({
           id: sanitizeCompanyRoomText(comment?.id, 100),
           parentId: sanitizeCompanyRoomText(comment?.parentId, 100),
@@ -727,7 +730,7 @@ const sanitizeCompanyRoomData = (rawData = {}) => {
           author: sanitizeCompanyRoomText(comment?.author, 24),
           createdAt: sanitizeCompanyRoomText(comment?.createdAt, 40)
         })).filter((comment) => comment.id && comment.body && comment.author),
-        status: category === 'task' && COMPANY_FOUNDING_ROOM_TASK_STATUSES.has(String(entry?.status || ''))
+        status: ['task', 'documents'].includes(category) && COMPANY_FOUNDING_ROOM_TASK_STATUSES.has(String(entry?.status || ''))
           ? String(entry.status)
           : 'todo',
         author,
@@ -2265,7 +2268,7 @@ const animationLabPresetSavePlugin = () => ({
               updatedAt: now
             };
             nextRoomData = { ...roomData, entries: [...roomData.entries, entry].slice(-500) };
-          } else if (['edit', 'pin', 'comment'].includes(action)) {
+          } else if (['edit', 'pin', 'comment', 'promote'].includes(action)) {
             const target = roomData.entries.find((entry) => entry.id === req.__body?.entryId);
             if (!target) {
               sendJson(404, { ok: false, error: 'entry_not_found' });
@@ -2273,8 +2276,8 @@ const animationLabPresetSavePlugin = () => ({
             }
             const isOwner = isCompanyRoomOwnerSession(session);
             const ownsEntry = companyRoomUsernameKey(target.author) === companyRoomUsernameKey(session.username);
-            if ((action === 'edit' && !ownsEntry && !isOwner) || (action === 'pin' && !isOwner)) {
-              sendJson(403, { ok: false, error: 'forbidden', detail: action === 'pin' ? 'owner_only' : 'entry_owner_only' });
+            if ((action === 'edit' && !ownsEntry && !isOwner) || (['pin', 'promote'].includes(action) && !isOwner)) {
+              sendJson(403, { ok: false, error: 'forbidden', detail: ['pin', 'promote'].includes(action) ? 'owner_only' : 'entry_owner_only' });
               return;
             }
             const now = new Date().toISOString();
@@ -2286,6 +2289,12 @@ const animationLabPresetSavePlugin = () => ({
                 return;
               }
               patch = { title, body: sanitizeCompanyRoomText(req.__body?.body, 3000), editedAt: now, updatedAt: now };
+            } else if (action === 'promote') {
+              if (!['discussion', 'revenue'].includes(target.category)) {
+                sendJson(409, { ok: false, error: 'invalid_transition' });
+                return;
+              }
+              patch = { category: 'decision', decidedAt: now, decidedBy: session.username, updatedAt: now };
             } else if (action === 'pin') {
               patch = { pinned: req.__body?.pinned === true };
             } else {
@@ -2328,7 +2337,7 @@ const animationLabPresetSavePlugin = () => ({
             nextRoomData = {
               ...roomData,
               entries: roomData.entries.map((entry) => {
-                if (entry.id !== entryId || entry.category !== 'task') return entry;
+                if (entry.id !== entryId || !['task', 'documents'].includes(entry.category)) return entry;
                 found = true;
                 return { ...entry, status, updatedAt: new Date().toISOString() };
               })
@@ -2873,6 +2882,12 @@ export default defineConfig(({ mode }) => {
 
   return {
     root: PROJECT_ROOT,
+    // The shared checkout can serve Vite from different machines. Never share
+    // optimized-dependency metadata across those running server processes.
+    cacheDir: path.join(PROJECT_ROOT, 'node_modules', '.vite', `${process.platform}-${hostname()}`),
+    optimizeDeps: {
+      include: ['react', 'react-dom', 'react-dom/client', 'lucide-react', 'html-to-image', 'polygon-clipping', 'clipper-lib']
+    },
     build: {
       rollupOptions: {
         input: PROJECT_INDEX_HTML
