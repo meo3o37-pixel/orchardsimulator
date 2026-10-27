@@ -1,6 +1,7 @@
 import { coldFacilityEnabledUnitCountOf } from '../facility/facilityMetaUtils';
 import { processDailySlowEvCharge } from '../ev/evChargeService';
 import { processDailyWaterSystems } from '../water/waterDailyUtils';
+import { applyDailyDrainage } from '../cadastre/drainage';
 
 const COLD_FACILITY_DURABILITY_WEAR_MIN_PER_YEAR = 5;
 const COLD_FACILITY_DURABILITY_WEAR_MAX_PER_YEAR = 10;
@@ -180,7 +181,8 @@ export const processAdvanceDayFieldSystems = (params, deps) => {
   const nextPlan = waterSystemResult.plan && nextDay > (Number(waterSystemResult.plan.endDay) || 0)
     ? null
     : waterSystemResult.plan;
-  const nextWater = deps.shared.clamp(params.waterAfterDrain + params.rainGain + waterSystemResult.irrigationWaterGain, 0, 100);
+  const drainageResult = applyDailyDrainage(field, params.waterAfterDrain + params.rainGain + waterSystemResult.irrigationWaterGain, params.rainGain, nextDay);
+  const nextWater = drainageResult.water;
   const nextCanopySunlight = deps.shared.canopySunlightAdjustedByDayOfField(field, nextDay, params.weatherName);
   const canopySunlightQualityBonus = deps.shared.canopySunlightQualityBonusOf(nextCanopySunlight);
   const coldRiskTemperatureC = Number.isFinite(Number(nextNightTemperatureC)) ? nextNightTemperatureC : nextTemperatureC;
@@ -188,6 +190,7 @@ export const processAdvanceDayFieldSystems = (params, deps) => {
 
   return {
     tankCapacity,
+    nextDrainage: drainageResult.drainage,
     standbyPowerFeeAdd,
     coldStoragePowerFeeAdd,
     nextRepairMap,

@@ -1,4 +1,5 @@
 import { randIntInclusive } from './common';
+import { selfLaborAvailable } from './overwork.js';
 
 const LEGACY_CREW_TYPE_MAP = {
   simple: 'worker',
@@ -19,7 +20,7 @@ const createEmptyCrewCountMap = () => CREW_TYPE_KEYS.reduce((acc, key) => ({ ...
 
 export const availableLaborBySource = (game, source = 'work') => {
   if (source === 'workOrder') return Math.max(0, Number(game?.externalLaborRemaining) || 0);
-  return Math.max(0, Number(game?.labor) || 0);
+  return selfLaborAvailable(game);
 };
 
 export const activeWorkersByType = (game, day) =>

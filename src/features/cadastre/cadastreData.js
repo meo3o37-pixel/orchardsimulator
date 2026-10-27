@@ -77,9 +77,8 @@ export const cadastreBoundarySvgPointsOf = (boundaryPoints = [], options = {}) =
   const pad = Number.isFinite(Number(options.pad)) ? Number(options.pad) : 8;
   const drawWidth = 100 - (pad * 2);
   const drawHeight = 100 - (pad * 2);
-  const fillViewport = Boolean(options.fillViewport);
-  const scaleX = fillViewport ? (drawWidth / width) : Math.min(drawWidth / width, drawHeight / height);
-  const scaleY = fillViewport ? (drawHeight / height) : scaleX;
+  const scaleX = Math.min(drawWidth / width, drawHeight / height);
+  const scaleY = scaleX;
   const renderedWidth = width * scaleX;
   const renderedHeight = height * scaleY;
   const offsetX = (100 - renderedWidth) / 2;
@@ -112,7 +111,7 @@ export const buildCadastreForField = ({
     boundaryContourId: String(boundaryContour?.id || ''),
     boundaryPoints,
     boundarySvgPoints: cadastreBoundarySvgPointsOf(boundaryPoints),
-    boundaryWorkspaceSvgPoints: cadastreBoundarySvgPointsOf(boundaryPoints, { fillViewport: true, pad: 5 }),
+    boundaryWorkspaceSvgPoints: cadastreBoundarySvgPointsOf(boundaryPoints, { pad: 5 }),
     boundaryAreaPy: boundaryPoints.length >= 3 ? polygonAreaPyFromPoints(boundaryPoints) : 0
   };
 };

@@ -217,7 +217,7 @@ export const applyMowToGame = (prev, options) => {
     ...prev,
     equipmentDurability: wearApplied.equipmentDurability,
     equipmentDurabilityByInstance: wearApplied.equipmentDurabilityByInstance,
-    labor: source === 'workOrder' ? prev.labor : Math.max(0, prev.labor - laborCost),
+    labor: source === 'workOrder' ? prev.labor : (prev.labor - laborCost),
     externalLaborRemaining: source === 'workOrder' ? Math.max(0, (Number(prev.externalLaborRemaining) || 0) - laborCost) : (Number(prev.externalLaborRemaining) || 0),
     fields,
     logs: pushDiary(

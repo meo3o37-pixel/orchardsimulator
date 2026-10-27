@@ -16,8 +16,23 @@ import HarvestPendingLoadSummary from './features/harvest/HarvestPendingLoadSumm
 import { HarvestQualityStampedCrate } from './features/harvest/HarvestPendingBoxesPanel';
 import CompanyFoundingRoom from './features/companyFounding/CompanyFoundingRoom';
 import useApplePriceBoard from './features/companyFounding/useApplePriceBoard';
+import { normalizeOpenYard, saveOpenYardPlan } from './features/cadastre/openYard.js';
 import CadastrePanel from './features/cadastre/CadastrePanel';
-import { resolveCadastreBoundaryByPoint } from './features/cadastre/cadastreData';
+import FacilityPlacementModal from './features/facility/FacilityPlacementModal';
+import { facilityInstallDaysOf, requiresFacilityPlacement, facilityPlacementError, normalizeFacilitySites, queueFacilityConstruction, completeFacilityConstruction } from './features/facility/facilityConstruction';
+import { trellisTrainingMultiplier } from './features/cadastre/trellisInvestment.js';
+import { saveInfrastructurePlan, setInfrastructureIrrigation, infrastructureTaskOwned } from './features/cadastre/orchardInfrastructure.js';
+import CadastreWorkQueue from './features/cadastre/CadastreWorkQueue';
+import { cadastreJobs, normalizeCadastreWork, saveParkingWorkPlan, saveDrainageWorkPlan, saveCadastreZones, linkExistingTreeRows, quoteCadastreJob, executeCadastreJob } from './features/cadastre/cadastreWork.js';
+import useOverworkGameState from './utils/useOverworkGameState';
+import { selfLaborAvailable, overworkOf, overworkPenalty } from './utils/overwork.js';
+import { normalizeSoilComposition, soilDailyWaterLoss, soilCompositionText } from './utils/soil';
+import { slopeBearingOf, slopeBearingLabel } from './utils/terrain';
+import { normalizeRootWaterStress, rootWaterStressEffects, rootWaterStressHint } from './utils/rootWaterStress.js';
+import { applyOpenParking, parkingDrainageConflict, normalizeOpenParking } from './features/cadastre/openParking';
+import { normalizeDrainage, drainagePlantingBlocker, applyDrainageAction, drainageConflictsWithBuildings } from './features/cadastre/drainage';
+import { normalizeCultivationZoneMap, normalizeCultivationZones } from './features/cadastre/cultivationZones';
+import { buildCadastreForField, resolveCadastreBoundaryByPoint } from './features/cadastre/cadastreData';
 import { buildHarvestPalletSlotMeta, harvestPalletDisplayBoxIndexOf } from './features/harvest/harvestPalletGrid';
 import { buildHarvestBoxStateLabelParts, formatHarvestBoxStateLabel } from './features/storage/harvestBoxLabel';
 import {
@@ -140,38 +155,9 @@ import {
 
 let activeHarvestEquipmentDragPreview = null;
 const HERO_MENU_COLLAPSIBLE_MOBILE_MAX_WIDTH = 560;
-const DEFAULT_FACILITY_INSTALL_DAYS = 2;
 const TANK_FILL_FULL_DURATION_MS = 120000;
 const TANK_DRAIN_FULL_DURATION_MS = 30000;
 const TANK_FILL_TICK_MS = 500;
-const FACILITY_INSTALL_DAYS_BY_KEY = {
-  wellFacility: 3,
-  farmPowerElectric: 2,
-  autoRefillSystem: 2,
-  evChargerStation: 2,
-  frostFan: 2,
-  panelWarehouse3: 4,
-  panelWarehouse5: 4,
-  panelWarehouse8: 5,
-  coldStorageSmall: 5,
-  coldStorageMedium: 6,
-  coldStorageLarge: 7,
-  appleSortingLineSmall: 4,
-  appleSortingLineMedium: 5,
-  appleSortingLineLarge: 6,
-};
-
-const facilityInstallDaysOf = (facilityKey) => {
-  const key = String(facilityKey || '').trim();
-  if (!key) return DEFAULT_FACILITY_INSTALL_DAYS;
-  if (Number.isFinite(Number(FACILITY_INSTALL_DAYS_BY_KEY[key]))) {
-    return Math.max(1, Math.floor(Number(FACILITY_INSTALL_DAYS_BY_KEY[key]) || DEFAULT_FACILITY_INSTALL_DAYS));
-  }
-  if (HOUSING_FACILITY_KEYS.includes(key)) return 4;
-  if (TANK_FACILITY_KEYS.includes(key)) return 2;
-  if (IRRIGATION_FACILITY_KEYS.includes(key)) return 2;
-  return DEFAULT_FACILITY_INSTALL_DAYS;
-};
 
 function isHeroMenuCollapsibleMobileViewport() {
   return typeof window !== 'undefined' && window.innerWidth <= HERO_MENU_COLLAPSIBLE_MOBILE_MAX_WIDTH;
@@ -5488,9 +5474,9 @@ const ageTargetTaskProgressStatusOfField = (field, day, taskKey, crops = CROPS) 
       : 0
   };
 };
-const canopyTrainingLaborPerTree = (selectedAgeYear = null) => {
+const canopyTrainingLaborPerTree = (selectedAgeYear = null, field = null) => {
   const bucket = canopyTrainingAgeBucketKey(selectedAgeYear);
-  return Math.max(0.01, Number(CANOPY_TRAINING_LABOR_PER_TREE_BY_AGE?.[bucket]) || CANOPY_TRAINING_LABOR_PER_TREE_BY_AGE[4]);
+  return Math.max(0.01, Number(CANOPY_TRAINING_LABOR_PER_TREE_BY_AGE?.[bucket]) || CANOPY_TRAINING_LABOR_PER_TREE_BY_AGE[4]) * trellisTrainingMultiplier(field);
 };
 const canopyTrainingMetersPerTree = (selectedAgeYear = null) => {
   const bucket = canopyTrainingAgeBucketKey(selectedAgeYear);
@@ -8828,10 +8814,11 @@ const OPEN_STORAGE_PALLET_SLOT_CAPACITY_KG = 1500;
 const OPEN_STORAGE_PY_PER_SLOT = 200;
 const OPEN_STORAGE_PY_MIN_OCCUPY = 1;
 const openStorageHarvestPalletSlotCountOfField = (field) => {
-  return openStorageOccupyPyOfField(field);
+  return field?.openYard ? (normalizeOpenYard(field.openYard)?.slots || 0) : openStorageOccupyPyOfField(field);
 };
 const openStorageOccupyPyOfField = (field) => {
   if (!field) return 0;
+  if (field.openYard) return normalizeOpenYard(field.openYard)?.occupiedPy || 0;
   const py = Math.max(0, Number(field?.py) || 0);
   const byArea = Math.ceil(py / OPEN_STORAGE_PY_PER_SLOT);
   return Math.max(OPEN_STORAGE_PY_MIN_OCCUPY, Math.floor(Number(byArea) || 0));
@@ -8855,6 +8842,7 @@ const fieldFacilityCountOf = (field, key) => {
 const storageCapacityKgPerUnitOfFacility = (field, facilityKey) => {
   const key = String(facilityKey || '');
   if (key === OPEN_STORAGE_BASE_FACILITY_KEY) {
+    if(field?.openYard)return normalizeOpenYard(field.openYard)?.capacityKg || 0;
     const occupiedPy = Math.max(0, Math.floor(Number(openStorageOccupyPyOfField(field)) || 0));
     return occupiedPy * OPEN_STORAGE_PALLET_SLOT_CAPACITY_KG;
   }
@@ -9837,6 +9825,7 @@ const WORKBENCH_TABLE_BY_KEY = Object.freeze(
   }, {})
 );
 const workbenchSlotCountOfFacility = (field, facilityKeyRaw) => {
+  if(String(facilityKeyRaw)==='openStorage3000Py'&&field?.openYard)return Math.max(1,Math.min(12,Math.floor((normalizeOpenYard(field.openYard)?.slots||0)/5)));
   const facilityKey = String(facilityKeyRaw || '');
   if (facilityKey === OPEN_STORAGE_BASE_FACILITY_KEY) {
     const py = Math.max(0, Number(field?.py) || 0);
@@ -10171,7 +10160,7 @@ const fieldFacilityUnderRepair = (field, facilityKey, day) => {
   return Number(repair.readyDay) > Number(day || 0);
 };
 const normalizeFacilityConstructionOrder = (order, fallbackDay = 1) => {
-  const fieldId = String(order?.fieldId || '').trim();
+  const fieldId = String(order?.fieldId ?? '').trim();
   const facilityKey = String(order?.facilityKey || '').trim();
   if (!fieldId || !facilityKey || !FACILITY_MAP[facilityKey]) return null;
   const startDay = Math.max(1, Math.floor(Number(order?.startDay) || fallbackDay || 1));
@@ -10202,10 +10191,10 @@ const normalizeFacilityConstructionOrder = (order, fallbackDay = 1) => {
   };
 };
 const facilityConstructionOrdersOfField = (gameState, fieldId) => {
-  const normalizedFieldId = String(fieldId || '').trim();
+  const normalizedFieldId = String(fieldId ?? '').trim();
   if (!normalizedFieldId) return [];
   return (Array.isArray(gameState?.facilityConstructionOrders) ? gameState.facilityConstructionOrders : [])
-    .filter((order) => String(order?.fieldId || '').trim() === normalizedFieldId);
+    .filter((order) => String(order?.fieldId ?? '').trim() === normalizedFieldId);
 };
 const fieldFacilityUnderConstruction = (gameState, fieldId, facilityKey) => (
   facilityConstructionOrdersOfField(gameState, fieldId)
@@ -12275,6 +12264,7 @@ const PALLET_ITEM_IMAGE_SRC = (
   || ''
 );
 const SPECIAL_ITEM_IMAGE_BY_KEY = {
+  drainagePerforatedPipe100x6m: ITEM_IMAGE_ENTRIES.find(entry => entry.token === normalizeWeatherToken('HDPE유공관100mm6m'))?.src || '',
   plasticPallet1100: PALLET_ITEM_IMAGE_SRC,
   manualCarry: MANUAL_CARRY_IMAGE,
   appleSortingPartsSmall: DISASSEMBLED_SORTING_MACHINE_IMAGE,
@@ -13244,6 +13234,9 @@ function createField(land, owned = false, difficultyProfile = null) {
     id: land.id,
     name: land.name,
     py: land.py,
+    soilComposition: normalizeSoilComposition(land.soilComposition, land.id),
+    rootWaterStress: normalizeRootWaterStress(null),
+    slopeBearing: slopeBearingOf(land),
     price: land.price,
     group: land.group,
     slopeDeg: Math.max(0, Number(land?.slopeDeg) || 0),
@@ -15889,6 +15882,13 @@ const normalizeLoadedGame = (loaded, accountUsername = '') => {
       ...applyFieldBalancePreset(field, day),
       name: normalizeLandNameForLoadedGame(field, fieldIndex, accountUsername),
       slopeDeg: normalizedSlopeDeg,
+      drainage: normalizeDrainage(field?.drainage),
+      openParking: normalizeOpenParking(field?.openParking),
+      openYard: normalizeOpenYard(field?.openYard),
+      ...normalizeCadastreWork(field),
+      soilComposition: normalizeSoilComposition(field?.soilComposition, field?.id),
+      rootWaterStress: normalizeRootWaterStress(field?.rootWaterStress),
+      slopeBearing: slopeBearingOf(field),
       slopeLaborMultiplier: normalizedSlopeLaborMultiplier,
     groundwaterTonsBase: (() => {
       const current = Math.max(0, Number(field?.groundwaterTonsBase) || 0);
@@ -16234,6 +16234,7 @@ const normalizeLoadedGame = (loaded, accountUsername = '') => {
       });
       return next;
     })(),
+    facilitySites: normalizeFacilitySites(field?.facilitySites),
     deadTrees: Math.max(0, Math.min(Number(field?.deadTrees) || 0, Number(field?.trees) || 0)),
     pendingLoads: Array.isArray(field?.pendingLoads)
       ? field.pendingLoads
@@ -17119,6 +17120,7 @@ const normalizeLoadedGame = (loaded, accountUsername = '') => {
   return {
     ...loaded,
     playerName: String(loaded.playerName || '').trim() || String(accountUsername || '').trim() || '청년 농부',
+    cultivationZonesByFieldId: normalizeCultivationZoneMap(loaded.cultivationZonesByFieldId),
     pestRainBoostUntilDay: Math.max(0, Math.floor(Number(loaded.pestRainBoostUntilDay) || 0)),
     weedRainBoostUntilDay: Math.max(0, Math.floor(Number(loaded.weedRainBoostUntilDay) || 0)),
     ...normalizeTownSettlementMarkerState(loaded),
@@ -17678,6 +17680,7 @@ const sprayCardGaugeOptionsByTask = (taskKey = '') => {
   return [];
 };
 const getTaskBlockReason = (field, task, month, day = 1, weatherName = '') => {
+  if(infrastructureTaskOwned(field,task.key))return '확정한 시설 설계는 작업 탭의 지적도 확정 계획에서 시공해 주세요.';
   const hasTrellisInstalledForIrrigation = Math.max(0, Math.floor(fieldFacilityCountOf(field, TRELLIS_SUPPORT_FACILITY_KEY))) > 0;
   const allowNoCropIrrigationInstall = IRRIGATION_INSTALL_TASK_KEYS.has(task.key) && hasTrellisInstalledForIrrigation;
   if ((task.requiresCrop ?? true) && !field.cropId && !allowNoCropIrrigationInstall) return '미식재 토지는 작업할 수 없습니다.';
@@ -18764,7 +18767,7 @@ const qualityDeltaBreakdown = (field, gameState = null) => {
     100
   );
   const pestPenalty = dailyPestQualityPenalty(pestQualityGauge);
-  const waterPenalty = dailyWaterQualityPenalty(field.water);
+  const waterPenalty = Math.max(dailyWaterQualityPenalty(field.water), rootWaterStressEffects(field).qualityPenalty);
   const vigorAgeMul = vigorImpactAgeMultiplierForField(field, nextDay);
   const pruningEffect = (() => {
     const raw = field?.pruningEffect;
@@ -21937,7 +21940,7 @@ export default function App() {
     anchor.remove();
     URL.revokeObjectURL(url);
   }, [animationLabHtml, animationLabLayerCanvas, animationLabLayers]);
-  const [game, setGame] = useState(null);
+  const [game, setGame, replaceGame] = useOverworkGameState(null);
   const [devMode, setDevMode] = useState(false);
   const [devLmStudioModels, setDevLmStudioModels] = useState([]);
   const [devLmStudioModelsLoading, setDevLmStudioModelsLoading] = useState(false);
@@ -22270,7 +22273,7 @@ export default function App() {
       const rawValue = tagName === 'input' && inputType === 'checkbox'
         ? String(Boolean(controlEl.checked))
         : String(controlEl.value ?? '');
-      void sendGameActionRecord({
+      const record = {
         action: 'ui.change',
         result: 'change',
         metadata: {
@@ -22279,7 +22282,11 @@ export default function App() {
           inputType,
           value: normalizeTrackText(rawValue).slice(0, 120)
         }
-      });
+      };
+      // This listener runs on document capture, before React reads the new control value.
+      // Native event listeners can run microtasks before React's listener. Wait for the next task,
+      // so trace storage cannot re-render controlled inputs before React commits their new value.
+      setTimeout(() => { void sendGameActionRecord(record); }, 0);
     };
     document.addEventListener('click', clickHandler, true);
     document.addEventListener('change', changeHandler, true);
@@ -22387,7 +22394,8 @@ export default function App() {
   const [lastTabByGroup, setLastTabByGroup] = useState({ farmOps: 'farm', management: 'shop' });
   const [warehouseTab, setWarehouseTab] = useState('all');
   const [facilityTab, setFacilityTab] = useState('land');
-  const [focusTab, setFocusTab] = useState('manage');
+  const [focusTab, setFocusTab] = useState('cadastre');
+  const [cadastreSection,setCadastreSection]=useState('realtime');
   const [focusTabSlideDirection, setFocusTabSlideDirection] = useState('forward');
   const [focusTabSlideArmed, setFocusTabSlideArmed] = useState(false);
   const [landFacilityMainTab, setLandFacilityMainTab] = useState('types');
@@ -22422,6 +22430,7 @@ export default function App() {
   const [selectedPlantBindingKeyByFieldId, setSelectedPlantBindingKeyByFieldId] = useState({});
   const [pendingSlotDelete, setPendingSlotDelete] = useState(null);
   const [pendingFacilityInstall, setPendingFacilityInstall] = useState(null);
+  const [pendingFacilityPlacement, setPendingFacilityPlacement] = useState(null);
   const [pendingAppleSortingWarehousePick, setPendingAppleSortingWarehousePick] = useState(null);
   const [pendingFacilityTreeCountPick, setPendingFacilityTreeCountPick] = useState(null);
   const [facilityTreeInstallCountDraft, setFacilityTreeInstallCountDraft] = useState(1);
@@ -25517,7 +25526,7 @@ body { display: flex !important; align-items: center !important; justify-content
   const canOperateSelectedField = Boolean(selectedField?.owned);
   const farmFocusTabs = canOperateSelectedField
     ? [['cadastre', '🗺️ 지적도'], ['manage', '🌿 생육'], ['cropStatus', '📊 작황'], ['landFacility', '🎛️시설'], ['work', '🛠️ 작업'], ['workOrder', '📢 작업지시']]
-    : [['cadastre', '🗺️ 지적도'], ['manage', '🌿 생육'], ['cropStatus', '📊 작황']];
+    : [['cadastre', '🗺️ 지적도'], ['manage', '🌿 생육'], ['cropStatus', '📊 작황'], ['landFacility', '🎛️시설']];
   const farmFocusViewKey = useMemo(() => {
     if (focusTab === 'landFacility') return `landFacility:${String(landFacilityMainTab || 'types')}`;
     return String(focusTab || 'manage');
@@ -25598,10 +25607,10 @@ body { display: flex !important; align-items: center !important; justify-content
   const landFacilityPanelPrevViewKeyRef = useRef(landFacilityPanelViewKey);
   useEffect(() => {
     if (canOperateSelectedField) return;
-    if (focusTab === 'work' || focusTab === 'workOrder' || focusTab === 'housing' || focusTab === 'landFacility') {
+    if (focusTab === 'work' || focusTab === 'workOrder' || focusTab === 'housing' || (focusTab === 'landFacility' && !['types', 'parking'].includes(landFacilityMainTab))) {
       setFocusTab('manage');
     }
-  }, [canOperateSelectedField, focusTab]);
+  }, [canOperateSelectedField, focusTab, landFacilityMainTab]);
   useEffect(() => {
     const prevTab = String(farmFocusViewPrevKeyRef.current || '');
     const nextTab = String(farmFocusViewKey || '');
@@ -27049,7 +27058,7 @@ body { display: flex !important; align-items: center !important; justify-content
     const cooldownUntilAt = Math.max(0, Number(usage.lastExerciseAt) || 0) + HOUSING_EXERCISE_COOLDOWN_MS;
     const cooldownRemainingMs = Math.max(0, cooldownUntilAt - Date.now());
     const health = clamp(Number(game?.health) || 0, 0, 100);
-    const labor = clamp(Number(game?.labor) || 0, 0, 125);
+    const labor = selfLaborAvailable(game);
     const indoorTemp = Number(housingIndoorTemperatureInfo?.temperatureC);
     const injuryCount = Object.keys(normalizePlayerInjuries(game?.playerInjuries || {})).length;
     const severeIllness = Object.entries(normalizePlayerIllnesses(game?.playerIllnesses || {}))
@@ -27125,8 +27134,8 @@ body { display: flex !important; align-items: center !important; justify-content
         setGameAlertMessage('운동 쿨타임이 남아 있습니다.');
         return prev;
       }
-      const prevLabor = clamp(Number(prev.labor) || 0, 0, 125);
-      if (prevLabor + 0.0001 < action.laborCost) {
+      const prevLabor = Number(prev.labor) || 0;
+      if (selfLaborAvailable(prev) + 0.0001 < action.laborCost) {
         setGameAlertMessage('자가노동력이 부족합니다.');
         return prev;
       }
@@ -27172,7 +27181,7 @@ body { display: flex !important; align-items: center !important; justify-content
           rehabText = ` / 재활 효과 ${remainingDays > 0 ? `${remainingDays}일 남음` : '회복 완료'}`;
         }
       }
-      const nextLabor = roundLabor(Math.max(0, prevLabor - action.laborCost));
+      const nextLabor = roundLabor(prevLabor - action.laborCost);
       const nextHealth = Math.round(clamp(prevHealth + action.healthGain, 0, 100) * 10) / 10;
       const nextBuffs = [
         ...normalizeHousingExerciseBuffs(prev.housingExerciseBuffs, day),
@@ -27206,7 +27215,7 @@ body { display: flex !important; align-items: center !important; justify-content
       };
     });
   };
-  const updateHousingBathroomState = (updater, logTextOf = null) => {
+  const updateHousingBathroomState = (updater, logTextOf = null, laborCost = 0) => {
     const facilityKey = String(housingBathroomAccessFacilityKey || '').trim();
     const fieldId = housingInteriorField?.id;
     if (!facilityKey || fieldId == null || !housingHasBathroomOfFacility(facilityKey)) return;
@@ -27254,6 +27263,7 @@ body { display: flex !important; align-items: center !important; justify-content
       return {
         ...prev,
         fields: nextFields,
+        labor: (Number(prev.labor) || 0) - laborCost,
         logs: logText ? pushDiary(prev, logText) : prev.logs
       };
     });
@@ -27305,22 +27315,16 @@ body { display: flex !important; align-items: center !important; justify-content
   const cleanHousingBathroom = () => {
     const facilityName = String(FACILITY_MAP?.[housingBathroomAccessFacilityKey]?.name || housingInteriorFacilityRow?.name || '욕실');
     const laborCost = 2;
-    if ((Number(game?.labor) || 0) < laborCost) return;
+    if (selfLaborAvailable(game) < laborCost) return;
     updateHousingBathroomState(
       (currentInfo) => ({
         ...currentInfo,
         cleanliness: Math.min(100, Number(currentInfo.cleanliness) + 30),
         cleanedDay: Math.max(1, Math.floor(Number(game?.day) || 1))
       }),
-      `${facilityName} 욕실 청소: 청결도 회복 (자가노동력 -${laborCost})`
+      `${facilityName} 욕실 청소: 청결도 회복 (자가노동력 -${laborCost})`,
+      laborCost
     );
-    setGame((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        labor: clamp((Number(prev.labor) || 0) - laborCost, 0, 100)
-      };
-    });
   };
   const housingInteriorImageSrc = useMemo(() => {
     if (!housingInteriorFacilityRow?.key) return '';
@@ -29637,7 +29641,7 @@ body { display: flex !important; align-items: center !important; justify-content
     harvestWorkerRosterByType: harvestTransportWorkerRosterByType,
     crewTypeKeys: HARVEST_TRANSPORT_CREW_TYPE_KEYS,
     useSelfLabor: harvestTransportUseSelfLabor,
-    gameLabor: game?.labor
+    gameLabor: selfLaborAvailable(game)
   });
   const harvestTransportSelectedWorkerIdsSafe = harvestTransportWorkerSelectionState.selectedWorkerIdsByType;
   const harvestTransportSelectedWorkerMix = harvestTransportWorkerSelectionState.selectedWorkerMix;
@@ -30750,7 +30754,7 @@ body { display: flex !important; align-items: center !important; justify-content
       if (!tvOperational) reasons.push('TV 내구도 확인 필요');
       if (!powerOn) reasons.push('실내 전기 OFF');
       if (used >= action.dailyLimit) reasons.push('오늘 시청 완료');
-      if (action.key === 'farmBroadcast' && (Number(game?.labor) || 0) + 0.0001 < action.laborCost) reasons.push('자가노동력 부족');
+      if (action.key === 'farmBroadcast' && selfLaborAvailable(game) + 0.0001 < action.laborCost) reasons.push('자가노동력 부족');
       return {
         ...action,
         used,
@@ -30817,8 +30821,8 @@ body { display: flex !important; align-items: center !important; justify-content
         setGameAlertMessage('오늘은 해당 TV 시청을 이미 충분히 했습니다.');
         return prev;
       }
-      const currentLabor = clamp(Number(prev.labor) || 0, 0, 125);
-      if (action.laborCost > 0 && currentLabor + 0.0001 < action.laborCost) {
+      const currentLabor = Number(prev.labor) || 0;
+      if (action.laborCost > 0 && selfLaborAvailable(prev) + 0.0001 < action.laborCost) {
         setGameAlertMessage('자가노동력이 부족합니다.');
         return prev;
       }
@@ -30859,7 +30863,7 @@ body { display: flex !important; align-items: center !important; justify-content
       const nextBuffs = normalizeHousingTvBuffs(prev.housingTvBuffs, day);
       const nextState = {
         ...prev,
-        labor: roundLabor(Math.max(0, currentLabor - action.laborCost)),
+        labor: roundLabor(currentLabor - action.laborCost),
         health: Math.round(clamp((Number(prev.health) || 0) + action.healthGain, 0, 100) * 10) / 10,
         housingTvUsage: nextUsage,
         housingTvBuffs: action.key === 'farmBroadcast'
@@ -31714,7 +31718,7 @@ body { display: flex !important; align-items: center !important; justify-content
       nextFields[selectedFieldIndex] = nextField;
       const laborMax = phase === 'night' ? NIGHT_SELF_LABOR_BASE : SELF_LABOR_BASE;
       const mealEffect = housingMealEffectOf(mealKey);
-      const prevLabor = Math.max(0, Number(prev?.labor) || 0);
+      const prevLabor = Number(prev?.labor) || 0;
       const nextLabor = roundLabor(Math.min(laborMax, prevLabor + mealEffect.labor));
       const prevHealth = clamp(Number(prev?.health) || 0, 0, 100);
       const nextHealth = Math.round(clamp(prevHealth + mealEffect.health, 0, 100) * 1000) / 1000;
@@ -34510,7 +34514,7 @@ body { display: flex !important; align-items: center !important; justify-content
     activeFacilityStorageKey,
     selectedField,
     facilityStorageWorkbenchWorkerByFacility,
-    gameLabor: game?.labor,
+    gameLabor: selfLaborAvailable(game),
     harvestWorkerRosterByType,
     workbenchSlotCountOfFacility,
     workbenchInstalledEntriesOfField,
@@ -34872,7 +34876,7 @@ body { display: flex !important; align-items: center !important; justify-content
     chooseWorkbenchExternalWorkerAssignment,
     confirmWorkbenchWorkerAssignments
   } = useWarehouseStorageWorkerAssignmentActions({
-    gameLabor: game?.labor,
+    gameLabor: selfLaborAvailable(game),
     sortingWorkerByEquipment: facilityStorageSortingWorkerByEquipment,
     setSortingWorkerByEquipment: setFacilityStorageSortingWorkerByEquipment,
     sortingWorkerPicker: facilityStorageSortingWorkerPicker,
@@ -39516,7 +39520,7 @@ body { display: flex !important; align-items: center !important; justify-content
       return;
     }
     const laborNeed = facilityStorageItemMoveLaborNeedOf(unitWeightKg * moveQty, facilityStorageSelectedTransportRow);
-    if ((Number(game?.labor) || 0) + 1e-9 < laborNeed) {
+    if (selfLaborAvailable(game) + 1e-9 < laborNeed) {
       window.alert(`노동력이 부족합니다. (필요 ${preciseLaborText(laborNeed)} / 보유 ${preciseLaborText(game?.labor || 0)})`);
       return;
     }
@@ -39533,7 +39537,7 @@ body { display: flex !important; align-items: center !important; justify-content
       let qtyToMove = Math.max(0, Math.min(moveQty, rowQty, currentQty));
       if (qtyToMove <= 0) return prev;
       const laborNeedAdjusted = facilityStorageItemMoveLaborNeedOf(unitWeightKg * qtyToMove, facilityStorageSelectedTransportRow);
-      if ((Number(prev?.labor) || 0) + 1e-9 < laborNeedAdjusted) return prev;
+      if (selfLaborAvailable(prev) + 1e-9 < laborNeedAdjusted) return prev;
       let nextFuelStorageByContainer = { ...(prev.fuelStorageByContainer || {}) };
       let nextVehicleFuelStorageByInstance = normalizeVehicleFuelStorageByInstance(prev.vehicleFuelStorageByInstance || {});
       let nextFuelCanSplitByGroup = { ...(prev.fuelCanSplitByGroup || {}) };
@@ -39592,7 +39596,7 @@ body { display: flex !important; align-items: center !important; justify-content
         : String(facilityStorageSelectedTransportRow?.toolName || facilityStorageSelectedTransportRow?.toolMeta?.name || '운반기구');
       return {
         ...prev,
-        labor: roundPreciseLabor(Math.max(0, Number(prev?.labor) || 0) - laborNeedAdjusted, 3),
+        labor: roundPreciseLabor((Number(prev?.labor) || 0) - laborNeedAdjusted, 3),
         inventory: nextInventory,
         fieldFacilityInventoryByFieldId: {
           ...(prev.fieldFacilityInventoryByFieldId || {}),
@@ -39625,7 +39629,7 @@ body { display: flex !important; align-items: center !important; justify-content
     const unitWeightKg = Math.max(0, Number(itemMetaByKey?.[itemKey]?.weightKg) || 0);
     if (!itemKey) return;
     const laborNeed = facilityStorageItemMoveLaborNeedOf(unitWeightKg * moveQty, facilityStorageSelectedTransportRow);
-    if ((Number(game?.labor) || 0) + 1e-9 < laborNeed) {
+    if (selfLaborAvailable(game) + 1e-9 < laborNeed) {
       window.alert(`노동력이 부족합니다. (필요 ${preciseLaborText(laborNeed)} / 보유 ${preciseLaborText(game?.labor || 0)})`);
       return;
     }
@@ -39642,7 +39646,7 @@ body { display: flex !important; align-items: center !important; justify-content
       let qtyToMove = Math.max(0, Math.min(moveQty, rowQty, currentCarrierCargo));
       if (qtyToMove <= 0) return prev;
       const laborNeedAdjusted = facilityStorageItemMoveLaborNeedOf(unitWeightKg * qtyToMove, facilityStorageSelectedTransportRow);
-      if ((Number(prev?.labor) || 0) + 1e-9 < laborNeedAdjusted) return prev;
+      if (selfLaborAvailable(prev) + 1e-9 < laborNeedAdjusted) return prev;
       const nextVehicleCargoByInstance = { ...(prev.vehicleCargoByInstance || {}) };
       const cargo = { ...(nextVehicleCargoByInstance[carrierId] || {}) };
       let nextFuelStorageByContainer = { ...(prev.fuelStorageByContainer || {}) };
@@ -39704,7 +39708,7 @@ body { display: flex !important; align-items: center !important; justify-content
         : String(facilityStorageSelectedTransportRow?.toolName || facilityStorageSelectedTransportRow?.toolMeta?.name || '운반기구');
       return {
         ...prev,
-        labor: roundPreciseLabor(Math.max(0, Number(prev?.labor) || 0) - laborNeedAdjusted, 3),
+        labor: roundPreciseLabor((Number(prev?.labor) || 0) - laborNeedAdjusted, 3),
         inventory: nextInventory,
         fieldFacilityInventoryByFieldId: {
           ...(prev.fieldFacilityInventoryByFieldId || {}),
@@ -46719,7 +46723,7 @@ body { display: flex !important; align-items: center !important; justify-content
       if (!workerToken || seenWorkerTokens.has(workerToken)) return acc;
       seenWorkerTokens.add(workerToken);
       const actualLabor = workerType === 'self'
-        ? Math.max(0, Number(gameState?.labor) || 0)
+        ? selfLaborAvailable(gameState)
         : Math.max(0, Number(externalLaborByWorkerId.get(workerId)) || 0);
       acc.push({
         ...assignment,
@@ -46755,7 +46759,7 @@ body { display: flex !important; align-items: center !important; justify-content
       if (!workerToken || seenWorkerTokens.has(workerToken)) return acc;
       seenWorkerTokens.add(workerToken);
       const actualLabor = workerType === 'self'
-        ? Math.max(0, Number(gameState?.labor) || 0)
+        ? selfLaborAvailable(gameState)
         : Math.max(0, Number(externalLaborByWorkerId.get(workerId)) || 0);
       acc.push({
         ...assignment,
@@ -48115,7 +48119,7 @@ body { display: flex !important; align-items: center !important; justify-content
       }
       try {
         resetFacilityStorageUiStateForGameLoad();
-        setGame(normalizeLoadedGame(loaded, String(authSession?.username || '')));
+        replaceGame(normalizeLoadedGame(loaded, String(authSession?.username || '')));
         warmLoadingPhases(['field', 'fieldSeasonal', 'map', 'warehouse']);
         const shouldRestoreManualView = autoSaveEnabled
           && autoRestoreViewEnabled
@@ -48135,7 +48139,7 @@ body { display: flex !important; align-items: center !important; justify-content
         } else {
           setTab('farm');
           setTabGroup('farmOps');
-          setFocusTab('manage');
+          setFocusTab('cadastre');
           setHousingViewMode('list');
           setHousingViewSelectedFacilityKey('');
           setHousingInteriorFacilityKey('');
@@ -48158,7 +48162,7 @@ body { display: flex !important; align-items: center !important; justify-content
         }
         setActiveSaveSlot(slot);
         setLastRestorableSaveSlot(slot);
-        setLastRestorableViewState(manualRestoreView || sanitizeLastViewStatePreference({ screen: 'game', tab: 'farm', focusTab: 'manage' }));
+        setLastRestorableViewState(manualRestoreView || sanitizeLastViewStatePreference({ screen: 'game', tab: 'farm', focusTab: 'cadastre' }));
         closeSlotPicker();
       } catch (error) {
         void sendGameActionRecord({
@@ -48263,13 +48267,13 @@ body { display: flex !important; align-items: center !important; justify-content
         window.alert('초기 자동저장 중 오류가 발생했습니다. 게임은 시작되지만 저장 슬롯을 직접 확인해 주세요.');
       }
     }
-    setGame(nextGame);
+    replaceGame(nextGame);
     warmLoadingPhases(['field', 'fieldSeasonal', 'map', 'warehouse']);
     setActiveSaveSlot(nextActiveSaveSlot);
     setUiEntranceSeed((prev) => prev + 1);
     setScreen('game');
     setTab('farm');
-    setFocusTab('manage');
+    setFocusTab('cadastre');
   };
   const applyLoanFromBank = () => {
     if (!game) return;
@@ -48350,6 +48354,42 @@ body { display: flex !important; align-items: center !important; justify-content
       primaryAccountId: accountId,
       logs: pushDiary(prev, `주통장 변경: ${BANK_ACCOUNT_PRODUCTS.find((item) => item.id === accountId)?.name || accountId}`)
     }));
+  };
+  const applyCompletedFacilityInstallation = (target, order) => {
+    const facility = FACILITY_MAP[order.facilityKey];
+    if (!facility) return null;
+    const activeInstallRequest = order.installRequest || {};
+    const finalTreeInstallCount = order.treeInstallCount || 0;
+    const { tankUpgradeOptionKeys = [], housingOptionKeys = [], wellDepthOptionKey = '', wellPrecisionSensorEnabled = false } = order;
+    return applyFacilityInstallToField({
+        target,
+        facility,
+        installRequest: activeInstallRequest,
+        treeInstallCount: finalTreeInstallCount,
+        tankUpgradeOptionKeys,
+        housingOptionKeys,
+        wellDepthOptionKey,
+        wellPrecisionSensorEnabled
+      }, {
+        tankFacilityKeys: TANK_FACILITY_KEYS,
+        irrigationFacilityKeys: IRRIGATION_FACILITY_KEYS,
+        irrigationControlPlanFacilityKeys: IRRIGATION_CONTROL_PLAN_FACILITY_KEYS,
+        microSprinklerIrrigationFacilityKey: MICRO_SPRINKLER_IRRIGATION_FACILITY_KEY,
+        coldStorageFacilityKeys: COLD_STORAGE_FACILITY_KEYS,
+        appleSortingFacilityKeys: APPLE_SORTING_FACILITY_KEYS,
+        dryWarehouseFacilityKeys: DRY_WAREHOUSE_FACILITY_KEYS,
+        panelWarehouseCoolingOptionKey: PANEL_WAREHOUSE_COOLING_OPTION_KEY,
+        parkingMaxSlots: PARKING_MAX_SLOTS,
+        housingOptionKeysOfFacility,
+        housingDefaultFurnitureOfFacility,
+        normalizeHousingFurnitureInstallations,
+        housingFacilityKeys: HOUSING_FACILITY_KEYS,
+        normalizeControlPanelOrder,
+        appendControlPanelOrderKey,
+        fieldTotalParkingCapacity,
+        clamp,
+        wellDepthOptionKeys: WELL_DEPTH_OPTION_KEYS
+      });
   };
   const advanceDay = (mode = 'auto') => {
     if (!game) return;
@@ -48706,7 +48746,7 @@ body { display: flex !important; align-items: center !important; justify-content
           housingMunicipalWaterLogs.push(`${f.name} 상하수도 인입 공사 완료`);
         }
         const nextNutrition = clamp(fieldBase.nutrition - nutritionDrain, 0, 100);
-        const waterAfterDrain = clamp(fieldBase.water - waterDrain, 0, 100);
+        const waterAfterDrain = clamp(fieldBase.water - soilDailyWaterLoss(fieldBase, waterDrain), 0, 100);
         const rainGain = rainfallWaterGain(weather.name);
         const fieldSystemResult = processAdvanceDayFieldSystems({
           field: fieldBase,
@@ -48803,9 +48843,11 @@ body { display: flex !important; align-items: center !important; justify-content
         }
         const { deadAdd, hailLogText, nextField } = fieldLifecycleResult.fieldFinalizationResult;
         if (hailLogText) hailDamageLogs.push(hailLogText);
+        if(fieldLifecycleResult.fieldFinalizationResult.windDamageLogText)hailDamageLogs.push(fieldLifecycleResult.fieldFinalizationResult.windDamageLogText);
         if (deadAdd > 0) deadTreeToday += deadAdd;
         const nextFieldWithWaterQuality = decayHousingLivingWaterQualityForField({
           ...nextField,
+          ...(fieldSystemResult.nextDrainage ? { drainage: fieldSystemResult.nextDrainage } : {}),
           housingLivingWaterQuality: autoRefillUsedLiters > 0
             ? blendHousingLivingWaterQualityWithWellWater({ field: fieldBase, addLiters: autoRefillUsedLiters })
             : nextField?.housingLivingWaterQuality
@@ -49151,7 +49193,10 @@ body { display: flex !important; align-items: center !important; justify-content
         ...nextGameStateWithConditionLogs,
         housingInstalledDurabilityByFieldFacility: applyHousingInstalledNaturalWear(nextGameStateWithConditionLogs)
       };
-      return rollPhoneHelperMemoryToNextDay(nextGameStateWithHousingInstalledWear);
+      const afterConstruction = completeFacilityConstruction(nextGameStateWithHousingInstalledWear, applyCompletedFacilityInstallation);
+      const finishedOrders = (nextGameStateWithHousingInstalledWear.facilityConstructionOrders || []).filter(order => !(afterConstruction.facilityConstructionOrders || []).some(next => next.id === order.id));
+      const withConstructionLogs = finishedOrders.length ? { ...afterConstruction, logs: finishedOrders.reduce((logs, order) => pushDiary({ ...afterConstruction, logs }, `${order.fieldName} · ${order.facilityName} 외주 시공 완료`), afterConstruction.logs) } : afterConstruction;
+      return rollPhoneHelperMemoryToNextDay(withConstructionLogs);
     });
   };
   const startDayTimeTransition = (requestedMode = 'nextDay', options = null) => {
@@ -49311,8 +49356,47 @@ body { display: flex !important; align-items: center !important; justify-content
       caption: `${days}일 빠른 진행중`
     });
   };
+  const cadastrePlanJobs = cadastreJobs(game, selectedField?.id);
+  const cadastreWorkMachines = selectedFieldParkedExcavatorInstances.map(machine => ({ ...machine, name: `${machine.item?.name || '굴삭기'} #${machine.unitNo}`, fuel: machineFuelLitersOfInstance(game, machine.id, machine.item), durability: equipmentDurabilityOfUnit(game, machine.machineKey, machine.unitNo) }));
+  const cadastreWorkBindings = PLANT_BINDING_ITEM_KEYS.map(key => ({ key, name: itemMetaByKey[key]?.name || key, stock: game && selectedField ? plantBindingStockOf(game, selectedField, key) : 0 }));
+  const cadastreWorkDeps = (state, options = {}) => {
+    const field = state.fields.find(f => String(f.id) === String(selectedField.id));
+    const cadastre = buildCadastreForField({ selectedField: field, markerPoint: selectedFieldCadastreMarkerPoint, contours: townMoveUserContours });
+    const machine = options.machineId ? resolveMachineInstanceById(options.machineId) : null;
+    return { boundary: cadastre?.boundaryPoints, boundaryId: cadastre?.boundaryContourId, month: monthOf(state.day), machine, excavatorKeys: PLANT_EXCAVATOR_MACHINE_KEYS,
+      fuel: machine ? machineFuelLitersOfInstance(state, machine.id, machine.item) : 0, durability: machine ? equipmentDurabilityOfUnit(state, machine.machineKey, machine.unitNo) : 0,
+      openYardUsedKg: (s,f) => Math.max(Number(selectedFieldStorageUsedKgByFacility?.[OPEN_STORAGE_BASE_FACILITY_KEY])||0, Object.entries(resolveFieldFacilityInventoryByFacility(s,Number(f.id))?.byFacility?.[OPEN_STORAGE_BASE_FACILITY_KEY]||{}).reduce((sum,[key,qty])=>sum+(storageOccupancyExcludedCategories.has(itemCategoryByKey[key])?0:Math.max(0,Number(qty)||0)*Math.max(0,Number(itemMetaByKey[key]?.weightKg)||0)),0)+(s.storage||[]).filter(b=>isWarehouseHarvestBatch(b,OPEN_STORAGE_BASE_FACILITY_KEY)).reduce((sum,b)=>sum+Math.max(0,Number(b.qty)||0),0)),
+      openYardUsedSlot: s => Math.max(0,...(s.storage||[]).filter(b=>isWarehouseHarvestBatch(b,OPEN_STORAGE_BASE_FACILITY_KEY)).map(b=>Number(b.storagePalletSlotNo||b.storagePalletNo)||0)),
+      protectedCapacity: fieldProtectedParkingCapacity(field), openCapacity: fieldOpenParkingCapacityByPy(field), occupiedPy: fieldFacilityOccupiedPy,
+      pipeMaterialStock: (s,f,key) => totalItemStockWithCargoOf(s,key,f),
+      consumePipeMaterial: (s,f,key,qty) => consumeItemFromInventoryAndCargo(s,f,s.inventory,s.vehicleCargoByInstance,key,qty),
+      hasShovel: totalItemStockWithCargoOf(state, PLANT_SHOVEL_ITEM_KEY, field) > 0, bindingKeys: PLANT_BINDING_ITEM_KEYS,
+      seedlingStock: seedlingTotalStockInFieldSourcesOf, bindingStock: plantBindingStockOf, consumeSeedlings: consumeSeedlingsFromFieldSources, consumeBinding: consumePlantBindingFromFieldSources,
+      normalizeLots: normalizePlantLotsForField, treeCapacity: fieldPlantableTreeCapacityByTrellis, maxTreeCapacity: fieldMaxTreeCapacity };
+  };
+  const commitCadastrePlan = (kind, value, options = {}) => {
+    const apply = state => ['trellis','irrigation'].includes(kind) ? saveInfrastructurePlan(state,selectedField.id,kind,value,cadastreWorkDeps(state))
+      : kind === 'irrigationSettings' ? setInfrastructureIrrigation(state,selectedField.id,value)
+      : kind === 'yard' ? saveOpenYardPlan(state,selectedField.id,value,cadastreWorkDeps(state))
+      : kind === 'parking' ? saveParkingWorkPlan(state, selectedField.id, value, cadastreWorkDeps(state))
+      : kind === 'drainage' ? saveDrainageWorkPlan(state, selectedField.id, value, cadastreWorkDeps(state))
+      : kind === 'linkRows' ? linkExistingTreeRows(state, selectedField.id, cadastreWorkDeps(state))
+      : saveCadastreZones(state, selectedField.id, value, cadastreWorkDeps(state), options.confirmPlanting || '');
+    const preview = apply(game); if (!preview.ok) return preview;
+    const accepted = setGame(prev => { const result = apply(prev); return result.ok ? { ...result.state, logs: pushDiary(prev, result.message) } : prev; });
+    return accepted ? { ok: true, message: preview.message } : { ok: false, message: '계획을 저장하지 못했습니다. 현재 상태를 다시 확인해 주세요.' };
+  };
+  const runCadastreJob = (jobId, options) => {
+    const preview = executeCadastreJob(game, selectedField.id, jobId, options, cadastreWorkDeps(game, options));
+    if (!preview.ok) return preview;
+    const accepted = setGame(prev => { const result = executeCadastreJob(prev, selectedField.id, jobId, options, cadastreWorkDeps(prev, options)); return result.ok ? { ...result.state, logs: pushDiary(prev, result.message) } : prev; });
+    return accepted ? { ok: true, message: preview.message } : { ok: false, message: '작업이 취소되었거나 현재 작업 조건이 변경되었습니다.' };
+  };
   const plant = (forcedCropKey) => {
     if (!game || !selectedField) return;
+    if (selectedField.cadastrePlantingPlans?.length) return window.alert('확정된 식재 계획은 작업 탭의 계획 카드에서 실행해 주세요.');
+    const drainageBlocked = drainagePlantingBlocker(selectedField);
+    if (drainageBlocked) return window.alert(drainageBlocked);
     const month = monthOf(game.day);
     if (![3, 4].includes(month)) return window.alert('식재는 3~4월에만 가능합니다.');
     if (selectedPlantingMode === 'shovel' && !plantingShovelReady) {
@@ -49340,12 +49424,12 @@ body { display: flex !important; align-items: center !important; justify-content
     if (remainCapacity <= 0) return window.alert('해당 토지는 더 식재할 공간이 없습니다.');
     const trees = clamp(Number(treeDraft) || 0, 1, Math.min(remainCapacity, stock, bindingStock, maxByFuel));
     const laborNeed = trees * laborPerTree;
-    if (game.labor < laborNeed) {
+    if (selfLaborAvailable(game) < laborNeed) {
       setPendingLaborConfirm({
         kind: 'plant',
         cropKey: targetCrop,
         needed: laborNeed,
-        available: game.labor,
+        available: selfLaborAvailable(game),
         requestedTrees: trees,
         source: WORK_SOURCE.work
       });
@@ -49356,6 +49440,7 @@ body { display: flex !important; align-items: center !important; justify-content
       const key = SEEDLING_KEY_BY_CROP[targetCrop];
       const field = fields[prev.selectedField];
       const fieldRemain = Math.max(0, fieldPlantableTreeCapacityByTrellis(field) - (field.trees || 0));
+      if (drainagePlantingBlocker(field)) return prev;
       const qty = seedlingTotalStockInFieldSourcesOf(prev, field, key);
       const bindingQty = plantBindingStockOf(prev, field, selectedPlantBindingKey);
       if (qty < trees) return prev;
@@ -49372,7 +49457,7 @@ body { display: flex !important; align-items: center !important; justify-content
       const addTrees = Math.min(trees, fieldRemain, bindingQty, maxByFuelInPrev);
       if (addTrees <= 0) return prev;
       const nextLaborNeed = addTrees * laborPerTree;
-      if (prev.labor < nextLaborNeed) return prev;
+      if (selfLaborAvailable(prev) < nextLaborNeed) return prev;
       const consumedSeedlings = consumeSeedlingsFromFieldSources(prev, field, key, addTrees);
       if (!consumedSeedlings.ok) return prev;
       const consumedBinding = consumePlantBindingFromFieldSources(
@@ -49424,7 +49509,7 @@ body { display: flex !important; align-items: center !important; justify-content
       };
       return {
         ...prev,
-        labor: Math.max(0, prev.labor - nextLaborNeed),
+        labor: (prev.labor - nextLaborNeed),
         fields,
         inventory: consumedBinding.nextInventory,
         seedlingExpiryByKey: consumedSeedlings.nextSeedlingExpiryByKey,
@@ -50173,7 +50258,7 @@ body { display: flex !important; align-items: center !important; justify-content
         sprayMachineTankLitersOfKey: (state, machineKey) => sprayMachineTankCapacityLitersOfKey(state, machineKey)
       });
       const defaultPerTreeLaborBase = taskKey === CANOPY_TRAINING_TASK_KEY && selectedAgeYear
-        ? canopyTrainingLaborPerTree(selectedAgeYear)
+        ? canopyTrainingLaborPerTree(selectedAgeYear,current)
         : (WINTER_PRUNING_TASK_KEYS.has(taskKey) && selectedAgeYear
           ? winterPruningLaborPerTree(selectedAgeYear, taskKey)
           : (WATERSPROUT_PRUNING_TASK_KEYS.has(taskKey) && selectedAgeYear
@@ -51884,10 +51969,12 @@ body { display: flex !important; align-items: center !important; justify-content
       const fields = [...prev.fields];
       const field = fields[prev.selectedField];
       if (!field) return prev;
+      if (field.cadastrePlantingPlans?.length) return prev;
       if (!usingExcavator && totalItemStockWithCargoOf(prev, PLANT_SHOVEL_ITEM_KEY, field) <= 0) return prev;
       if (usingExcavator && !Array.isArray(field?.machineParkingSlots)) return prev;
       if (usingExcavator && !field.machineParkingSlots.includes(excavatorInstanceId)) return prev;
       const seedlingKey = SEEDLING_KEY_BY_CROP[cropKey];
+      if (drainagePlantingBlocker(field)) return prev;
       const stock = seedlingTotalStockInFieldSourcesOf(prev, field, seedlingKey);
       if (stock <= 0) return prev;
       const bindingStock = plantBindingStockOf(prev, field, selectedPlantBindingKey);
@@ -51959,7 +52046,7 @@ body { display: flex !important; align-items: center !important; justify-content
         : { crewRents: prev.crewRents || [], spent: 0 };
       return {
         ...prev,
-        labor: source === WORK_SOURCE.workOrder ? prev.labor : Math.max(0, prev.labor - spendLabor),
+        labor: source === WORK_SOURCE.workOrder ? prev.labor : (prev.labor - spendLabor),
         externalLaborRemaining: source === WORK_SOURCE.workOrder ? Math.max(0, (Number(prev.externalLaborRemaining) || 0) - spendLabor) : (Number(prev.externalLaborRemaining) || 0),
         crewRents: crewSpendState.crewRents,
         fields,
@@ -52337,7 +52424,7 @@ body { display: flex !important; align-items: center !important; justify-content
     const dead = Math.max(0, Number(selectedField.deadTrees) || 0);
     if (dead <= 0) return window.alert('제거할 죽은 나무가 없습니다.');
     const laborNeed = 2;
-    if (game.labor < laborNeed) return window.alert(`노동력이 부족합니다. (필요 ${laborNeed})`);
+    if (selfLaborAvailable(game) < laborNeed) return window.alert(`노동력이 부족합니다. (필요 ${laborNeed})`);
     setGame((prev) => {
       const fields = [...prev.fields];
       const field = fields[prev.selectedField];
@@ -52369,7 +52456,7 @@ body { display: flex !important; align-items: center !important; justify-content
       };
       return {
         ...prev,
-        labor: Math.max(0, prev.labor - laborNeed),
+        labor: (prev.labor - laborNeed),
         fields,
         logs: pushDiary(prev, `${field.name} 죽은나무 제거 1주 (남은 죽은나무 ${nextDead}주, 노동력 -${laborText(laborNeed)})`)
       };
@@ -52699,7 +52786,7 @@ body { display: flex !important; align-items: center !important; justify-content
   };
   const sellBatch = (batchId) => {
     if (!game) return;
-    if (game.labor < ACTION_LABOR.sellBatch) return window.alert(`노동력이 부족합니다. (필요 ${ACTION_LABOR.sellBatch})`);
+    if (selfLaborAvailable(game) < ACTION_LABOR.sellBatch) return window.alert(`노동력이 부족합니다. (필요 ${ACTION_LABOR.sellBatch})`);
     setGame((prev) => {
       const batch = (prev.storage || []).find((x) => x.id === batchId);
       if (!batch) return prev;
@@ -52709,7 +52796,7 @@ body { display: flex !important; align-items: center !important; justify-content
       const income = baseIncome + bonus;
       return {
         ...prev,
-        labor: Math.max(0, prev.labor - ACTION_LABOR.sellBatch),
+        labor: (prev.labor - ACTION_LABOR.sellBatch),
         money: prev.money + income,
         soldToday: prev.soldToday + batch.qty,
         storage: (prev.storage || []).filter((x) => x.id !== batchId),
@@ -52719,7 +52806,7 @@ body { display: flex !important; align-items: center !important; justify-content
   };
   const sellAll = () => {
     if (!game || !(game.storage || []).length) return;
-    if (game.labor < ACTION_LABOR.sellAll) return window.alert(`노동력이 부족합니다. (필요 ${ACTION_LABOR.sellAll})`);
+    if (selfLaborAvailable(game) < ACTION_LABOR.sellAll) return window.alert(`노동력이 부족합니다. (필요 ${ACTION_LABOR.sellAll})`);
     setGame((prev) => {
       const totalQty = (prev.storage || []).reduce((sum, batch) => sum + batch.qty, 0);
       const baseIncome = (prev.storage || []).reduce((sum, batch) => sum + calcUnitPrice(batch) * batch.qty, 0);
@@ -52728,7 +52815,7 @@ body { display: flex !important; align-items: center !important; justify-content
       const totalIncome = baseIncome + bonus;
       return {
         ...prev,
-        labor: Math.max(0, prev.labor - ACTION_LABOR.sellAll),
+        labor: (prev.labor - ACTION_LABOR.sellAll),
         money: prev.money + totalIncome,
         soldToday: prev.soldToday + totalQty,
         storage: [],
@@ -54233,7 +54320,7 @@ body { display: flex !important; align-items: center !important; justify-content
       ? townToTownDistanceKm(String(game?.townCurrentMarkerId || ''), targetMarkerId, townMoveUserMarkers)
       : fieldToTownDistanceKm(currentFieldIndex, targetMarkerId, game?.fields || [], townMoveUserMarkers);
     const walkLaborNeed = walkMoveLaborCost(moveDistanceKm);
-    if (game.labor < walkLaborNeed) {
+    if (selfLaborAvailable(game) < walkLaborNeed) {
       window.alert(`노동력이 부족합니다. (필요 ${laborText(walkLaborNeed)})`);
       return;
     }
@@ -54244,7 +54331,7 @@ body { display: flex !important; align-items: center !important; justify-content
       const sourceLabel = townMoveLocationContext === 'town' ? activeTownMarkerLabel : fromField.name;
       return {
         ...prev,
-        labor: roundLabor(Math.max(0, Number(prev?.labor) || 0) - walkLaborNeed),
+        labor: roundLabor((Number(prev?.labor) || 0) - walkLaborNeed),
         townCurrentMarkerId: String(targetMarkerId || ''),
         townArrivalVehicleInstanceId: townMoveLocationContext === 'town' ? String(prev?.townArrivalVehicleInstanceId || '') : '',
         logs: pushDiary(
@@ -54287,7 +54374,7 @@ body { display: flex !important; align-items: center !important; justify-content
       window.alert('과적 한도(최대 적재량의 2배)를 초과해 이동할 수 없습니다.');
       return;
     }
-    if (game.labor < adjustedLaborNeed) {
+    if (selfLaborAvailable(game) < adjustedLaborNeed) {
       window.alert(`노동력이 부족합니다. (필요 ${laborText(adjustedLaborNeed)})`);
       return;
     }
@@ -54364,7 +54451,7 @@ body { display: flex !important; align-items: center !important; justify-content
         ...prev,
         fields: nextFields,
         townMarkerParkingByKey: nextTownMarkerParkingByKey,
-        labor: roundLabor(Math.max(0, Number(prev?.labor) || 0) - adjustedLaborNeed),
+        labor: roundLabor((Number(prev?.labor) || 0) - adjustedLaborNeed),
         equipmentDurability: wearApplied.equipmentDurability,
         equipmentDurabilityByInstance: wearApplied.equipmentDurabilityByInstance,
         townCurrentMarkerId: targetMarkerId,
@@ -54405,7 +54492,7 @@ body { display: flex !important; align-items: center !important; justify-content
       ? townToFieldDistanceKm(String(game?.townCurrentMarkerId || ''), targetFieldIndex, game?.fields || [], townMoveUserMarkers)
       : fieldToFieldDistanceKm(currentFieldIndex, targetFieldIndex, game?.fields || []);
     const walkLaborNeed = walkMoveLaborCost(moveDistanceKm);
-    if (game.labor < walkLaborNeed) {
+    if (selfLaborAvailable(game) < walkLaborNeed) {
       window.alert(`노동력이 부족합니다. (필요 ${laborText(walkLaborNeed)})`);
       return;
     }
@@ -54417,7 +54504,7 @@ body { display: flex !important; align-items: center !important; justify-content
       const moved = switchFieldScopedState(prev, targetFieldIndex);
       return {
         ...moved,
-        labor: roundLabor(Math.max(0, Number(prev?.labor) || 0) - walkLaborNeed),
+        labor: roundLabor((Number(prev?.labor) || 0) - walkLaborNeed),
         townArrivalVehicleInstanceId: '',
         logs: pushDiary(
           prev,
@@ -54479,7 +54566,7 @@ body { display: flex !important; align-items: center !important; justify-content
       window.alert('과적 한도(최대 적재량의 2배)를 초과해 이동할 수 없습니다.');
       return;
     }
-    if (game.labor < adjustedLaborNeed) {
+    if (selfLaborAvailable(game) < adjustedLaborNeed) {
       window.alert(`노동력이 부족합니다. (필요 ${laborText(adjustedLaborNeed)})`);
       return;
     }
@@ -54573,7 +54660,7 @@ body { display: flex !important; align-items: center !important; justify-content
         : { equipmentDurability: moved?.equipmentDurability || {}, equipmentDurabilityByInstance: moved?.equipmentDurabilityByInstance || {} };
       return {
         ...moved,
-        labor: roundLabor(Math.max(0, Number(prev?.labor) || 0) - adjustedLaborNeed),
+        labor: roundLabor((Number(prev?.labor) || 0) - adjustedLaborNeed),
         equipmentDurability: wearApplied.equipmentDurability,
         equipmentDurabilityByInstance: wearApplied.equipmentDurabilityByInstance,
         townArrivalVehicleInstanceId: '',
@@ -54606,7 +54693,7 @@ body { display: flex !important; align-items: center !important; justify-content
     if (!fieldMoveTargetField?.owned) return;
     const moveDistanceKm = fieldToFieldDistanceKm(currentFieldIndex, fieldMoveModal.targetFieldIndex, game?.fields || []);
     const walkLaborNeed = walkMoveLaborCost(moveDistanceKm);
-    if (game.labor < walkLaborNeed) {
+    if (selfLaborAvailable(game) < walkLaborNeed) {
       window.alert(`노동력이 부족합니다. (필요 ${laborText(walkLaborNeed)})`);
       return;
     }
@@ -54620,7 +54707,7 @@ body { display: flex !important; align-items: center !important; justify-content
       const moved = switchFieldScopedState(prev, toIndex);
       return {
         ...moved,
-        labor: roundLabor(Math.max(0, Number(prev?.labor) || 0) - walkLaborNeed),
+        labor: roundLabor((Number(prev?.labor) || 0) - walkLaborNeed),
         townArrivalVehicleInstanceId: '',
         logs: pushDiary(
           prev,
@@ -54659,7 +54746,7 @@ body { display: flex !important; align-items: center !important; justify-content
       window.alert('과적 한도(최대 적재량의 2배)를 초과해 이동할 수 없습니다.');
       return;
     }
-    if (game.labor < adjustedLaborNeed) {
+    if (selfLaborAvailable(game) < adjustedLaborNeed) {
       window.alert(`노동력이 부족합니다. (필요 ${laborText(adjustedLaborNeed)})`);
       return;
     }
@@ -54773,7 +54860,7 @@ body { display: flex !important; align-items: center !important; justify-content
         : { equipmentDurability: moved?.equipmentDurability || {}, equipmentDurabilityByInstance: moved?.equipmentDurabilityByInstance || {} };
       return {
         ...moved,
-        labor: roundLabor(Math.max(0, Number(prev?.labor) || 0) - adjustedLaborNeed),
+        labor: roundLabor((Number(prev?.labor) || 0) - adjustedLaborNeed),
         equipmentDurability: wearApplied.equipmentDurability,
         equipmentDurabilityByInstance: wearApplied.equipmentDurabilityByInstance,
         townArrivalVehicleInstanceId: '',
@@ -54800,7 +54887,7 @@ body { display: flex !important; align-items: center !important; justify-content
   };
   const buyLand = (landId, paymentRequest = null) => {
     if (!game) return;
-    if (game.labor < ACTION_LABOR.buyLand) return window.alert(`노동력이 부족합니다. (필요 ${ACTION_LABOR.buyLand})`);
+    if (selfLaborAvailable(game) < ACTION_LABOR.buyLand) return window.alert(`노동력이 부족합니다. (필요 ${ACTION_LABOR.buyLand})`);
     const land = LAND_POOL.find((x) => x.id === landId);
     if (!land) return;
     const targetField = game.fields.find((f) => f.id === landId);
@@ -54828,7 +54915,7 @@ body { display: flex !important; align-items: center !important; justify-content
       : 1;
     setGame((prev) => {
       if (!prev) return prev;
-      if ((Number(prev?.labor) || 0) < ACTION_LABOR.buyLand) return prev;
+      if (selfLaborAvailable(prev) < ACTION_LABOR.buyLand) return prev;
       const nextLand = LAND_POOL.find((x) => x.id === landId);
       if (!nextLand) return prev;
       const nextTargetField = prev.fields.find((f) => f.id === landId);
@@ -55310,12 +55397,23 @@ body { display: flex !important; align-items: center !important; justify-content
         return;
       }
     }
-    const requiredUprootTrees = facilityInstallRequiredUprootTrees(field, facility.key);
+    const placementCadastre = buildCadastreForField({ selectedField: field, markerPoint: resolveFieldMarkerPointByIndex(fieldIndex), contours: townMoveUserContours });
+    if (SINGLE_PER_LAND_FACILITY_KEYS.includes(facility.key) && fieldFacilityUnderConstruction(game, field.id, facility.key)) return window.alert('이 시설은 이미 외주 시공 중입니다.');
+    if (requiresFacilityPlacement(facility)) {
+      if (!activeInstallRequest.site) {
+        setPendingFacilityPlacement({ fieldIndex, fieldId: field.id, installRequest: { ...activeInstallRequest }, boundary: placementCadastre.boundaryPoints });
+        setPendingFacilityInstall(null);
+        return;
+      }
+      const placementError = facilityPlacementError(field, placementCadastre.boundaryPoints, activeInstallRequest.site);
+      if (placementError) return window.alert(placementError);
+    }
+    const requiredUprootTrees = activeInstallRequest.site ? 0 : facilityInstallRequiredUprootTrees(field, facility.key);
     const needPyForInstallPreview = facilityOccupyPyOfField(field, facility.key);
     const nextOccupiedPyForInstallPreview = fieldFacilityOccupiedPy(field) + needPyForInstallPreview;
     const nextMaxTreesAfterInstallPreview = fieldMaxTreeCapacityByOccupiedPy(field?.py, nextOccupiedPyForInstallPreview);
     const trellisOnlyUprootPreview = applyTrellisAutoUprootForFacilityInstall(field, 0, nextMaxTreesAfterInstallPreview);
-    const requiredTrellisOnlyUproot = requiredUprootTrees <= 0
+    const requiredTrellisOnlyUproot = !activeInstallRequest.site && requiredUprootTrees <= 0
       ? Math.max(0, Number(trellisOnlyUprootPreview?.removedTotal) || 0)
       : 0;
     if (requiredUprootTrees > 0 && !skipUprootPrompt) {
@@ -55418,8 +55516,11 @@ body { display: flex !important; align-items: center !important; justify-content
       : 1;
     setGame((prev) => {
       let target = prev.fields?.[fieldIndex];
-      if (!target || !target.owned) return prev;
+      if (!target || !target.owned || String(target.id) !== String(field.id)) return prev;
       if (SINGLE_PER_LAND_FACILITY_KEYS.includes(facility.key) && target?.landFacilities?.[facility.key]) return prev;
+      if (SINGLE_PER_LAND_FACILITY_KEYS.includes(facility.key) && fieldFacilityUnderConstruction(prev, target.id, facility.key)) return prev;
+      if (activeInstallRequest.site && (target.facilitySites || []).some(site => site.id === activeInstallRequest.site.id)) return prev;
+      if (requiresFacilityPlacement(facility) && facilityPlacementError(target, placementCadastre.boundaryPoints, activeInstallRequest.site)) return prev;
       const requiredPy = facilityOccupyPyOfField(target, facility.key);
       if (requiredPy > 0 && fieldUsablePy(target) < requiredPy) return prev;
       if (IRRIGATION_FACILITY_KEYS.includes(facility.key) && fieldIrrigationUnassignedTrees(target) <= 0) return prev;
@@ -55449,7 +55550,7 @@ body { display: flex !important; align-items: center !important; justify-content
       const needPyForInstall = facilityOccupyPyOfField(target, facility.key);
       const nextOccupiedPyForInstall = fieldFacilityOccupiedPy(target) + needPyForInstall;
       const nextMaxTreesAfterInstall = fieldMaxTreeCapacityByOccupiedPy(target?.py, nextOccupiedPyForInstall);
-      const uprootState = resolveFacilityInstallUprootState({
+      const uprootState = activeInstallRequest.site ? { ok: true, target, uprootSummaryText: '', trellisUprootSummaryText: '', irrigationUprootSummaryText: '' } : resolveFacilityInstallUprootState({
         field: target,
         facilityKey: facility.key,
         day: prev.day,
@@ -55475,35 +55576,7 @@ body { display: flex !important; align-items: center !important; justify-content
       const creditInstallmentFee = isCreditPayment ? calcCreditInstallmentFee(finalCost, safeInstallmentMonths, paidCard) : 0;
       const creditBillTotal = finalCost + creditInstallmentFee;
       const nextFields = [...prev.fields];
-      nextFields[fieldIndex] = applyFacilityInstallToField({
-        target,
-        facility,
-        installRequest: activeInstallRequest,
-        treeInstallCount: finalTreeInstallCount,
-        tankUpgradeOptionKeys,
-        housingOptionKeys,
-        wellDepthOptionKey,
-        wellPrecisionSensorEnabled
-      }, {
-        tankFacilityKeys: TANK_FACILITY_KEYS,
-        irrigationFacilityKeys: IRRIGATION_FACILITY_KEYS,
-        irrigationControlPlanFacilityKeys: IRRIGATION_CONTROL_PLAN_FACILITY_KEYS,
-        microSprinklerIrrigationFacilityKey: MICRO_SPRINKLER_IRRIGATION_FACILITY_KEY,
-        coldStorageFacilityKeys: COLD_STORAGE_FACILITY_KEYS,
-        appleSortingFacilityKeys: APPLE_SORTING_FACILITY_KEYS,
-        dryWarehouseFacilityKeys: DRY_WAREHOUSE_FACILITY_KEYS,
-        panelWarehouseCoolingOptionKey: PANEL_WAREHOUSE_COOLING_OPTION_KEY,
-        parkingMaxSlots: PARKING_MAX_SLOTS,
-        housingOptionKeysOfFacility,
-        housingDefaultFurnitureOfFacility,
-        normalizeHousingFurnitureInstallations,
-        housingFacilityKeys: HOUSING_FACILITY_KEYS,
-        normalizeControlPanelOrder,
-        appendControlPanelOrderKey,
-        fieldTotalParkingCapacity,
-        clamp,
-        wellDepthOptionKeys: WELL_DEPTH_OPTION_KEYS
-      });
+      nextFields[fieldIndex] = target;
       const optionSuffix = formatFacilityInstallOptionSuffix({
         isTreeCountFacility,
         treeInstallCount: finalTreeInstallCount,
@@ -55549,11 +55622,14 @@ body { display: flex !important; align-items: center !important; justify-content
         paidCard,
         makeCreditCardInstallmentBills,
         fields: nextFields,
-        logText: pushDiary(prev, logText + paymentSuffix)
+        logText: pushDiary(prev, `${facility.name} 외주 시공 의뢰 · ${target.name} · ${facilityInstallDaysOf(facility.key)}일 · 완공 예정 ${longDate(prev.day + facilityInstallDaysOf(facility.key))}` + paymentSuffix)
       });
       if (paid === prev) return prev;
-      return appendPaymentPhoneNotificationWithMeta(paid, {
-        summary: `시설 건설 ${facility.name}`,
+      const buildDays = facilityInstallDaysOf(facility.key);
+      const order = { id: activeInstallRequest.site?.id || `facility-build:${facility.key}:${target.id}:${prev.day}`, fieldId: String(target.id), fieldName: target.name, facilityKey: facility.key, facilityName: facility.name, startDay: prev.day, readyDay: prev.day + buildDays, buildDays, cost: finalCost, occupiedPy: needPyForInstall, treeInstallCount: finalTreeInstallCount, tankUpgradeOptionKeys, housingOptionKeys, wellDepthOptionKey, wellPrecisionSensorEnabled, installRequest: { ...activeInstallRequest } };
+      const queued = requiresFacilityPlacement(facility) ? queueFacilityConstruction(paid, fieldIndex, order) : { ...paid, facilityConstructionOrders: [...(paid.facilityConstructionOrders || []), order] };
+      return appendPaymentPhoneNotificationWithMeta(queued, {
+        summary: `시설 외주 시공 ${facility.name}`,
         amount: finalCost,
         paidCard,
         isCreditPayment,
@@ -55906,7 +55982,7 @@ body { display: flex !important; align-items: center !important; justify-content
       field: selectedField,
       day: game.day,
       liters,
-      labor: game.labor,
+      labor: selfLaborAvailable(game),
       money: game.money
     }, {
       won,
@@ -55928,7 +56004,7 @@ body { display: flex !important; align-items: center !important; justify-content
         target,
         day: prev.day,
         liters,
-        labor: prev.labor,
+        labor: selfLaborAvailable(prev),
         money: prev.money
       }, {
         clamp,
@@ -55955,7 +56031,7 @@ body { display: flex !important; align-items: center !important; justify-content
       };
       return {
         ...prev,
-        labor: Math.max(0, prev.labor - laborNeed),
+        labor: (prev.labor - laborNeed),
         money: prev.money - powerFee - envFee,
         fields,
         logs: pushDiary(prev, formatWaterPumpLogText({
@@ -55976,7 +56052,7 @@ body { display: flex !important; align-items: center !important; justify-content
       day: game.day,
       liters,
       unitId,
-      labor: game.labor,
+      labor: selfLaborAvailable(game),
       money: game.money
     }, {
       won,
@@ -56000,13 +56076,13 @@ body { display: flex !important; align-items: center !important; justify-content
     const realEnvFee = Math.max(0, Number(request.envFee) || 0);
     const unitIndexLabel = request.targetUnit?.index || null;
     let appliedLiters = 0;
-    setGame((prev) => {
+    const pumpAccepted = setGame((prev) => {
       const fields = [...prev.fields];
       const target = fields[fieldIndex];
       if (!target) return prev;
       return {
         ...prev,
-        labor: Math.max(0, prev.labor - realLaborNeed),
+        labor: (prev.labor - realLaborNeed),
         money: prev.money - realPowerFee - realEnvFee,
         fields,
         logs: pushDiary(prev, formatWaterPumpLogText({
@@ -56019,6 +56095,7 @@ body { display: flex !important; align-items: center !important; justify-content
         }, { won }))
       };
     });
+    if (!pumpAccepted) return;
     setTankFillSession({
       unitId,
       fieldIndex,
@@ -56268,7 +56345,7 @@ body { display: flex !important; align-items: center !important; justify-content
   };
   const cancelCrewRent = (rentId) => {
     if (!game) return;
-    if (game.labor < ACTION_LABOR.cancelCrew) return window.alert(`노동력이 부족합니다. (필요 ${ACTION_LABOR.cancelCrew})`);
+    if (selfLaborAvailable(game) < ACTION_LABOR.cancelCrew) return window.alert(`노동력이 부족합니다. (필요 ${ACTION_LABOR.cancelCrew})`);
     const target = (game.crewRents || []).find((rent) => rent.id === rentId);
     if (!target) return;
     if (target.status === 'approved' && game.day > target.endDay) return;
@@ -56285,7 +56362,7 @@ body { display: flex !important; align-items: center !important; justify-content
         : (prev?.crewDailyRentalLimitByDay || prev?.crewDailyRentalLimit || {});
       return {
         ...prev,
-        labor: Math.max(0, prev.labor - ACTION_LABOR.cancelCrew),
+        labor: (prev.labor - ACTION_LABOR.cancelCrew),
         crewDailyRentalLimitByDay: nextLimitByDay,
         crewRents: (prev.crewRents || []).filter((rent) => rent.id !== rentId),
         logs: pushDiary(prev, `인력 대여 취소: ${crewName} ${target.count}명 (${longDate(target.startDay)} ~ ${longDate(target.endDay)}) (노동력 -${ACTION_LABOR.cancelCrew})`)
@@ -59469,7 +59546,7 @@ const requestRepairEquipment = (itemKey) => {
       return window.alert('수리 중인 선별기는 해체할 수 없습니다.');
     }
     const laborNeed = Math.max(0, Number(APPLE_SORTING_DISMANTLE_LABOR_BY_FACILITY_KEY?.[facilityKey]) || 0);
-    const availableLabor = Math.max(0, Number(game?.labor) || 0);
+    const availableLabor = selfLaborAvailable(game);
     if (availableLabor < laborNeed) {
       return window.alert(`노동력이 부족합니다. (필요 ${laborText(laborNeed)} / 보유 ${laborText(availableLabor)})`);
     }
@@ -59482,7 +59559,7 @@ const requestRepairEquipment = (itemKey) => {
       if (appleSortingWarehouseFacilityKeyOfField(target, facilityKey) !== warehouseFacilityKey) return prev;
       if (fieldFacilityCountOf(target, facilityKey) <= 0) return prev;
       if (fieldFacilityUnderRepair(target, facilityKey, prev.day)) return prev;
-      if ((Number(prev?.labor) || 0) < laborNeed) return prev;
+      if (selfLaborAvailable(prev) < laborNeed) return prev;
       const baseNextField = applyFacilityDemolitionToField({
         target,
         facilityKey
@@ -59506,7 +59583,7 @@ const requestRepairEquipment = (itemKey) => {
       nextFields[fieldIndex] = baseNextField;
       return {
         ...added.nextState,
-        labor: roundLabor(Math.max(0, Number(prev?.labor) || 0) - laborNeed),
+        labor: roundLabor((Number(prev?.labor) || 0) - laborNeed),
         fields: nextFields,
         fieldFacilityInventoryByFieldId: fieldId
           ? {
@@ -59541,7 +59618,7 @@ const requestRepairEquipment = (itemKey) => {
       return window.alert(`이 창고의 선별기 배치칸이 가득 찼습니다. (${assignedSortingCount}/${warehouseSlotCount})`);
     }
     const laborNeed = Math.max(0, Number(APPLE_SORTING_INSTALL_LABOR_BY_FACILITY_KEY?.[facilityKey]) || 0);
-    const availableLabor = Math.max(0, Number(game?.labor) || 0);
+    const availableLabor = selfLaborAvailable(game);
     if (availableLabor < laborNeed) {
       return window.alert(`노동력이 부족합니다. (필요 ${laborText(laborNeed)} / 보유 ${laborText(availableLabor)})`);
     }
@@ -59559,7 +59636,7 @@ const requestRepairEquipment = (itemKey) => {
       if (fieldFacilityCountOf(target, facilityKey) > 0) return prev;
       const currentAssignedCount = appleSortingAssignedCountToWarehouseOfField(target, warehouseFacilityKey);
       if (warehouseSlotCount > 0 && currentAssignedCount >= warehouseSlotCount) return prev;
-      if ((Number(prev?.labor) || 0) < laborNeed) return prev;
+      if (selfLaborAvailable(prev) < laborNeed) return prev;
       const consumed = removeInventoryUnitFromState(prev, partsItemKey, {
         storageFieldIndex: fieldIndex,
         storageFacilityKey: warehouseFacilityKey
@@ -59601,7 +59678,7 @@ const requestRepairEquipment = (itemKey) => {
       };
       return {
         ...consumed.nextState,
-        labor: roundLabor(Math.max(0, Number(prev?.labor) || 0) - laborNeed),
+        labor: roundLabor((Number(prev?.labor) || 0) - laborNeed),
         fields: nextFields,
         logs: pushDiary(
           consumed.nextState,
@@ -60623,7 +60700,7 @@ const requestRepairEquipment = (itemKey) => {
     setSlotMode('');
     setUiEntranceSeed((prev) => prev + 1);
     setTab('farm');
-    setFocusTab('manage');
+    setFocusTab('cadastre');
   };
   const submitAuth = async () => {
     const username = authUsernameDraft.trim();
@@ -63463,6 +63540,8 @@ const requestRepairEquipment = (itemKey) => {
                       <div className="land-fact-row"><span>지하수 기본량</span><strong>{Math.round(Math.max(0, Number(selectedLand?.groundwaterTonsBase) || 0)).toLocaleString()}톤</strong></div>
                       <div className="land-fact-row"><span>지하수 일 충전량</span><strong>{Math.round(Math.max(0, Number(selectedLand?.groundwaterDailyRechargeLiters) || 0)).toLocaleString()}L</strong></div>
                       <div className="land-fact-row"><span>경사도</span><strong>{Math.max(0, Number(selectedLand?.slopeDeg) || 0)}도</strong></div>
+                      <div className="land-fact-row"><span>토양 면적 비율</span><strong>{soilCompositionText(selectedLand)}</strong></div>
+                      <div className="land-fact-row"><span>하경사 방향</span><strong>{slopeBearingLabel(slopeBearingOf(selectedLand))}</strong></div>
                       <div className="land-fact-row"><span>시작 차량 배치</span><strong>{selectedStartingVehicleOption.label}{selectedStartingVehicleItem ? ` / ${won(selectedStartingVehicleDiscountedCost)}` : ''}</strong></div>
                       <div className="land-fact-row"><span>스타팅 하우징</span><strong>{selectedStartingHousingOption.label}{selectedStartingHousingFacility ? ` / ${won(selectedStartingHousingDiscountedCost)}` : ''}</strong></div>
                     </div>
@@ -64288,7 +64367,7 @@ body { display: flex !important; align-items: center !important; justify-content
   );
   const harvestSelectedSelfLabor = Math.max(0, Number(harvestPlanSelfLabor) || 0);
   const harvestSelectedExternalLabor = Math.max(0, Number(harvestExternalWorkPoints) || 0);
-  const harvestSelfLaborSliderMaxByAvailability = Math.max(0, Math.floor(Number(game?.labor) || 0));
+  const harvestSelfLaborSliderMaxByAvailability = Math.max(0, Math.floor(selfLaborAvailable(game)));
   const harvestExternalLaborSliderMaxByAvailability = harvestSelectedExternalLaborCap;
   const harvestSelectedSelfLaborByAvailability = clamp(
     Math.floor(Number(harvestSelectedSelfLabor) || 0),
@@ -64680,7 +64759,7 @@ body { display: flex !important; align-items: center !important; justify-content
       selectedIdsByType,
       crewTypeKeys: HARVEST_CREW_TYPE_KEYS,
       useSelfLabor: harvestPlanUseSelfLabor,
-      availableSelfLabor: game?.labor,
+      availableSelfLabor: selfLaborAvailable(game),
       availableWorkerMix: harvestAvailableWorkerMix,
       selfWorkerId: HARVEST_SELF_WORKER_ID,
       workerEquipmentByWorkerId: harvestPlanWorkerEquipmentByWorkerId,
@@ -64729,7 +64808,7 @@ body { display: flex !important; align-items: center !important; justify-content
     }
     const nextState = buildToggledHarvestSelfWorkerLaborState({
       selfWorkerSelected: harvestSelfWorkerSelected,
-      gameLabor: game?.labor,
+      gameLabor: selfLaborAvailable(game),
       externalLabor: harvestEffectiveExternalLabor
     });
     applyHarvestPlanInlineLabor({
@@ -64788,7 +64867,7 @@ body { display: flex !important; align-items: center !important; justify-content
     if (nextState.shouldEnableSelfLabor) {
       const toggledSelfLaborState = buildToggledHarvestSelfWorkerLaborState({
         selfWorkerSelected: harvestSelfWorkerSelected,
-        gameLabor: game?.labor,
+        gameLabor: selfLaborAvailable(game),
         externalLabor: harvestEffectiveExternalLabor
       });
       applyHarvestPlanInlineLabor({
@@ -64837,7 +64916,7 @@ body { display: flex !important; align-items: center !important; justify-content
         return !lockEntry || canReuseWorkerForHarvestOnSameDay(lockEntry);
       })(),
       useSelfLabor: harvestPlanUseSelfLabor,
-      gameLabor: game?.labor,
+      gameLabor: selfLaborAvailable(game),
       crewTypeKeys: HARVEST_CREW_TYPE_KEYS,
       selfWorkerId: HARVEST_SELF_WORKER_ID,
       workerRosterByType: unlockedWorkerRosterByType,
@@ -65108,7 +65187,7 @@ body { display: flex !important; align-items: center !important; justify-content
     const defaultLaborPlan = buildHarvestPlanLaborState({
       workerMix: { beginner: 0, worker: 0, skilledWorker: 0 },
       useSelfLabor: false,
-      availableSelfLabor: Math.max(0, Number(game?.labor) || 0),
+      availableSelfLabor: selfLaborAvailable(game),
       availableByType: harvestAvailableWorkerMix
     });
     setHarvestPlanCropId(String(harvestFirstActiveTargetOption?.cropId || harvestTargetOptions[0]?.cropId || selectedField?.cropId || harvestCropOptions[0] || ''));
@@ -65621,7 +65700,7 @@ body { display: flex !important; align-items: center !important; justify-content
   ) && (
     !ageTaskPruningBlockReason
   );
-  const waterStateHint = `${soilWaterStateText(selectedField.water)}${!selectedField.cropId ? ' · 미식재 상태에서는 뿌리 수분 게이지가 비활성화됩니다.' : ''}`;
+  const waterStateHint = `${soilWaterStateText(selectedField.water)} · ${rootWaterStressHint(selectedField)}${!selectedField.cropId ? ' · 미식재 상태에서는 뿌리 수분 게이지가 비활성화됩니다.' : ''}`;
   const nutritionStateHint = `${soilNutritionStateText(selectedField.nutrition)}${!selectedField.cropId ? ' · 미식재 상태에서는 뿌리 양분 게이지가 비활성화됩니다.' : ''}`;
   const isWinterWeedDormant = [12, 1, 2].includes(month);
   const weedStateHint = isWinterWeedDormant
@@ -65664,7 +65743,7 @@ body { display: flex !important; align-items: center !important; justify-content
     && !LAND_IMPROVEMENT_TASK_KEYS.has(String(task?.key || ''))
   ));
   const seasonalTasksSprayOnly = seasonalTasksForDisplay.filter((task) => ORCHARD_SS_SPRAY_TASK_KEYS.has(String(task?.key || '')));
-  const seasonalTasksFacilityOnly = seasonalTasksForDisplay.filter((task) => FACILITY_INSTALL_TASK_KEYS.has(String(task?.key || '')));
+  const seasonalTasksFacilityOnly = seasonalTasksForDisplay.filter((task) => FACILITY_INSTALL_TASK_KEYS.has(String(task?.key || '')) && !infrastructureTaskOwned(selectedField,task.key));
   const seasonalTasksLandImprovementOnly = seasonalTasksForDisplay.filter((task) => LAND_IMPROVEMENT_TASK_KEYS.has(String(task?.key || '')));
   const seasonalTasksForWorkDisplay = workTaskPanelTab === 'facility'
     ? seasonalTasksFacilityOnly
@@ -66582,7 +66661,7 @@ body { display: flex !important; align-items: center !important; justify-content
     const startDay = Math.max(0, Math.floor(Number(startDayRaw) || 0));
     const endDay = Math.max(0, Math.floor(Number(endDayRaw) || 0));
     const urgentBookingEnabledForGame = normalizeUrgentCrewBookingEnabled(sourceGame?.urgentCrewBookingEnabled);
-    if (sourceGame.labor < ACTION_LABOR.rentCrew) return { ok: false, errorMessage: `노동력이 부족합니다. (필요 ${ACTION_LABOR.rentCrew})` };
+    if (selfLaborAvailable(sourceGame) < ACTION_LABOR.rentCrew) return { ok: false, errorMessage: `노동력이 부족합니다. (필요 ${ACTION_LABOR.rentCrew})` };
     const startDayLimit = crewDailyRentalLimitForDay(
       sourceGame?.crewDailyRentalLimitByDay || sourceGame?.crewDailyRentalLimit || {},
       startDay
@@ -66640,7 +66719,7 @@ body { display: flex !important; align-items: center !important; justify-content
     );
     const nextGame = {
       ...sourceGame,
-      labor: Math.max(0, sourceGame.labor - ACTION_LABOR.rentCrew),
+      labor: (sourceGame.labor - ACTION_LABOR.rentCrew),
       crewDailyRentalLimitByDay: nextLimitByDay,
       crewRents: [
         ...(sourceGame.crewRents || []),
@@ -66791,7 +66870,7 @@ body { display: flex !important; align-items: center !important; justify-content
   const selfPlantableTrees = Math.max(0, Math.min(
     maxPlantByStock,
     requestedPlantTrees,
-    Math.floor(Math.max(0, Number(game?.labor) || 0) / selectedPlantingLaborPerTree),
+    Math.floor(selfLaborAvailable(game) / selectedPlantingLaborPerTree),
     plantFuelCapTrees
   ));
   const workOrderPlantTrees = requestedPlantTrees;
@@ -66926,7 +67005,9 @@ body { display: flex !important; align-items: center !important; justify-content
     const vigorFruitLoadApplied = vigorGainEnabled ? vigorFromFruitLoadRaw : Math.min(0, vigorFromFruitLoadRaw);
     const vigorPestPenalty = pestVigorPenaltyByLevel(selectedField?.pest);
     const vigorWeedPenalty = severeWeedVigorPenaltyByLevel(selectedField?.weed);
-    const vigorNet = (vigorBaseApplied + vigorFruitLoadApplied) - vigorPestPenalty - vigorWeedPenalty;
+    const vigorBeforeRootStress = (vigorBaseApplied + vigorFruitLoadApplied) - vigorPestPenalty - vigorWeedPenalty;
+    const rootVigorPenalty = rootWaterStressEffects(selectedField).vigorPenalty;
+    const vigorNet = rootVigorPenalty > 0 ? Math.min(vigorBeforeRootStress, -rootVigorPenalty) : vigorBeforeRootStress;
     return {
       growth: {
         desc: `내일(${longDate(nextDay)}) 기준 생육 예측입니다.`,
@@ -66952,7 +67033,10 @@ body { display: flex !important; align-items: center !important; justify-content
         lines: [
           `기본 소모: -${waterDrainBase.toFixed(2)} /일`,
           `강수 유입(${weatherName || '-'}) : +${waterRainGain.toFixed(2)} /일`,
-          `예상 순변화(기본): ${signed(waterNet)} /일`
+          `예상 순변화(기본): ${signed(waterNet)} /일`,
+          rootWaterStressHint(selectedField),
+          '수분 80 이상이 2일 이상 지속되면 습해, 90 이상은 첫날부터 피해. 배수 불량 토양일수록 손실이 큽니다.',
+          '토양 자연 배수·완공 배수 시설·관수는 위 기본 순변화에 별도 반영됩니다.'
         ]
       },
       nutrition: {
@@ -66996,6 +67080,7 @@ body { display: flex !important; align-items: center !important; justify-content
           `착과 연동 증감: ${signed(vigorFruitLoadApplied)} /일`,
           `병충해 패널티: -${vigorPestPenalty.toFixed(2)} /일`,
           `잡초 패널티: -${vigorWeedPenalty.toFixed(2)} /일`,
+          `뿌리층 습해: ${rootVigorPenalty > 0 ? `순변화가 최소 -${rootVigorPenalty.toFixed(2)} /일` : '없음'}`,
           `예상 순변화: ${signed(vigorNet)} /일`
         ]
       }
@@ -67139,7 +67224,10 @@ body { display: flex !important; align-items: center !important; justify-content
     : undefined;
   const temperatureCardText = Number.isFinite(Number(currentOutdoorTemperatureC)) ? `${Math.round(Number(currentOutdoorTemperatureC))}°C` : '-';
   const healthGaugeValue = Number.isFinite(Number(game?.health)) ? clamp(Number(game.health), 0, 100) : 100;
-  const selfLaborGaugeValue = clamp(Number(game?.labor) || 0, 0, 100);
+  const selfLaborActualValue = Number(game?.labor) || 0;
+  const selfLaborOverwork = overworkOf(game);
+  const selfLaborOverworkPenalty = overworkPenalty(selfLaborOverwork.used);
+  const selfLaborGaugeValue = clamp(selfLaborActualValue, 0, 100);
   const selfLaborStatus = playerStatusStepForValue(PLAYER_SELF_LABOR_STATUS_STEPS, selfLaborGaugeValue);
   const healthStatus = playerStatusStepForValue(PLAYER_HEALTH_STATUS_STEPS, healthGaugeValue);
   const rightPanelManageGaugeRows = [
@@ -68955,7 +69043,7 @@ body { display: flex !important; align-items: center !important; justify-content
               housingLivingConditionInfo={housingLivingConditionInfo}
               housingPlayerStatusInfo={{
                 health: healthGaugeValue,
-                labor: clamp(Number(game?.labor) || 0, 0, 100)
+                labor: clamp(Number(game?.labor) || 0, -10, 125)
               }}
               housingInteriorHvacSetting={housingInteriorHvacSetting}
               updateHousingInteriorHvacSetting={updateHousingInteriorHvacSetting}
@@ -69272,10 +69360,25 @@ body { display: flex !important; align-items: center !important; justify-content
             )}
             {focusTab === 'cadastre' && (
               <CadastrePanel
+                section={cadastreSection}
+                onSectionChange={setCadastreSection}
+                key={String(selectedField.id)}
                 className={focusTabPanelClassName}
                 selectedField={selectedField}
                 selectedFieldMarkerPoint={selectedFieldCadastreMarkerPoint}
                 contours={townMoveUserContours}
+                zones={game.cultivationZonesByFieldId?.[String(selectedField.id)]}
+                drainageGame={{ day: game.day, weather: game.weather, money: game.money, labor: game.labor, laborOverwork: game.laborOverwork }}
+                drainageMachines={selectedFieldParkedExcavatorInstances.map((machine) => ({ ...machine, name: `${machine.item?.name || '굴삭기'} #${machine.unitNo}`, fuel: machineFuelLitersOfInstance(game, machine.id, machine.item), durability: equipmentDurabilityOfUnit(game, machine.machineKey, machine.unitNo) }))}
+                onInfrastructureSave={(kind, value) => commitCadastrePlan(kind,value)}
+                onIrrigationSettings={value => commitCadastrePlan('irrigationSettings',value)}
+                onDrainageAction={(action) => action.kind === 'save' ? commitCadastrePlan('drainage', action) : { ok: false, message: '시공은 작업 탭에서 실행해 주세요.' }}
+                onOpenYardSave={plan => commitCadastrePlan('yard',plan)}
+                openYardStorageUsage={{kg:selectedFieldStorageUsedKgByFacility?.[OPEN_STORAGE_BASE_FACILITY_KEY]||0}}
+                onOpenParkingSave={(plan) => commitCadastrePlan('parking', plan)}
+                onZonesChange={(zones, options) => commitCadastrePlan('zones', zones, options)}
+                onLinkExistingTreeRows={() => commitCadastrePlan('linkRows', null)}
+                onOpenWorkTab={(panel) => { setWorkTaskPanelTab(panel); setFocusTab('work'); }}
               />
             )}
             {focusTab === 'manage' && (
@@ -70050,6 +70153,7 @@ body { display: flex !important; align-items: center !important; justify-content
                     })}
                     <div className="meter__hint" style={{ gridColumn: '1 / -1', marginTop: 2 }}>
                       {`노지 ${selectedOpenParkingCapacity}칸 · 보호 ${selectedProtectedParkingCapacity}칸 · 총 ${selectedTotalParkingCapacity}칸`}
+                      <button type="button" className="button" onClick={() => setFocusTab('cadastre')}>{selectedField.openParking ? '주차장 배치·크기 변경' : '노지 주차공간 설정 · 4평당 1칸'}</button>
                     </div>
                   </div>
                   </>
@@ -70876,14 +70980,17 @@ body { display: flex !important; align-items: center !important; justify-content
                   <Meter
                     label="자가노동력"
                     value={selfLaborGaugeValue}
-                    valueText={`${selfLaborGaugeValue.toFixed(1)}/100`}
+                    valueText={`${selfLaborActualValue.toFixed(1)}/100`}
                     tone="green"
-                    hint={`${selfLaborStatus.label} · ${selfLaborStatus.detail}`}
+                    hint={`${selfLaborStatus.label} · 초과 사용 ${selfLaborOverwork.used.toFixed(1)}/10 · 다음 날 차감 ${selfLaborOverworkPenalty.total.toFixed(1)}`}
                     className="work-status-self-labor__meter"
                   />
                 </div>
+                <CadastreWorkQueue jobs={cadastrePlanJobs} panel={workTaskPanelTab} machines={cadastreWorkMachines} bindings={cadastreWorkBindings}
+                  getQuote={(jobId, options) => quoteCadastreJob(game, selectedField.id, jobId, options, cadastreWorkDeps(game, options))}
+                  onExecute={runCadastreJob} onDesign={() => {setCadastreSection('design');setFocusTab('cadastre');}} />
                 <div className={workTaskPanelClassName}>
-                {workTaskPanelTab === 'season' && [3, 4].includes(month) && remainPlantCapacity > 0 ? (
+                {workTaskPanelTab === 'season' && !selectedField.cadastrePlantingPlans?.length && [3, 4].includes(month) && remainPlantCapacity > 0 ? (
                 <div className="meter-grid" style={{ marginTop: 12 }}>
                   <div
                     className={`meter meter--span-2 planting-meter meter--collapsible ${isTaskCardCollapsed('work:plant') ? 'meter--collapsed' : ''}`.trim()}
@@ -72143,7 +72250,9 @@ body { display: flex !important; align-items: center !important; justify-content
                         </div>
                       ) : (
                         <div className="empty-box">
-                          {workTaskPanelTab === 'facility'
+                          {cadastrePlanJobs.some(job => job.panel === workTaskPanelTab)
+                            ? '그 외 추가 작업이 없습니다.'
+                            : workTaskPanelTab === 'facility'
                             ? '완료되지 않은 설치작업이 없습니다.'
                             : workTaskPanelTab === 'spray'
                               ? '완료되지 않은 과수약제살포 작업이 없습니다.'
@@ -73881,6 +73990,8 @@ body { display: flex !important; align-items: center !important; justify-content
                         <div className="land-fact-row"><span>지하수 기본량</span><strong>{Math.round(Math.max(0, Number(selectedBankLand?.groundwaterTonsBase) || 0)).toLocaleString()}톤</strong></div>
                         <div className="land-fact-row"><span>지하수 일 충전량</span><strong>{Math.round(Math.max(0, Number(selectedBankLand?.groundwaterDailyRechargeLiters) || 0)).toLocaleString()}L</strong></div>
                         <div className="land-fact-row"><span>경사도</span><strong>{Math.max(0, Number(selectedBankLand?.slopeDeg) || 0)}도</strong></div>
+                        <div className="land-fact-row"><span>토양 면적 비율</span><strong>{soilCompositionText(selectedBankLand)}</strong></div>
+                        <div className="land-fact-row"><span>하경사 방향</span><strong>{slopeBearingLabel(slopeBearingOf(selectedBankLand))}</strong></div>
                       </div>
                       <div className="footer-actions" style={{ marginTop: 14 }}>
                         <button
@@ -76934,6 +77045,24 @@ body { display: flex !important; align-items: center !important; justify-content
           );
         })()
       ) : null}
+      {pendingFacilityPlacement && game?.fields?.[pendingFacilityPlacement.fieldIndex] && FACILITY_MAP[pendingFacilityPlacement.installRequest.facilityKey] ? (
+        <FacilityPlacementModal
+          key={`${pendingFacilityPlacement.fieldId}:${pendingFacilityPlacement.installRequest.facilityKey}`}
+          field={game.fields[pendingFacilityPlacement.fieldIndex]}
+          facility={FACILITY_MAP[pendingFacilityPlacement.installRequest.facilityKey]}
+          boundary={pendingFacilityPlacement.boundary}
+          day={game.day} weather={game.weather}
+          onClose={() => { setPendingFacilityInstall(pendingFacilityPlacement.installRequest); setPendingFacilityPlacement(null); }}
+          onConfirm={site => {
+            const pending = pendingFacilityPlacement, field = game.fields[pending.fieldIndex];
+            if (String(field?.id) !== String(pending.fieldId)) return { message: '선택한 토지가 변경되었습니다. 다시 선택해 주세요.' };
+            const error = facilityPlacementError(field, pending.boundary, site);
+            if (error) return { message: error };
+            setPendingFacilityPlacement(null);
+            installFacilityToField(pending.fieldIndex, null, false, { ...pending.installRequest, site });
+          }}
+        />
+      ) : null}
       {pendingFacilityInstall ? (
         (() => {
           const facility = FACILITY_MAP[pendingFacilityInstall.facilityKey];
@@ -76947,7 +77076,7 @@ body { display: flex !important; align-items: center !important; justify-content
                 <div className="slot-picker__tabs slot-picker__tabs--facility-install">
                   {ownedFields.map(({ field, idx }) => {
                     const installedSingle = SINGLE_PER_LAND_FACILITY_KEYS.includes(pendingFacilityInstall.facilityKey)
-                      ? Boolean(field?.landFacilities?.[pendingFacilityInstall.facilityKey])
+                      ? (Boolean(field?.landFacilities?.[pendingFacilityInstall.facilityKey]) || fieldFacilityUnderConstruction(game, field.id, pendingFacilityInstall.facilityKey))
                       : false;
                     const appliedTrees = Math.max(0, fieldFacilityCountOf(field, pendingFacilityInstall.facilityKey));
                     const totalTrees = Math.max(0, Number(field?.trees) || 0);
@@ -77540,7 +77669,7 @@ body { display: flex !important; align-items: center !important; justify-content
                       />
                     ) : isCanopyTrainingAgeTaskModal ? (
                       <div className="meter__hint">
-                        {`${selectedAgeRowInModal.label} · 주당 유인끈 ${canopyTrainingMetersPerTree(selectedAgeRowInModal.ageYear)}m 소모 / 노동력 ${canopyTrainingLaborPerTree(selectedAgeRowInModal.ageYear).toFixed(2)}`}
+                        {`${selectedAgeRowInModal.label} · 주당 유인끈 ${canopyTrainingMetersPerTree(selectedAgeRowInModal.ageYear)}m 소모 / 노동력 ${canopyTrainingLaborPerTree(selectedAgeRowInModal.ageYear,selectedField).toFixed(2)}`}
                       </div>
                     ) : isPruningSealAgeTaskModal ? (
                       <div className="meter__hint">
@@ -79668,7 +79797,7 @@ body { display: flex !important; align-items: center !important; justify-content
         transportLaborPerBox={harvestTransportLaborPerBox}
         harvestBoxCapacityKg={HARVEST_BOX_CAPACITY_KG}
         workEfficiencyRatio={harvestWorkEfficiencyRatio}
-        selfLaborText={`현재 자가노동력 ${clamp(Number(game?.labor) || 0, 0, 100).toFixed(1)}/100`}
+        selfLaborText={`현재 자가노동력 ${clamp(Number(game?.labor) || 0, -10, 125).toFixed(1)}/100`}
         transportMachineName={harvestTransportSelectedEquipment?.label || ''}
         equipmentRows={harvestTransportEquipmentRows}
         selectedEquipmentKey={harvestTransportEquipmentKey}
@@ -79693,7 +79822,7 @@ body { display: flex !important; align-items: center !important; justify-content
         onToggleSelfLabor={toggleHarvestTransportSelfSelection}
         selectedLaborCap={harvestTransportSelectedLaborCap}
         selectedSelfLaborCap={harvestTransportSelectedSelfLaborCap}
-        selfLaborAvailable={Math.max(0, Math.floor(Number(game?.labor) || 0))}
+        selfLaborAvailable={Math.max(0, Math.floor(selfLaborAvailable(game)))}
         selectedExternalLaborCap={harvestTransportSelectedExternalLaborCap}
         workerTypeKeys={HARVEST_TRANSPORT_CREW_TYPE_KEYS}
         availableWorkerMix={HARVEST_TRANSPORT_CREW_TYPE_KEYS.reduce((acc, key) => ({
@@ -79740,7 +79869,7 @@ body { display: flex !important; align-items: center !important; justify-content
         titleDesc={`${selectedField?.name || '-'} · ${harvestSelectedTargetLabel} · 결실 ${harvestProgressPercent.toFixed(1)}%`}
         selectedTargetLabel={harvestSelectedTargetLabel}
         onOpenTargetModal={() => setHarvestPlanTargetModalOpen(true)}
-        selfLaborGaugeText={`${clamp(Number(game?.labor) || 0, 0, 100).toFixed(1)}/100`}
+        selfLaborGaugeText={`${clamp(Number(game?.labor) || 0, -10, 125).toFixed(1)}/100`}
         selfLaborGaugePercent={clamp(Number(game?.labor) || 0, 0, 100)}
         externalLaborGaugeText={`${laborText(externalLaborRemaining)}/${laborText(externalLaborTotal)}`}
         externalLaborRatio={externalLaborRatio}
@@ -79887,7 +80016,7 @@ body { display: flex !important; align-items: center !important; justify-content
         game={game}
         selfWorkerSelected={harvestSelfWorkerSelected}
         selfWorkerAssignedCards={harvestSelfWorkerAssignedCards}
-        selfLaborValue={Math.max(0, Math.floor(Number(game?.labor) || 0))}
+        selfLaborValue={Math.max(0, Math.floor(selfLaborAvailable(game)))}
         getWorkerStatusLabel={(workerId, workerType) => harvestWorkerDailyStatusLabelById(workerId, workerType)}
         onToggleSelfWorker={() => toggleHarvestPlanSelfWorkerSelection()}
         onDropSelfWorkerEquipment={(tokenId) => {

@@ -1,9 +1,13 @@
+import { INFRASTRUCTURE_ITEMS } from './infrastructureItems.js';
+import { DRAINAGE_MATERIAL_ITEMS } from './drainageMaterial.js';
 export const CONSUMABLE_MATERIAL_ITEMS = [
+  ...DRAINAGE_MATERIAL_ITEMS,
+  ...INFRASTRUCTURE_ITEMS,
   {
     key: 'trellisStake',
     name: '지주대 2m',
     price: 1500,
-    desc: '지주대 설치 작업용 자재 (주당 1개)',
+    desc: '개별 나무 지지용. 지주시설 설계에서 나무당 0~2개 선택 · 설치율에 따라 강풍 피해 위험 감소',
     unit: '개',
     durable: false,
     weightKg: 0.25
@@ -12,7 +16,7 @@ export const CONSUMABLE_MATERIAL_ITEMS = [
     key: 'scaffoldPipe',
     name: '비계파이프 3m',
     price: 18000,
-    desc: '지주대 구조용 비계 파이프 (5주당 1개 기준)',
+    desc: '나무 열 양 끝과 중간의 구조 지주용. 기본 최대 5m 간격 · 촘촘할수록 강풍 저항 증가, 자재·시공비 증가',
     unit: '본',
     durable: false,
     weightKg: 8
@@ -21,8 +25,8 @@ export const CONSUMABLE_MATERIAL_ITEMS = [
     key: 'trellisWire',
     name: 'PE코팅와이어 1m',
     price: 500,
-    desc: '지주대 설치 고정용 와이어 (주당 1개)',
-    unit: '개',
+    desc: '지주 사이 연결·가지 유인용. 열 길이×단수로 계산 · 단수를 늘리면 가지유인 노동력 절감, 연결·보수 부담 증가',
+    unit: 'm',
     durable: false,
     weightKg: 0.042
   },

@@ -1,0 +1,956 @@
+{
+  "version": 1,
+  "count": 45,
+  "format": "RGBA PNG",
+  "size": [
+    256,
+    256
+  ],
+  "items": [
+    {
+      "id": "weed-grass-01",
+      "category": "grass",
+      "categoryLabel": "풀잎형",
+      "src": "/images/orchard-weeds/weed-grass-01.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-grass-sheet.png",
+      "sourceBounds": [
+        46,
+        60,
+        382,
+        384
+      ],
+      "alphaBounds": [
+        14,
+        18,
+        242,
+        238
+      ]
+    },
+    {
+      "id": "weed-grass-02",
+      "category": "grass",
+      "categoryLabel": "풀잎형",
+      "src": "/images/orchard-weeds/weed-grass-02.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-grass-sheet.png",
+      "sourceBounds": [
+        454,
+        56,
+        799,
+        384
+      ],
+      "alphaBounds": [
+        14,
+        19,
+        242,
+        236
+      ]
+    },
+    {
+      "id": "weed-grass-03",
+      "category": "grass",
+      "categoryLabel": "풀잎형",
+      "src": "/images/orchard-weeds/weed-grass-03.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-grass-sheet.png",
+      "sourceBounds": [
+        879,
+        41,
+        1209,
+        378
+      ],
+      "alphaBounds": [
+        16,
+        14,
+        239,
+        242
+      ]
+    },
+    {
+      "id": "weed-grass-04",
+      "category": "grass",
+      "categoryLabel": "풀잎형",
+      "src": "/images/orchard-weeds/weed-grass-04.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-grass-sheet.png",
+      "sourceBounds": [
+        49,
+        468,
+        381,
+        788
+      ],
+      "alphaBounds": [
+        14,
+        18,
+        242,
+        238
+      ]
+    },
+    {
+      "id": "weed-grass-05",
+      "category": "grass",
+      "categoryLabel": "풀잎형",
+      "src": "/images/orchard-weeds/weed-grass-05.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-grass-sheet.png",
+      "sourceBounds": [
+        470,
+        455,
+        788,
+        800
+      ],
+      "alphaBounds": [
+        23,
+        14,
+        233,
+        242
+      ]
+    },
+    {
+      "id": "weed-grass-06",
+      "category": "grass",
+      "categoryLabel": "풀잎형",
+      "src": "/images/orchard-weeds/weed-grass-06.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-grass-sheet.png",
+      "sourceBounds": [
+        874,
+        457,
+        1211,
+        798
+      ],
+      "alphaBounds": [
+        15,
+        14,
+        240,
+        242
+      ]
+    },
+    {
+      "id": "weed-grass-07",
+      "category": "grass",
+      "categoryLabel": "풀잎형",
+      "src": "/images/orchard-weeds/weed-grass-07.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-grass-sheet.png",
+      "sourceBounds": [
+        60,
+        874,
+        371,
+        1187
+      ],
+      "alphaBounds": [
+        14,
+        14,
+        241,
+        242
+      ]
+    },
+    {
+      "id": "weed-grass-08",
+      "category": "grass",
+      "categoryLabel": "풀잎형",
+      "src": "/images/orchard-weeds/weed-grass-08.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-grass-sheet.png",
+      "sourceBounds": [
+        477,
+        870,
+        783,
+        1190
+      ],
+      "alphaBounds": [
+        19,
+        14,
+        237,
+        242
+      ]
+    },
+    {
+      "id": "weed-grass-09",
+      "category": "grass",
+      "categoryLabel": "풀잎형",
+      "src": "/images/orchard-weeds/weed-grass-09.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-grass-sheet.png",
+      "sourceBounds": [
+        872,
+        874,
+        1205,
+        1201
+      ],
+      "alphaBounds": [
+        14,
+        16,
+        242,
+        240
+      ]
+    },
+    {
+      "id": "weed-broadleaf-01",
+      "category": "broadleaf",
+      "categoryLabel": "넓은 잎형",
+      "src": "/images/orchard-weeds/weed-broadleaf-01.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-broadleaf-sheet.png",
+      "sourceBounds": [
+        44,
+        59,
+        364,
+        351
+      ],
+      "alphaBounds": [
+        14,
+        24,
+        242,
+        232
+      ]
+    },
+    {
+      "id": "weed-broadleaf-02",
+      "category": "broadleaf",
+      "categoryLabel": "넓은 잎형",
+      "src": "/images/orchard-weeds/weed-broadleaf-02.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-broadleaf-sheet.png",
+      "sourceBounds": [
+        464,
+        42,
+        790,
+        369
+      ],
+      "alphaBounds": [
+        14,
+        14,
+        241,
+        242
+      ]
+    },
+    {
+      "id": "weed-broadleaf-03",
+      "category": "broadleaf",
+      "categoryLabel": "넓은 잎형",
+      "src": "/images/orchard-weeds/weed-broadleaf-03.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-broadleaf-sheet.png",
+      "sourceBounds": [
+        881,
+        50,
+        1203,
+        383
+      ],
+      "alphaBounds": [
+        18,
+        14,
+        238,
+        242
+      ]
+    },
+    {
+      "id": "weed-broadleaf-04",
+      "category": "broadleaf",
+      "categoryLabel": "넓은 잎형",
+      "src": "/images/orchard-weeds/weed-broadleaf-04.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-broadleaf-sheet.png",
+      "sourceBounds": [
+        31,
+        440,
+        398,
+        793
+      ],
+      "alphaBounds": [
+        14,
+        18,
+        242,
+        237
+      ]
+    },
+    {
+      "id": "weed-broadleaf-05",
+      "category": "broadleaf",
+      "categoryLabel": "넓은 잎형",
+      "src": "/images/orchard-weeds/weed-broadleaf-05.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-broadleaf-sheet.png",
+      "sourceBounds": [
+        458,
+        442,
+        790,
+        778
+      ],
+      "alphaBounds": [
+        15,
+        14,
+        240,
+        242
+      ]
+    },
+    {
+      "id": "weed-broadleaf-06",
+      "category": "broadleaf",
+      "categoryLabel": "넓은 잎형",
+      "src": "/images/orchard-weeds/weed-broadleaf-06.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-broadleaf-sheet.png",
+      "sourceBounds": [
+        865,
+        438,
+        1220,
+        796
+      ],
+      "alphaBounds": [
+        15,
+        14,
+        241,
+        242
+      ]
+    },
+    {
+      "id": "weed-broadleaf-07",
+      "category": "broadleaf",
+      "categoryLabel": "넓은 잎형",
+      "src": "/images/orchard-weeds/weed-broadleaf-07.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-broadleaf-sheet.png",
+      "sourceBounds": [
+        36,
+        848,
+        383,
+        1195
+      ],
+      "alphaBounds": [
+        14,
+        14,
+        242,
+        242
+      ]
+    },
+    {
+      "id": "weed-broadleaf-08",
+      "category": "broadleaf",
+      "categoryLabel": "넓은 잎형",
+      "src": "/images/orchard-weeds/weed-broadleaf-08.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-broadleaf-sheet.png",
+      "sourceBounds": [
+        460,
+        873,
+        794,
+        1177
+      ],
+      "alphaBounds": [
+        14,
+        24,
+        242,
+        232
+      ]
+    },
+    {
+      "id": "weed-broadleaf-09",
+      "category": "broadleaf",
+      "categoryLabel": "넓은 잎형",
+      "src": "/images/orchard-weeds/weed-broadleaf-09.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-broadleaf-sheet.png",
+      "sourceBounds": [
+        862,
+        847,
+        1216,
+        1194
+      ],
+      "alphaBounds": [
+        14,
+        16,
+        242,
+        239
+      ]
+    },
+    {
+      "id": "weed-rosette-01",
+      "category": "rosette",
+      "categoryLabel": "로제트형",
+      "src": "/images/orchard-weeds/weed-rosette-01.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-rosette-sheet.png",
+      "sourceBounds": [
+        69,
+        77,
+        350,
+        345
+      ],
+      "alphaBounds": [
+        14,
+        19,
+        242,
+        236
+      ]
+    },
+    {
+      "id": "weed-rosette-02",
+      "category": "rosette",
+      "categoryLabel": "로제트형",
+      "src": "/images/orchard-weeds/weed-rosette-02.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-rosette-sheet.png",
+      "sourceBounds": [
+        446,
+        40,
+        809,
+        383
+      ],
+      "alphaBounds": [
+        14,
+        20,
+        242,
+        235
+      ]
+    },
+    {
+      "id": "weed-rosette-03",
+      "category": "rosette",
+      "categoryLabel": "로제트형",
+      "src": "/images/orchard-weeds/weed-rosette-03.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-rosette-sheet.png",
+      "sourceBounds": [
+        881,
+        40,
+        1208,
+        380
+      ],
+      "alphaBounds": [
+        18,
+        14,
+        237,
+        242
+      ]
+    },
+    {
+      "id": "weed-rosette-04",
+      "category": "rosette",
+      "categoryLabel": "로제트형",
+      "src": "/images/orchard-weeds/weed-rosette-04.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-rosette-sheet.png",
+      "sourceBounds": [
+        40,
+        443,
+        395,
+        789
+      ],
+      "alphaBounds": [
+        14,
+        17,
+        242,
+        239
+      ]
+    },
+    {
+      "id": "weed-rosette-05",
+      "category": "rosette",
+      "categoryLabel": "로제트형",
+      "src": "/images/orchard-weeds/weed-rosette-05.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-rosette-sheet.png",
+      "sourceBounds": [
+        457,
+        458,
+        798,
+        777
+      ],
+      "alphaBounds": [
+        14,
+        21,
+        242,
+        234
+      ]
+    },
+    {
+      "id": "weed-rosette-06",
+      "category": "rosette",
+      "categoryLabel": "로제트형",
+      "src": "/images/orchard-weeds/weed-rosette-06.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-rosette-sheet.png",
+      "sourceBounds": [
+        867,
+        440,
+        1216,
+        801
+      ],
+      "alphaBounds": [
+        18,
+        14,
+        238,
+        242
+      ]
+    },
+    {
+      "id": "weed-rosette-07",
+      "category": "rosette",
+      "categoryLabel": "로제트형",
+      "src": "/images/orchard-weeds/weed-rosette-07.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-rosette-sheet.png",
+      "sourceBounds": [
+        35,
+        850,
+        391,
+        1186
+      ],
+      "alphaBounds": [
+        14,
+        20,
+        242,
+        235
+      ]
+    },
+    {
+      "id": "weed-rosette-08",
+      "category": "rosette",
+      "categoryLabel": "로제트형",
+      "src": "/images/orchard-weeds/weed-rosette-08.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-rosette-sheet.png",
+      "sourceBounds": [
+        456,
+        860,
+        796,
+        1191
+      ],
+      "alphaBounds": [
+        14,
+        17,
+        242,
+        239
+      ]
+    },
+    {
+      "id": "weed-rosette-09",
+      "category": "rosette",
+      "categoryLabel": "로제트형",
+      "src": "/images/orchard-weeds/weed-rosette-09.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-rosette-sheet.png",
+      "sourceBounds": [
+        857,
+        847,
+        1233,
+        1195
+      ],
+      "alphaBounds": [
+        14,
+        22,
+        242,
+        233
+      ]
+    },
+    {
+      "id": "weed-creeping-01",
+      "category": "creeping",
+      "categoryLabel": "덩굴형",
+      "src": "/images/orchard-weeds/weed-creeping-01.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-creeping-sheet.png",
+      "sourceBounds": [
+        44,
+        67,
+        388,
+        364
+      ],
+      "alphaBounds": [
+        14,
+        29,
+        242,
+        226
+      ]
+    },
+    {
+      "id": "weed-creeping-02",
+      "category": "creeping",
+      "categoryLabel": "덩굴형",
+      "src": "/images/orchard-weeds/weed-creeping-02.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-creeping-sheet.png",
+      "sourceBounds": [
+        463,
+        63,
+        796,
+        382
+      ],
+      "alphaBounds": [
+        14,
+        19,
+        242,
+        237
+      ]
+    },
+    {
+      "id": "weed-creeping-03",
+      "category": "creeping",
+      "categoryLabel": "덩굴형",
+      "src": "/images/orchard-weeds/weed-creeping-03.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-creeping-sheet.png",
+      "sourceBounds": [
+        876,
+        57,
+        1218,
+        380
+      ],
+      "alphaBounds": [
+        14,
+        20,
+        242,
+        235
+      ]
+    },
+    {
+      "id": "weed-creeping-04",
+      "category": "creeping",
+      "categoryLabel": "덩굴형",
+      "src": "/images/orchard-weeds/weed-creeping-04.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-creeping-sheet.png",
+      "sourceBounds": [
+        36,
+        453,
+        393,
+        800
+      ],
+      "alphaBounds": [
+        14,
+        17,
+        242,
+        239
+      ]
+    },
+    {
+      "id": "weed-creeping-05",
+      "category": "creeping",
+      "categoryLabel": "덩굴형",
+      "src": "/images/orchard-weeds/weed-creeping-05.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-creeping-sheet.png",
+      "sourceBounds": [
+        455,
+        453,
+        799,
+        784
+      ],
+      "alphaBounds": [
+        14,
+        18,
+        242,
+        237
+      ]
+    },
+    {
+      "id": "weed-creeping-06",
+      "category": "creeping",
+      "categoryLabel": "덩굴형",
+      "src": "/images/orchard-weeds/weed-creeping-06.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-creeping-sheet.png",
+      "sourceBounds": [
+        865,
+        456,
+        1208,
+        795
+      ],
+      "alphaBounds": [
+        14,
+        15,
+        242,
+        240
+      ]
+    },
+    {
+      "id": "weed-creeping-07",
+      "category": "creeping",
+      "categoryLabel": "덩굴형",
+      "src": "/images/orchard-weeds/weed-creeping-07.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-creeping-sheet.png",
+      "sourceBounds": [
+        56,
+        861,
+        384,
+        1206
+      ],
+      "alphaBounds": [
+        19,
+        14,
+        236,
+        242
+      ]
+    },
+    {
+      "id": "weed-creeping-08",
+      "category": "creeping",
+      "categoryLabel": "덩굴형",
+      "src": "/images/orchard-weeds/weed-creeping-08.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-creeping-sheet.png",
+      "sourceBounds": [
+        455,
+        863,
+        789,
+        1187
+      ],
+      "alphaBounds": [
+        14,
+        17,
+        242,
+        238
+      ]
+    },
+    {
+      "id": "weed-creeping-09",
+      "category": "creeping",
+      "categoryLabel": "덩굴형",
+      "src": "/images/orchard-weeds/weed-creeping-09.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-creeping-sheet.png",
+      "sourceBounds": [
+        864,
+        872,
+        1218,
+        1192
+      ],
+      "alphaBounds": [
+        14,
+        25,
+        242,
+        231
+      ]
+    },
+    {
+      "id": "weed-mixed-01",
+      "category": "mixed",
+      "categoryLabel": "혼합형",
+      "src": "/images/orchard-weeds/weed-mixed-01.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-mixed-sheet.png",
+      "sourceBounds": [
+        51,
+        53,
+        377,
+        376
+      ],
+      "alphaBounds": [
+        14,
+        15,
+        242,
+        241
+      ]
+    },
+    {
+      "id": "weed-mixed-02",
+      "category": "mixed",
+      "categoryLabel": "혼합형",
+      "src": "/images/orchard-weeds/weed-mixed-02.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-mixed-sheet.png",
+      "sourceBounds": [
+        475,
+        55,
+        787,
+        377
+      ],
+      "alphaBounds": [
+        17,
+        14,
+        238,
+        242
+      ]
+    },
+    {
+      "id": "weed-mixed-03",
+      "category": "mixed",
+      "categoryLabel": "혼합형",
+      "src": "/images/orchard-weeds/weed-mixed-03.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-mixed-sheet.png",
+      "sourceBounds": [
+        884,
+        55,
+        1207,
+        378
+      ],
+      "alphaBounds": [
+        14,
+        14,
+        242,
+        242
+      ]
+    },
+    {
+      "id": "weed-mixed-04",
+      "category": "mixed",
+      "categoryLabel": "혼합형",
+      "src": "/images/orchard-weeds/weed-mixed-04.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-mixed-sheet.png",
+      "sourceBounds": [
+        44,
+        463,
+        372,
+        791
+      ],
+      "alphaBounds": [
+        14,
+        14,
+        242,
+        242
+      ]
+    },
+    {
+      "id": "weed-mixed-05",
+      "category": "mixed",
+      "categoryLabel": "혼합형",
+      "src": "/images/orchard-weeds/weed-mixed-05.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-mixed-sheet.png",
+      "sourceBounds": [
+        469,
+        471,
+        785,
+        780
+      ],
+      "alphaBounds": [
+        14,
+        16,
+        242,
+        239
+      ]
+    },
+    {
+      "id": "weed-mixed-06",
+      "category": "mixed",
+      "categoryLabel": "혼합형",
+      "src": "/images/orchard-weeds/weed-mixed-06.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-mixed-sheet.png",
+      "sourceBounds": [
+        878,
+        458,
+        1208,
+        790
+      ],
+      "alphaBounds": [
+        14,
+        14,
+        241,
+        242
+      ]
+    },
+    {
+      "id": "weed-mixed-07",
+      "category": "mixed",
+      "categoryLabel": "혼합형",
+      "src": "/images/orchard-weeds/weed-mixed-07.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-mixed-sheet.png",
+      "sourceBounds": [
+        45,
+        864,
+        394,
+        1204
+      ],
+      "alphaBounds": [
+        14,
+        17,
+        242,
+        239
+      ]
+    },
+    {
+      "id": "weed-mixed-08",
+      "category": "mixed",
+      "categoryLabel": "혼합형",
+      "src": "/images/orchard-weeds/weed-mixed-08.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-mixed-sheet.png",
+      "sourceBounds": [
+        465,
+        872,
+        789,
+        1190
+      ],
+      "alphaBounds": [
+        14,
+        16,
+        242,
+        240
+      ]
+    },
+    {
+      "id": "weed-mixed-09",
+      "category": "mixed",
+      "categoryLabel": "혼합형",
+      "src": "/images/orchard-weeds/weed-mixed-09.png",
+      "width": 256,
+      "height": 256,
+      "sourceSheet": "weed-mixed-sheet.png",
+      "sourceBounds": [
+        867,
+        871,
+        1208,
+        1211
+      ],
+      "alphaBounds": [
+        14,
+        14,
+        242,
+        241
+      ]
+    }
+  ]
+}

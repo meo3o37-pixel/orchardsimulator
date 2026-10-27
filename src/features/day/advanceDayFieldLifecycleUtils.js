@@ -1,10 +1,12 @@
+import { applyDailyTrellisInvestment } from '../cadastre/trellisInvestment.js';
 import { buildAdvanceDayFieldSurface } from './advanceDayFieldSurfaceUtils';
 import { buildAdvanceDayFieldBiology } from './advanceDayFieldBiologyUtils';
 import { finalizeAdvanceDayField } from './advanceDayFieldFinalizeUtils';
+import { advanceRootWaterStress, rootWaterStressEffects, enforceRootVigorPenalty } from '../../utils/rootWaterStress.js';
 
 export const processAdvanceDayFieldLifecycle = (params, deps) => {
   const {
-    field,
+    field: previousField,
     nextDay,
     month,
     weatherName,
@@ -34,6 +36,9 @@ export const processAdvanceDayFieldLifecycle = (params, deps) => {
     nextEvSlowChargeReservedInstanceId,
     nextPlan
   } = params;
+
+  const field = { ...previousField, rootWaterStress: advanceRootWaterStress(previousField, nextWater, nextDay) };
+  const rootEffects = rootWaterStressEffects({ ...field, water: nextWater });
 
   const fieldSurfaceResult = buildAdvanceDayFieldSurface({
     field,
@@ -91,8 +96,19 @@ export const processAdvanceDayFieldLifecycle = (params, deps) => {
     microSprinklerRan,
     fieldSurfaceResult,
     fieldBiologyResult
-  }, deps.finalize);
+  }, { ...deps.finalize, dailyWaterQualityPenalty: (water) => Math.max(deps.finalize.dailyWaterQualityPenalty(water), rootEffects.qualityPenalty) });
+  if (fieldFinalizationResult.nextField) {
+    fieldFinalizationResult.nextField = {
+      ...enforceRootVigorPenalty(previousField, fieldFinalizationResult.nextField, rootEffects),
+      rootWaterStress: field.rootWaterStress
+    };
+  }
 
+  if(fieldFinalizationResult.nextField){
+    const investment=applyDailyTrellisInvestment(fieldFinalizationResult.nextField,weatherName,nextDay);
+    fieldFinalizationResult.nextField=investment.field;
+    fieldFinalizationResult.windDamageLogText=investment.log;
+  }
   return {
     fieldSurfaceResult,
     fieldBiologyResult,

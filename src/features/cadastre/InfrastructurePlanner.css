@@ -1,0 +1,16 @@
+.orchard-infrastructure .cadastre-editor__tools>label{display:grid;gap:6px;color:#355947;font-size:.9rem}
+.trellis-investment-summary{padding:14px;border:1px solid #dcdcc5;background:#f4f3e8;border-radius:12px}.trellis-investment-summary dl{display:grid;gap:9px;font-size:.85rem}.trellis-investment-summary dl>div{display:flex;justify-content:space-between;gap:10px}.trellis-investment-summary dd{margin:0;font-weight:700;white-space:nowrap}.trellis-investment-summary small{line-height:1.6;color:#76806b}
+.trellis-investment-status{padding:18px;background:#f2f7f0;border:1px solid #d7e2d7;border-radius:16px;margin-top:18px}.trellis-investment-status>div{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;max-height:380px;overflow:auto}.trellis-investment-status article{display:grid;gap:7px;padding:12px;background:#fffdf8;border-radius:10px;font-size:.85rem}.trellis-investment-status progress{width:100%;accent-color:#4d845f}.trellis-investment-status button{margin-top:14px;padding:10px 14px;border:1px solid #356b50;border-radius:8px;background:#356b50;color:white;font:inherit;cursor:pointer}
+.orchard-infrastructure .cadastre-editor__tools input[type=number],.orchard-infrastructure .cadastre-editor__tools select,.orchard-infrastructure__operation input{width:100%;box-sizing:border-box;min-width:0;min-height:42px;padding:8px;border:1px solid #b8c8bd;border-radius:7px;background:#fffdf8;color:#28533d;font:inherit}
+.orchard-infrastructure>p{color:#677b6c;line-height:1.7}
+.orchard-infrastructure__row-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.orchard-infrastructure__rows{display:grid;gap:6px;max-height:260px;overflow:auto;min-height:0}
+.orchard-infrastructure__rows>label{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #dce4d7;border-radius:10px;background:#f8faf5}
+.orchard-infrastructure__rows small{display:block;color:#788a7e;margin-top:4px}
+.orchard-infrastructure__materials{margin:0;display:grid;gap:8px;font-size:.88rem}
+.orchard-infrastructure__materials>div{display:flex;justify-content:space-between;gap:10px}.orchard-infrastructure__materials dd{margin:0;font-weight:700;white-space:nowrap}
+.orchard-infrastructure__operation{padding:18px;border:1px solid #d7e2d7;border-radius:16px;background:#f2f7f0;margin-top:18px}
+.orchard-infrastructure__operation-controls{display:flex;align-items:end;gap:12px;flex-wrap:wrap}.orchard-infrastructure__operation-controls label{display:grid;gap:5px;flex:1 1 150px}
+.orchard-infrastructure__operation-controls button{min-height:42px;padding:10px 16px;border:1px solid #356b50;border-radius:10px;background:#356b50;color:white;font:inherit;cursor:pointer}
+.orchard-infrastructure__groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}.orchard-infrastructure__groups>div{display:grid;gap:5px;padding:12px;background:#fffdf8;border:1px solid #dce4d7;border-radius:10px;font-size:.85rem}
+@media(max-width:640px){.orchard-infrastructure__operation{padding:12px}.orchard-infrastructure__operation-controls{display:grid;grid-template-columns:1fr 1fr}.orchard-infrastructure__operation-controls button{grid-column:1/-1}}

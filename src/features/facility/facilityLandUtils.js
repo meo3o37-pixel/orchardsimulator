@@ -1,10 +1,13 @@
+import { openParkingOccupiedPy } from '../cadastre/openParking.js';
+import { facilityReservedPy } from './facilityConstruction.js';
+
 export const fieldFacilityOccupiedPy = (
   field,
   { facilityOccupyPy = {}, fieldFacilityCountOf = () => 0 } = {}
 ) =>
   Object.entries(facilityOccupyPy).reduce(
     (sum, [key, py]) => sum + (fieldFacilityCountOf(field, key) * py),
-    0
+    Math.max(0, Number(field?.drainage?.occupiedPy) || 0) + openParkingOccupiedPy(field?.openParking) + facilityReservedPy(field)
   );
 
 export const fieldUsablePy = (

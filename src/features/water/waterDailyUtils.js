@@ -1,3 +1,4 @@
+import { infrastructureIrrigationDelivery, infrastructureIrrigationDemand } from '../cadastre/infrastructureIrrigation.js';
 export const processDailyWaterSystems = (
   {
     field,
@@ -8,7 +9,8 @@ export const processDailyWaterSystems = (
   },
   deps
 ) => {
-  const plan = field?.irrigationPlan || null;
+  const designed = Boolean(field?.orchardInfrastructure?.irrigation);
+  const plan = designed ? null : field?.irrigationPlan || null;
   const hasIrrigationControlSystem = deps.fieldFacilityCountOf(field, 'irrigationControlSystem') > 0;
   const irrigationPumpActive = deps.fieldIrrigationPumpActive(field);
   const planActive = Boolean(
@@ -70,6 +72,12 @@ export const processDailyWaterSystems = (
       irrigationWaterGain = deliveredLitersPerTree * 0.2 * coverageRatio;
     }
   }
+  if(designed){
+    const need = infrastructureIrrigationDemand(field);
+    if(field.orchardInfrastructure.irrigation.settings.enabled && hasTankInfra && irrigationPumpActive && need.hours<=24)tryAutoRefill(need.liters-tankAfterAutoRefill);
+    const delivered = infrastructureIrrigationDelivery(field,tankAfterAutoRefill,{tankReady:hasTankInfra,pumpActive:irrigationPumpActive});
+    irrigationUseLiters=delivered.usedLiters;irrigationWaterGain=delivered.waterGain;
+  }
   const passiveIrrigationTrees = Math.max(
     0,
     Math.max(
@@ -78,7 +86,7 @@ export const processDailyWaterSystems = (
       Math.floor(deps.fieldFacilityCountOf(field, deps.microSprinklerIrrigationFacilityKey))
     )
   );
-  const passiveIrrigationUseLiters = hasIrrigationControlSystem
+  const passiveIrrigationUseLiters = (designed || hasIrrigationControlSystem)
     ? 0
     : (Math.max(0, Math.min(plantedTrees, passiveIrrigationTrees)) * 2);
   const tankBeforeIrrigation = tankAfterAutoRefill;
@@ -90,7 +98,7 @@ export const processDailyWaterSystems = (
   const hasColdRiskToday = Boolean(field?.cropId) && coldRiskInfo.active && (coldRiskInfo.level === 'warn' || coldRiskInfo.level === 'danger');
   const microSprinklerEnabled = Boolean(field?.microSprinklerEnabled);
   const microSprinklerRequiredLiters = Math.round(Math.max(0, Number(field?.trees) || 0) * deps.microSprinklerLitersPerTree);
-  const microSprinklerInfraReady = Boolean(
+  const microSprinklerInfraReady = !designed && Boolean(
     field?.cropId
     && deps.fieldFacilityCountOf(field, deps.microSprinklerIrrigationFacilityKey) > 0
     && irrigationPumpActive

@@ -127,7 +127,7 @@ export function useWarehouseWorkbenchTaskRunner({
           .filter(([, laborNeed]) => laborNeed > 0)
       );
       const externalLaborSpendResult = spendExternalCrewLaborByWorkerMap(prev, externalLaborSpendMap);
-      const nextLabor = roundLabor(Math.max(0, Number(prev?.labor) || 0) - selfLaborNeed);
+      const nextLabor = roundLabor((Number(prev?.labor) || 0) - selfLaborNeed);
 
       let nextStorageBoxUnitNo = storage.reduce(
         (max, batch) => Math.max(max, Math.max(0, Math.floor(Number(batch?.storageBoxUnitNo) || 0))),
@@ -375,7 +375,7 @@ export function useWarehouseSortingTaskRunner({
           .filter(([, laborNeed]) => laborNeed > 0)
       );
       const externalLaborSpendResult = spendExternalCrewLaborByWorkerMap(prev, externalLaborSpendMap);
-      const nextLabor = roundLabor(Math.max(0, Number(prev?.labor) || 0) - selfLaborNeed);
+      const nextLabor = roundLabor((Number(prev?.labor) || 0) - selfLaborNeed);
 
       const sourceIndexSet = new Set(context.processableEntries.map((entry) => entry.index));
       const sourceBatchByIndex = new Map(context.processableEntries.map((entry) => ([entry.index, entry.batch])));

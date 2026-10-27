@@ -1,3 +1,4 @@
+import { selfLaborAvailable } from '../../utils/overwork.js';
 const HARVEST_CONTAINER_KEY_MIGRATION = {
   appleContainerYellow18kg: 'appleContainerYellow20kg',
   appleContainerGreen18kg: 'appleContainerGreen20kg'
@@ -702,7 +703,7 @@ export function buildHarvestSelectionContext({
 
   const suppliedWorkPoints = selectedSelfLabor + selectedExternalLabor;
   if (suppliedWorkPoints <= 0) return { ok: false, reason: '투입 인력이 없습니다.' };
-  if (game.labor < selectedSelfLabor) return { ok: false, reason: `자가노동력이 부족합니다. (필요 ${selectedSelfLabor})` };
+  if (selfLaborAvailable(game) < selectedSelfLabor) return { ok: false, reason: `자가노동력이 부족합니다. (필요 ${selectedSelfLabor})` };
   if (!selectedField.cropId) return { ok: false, reason: '식재된 작물이 없습니다.' };
 
   const availableCropIds = Array.from(
@@ -1455,7 +1456,7 @@ export function buildHarvestResultState({
 }) {
   return {
     ...prev,
-    labor: Math.max(0, prev.labor - actualSelfLaborUsed),
+    labor: (prev.labor - actualSelfLaborUsed),
     externalLaborRemaining: Math.max(0, (Number(prev.externalLaborRemaining) || 0) - actualExternalLaborUsed),
     crewRents: crewSpendState.crewRents,
     inventory: nextInventoryForHarvest,
@@ -1975,7 +1976,7 @@ export function buildHarvestTransportApplyState({
   }).filter((unit) => Math.max(0, Number(unit?.qtyKg) || 0) > 0.0001);
   if (!selectedBoxUnits.length) return { ok: false, reason: '옮길 박스를 다시 선택해 주세요.' };
   const laborPerBox = Math.max(0.01, Number(harvestTransportLaborPerBox) || 0.01);
-  const availableSelfLabor = harvestTransportUseSelfLabor ? Math.max(0, Number(prev.labor) || 0) : 0;
+  const availableSelfLabor = harvestTransportUseSelfLabor ? selfLaborAvailable(prev) : 0;
   const externalLaborPreview = spendExternalCrewLaborInState(
     prev,
     Math.max(0, Number(harvestTransportSelectedExternalLaborCap) || 0),
@@ -2245,7 +2246,7 @@ export function buildHarvestTransportApplyState({
     },
     nextState: {
       ...prev,
-      labor: Math.max(0, prev.labor - actualSelfLaborUsed),
+      labor: (prev.labor - actualSelfLaborUsed),
       crewRents: externalSpendResult.crewRents,
       externalLaborRemaining: Math.max(0, (Number(prev.externalLaborRemaining) || 0) - actualExternalLaborUsed),
       fields,

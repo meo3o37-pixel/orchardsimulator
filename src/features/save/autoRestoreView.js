@@ -113,7 +113,7 @@ export const sanitizeLastViewStatePreference = (raw = {}, config = {}) => {
   const source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
   const safeScreen = String(source.screen || '') === 'game' ? 'game' : 'menu';
   const safeTab = ['farm', 'storage', 'map', 'landBank', 'warehouse', 'crew', 'shop', 'facility', 'log'].includes(String(source.tab || '')) ? String(source.tab) : 'farm';
-  const safeFocusTab = ['cropStatus', 'manage', 'cadastre', 'housing', 'landFacility', 'work', 'workOrder'].includes(String(source.focusTab || '')) ? String(source.focusTab) : 'manage';
+  const safeFocusTab = ['cropStatus', 'manage', 'cadastre', 'housing', 'landFacility', 'work', 'workOrder'].includes(String(source.focusTab || '')) ? String(source.focusTab) : 'cadastre';
   const safePhoneApp = SAFE_RESTORE_PHONE_APPS.has(String(source.phoneOpenedApp || '')) ? String(source.phoneOpenedApp) : '';
   const safeHousingObjectKey = SAFE_RESTORE_HOUSING_OBJECTS.has(String(source.housingInteriorPendingObjectKey || '')) ? String(source.housingInteriorPendingObjectKey) : '';
   const safeHousingInteriorFacilityKey = sanitizeRestoreKey(source.housingInteriorFacilityKey, '');

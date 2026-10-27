@@ -60,7 +60,7 @@ export function applyLandPurchasePaymentToState(prev, options) {
   });
   return {
     ...prev,
-    labor: Math.max(0, Number(prev.labor) || 0) - laborCost,
+    labor: (Number(prev.labor) || 0) - laborCost,
     money: isCreditPayment ? prev.money : (prev.money - payAmount),
     pendingCreditCardBills: nextPendingBills,
     fields,

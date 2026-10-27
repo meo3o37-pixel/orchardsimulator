@@ -1,3 +1,4 @@
+import { trellisTrainingMultiplier } from '../features/cadastre/trellisInvestment.js';
 import { FRUIT_LOAD_MAX, SPRAY_TASK_KEYS } from '../config/simConfig';
 import { clamp } from './common';
 import { cropRowsByVarietyAndAge, treeAgeYear } from './cropLots';
@@ -262,11 +263,12 @@ export const taskLaborNeed = (task, field, day = 1) => {
   )
     ? Math.max(0.01, Number(DEFAULT_TASK_LABOR_PER_TREE_BY_KEY[task.key]) || 1)
     : Math.max(0.1, Number(DEFAULT_TASK_LABOR_PER_TREE_BY_KEY[task.key]) || 1);
-  return Math.max(1, processedTrees * defaultPerTreeLabor);
+  return Math.max(1, processedTrees * defaultPerTreeLabor * (task.key==='canopyTraining'?trellisTrainingMultiplier(field):1));
 };
 
 export const taskLaborPerTree = (task, field, day = 1) => {
   if (!task) return 1;
+  if(task.key==='canopyTraining')return trellisTrainingMultiplier(field);
   if (task.key === 'appleContainerCoating') {
     return Math.max(0.01, APPLE_CONTAINER_COATING_LABOR_PER_BOX);
   }

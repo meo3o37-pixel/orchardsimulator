@@ -1,0 +1,32 @@
+.cadastre-work-queue { margin: 12px 0 18px; color: #315642; }
+.cadastre-work-queue > header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+.cadastre-work-queue > header h4 { margin: 0 0 4px; font-size: 1rem; }
+.cadastre-work-queue > header span { font-size: .8rem; color: #7b8978; }
+.cadastre-work-queue > header button { display: flex; align-items: center; gap: 5px; border: 0; background: transparent; color: #52765b; font: inherit; font-size: .82rem; cursor: pointer; }
+.cadastre-work-card { padding: 18px; margin-bottom: 12px; background: #fffefa; border: 1px solid #dae5d8; border-radius: 16px; }
+.cadastre-work-card__heading { display: flex; align-items: center; gap: 10px; }
+.cadastre-work-card__icon { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 38px; height: 38px; border-radius: 12px; background: #e7efdf; color: #4c7958; }
+.cadastre-work-card__heading > div { flex: 1; min-width: 0; }
+.cadastre-work-card .cadastre-work-card__heading h5 { margin: 0 0 4px; font-size: .98rem; color: #315642; }
+.cadastre-work-card__heading span:not(.cadastre-work-card__icon) { font-size: .75rem; color: #85907c; }
+.cadastre-work-card__heading b { border-radius: 12px; padding: 4px 8px; font-size: .72rem; color: #6d815b; background: #eef2e7; white-space: nowrap; }
+.cadastre-work-card__progress-label { display: flex; justify-content: space-between; gap: 8px; margin-top: 16px; font-size: .8rem; }
+.cadastre-work-card progress { display: block; width: 100%; height: 8px; margin: 8px 0 15px; border: 0; border-radius: 8px; background: #e8eee3; overflow: hidden; accent-color: #4b8765; }
+.cadastre-work-card progress::-webkit-progress-bar { background: #e8eee3; border-radius: 8px; }
+.cadastre-work-card progress::-webkit-progress-value { background: linear-gradient(90deg,#a2bd83,#3b7b59); border-radius: 8px; }
+.cadastre-work-card__controls { display: grid; grid-template-columns: repeat(auto-fit,minmax(145px,1fr)); gap: 10px; }
+.cadastre-work-card__controls label { display: flex; flex-direction: column; gap: 6px; min-width: 0; font-size: .78rem; color: #71836b; }
+.cadastre-work-card__controls select,.cadastre-work-card__controls input { box-sizing: border-box; min-width: 0; width: 100%; padding: 10px; min-height: 40px; border: 1px solid #d6e1cf; border-radius: 9px; background: #fafbf7; color: #315642; font: inherit; font-size: .82rem; }
+.cadastre-work-card__quote { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; margin: 14px 0 6px; font-size: .85rem; }
+.cadastre-work-card__quote span { color: #74856c; }
+.cadastre-work-card .cadastre-work-card__materials { margin: 6px 0; color: #85917d; font-size: .75rem; line-height: 1.5; }
+.cadastre-work-card .cadastre-work-card__blocked { padding: 10px 12px; margin: 12px 0; border-radius: 9px; background: #f6f0e0; color: #8b713d; font-size: .8rem; line-height: 1.5; }
+.cadastre-work-card__actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 14px; padding-top: 12px; border-top: 1px solid #e9eee4; font-size: .8rem; }
+.cadastre-work-card__actions button { border: 0; border-radius: 10px; padding: 11px 18px; color: #fffdf6; background: #376d50; font: inherit; font-weight: 700; cursor: pointer; }
+.cadastre-work-card__actions button:disabled { opacity: .4; cursor: default; }
+.cadastre-work-card .cadastre-work-card__notice { margin: 10px 0 0; font-size: .8rem; color: #557344; }
+.cadastre-work-queue__completed { font-size: .82rem; color: #76866d; }
+.cadastre-work-queue__completed summary { cursor: pointer; margin-bottom: 8px; }
+.cadastre-work-queue__completed > div { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px; background: #f1f5ec; border-radius: 9px; margin-bottom: 6px; }
+.cadastre-work-queue__completed > div span { margin-left: auto; }
+@media(max-width:480px) { .cadastre-work-card { padding: 13px; }.cadastre-work-card__heading { flex-wrap: wrap; }.cadastre-work-card__heading > div { flex-basis: 65%; }.cadastre-work-card__controls { grid-template-columns: 1fr; } }

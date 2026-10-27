@@ -55,8 +55,11 @@ export const applyFacilityDemolitionToField = (
       }
     });
   }
+  const sites = target.facilitySites || [];
+  const removeSiteId = isTank ? [...sites].reverse().find(site => site.facilityKey === facilityKey && site.status === 'complete')?.id : null;
   const nextFieldBase = {
     ...target,
+    facilitySites: sites.filter(site => site.status !== 'complete' || (site.facilityKey !== facilityKey || (isTank && site.id !== removeSiteId))),
     landFacilities: nextFacilities,
     landFacilityCounts: nextCounts,
     facilityDurabilityByKey: nextFacilityDurabilityMap,

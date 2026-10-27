@@ -104,6 +104,10 @@ export const facilityRideMachineCapacityOfField = (field, facilityKey) => {
 };
 
 export const fieldOpenParkingCapacityByPy = (field) => {
+  const marked = field?.openParking;
+  if (marked?.version === 1 && Number.isInteger(marked.slots) && marked.slots >= 1 && marked.slots <= 20
+    && Number.isFinite(marked.occupiedPy) && marked.occupiedPy >= marked.slots * 4 - .001) return marked.slots;
+  // Legacy saves retain their capacity until a physical parking area is confirmed.
   const py = Math.max(0, Number(field?.py) || 0);
   if (py <= 120) return 2;
   if (py <= 250) return 3;

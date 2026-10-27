@@ -15011,6 +15011,263 @@ button {
   }
 }
 
+.cadastre-editor .cadastre-map-card {
+  /* The settings column can grow; do not extend the grid beyond the SVG viewport. */
+  align-self: start;
+  min-width: 0;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.cadastre-mode-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.cadastre-mode-tabs button { padding: 10px 14px; border: 1px solid #b8c8bd; border-radius: 8px; background: #fafcf9; color: #28533d; font: inherit; cursor: pointer; }
+.cadastre-mode-tabs button[aria-pressed="true"] { background: #28533d; color: #fff; }
+.drainage-planner > p { color: #53695b; line-height: 1.6; }
+.drainage-planner .cadastre-editor__tools select { width: 100%; min-width: 0; min-height: 42px; padding: 8px; border: 1px solid #b8c8bd; border-radius: 6px; background: #fafcf9; color: #28533d; font: inherit; }
+.drainage-planner .cadastre-editor__tools small { color: #53695b; line-height: 1.6; overflow-wrap: anywhere; }
+.drainage-route-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 1px solid #d7e1d9; padding-bottom: 8px; font-size: .9rem; }
+
+.cadastre-editor__map-heading {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 8px 12px;
+  color: var(--green-strong);
+}
+
+.cadastre-editor__canvas {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 470px;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.cadastre-editor__canvas.is-editing { cursor: crosshair; }
+.cadastre-editor__canvas.is-pannable, .cadastre-editor__canvas.is-pannable .cadastre-editor__zone { cursor: grab; }
+.cadastre-editor__canvas.is-pannable:active { cursor: grabbing; }
+.cadastre-editor__canvas.is-pannable .cadastre-editor__vertex, .cadastre-editor__canvas.is-pannable .cadastre-editor__midpoint { pointer-events: none; }
+.cadastre-editor__map-toolbar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 4px 8px;
+}
+.cadastre-editor__map-toolbar button {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid #b8c8bd;
+  border-radius: 6px;
+  background: #fafcf9;
+  color: #28533d;
+  cursor: pointer;
+}
+.cadastre-editor__map-toolbar button[aria-pressed='true'] { background: #dcebf3; border-color: #347c9e; }
+.cadastre-editor__map-toolbar button:disabled { opacity: 0.4; cursor: default; }
+.cadastre-editor__map-toolbar button:focus-visible { outline: 2px solid #226c9d; outline-offset: 2px; }
+.cadastre-editor__map-toolbar output { width: 58px; text-align: center; font-variant-numeric: tabular-nums; font-size: 0.9rem; }
+.cadastre-editor__zone {
+  fill: rgba(35, 155, 140, 0.07);
+  stroke: rgba(28, 112, 102, 0.72);
+  stroke-width: 1.15;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  cursor: pointer;
+}
+.cadastre-editor__zone:hover { fill: rgba(35, 155, 140, 0.11); stroke: #168e83; stroke-width: 1.5; }
+.cadastre-editor__zone.is-selected { fill: rgba(37, 175, 156, 0.15); stroke: #59d6bc; stroke-width: 1.8; }
+.cadastre-editor__draft {
+  fill: rgba(56, 140, 182, 0.25);
+  stroke: #226c9d;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+.cadastre-editor__draft.is-open { fill: none; stroke-dasharray: 5 4; }
+.cadastre-editor__draft.is-invalid { fill: rgba(192, 58, 58, 0.16); stroke: #b43636; }
+.cadastre-editor__vertex, .cadastre-editor__midpoint {
+  fill: #fff;
+  stroke: #226c9d;
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+  cursor: grab;
+}
+.cadastre-editor__vertex.is-selected { fill: #226c9d; stroke: #fff; }
+.cadastre-editor__midpoint { fill: #c3e1ef; cursor: copy; }
+.cadastre-editor__tools {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 12px;
+  color: var(--green-strong);
+}
+.cadastre-editor__heading, .cadastre-editor__metrics {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.cadastre-editor h4 { margin: 0; font-size: 1rem; overflow-wrap: anywhere; }
+.cadastre-editor__list { display: grid; gap: 6px; }
+.cadastre-editor__tools button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 9px;
+  border: 1px solid #b8c8bd;
+  border-radius: 6px;
+  background: #fafcf9;
+  color: #28533d;
+  font: inherit;
+  cursor: pointer;
+}
+.cadastre-editor__tools button svg { flex-shrink: 0; }
+.cadastre-editor__tools button:hover:not(:disabled) { background: #e7f0f3; border-color: #347c9e; }
+.cadastre-editor__tools button:disabled { opacity: 0.45; cursor: default; }
+.cadastre-editor__tools button:focus-visible { outline: 2px solid #226c9d; outline-offset: 3px; }
+/* SVG outlines use a bounding rectangle and can grow with map zoom.
+   Keep keyboard focus on the geometry's non-scaling stroke instead. */
+.cadastre-editor__canvas :focus { outline: none; }
+.cadastre-editor__canvas :focus-visible { stroke: #165684; stroke-width: 2.5; }
+.cadastre-editor__canvas .cadastre-editor__zone:focus-visible { stroke: #087e72; stroke-width: 2.2; }
+.cadastre-editor__tools .cadastre-editor__row {
+  justify-content: space-between;
+  width: 100%;
+  text-align: left;
+}
+.cadastre-editor__row span { min-width: 0; overflow-wrap: anywhere; }
+.cadastre-editor__row small { flex-shrink: 0; }
+.cadastre-editor__tools .cadastre-editor__row.is-selected { border-color: #347c9e; background: #e1edf3; }
+.cadastre-editor__form, .cadastre-editor__selection {
+  display: grid;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #c7d2c9;
+}
+.cadastre-editor__form .text-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  box-sizing: border-box;
+  border-radius: 6px;
+  font: inherit;
+}
+.cadastre-editor__toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
+.cadastre-editor__toolbar .cadastre-editor__command { flex: 1 1 auto; }
+.cadastre-editor__error { margin: 0; color: #a12d2d; font-size: 0.9rem; overflow-wrap: anywhere; }
+.cadastre-editor__empty, .cadastre-editor__message { margin: 0; font-size: 0.9rem; overflow-wrap: anywhere; }
+.cadastre-editor__delete { border-top: 1px solid #c7d2c9; }
+.cadastre-editor__delete p { overflow-wrap: anywhere; }
+.cadastre-editor__planting { pointer-events: none; }
+.cadastre-editor__inset {
+  fill: none;
+  stroke: #778d7b;
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  vector-effect: non-scaling-stroke;
+}
+.cadastre-editor__planting-rows {
+  fill: none;
+  stroke: #719275;
+  stroke-width: 0.8;
+  vector-effect: non-scaling-stroke;
+}
+.cadastre-editor__planting-trees { fill: #246238; }
+.cadastre-editor__planting-form {
+  display: grid;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #c7d2c9;
+}
+.cadastre-editor__planting-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.cadastre-editor__planting-fields > label { display: grid; min-width: 0; gap: 6px; font-size: 0.9rem; }
+.cadastre-editor__rootstock { display: grid; gap: 6px; font-size: 0.9rem; }
+.cadastre-editor__minimum { color: #53695b; font-size: 0.8rem; }
+.cadastre-editor__number { display: flex; align-items: center; gap: 5px; min-width: 0; }
+.cadastre-editor__planting-form .text-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 8px;
+  box-sizing: border-box;
+  border-radius: 6px;
+  font: inherit;
+}
+.cadastre-editor__preview-options { display: flex; flex-wrap: wrap; gap: 16px; }
+.cadastre-editor__preview-options label { display: inline-flex; gap: 6px; align-items: center; }
+.cadastre-angle-control { display: flex; align-items: center; gap: 20px; padding: 4px 0; }
+.cadastre-angle-dial {
+  position: relative;
+  flex: 0 0 112px;
+  width: 112px;
+  height: 112px;
+  box-sizing: border-box;
+  border: 1px solid #8ca799;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from -1deg, #81988a 0deg 2deg, #f6faf6 2deg 15deg);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.cadastre-angle-dial::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border: 1px solid #ccd8d0;
+  border-radius: 50%;
+  background: #f6faf6;
+}
+.cadastre-angle-dial:active { cursor: grabbing; }
+.cadastre-angle-dial:focus-visible { outline: 2px solid #226c9d; outline-offset: 4px; }
+.cadastre-angle-dial[aria-disabled='true'] { opacity: 0.45; cursor: default; }
+.cadastre-angle-dial__needle {
+  position: absolute;
+  top: calc(50% - 2px);
+  left: 50%;
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: #226c9d;
+  transform-origin: 0 50%;
+  transform: rotate(var(--planting-angle));
+  pointer-events: none;
+}
+.cadastre-angle-dial__needle::after {
+  content: '';
+  position: absolute;
+  right: -4px;
+  top: -3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #226c9d;
+}
+.cadastre-angle-dial__pivot { position: absolute; inset: calc(50% - 4px); border-radius: 50%; background: #28533d; pointer-events: none; }
+.cadastre-angle-control__value { display: grid; min-width: 0; gap: 6px; }
+.cadastre-angle-control__value span { font-size: 0.9rem; }
+.cadastre-angle-control__value output { font-size: 1.4rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) {
+  .cadastre-editor__canvas { height: 330px; }
+  .cadastre-editor .cadastre-map-card { min-height: 380px; }
+}
+
 .cadastre-parcel {
   position: relative;
   z-index: 1;

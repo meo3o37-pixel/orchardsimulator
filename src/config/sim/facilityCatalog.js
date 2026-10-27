@@ -22,7 +22,7 @@ export const FACILITIES_BY_TAB = {
     { key: 'sprinklerIrrigation', name: '스프링클러 관수', unitPricePerTree: 12500, perTree: true, manualInstallOnly: true, desc: '직접 시공형 관수시설 (작업탭에서 스프링클러 노즐 설치)' }
   ],
   general: [
-    { key: 'openStorage3000Py', name: '노지 보관 (3000평)', price: 0, baseProvided: true, desc: '토지 평수 기반 기본 보관 시스템 · 적재/적재량은 토지 규모에 따라 달라집니다.' },
+    { key: 'openStorage3000Py', name: '노지 야적창고', price: 0, baseProvided: true, desc: '노지 시설 설계에서 적재면·통로·위치를 직접 정합니다. 완공 후 설계 면적에 맞는 저장 용량이 적용됩니다.' },
     { key: 'panelWarehouse3', name: '판넬창고 3평', price: 2400000, desc: '소규모 농자재 보관용 판넬창고' },
     { key: 'panelWarehouse5', name: '판넬창고 5평', price: 3600000, desc: '중소형 자재·소모품 보관용 판넬창고' },
     { key: 'panelWarehouse8', name: '판넬창고 8평', price: 5400000, desc: '자재·포장재 분리 보관 가능한 판넬창고' },

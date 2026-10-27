@@ -1,3 +1,6 @@
+import { generateSoilComposition } from '../../utils/soil.js';
+import { generateSlopeBearing } from '../../utils/terrain.js';
+
 export const SLOPE_LABOR_MULTIPLIER_BY_DEGREE = Object.freeze({
   0: 1.00,
   1: 1.01,
@@ -203,6 +206,8 @@ export function createLandPool({
       group: group.key,
       name: `청송군 ${eup} ${ri} ${mainNo}-${subNo}`,
       py,
+      soilComposition: generateSoilComposition(id),
+      slopeBearing: generateSlopeBearing(id),
       slopeDeg,
       slopeLaborMultiplier: slopeLaborMultiplierByDeg(slopeDeg),
       groundwaterTonsBase,

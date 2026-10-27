@@ -228,8 +228,9 @@ export const dailyVigorIncrease = (month, weatherName, nutrition, water) => {
   // 기본값 약 35% 하향
   base *= 0.65;
   // 날씨 보정은 강수 날씨일 때만 적용 (강수 종류별 최대 +2.0)
+  const w = clamp(Number(water) || 0, 0, 100);
   const rainBonus = RAIN_WEATHERS.includes(weatherName)
-    ? clamp((rainfallWaterGain(weatherName) / 4.16) * 2, 0, 2)
+    ? clamp((rainfallWaterGain(weatherName) / 4.16) * 2, 0, 2) * clamp((90 - w) / 15, 0, 1)
     : 0;
   // 양분 보정: 50을 기준으로 단계별 증감
   const n = clamp(Number(nutrition) || 0, 0, 100);
@@ -243,8 +244,7 @@ export const dailyVigorIncrease = (month, weatherName, nutrition, water) => {
   else if (n >= 30) nutritionAdj = -0.08;
   else if (n >= 20) nutritionAdj = -0.14;
   else nutritionAdj = -0.20;
-  // 수분 보정: 토양수분 상태 구간에 맞춘 단계형 보정
-  const w = clamp(Number(water) || 0, 0, 100);
+  // 수분 보정: 과습에서는 강수 보너스로 습해를 상쇄하지 않는다.
   let waterAdj = 0;
   if (w < 10) waterAdj = 0; // 극건조
   else if (w < 20) waterAdj = -0.08; // 건조
@@ -253,9 +253,11 @@ export const dailyVigorIncrease = (month, weatherName, nutrition, water) => {
   else if (w < 50) waterAdj = 0.016; // 보통
   else if (w < 60) waterAdj = 0.04; // 적정
   else if (w < 75) waterAdj = 0.08; // 양호
-  else if (w < 90) waterAdj = 0.12; // 다소 과습
-  else waterAdj = 0; // 과습
+  else if (w < 80) waterAdj = 0; // 과습 경계
+  else if (w < 90) waterAdj = -0.12; // 과습
+  else waterAdj = -0.35; // 뿌리층 산소 부족
   const raw = base + rainBonus + nutritionAdj + waterAdj;
+  if (w >= 90) return Math.min(-0.15, raw);
   if (month === 10 || month === 11) return Math.min(-0.05, raw);
   return Math.max(0.1, raw);
 };
