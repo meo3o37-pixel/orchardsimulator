@@ -1,4 +1,7 @@
 .orchard-pipe-planner > p { color: #6f7c6a; line-height: 1.6; }
+.orchard-pipe-planner__confirm-backdrop{z-index:7050}
+.orchard-pipe-planner__confirm{z-index:7051}
+.orchard-pipe-planner__confirm .confirm-modal__desc{line-height:1.65}
 .orchard-pipe-planner .cadastre-editor__rootstock select { box-sizing: border-box; width: 100%; min-width: 0; padding: 10px; border: 1px solid #d3dcca; border-radius: 9px; background: #fafbf7; color: #365c41; font: inherit; font-size: .85rem; }
 .orchard-pipe-planner__row-heading { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
 .orchard-pipe-planner .orchard-pipe-planner__row-heading button { min-height: 28px; padding: 4px 8px; font-size: .76rem; }

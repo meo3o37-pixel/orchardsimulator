@@ -1,6 +1,7 @@
 import useCadastreViewport from './useCadastreViewport';
 import CadastreMapToolbar, {cadastreViewportEvents} from './CadastreMapToolbar';
 import CadastreGround from './CadastreGround';
+import CadastreDisplayControls from './CadastreDisplayControls';
 import CadastreTutorial from './CadastreTutorial';
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { cadastreEditorTransform } from './cultivationZones';
@@ -10,7 +11,7 @@ import { soilProfileOf } from '../../utils/soil';
 import { slopeBearingOf, slopeBearingLabel } from '../../utils/terrain';
 import { isBuried } from './pipeSystem';
 
-export default function DrainagePlanner({ selectedField: field, cadastre, zones = [], onDrainageAction, onOpenWorkTab }) {
+export default function DrainagePlanner({ selectedField: field, cadastre, zones = [], onDrainageAction }) {
   const saved = useMemo(() => { const p = normalizeDrainage(field.drainage); return p ? { ...p, routes: p.routes.filter(r => !isBuried(r)) } : null; }, [field.drainage]);
   const soil = soilProfileOf(field);
   const bearing = slopeBearingOf(field);
@@ -48,6 +49,7 @@ export default function DrainagePlanner({ selectedField: field, cadastre, zones 
   };
   return <section className="action-section cadastre-panel cadastre-editor drainage-planner" aria-label="배수로 설계·시공">
     <CadastreTutorial topic="drainage" />
+    <CadastreDisplayControls />
 
     <div className="cadastre-layout">
       <div className="cadastre-map-card">
@@ -98,9 +100,8 @@ export default function DrainagePlanner({ selectedField: field, cadastre, zones 
         <div className="cadastre-editor__toolbar">{drawing ? <><button type="button" disabled={drawing.length < 2} onClick={finishLine}>선 그리기 완료</button><button type="button" disabled={!drawing.length} onClick={() => setDrawing(drawing.slice(0, -1))}>한 점 취소</button><button type="button" onClick={() => setDrawing(null)}>그리기 취소</button></> : <button type="button" className="cadastre-editor__command" disabled={!editable || plan.routes.length >= 64} onClick={() => setDrawing([])}>배수로 그리기</button>}</div>
         {plan.routes.map((r, i) => <div key={r.id} className="drainage-route-row"><span>{DRAINAGE_TYPES.find((t) => t.key === r.type)?.name} {i + 1} · {drainageLength(r.points).toFixed(1)}m<br />시공 {r.work.toFixed(1)}m · 막힘 {r.blockage.toFixed(0)}%{isBuried(r) && <><br />깊이 {r.depthStart} → {r.depthEnd}m · {r.envelope ? '추가 피복' : '기본 피복'}</>}</span><button type="button" disabled={!editable || r.work > 0 || Boolean(drawing)} onClick={() => patch({ ...plan, routes: plan.routes.filter((n) => n.id !== r.id) })}>계획 삭제</button></div>)}
         {status.error ? <p className="cadastre-editor__error" role="alert">{status.error}</p> : <small>설계 길이 {status.length.toFixed(1)}m · 수로 점유 약 {status.areaPy.toFixed(1)}평(외부 꼬리 포함)</small>}
-        <div className="cadastre-editor__toolbar"><button type="button" disabled={!editable || !dirty || Boolean(drawing) || Boolean(status.error)} onClick={act}>배수 계획 확정</button><button type="button" disabled={!dirty && !drawing} onClick={() => { setPlan(fresh()); setDrawing(null); setDirty(false); }}>변경 취소</button></div>
+        <div className="cadastre-editor__toolbar"><button type="button" className="cadastre-design-confirm" disabled={!editable || !dirty || Boolean(drawing) || Boolean(status.error)} onClick={act}>설계 확정</button></div>
         {notice ? <p className="cadastre-editor__message" role="status">{notice}</p> : null}
-        {onOpenWorkTab && <button type="button" disabled={!saved || dirty} onClick={() => onOpenWorkTab('facility')}>작업 탭에서 시공·세척</button>}
       </aside>
     </div>
   </section>;

@@ -1,5 +1,6 @@
 import React,{useMemo,useRef,useState,useEffect}from'react';
 import CadastreGround from'./CadastreGround';
+import CadastreDisplayControls from './CadastreDisplayControls';
 import useCadastreViewport from'./useCadastreViewport';
 import CadastreMapToolbar,{cadastreViewportEvents}from'./CadastreMapToolbar';
 import {cadastreEditorTransform}from'./cultivationZones';
@@ -16,6 +17,7 @@ export default function OpenYardPlanner({selectedField:field,cadastre,zones=[],o
  const palletPath=geometry?.pallets.map(poly=>poly.map((p,i)=>{const q=transform.toSvg(p);return`${i?'L':'M'}${q.x} ${q.y}`}).join(' ')+'Z').join(' ');
  const editable=Boolean(field.owned&&onOpenYardSave);
  return<section className="action-section cadastre-panel cadastre-editor open-yard-planner" aria-label="노지 야적창고 설계">
+  <CadastreDisplayControls />
   <h3>노지 야적창고 설계</h3><p className="open-yard-planner__hint">적재면의 가로·세로와 위치를 정하세요. 옆의 3m 통로는 점유 면적에 포함되며 저장 용량에서는 제외됩니다.</p>
   <div className="cadastre-layout"><div className="cadastre-map-card"><div className="cadastre-map-card__grid" aria-hidden="true"/>
    <div className="cadastre-editor__map-heading"><strong>{cadastre.parcelNo}</strong><span>{placing?'적재면 시작 모서리를 눌러 배치':'갈색: 적재면 · 회색: 통로'}</span></div>
@@ -35,7 +37,7 @@ export default function OpenYardPlanner({selectedField:field,cadastre,zones=[],o
    <div className="cadastre-editor__metrics"><span>적재칸 / 저장 용량</span><strong>{geometry?`${geometry.slots}칸 / ${geometry.capacityKg.toLocaleString()}kg`:'—'}</strong></div>
    <p className="open-yard-planner__hint">게임 기준 적재칸 1개당 약 1평·{YARD_SLOT_KG.toLocaleString()}kg. 비·눈에 노출되는 노지 보관이며 기존 날씨 영향을 받습니다. 시공 후 그 자리는 식재 위치에서 제외됩니다.</p>
    {error&&<p role="alert" className="cadastre-editor__error">{error}</p>}
-   <button type="button" disabled={!editable||!dirty||Boolean(error)} onClick={()=>{const r=onOpenYardSave(plan);setNotice(r?.message||'저장하지 못했습니다.');if(r?.ok){setDirty(false);setPlacing(false)}}}>야적창고 계획 확정</button>
+   <button type="button" className="cadastre-design-confirm" disabled={!editable||!dirty||Boolean(error)} onClick={()=>{const r=onOpenYardSave(plan);setNotice(r?.message||'저장하지 못했습니다.');if(r?.ok){setDirty(false);setPlacing(false)}}}>야적창고 계획 확정</button>
    <button type="button" disabled={!dirty} onClick={()=>{setPlan(fresh());setDirty(false);setPlacing(false);setNotice('작성 중인 변경을 취소했습니다.')}}>변경 취소</button>
    {notice&&<p role="status">{notice}</p>}
    {field.cadastreYardPlan&&onOpenWorkTab&&<button type="button" disabled={dirty} onClick={()=>onOpenWorkTab('facility')}>작업 탭에서 시공</button>}

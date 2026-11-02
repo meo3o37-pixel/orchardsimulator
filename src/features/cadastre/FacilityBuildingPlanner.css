@@ -1,0 +1,26 @@
+.facility-building__choose{justify-content:space-between!important;padding:8px 12px!important;border-radius:10px!important;text-align:left}
+.facility-building__choose>span{display:flex;align-items:center;gap:9px;min-width:0;font-weight:700}
+.facility-building__choose img{width:38px;height:38px;object-fit:cover;border-radius:7px;background:#edf2e9}
+.facility-building__choose strong{color:#356b50;font-size:.8rem}
+.facility-angle{display:flex;align-items:center;gap:12px;padding:4px 0}
+.facility-angle__dial{position:relative;flex:0 0 68px;width:68px;height:68px;border:1px solid #9ab5a4;border-radius:50%;background:#f6faf6;box-sizing:border-box;cursor:grab;touch-action:none;user-select:none}
+.facility-angle__dial:active{cursor:grabbing}
+.facility-angle__dial:focus-visible{outline:2px solid #356b50;outline-offset:3px}
+.facility-angle__dial::before{content:'';position:absolute;inset:6px;border:1px solid #d1e1d5;border-radius:50%;pointer-events:none}
+.facility-angle__needle{position:absolute;top:calc(50% - 2px);left:50%;width:25px;height:4px;border-radius:3px;background:#356b50;transform-origin:0 50%;transform:rotate(var(--facility-angle));pointer-events:none}
+.facility-angle__needle::after{content:'';position:absolute;right:-4px;top:-3px;width:10px;height:10px;border-radius:50%;background:#356b50}
+.facility-angle__pivot{position:absolute;inset:calc(50% - 4px);border-radius:50%;background:#244b36;pointer-events:none}
+.facility-angle__value{display:flex;align-items:baseline;gap:8px;color:#486b53;font-size:.9rem}.facility-angle__value output{color:#244b36;font-size:1.15rem;font-weight:700;font-variant-numeric:tabular-nums}
+.facility-building__backdrop{position:fixed;inset:0;z-index:5000;display:grid;place-items:center;padding:16px;background:#142b22a8}
+.facility-building__picker{display:flex;flex-direction:column;gap:14px;width:min(920px,100%);max-height:min(85vh,900px);box-sizing:border-box;padding:20px;border:1px solid #d8e4d7;border-radius:18px;background:#fbfcf7;box-shadow:0 20px 60px #122b2260;color:#254d35}
+.facility-building__picker header{display:flex;align-items:start;justify-content:space-between;gap:12px}.facility-building__picker h3{margin:0}.facility-building__picker p{margin:5px 0 0;color:#647b69}
+.facility-building__picker button{font:inherit;cursor:pointer}.facility-building__picker header button,.facility-building__picker nav button{padding:8px 12px;border:1px solid #c4d7c7;border-radius:9px;background:#f1f6ee;color:#315f43}
+.facility-building__picker input[type=search]{min-height:44px;padding:10px 13px;border:1px solid #a9c5af;border-radius:10px;background:white;color:#254d35;font:inherit}
+.facility-building__picker nav{display:flex;flex-wrap:wrap;gap:7px}.facility-building__picker nav button[aria-pressed=true]{background:#356b50;color:white}
+.facility-building__choices{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;min-height:0;overflow:auto;padding:2px}
+.facility-building__card{display:flex;flex-direction:column;gap:6px;min-width:0;padding:8px;border:1px solid #d7e4d5;border-radius:12px;background:white;color:#244b36;text-align:left}.facility-building__card:hover,.facility-building__card[aria-pressed=true]{border-color:#4c8c60;box-shadow:0 0 0 2px #6da77a30}
+.facility-building__image{display:grid;place-items:center;width:100%;height:105px;border-radius:8px;background:#eaf0e7;overflow:hidden}.facility-building__image img{width:100%;height:100%;object-fit:contain}.facility-building__image>span{font-size:2rem}
+.facility-building__card strong{font-size:.86rem}.facility-building__card small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:#6f8072;font-size:.72rem;line-height:1.4}
+.facility-building__empty{padding:18px;text-align:center}
+.facility-building__picker button:focus-visible,.facility-building__picker input:focus-visible,.facility-building__choose:focus-visible{outline:2px solid #9b7936;outline-offset:2px}
+@media(max-width:640px){.facility-building__picker{max-height:90vh;padding:14px}.facility-building__choices{grid-template-columns:repeat(2,minmax(0,1fr))}.facility-building__image{height:88px}}

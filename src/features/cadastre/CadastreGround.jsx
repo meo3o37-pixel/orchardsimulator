@@ -8,6 +8,7 @@ import snowColors from './groundSnowColors.json';
 import { groundSeasonOf } from './groundSeason';
 
 export const CadastreGroundContext = createContext({ day: 1, weather: '' });
+export const CadastreGroundDisplayContext = createContext({ showSoil: true, showGrass: true });
 
 const clamp = (value, max = 100) => Math.max(0, Math.min(max, Number(value) || 0));
 const fixed = (value) => Number(value.toFixed(3));
@@ -47,6 +48,7 @@ const pointsPath = (points, transform) => points.map((point) => {
 export default memo(function CadastreGround({ field, boundaryPoints, transform, zones = [], zoomPercent = 100 }) {
   const id = `ground-${useId().replace(/:/g, '')}`;
   const environment = useContext(CadastreGroundContext);
+  const { showSoil, showGrass } = useContext(CadastreGroundDisplayContext);
   const season = groundSeasonOf(environment.day, environment.weather);
   const cover = season.greenCover, water = clamp(field?.water);
   const lower = Math.floor(cover / 10) * 10, upper = Math.min(100, lower + 10);
@@ -85,13 +87,17 @@ export default memo(function CadastreGround({ field, boundaryPoints, transform, 
     <rect width="100" height="100" fill={`url(#${tileId(key,level,'b')})`} opacity=".24" />
   </g>;
   return <g pointerEvents="none" role="img" aria-label={`토지 바닥 · ${soil.dominant} 중심 · 수분 ${Math.round(water)} · ${season.label} 풀빛 ${Math.round(cover)}%`}
-    data-cover={cover} data-water={water} data-cover-lower={lower} data-cover-upper={upper} data-cover-blend={fixed(blend)} data-detail={fixed(detail)} data-season={season.label} data-snow={season.snowOpacity} data-surface-tiling="mirrored" data-surface-tile-size={SURFACE_TILE_SIZE}>
+    data-cover={cover} data-water={water} data-cover-lower={lower} data-cover-upper={upper} data-cover-blend={fixed(blend)} data-detail={fixed(detail)} data-season={season.label} data-snow={season.snowOpacity} data-blueprint={!showSoil} data-surface-tiling="mirrored" data-surface-tile-size={SURFACE_TILE_SIZE}>
     <defs>
       <clipPath id={`${id}-parcel`}><polygon points={boundary} /></clipPath>
       <mask id={`${id}-usable`} maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100" style={{ maskType: 'luminance' }}>
         <rect width="100" height="100" fill="white" />
         {exclusions.map((points, i) => <polygon key={i} points={points} fill="black" />)}
       </mask>
+      <pattern id={`${id}-blueprint-grid`} width="10" height="10" patternUnits="userSpaceOnUse">
+        <path d="M2.5 0V10M5 0V10M7.5 0V10M0 2.5H10M0 5H10M0 7.5H10" fill="none" stroke="#bad4de" strokeWidth=".07" />
+        <path d="M0 0H10V10" fill="none" stroke="#83afc1" strokeWidth=".14" />
+      </pattern>
       {surfaces.flatMap((surface) => [
         <SurfacePattern key={`${surface.key}-${surface.level}-a`} id={tileId(surface.key,surface.level,'a')} src={surface.src} size={SURFACE_TILE_SIZE} offset={textureOffset} />,
         <SurfacePattern key={`${surface.key}-${surface.level}-b`} id={tileId(surface.key,surface.level,'b')} src={surface.src} size={SURFACE_TILE_SIZE*Math.SQRT2} offset={textureOffset+1.7} angle={37} />
@@ -105,9 +111,9 @@ export default memo(function CadastreGround({ field, boundaryPoints, transform, 
       </pattern>}
     </defs>
     <g clipPath={`url(#${id}-parcel)`} style={{ isolation: 'isolate' }}>
-      <rect width="100" height="100" fill={baseColor} />
-      <g>{layers.map((layer) => <g key={layer.key} opacity={layer.opacity}>{image(layer.key, 0)}</g>)}</g>
-      {cover > 0 && <g mask={`url(#${id}-usable)`}>
+      <rect className="cadastre-ground__base" width="100" height="100" fill={showSoil ? baseColor : '#eaf4f7'} />
+      <g className="cadastre-ground__soil" opacity={showSoil?1:0}>{layers.map((layer) => <g key={layer.key} opacity={layer.opacity}>{image(layer.key, 0)}</g>)}</g>
+      {cover > 0 && <g className="cadastre-ground__grass" opacity={showGrass&&showSoil?1:0} mask={`url(#${id}-usable)`}>
         <rect width="100" height="100" fill={surfaceColor} />
         <g>
           {layers.map((layer) => <g key={layer.key} opacity={layer.opacity}>
@@ -116,22 +122,23 @@ export default memo(function CadastreGround({ field, boundaryPoints, transform, 
           </g>)}
         </g>
       </g>}
-      <g style={{ mixBlendMode: 'soft-light' }} opacity={.12 + detail * .18}>
+      <g className="cadastre-ground__soil" style={{ mixBlendMode: 'soft-light' }} opacity={showSoil?.12 + detail * .18:0}>
         <rect width="100" height="100" fill={`url(#${id}-soil-fine)`} opacity={.8 - coarseShare * .3} />
         <rect width="100" height="100" fill={`url(#${id}-soil-crumb)`} opacity={.25 + coarseShare * .35} />
       </g>
-      {cover > 0 && <g mask={`url(#${id}-usable)`} style={{ mixBlendMode: 'soft-light' }} opacity={cover / 100 * (.08 + detail * .2)}>
+      {cover > 0 && <g className="cadastre-ground__grass" mask={`url(#${id}-usable)`} style={{ mixBlendMode: 'soft-light' }} opacity={showGrass&&showSoil?cover / 100 * (.08 + detail * .2):0}>
         <rect width="100" height="100" fill={`url(#${id}-turf-fine)`} opacity=".65" />
         <rect width="100" height="100" fill={`url(#${id}-turf-mixed)`} opacity=".35" />
       </g>}
-      <rect width="100" height="100" fill="#f4dfb2" opacity={dry * .23} />
+      <g className="cadastre-ground__soil" opacity={showSoil?1:0}><rect width="100" height="100" fill="#f4dfb2" opacity={dry * .23} />
       <rect width="100" height="100" fill="#c2a16b" opacity={season.dormantTint} />
       {dry * clay * (1 - cover / 100) > .01 && <path d="M14 48L22 43 28 45 33 39 40 41 46 35M28 45L30 55 37 59M33 39L31 30M61 66L68 62 76 65 83 59M68 62L66 52M76 65L73 76"
         fill="none" stroke="#593d2b" strokeWidth=".13" opacity={dry * clay * (1 - cover / 100) * .45} />}
       <rect width="100" height="100" fill="#302316" opacity={wet * .36} />
-      {wet > 0 && <path d="M9 28Q18 17 30 25T52 28Q57 43 41 47T17 42ZM59 66Q71 53 86 61T92 81Q76 90 61 80Z" fill="#3d3020" opacity={wet * .13} />}
-      <CadastreWeeds fieldId={field?.id} amount={field?.weed} areaPy={field?.py} boundaryPoints={boundaryPoints} transform={transform} exclusions={exclusions} />
-      {season.isSnowing && <g opacity={season.snowOpacity} style={{ isolation: 'isolate' }}>
+      {wet > 0 && <path d="M9 28Q18 17 30 25T52 28Q57 43 41 47T17 42ZM59 66Q71 53 86 61T92 81Q76 90 61 80Z" fill="#3d3020" opacity={wet * .13} />}</g>
+      <rect className="cadastre-ground__blueprint" width="100" height="100" fill={`url(#${id}-blueprint-grid)`} opacity={showSoil?0:1} />
+      <g className="cadastre-ground__grass" opacity={showGrass?1:0}><CadastreWeeds fieldId={field?.id} amount={field?.weed} areaPy={field?.py} boundaryPoints={boundaryPoints} transform={transform} exclusions={exclusions} /></g>
+      {season.isSnowing && <g className="cadastre-ground__soil" opacity={showSoil?season.snowOpacity:0} style={{ isolation: 'isolate' }}>
         <rect width="100" height="100" fill={snowColor} />
         <g>
           {layers.map((layer) => <g key={layer.key} opacity={layer.opacity}>{image(layer.key,'snow')}</g>)}

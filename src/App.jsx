@@ -18,6 +18,7 @@ import CompanyFoundingRoom from './features/companyFounding/CompanyFoundingRoom'
 import useApplePriceBoard from './features/companyFounding/useApplePriceBoard';
 import { normalizeOpenYard, saveOpenYardPlan } from './features/cadastre/openYard.js';
 import CadastrePanel from './features/cadastre/CadastrePanel';
+import { evChargerSlotError } from './features/cadastre/evChargerParking';
 import FacilityPlacementModal from './features/facility/FacilityPlacementModal';
 import { facilityInstallDaysOf, requiresFacilityPlacement, facilityPlacementError, normalizeFacilitySites, queueFacilityConstruction, completeFacilityConstruction } from './features/facility/facilityConstruction';
 import { trellisTrainingMultiplier } from './features/cadastre/trellisInvestment.js';
@@ -33,6 +34,7 @@ import { applyOpenParking, parkingDrainageConflict, normalizeOpenParking } from 
 import { normalizeDrainage, drainagePlantingBlocker, applyDrainageAction, drainageConflictsWithBuildings } from './features/cadastre/drainage';
 import { normalizeCultivationZoneMap, normalizeCultivationZones } from './features/cadastre/cultivationZones';
 import { buildCadastreForField, resolveCadastreBoundaryByPoint } from './features/cadastre/cadastreData';
+import { roadPlanError, roadTargets } from './features/cadastre/roadPlan';
 import { buildHarvestPalletSlotMeta, harvestPalletDisplayBoxIndexOf } from './features/harvest/harvestPalletGrid';
 import { buildHarvestBoxStateLabelParts, formatHarvestBoxStateLabel } from './features/storage/harvestBoxLabel';
 import {
@@ -55405,7 +55407,7 @@ body { display: flex !important; align-items: center !important; justify-content
         setPendingFacilityInstall(null);
         return;
       }
-      const placementError = facilityPlacementError(field, placementCadastre.boundaryPoints, activeInstallRequest.site);
+      const placementError = evChargerSlotError(field, { ...activeInstallRequest.site, facilityKey: facility.key }, true) || facilityPlacementError(field, placementCadastre.boundaryPoints, activeInstallRequest.site);
       if (placementError) return window.alert(placementError);
     }
     const requiredUprootTrees = activeInstallRequest.site ? 0 : facilityInstallRequiredUprootTrees(field, facility.key);
@@ -55520,7 +55522,7 @@ body { display: flex !important; align-items: center !important; justify-content
       if (SINGLE_PER_LAND_FACILITY_KEYS.includes(facility.key) && target?.landFacilities?.[facility.key]) return prev;
       if (SINGLE_PER_LAND_FACILITY_KEYS.includes(facility.key) && fieldFacilityUnderConstruction(prev, target.id, facility.key)) return prev;
       if (activeInstallRequest.site && (target.facilitySites || []).some(site => site.id === activeInstallRequest.site.id)) return prev;
-      if (requiresFacilityPlacement(facility) && facilityPlacementError(target, placementCadastre.boundaryPoints, activeInstallRequest.site)) return prev;
+      if (requiresFacilityPlacement(facility) && (evChargerSlotError(target, { ...activeInstallRequest.site, facilityKey: facility.key }, true) || facilityPlacementError(target, placementCadastre.boundaryPoints, activeInstallRequest.site))) return prev;
       const requiredPy = facilityOccupyPyOfField(target, facility.key);
       if (requiredPy > 0 && fieldUsablePy(target) < requiredPy) return prev;
       if (IRRIGATION_FACILITY_KEYS.includes(facility.key) && fieldIrrigationUnassignedTrees(target) <= 0) return prev;
@@ -69371,12 +69373,59 @@ body { display: flex !important; align-items: center !important; justify-content
                 drainageGame={{ day: game.day, weather: game.weather, money: game.money, labor: game.labor, laborOverwork: game.laborOverwork }}
                 drainageMachines={selectedFieldParkedExcavatorInstances.map((machine) => ({ ...machine, name: `${machine.item?.name || '굴삭기'} #${machine.unitNo}`, fuel: machineFuelLitersOfInstance(game, machine.id, machine.item), durability: equipmentDurabilityOfUnit(game, machine.machineKey, machine.unitNo) }))}
                 onInfrastructureSave={(kind, value) => commitCadastrePlan(kind,value)}
+                onElectricPlanSave={(plan) => {
+                  const fieldId = String(selectedField.id);
+                  const current = game.fields.find(field => String(field.id) === fieldId);
+                  if (!current?.owned || !current.landFacilities?.farmPowerElectric) return { ok: false, message: '농사용전기가 설치된 내 토지에서 설계할 수 있습니다.' };
+                  if (!Array.isArray(plan?.routes) || plan.routes.length > 100) return { ok: false, message: '전기 설계안을 확인해 주세요.' };
+                  const sites = normalizeFacilitySites(current.facilitySites);
+                  const boundary = buildCadastreForField({ selectedField: current, markerPoint: selectedFieldCadastreMarkerPoint, contours: townMoveUserContours })?.boundaryPoints;
+                  if (!boundary) return { ok: false, message: '토지 경계를 찾을 수 없습니다.' };
+                  const used = new Set();
+                  for (const route of plan.routes) {
+                    if (!sites.some(site => site.id === route.targetId) || used.has(route.targetId)) return { ok: false, message: '연결할 시설을 확인해 주세요.' };
+                    used.add(route.targetId);
+                    if (!Array.isArray(route.points) || route.points.length < 2 || route.points.length > 102 || !Array.isArray(route.poles) || route.poles.length !== route.points.length - 2) return { ok: false, message: '전선 경로를 확인해 주세요.' };
+                    if (route.points.some(point => !Number.isFinite(point?.x) || !Number.isFinite(point?.y) || !polygonContainsPoint(boundary, point))) return { ok: false, message: '전선은 토지 안에 배치해 주세요.' };
+                    if (route.points.slice(1).some((point, index) => Math.hypot(point.x - route.points[index].x, point.y - route.points[index].y) * 1000 > 30)) return { ok: false, message: '전선 한 구간은 30m 이하로 연결해 주세요.' };
+                  }
+                  setGame(prev => ({ ...prev, fields: prev.fields.map(field => String(field.id) === fieldId ? { ...field, cadastreElectricPlan: { version: 1, routes: plan.routes } } : field) }));
+                  return { ok: true, message: '전기 설계안을 확정했습니다. 실제 연결은 별도 시공이 필요합니다.' };
+                }}
+                onRoadPlanSave={(plan) => {
+                  const fieldId = String(selectedField.id);
+                  const current = game.fields.find(field => String(field.id) === fieldId);
+                  if (!current?.owned || plan?.version !== 1 || !Array.isArray(plan.routes) || plan.routes.length > 100) return { ok: false, message: '도로 설계안을 확인해 주세요.' };
+                  const boundary = buildCadastreForField({ selectedField: current, markerPoint: selectedFieldCadastreMarkerPoint, contours: townMoveUserContours })?.boundaryPoints;
+                  if (!Array.isArray(boundary) || boundary.length < 3) return { ok: false, message: '토지 경계를 찾을 수 없습니다.' };
+                  const targets = roadTargets(current, game.cultivationZonesByFieldId?.[fieldId] || []);
+                  const error = roadPlanError(plan, boundary, targets);
+                  if (error) return { ok: false, message: error };
+                  setGame(prev => ({ ...prev, fields: prev.fields.map(field => String(field.id) === fieldId ? { ...field, cadastreRoadPlan: { version: 1, entrance: plan.entrance, routes: plan.routes } } : field) }));
+                  return { ok: true, message: '도로 연결 설계안을 저장했습니다. 실제 도로 시공은 별도입니다.' };
+                }}
                 onIrrigationSettings={value => commitCadastrePlan('irrigationSettings',value)}
                 onDrainageAction={(action) => action.kind === 'save' ? commitCadastrePlan('drainage', action) : { ok: false, message: '시공은 작업 탭에서 실행해 주세요.' }}
                 onOpenYardSave={plan => commitCadastrePlan('yard',plan)}
                 openYardStorageUsage={{kg:selectedFieldStorageUsedKgByFacility?.[OPEN_STORAGE_BASE_FACILITY_KEY]||0}}
                 onOpenParkingSave={(plan) => commitCadastrePlan('parking', plan)}
                 onZonesChange={(zones, options) => commitCadastrePlan('zones', zones, options)}
+                onFacilityLayoutSave={(plans) => {
+                  const fieldId = String(selectedField.id);
+                  const current = game.fields.find(field => String(field.id) === fieldId);
+                  if (!current?.owned || !Array.isArray(plans)) return { ok: false, message: '설계안을 저장할 토지를 확인해 주세요.' };
+                  const boundary = buildCadastreForField({ selectedField: current, markerPoint: selectedFieldCadastreMarkerPoint, contours: townMoveUserContours })?.boundaryPoints;
+                  if (!boundary) return { ok: false, message: '토지 경계를 찾을 수 없습니다.' };
+                  const occupied = [...normalizeFacilitySites(current.facilitySites)];
+                  for (const plan of plans) {
+                    if (!FACILITY_MAP[plan.facilityKey] || !requiresFacilityPlacement(FACILITY_MAP[plan.facilityKey])) return { ok: false, message: '설계 가능한 시설을 선택해 주세요.' };
+                    const error = evChargerSlotError(current, plan) || facilityPlacementError({ ...current, facilitySites: occupied }, boundary, plan);
+                    if (error) return { ok: false, message: error };
+                    occupied.push({ ...plan, status: 'building', startDay: 0, readyDay: 1 });
+                  }
+                  setGame(prev => ({ ...prev, fields: prev.fields.map(field => String(field.id) === fieldId ? { ...field, cadastreFacilityLayoutPlans: plans } : field) }));
+                  return { ok: true, message: '시설·건물 설계안을 저장했습니다. 건설은 시설상점에서 진행해 주세요.' };
+                }}
                 onLinkExistingTreeRows={() => commitCadastrePlan('linkRows', null)}
                 onOpenWorkTab={(panel) => { setWorkTaskPanelTab(panel); setFocusTab('work'); }}
               />
@@ -77051,12 +77100,13 @@ body { display: flex !important; align-items: center !important; justify-content
           field={game.fields[pendingFacilityPlacement.fieldIndex]}
           facility={FACILITY_MAP[pendingFacilityPlacement.installRequest.facilityKey]}
           boundary={pendingFacilityPlacement.boundary}
+          initialSlotNo={pendingFacilityPlacement.installRequest.evChargeSlotNo}
           day={game.day} weather={game.weather}
           onClose={() => { setPendingFacilityInstall(pendingFacilityPlacement.installRequest); setPendingFacilityPlacement(null); }}
           onConfirm={site => {
             const pending = pendingFacilityPlacement, field = game.fields[pending.fieldIndex];
             if (String(field?.id) !== String(pending.fieldId)) return { message: '선택한 토지가 변경되었습니다. 다시 선택해 주세요.' };
-            const error = facilityPlacementError(field, pending.boundary, site);
+            const error = evChargerSlotError(field, { ...site, facilityKey: pending.installRequest.facilityKey }, true) || facilityPlacementError(field, pending.boundary, site);
             if (error) return { message: error };
             setPendingFacilityPlacement(null);
             installFacilityToField(pending.fieldIndex, null, false, { ...pending.installRequest, site });

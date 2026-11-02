@@ -1,8 +1,9 @@
 import {facilityFootprints}from'../facility/facilityConstruction';
-import CadastreGround, { CadastreGroundContext } from './CadastreGround';
+import CadastreGround, { CadastreGroundContext, CadastreGroundDisplayContext } from './CadastreGround';
 import CadastreTutorial from './CadastreTutorial';
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { Check, Hand, Maximize, Pencil, Plus, Save, Trash2, Undo2, X, ZoomIn, ZoomOut } from 'lucide-react';
+import { CarFront, Check, ClipboardCheck, Droplet, GitBranch, Hand, Maximize, Pencil, PencilRuler, Plus, Radio, Save, Trash2, Trees, Undo2, Warehouse, Waves, X, Zap, ZoomIn, ZoomOut } from 'lucide-react';
+import CadastreDisplayControls from './CadastreDisplayControls';
 import { buildCadastreForField, formatCadastrePyAreaLabel, polygonAreaPyFromPoints } from './cadastreData';
 import { cadastreEditorTransform, normalizeCultivationZones, validateCultivationZone } from './cultivationZones';
 import { generatePlantingPreview } from './plantingDesign';
@@ -19,20 +20,74 @@ import { normalizeOpenParking } from './openParking';
 import SoilSummary from './SoilSummary';
 import LiveLandView from './LiveLandView';
 import CadastreModeTabs from './CadastreModeTabs';
+import ConfirmedDesignView from './ConfirmedDesignView';
+import FacilityBuildingPlanner from './FacilityBuildingPlanner';
+import ElectricPlanner from './ElectricPlanner';
+
+const FACILITY_DESIGN_MODES = [
+  { key: 'parking', label: '노지 시설 설계', Icon: CarFront },
+  { key: 'buildings', label: '시설·건물 설계', Icon: Warehouse },
+  { key: 'electric', label: '전기 설계', Icon: Zap }
+];
+const CULTIVATION_FACILITY_MODES = [
+  { key: 'trellis', label: '지주시설 설계', Icon: Trees },
+  { key: 'irrigation', label: '관수시설 설계', Icon: Droplet },
+  { key: 'drainage', label: '배수로 설계', Icon: Waves }
+];
+const DRAINAGE_DESIGN_MODES = [
+  { key: 'drainage', label: '배수로 설계', Icon: Waves },
+  { key: 'pipes', label: '유공관 설계', Icon: GitBranch }
+];
 
 export default function CadastrePanel(props) {
   const { selectedField, selectedFieldMarkerPoint, contours = [] } = props;
+  const modeStorageKey = `orchard-cadastre-design-mode:${selectedField.id}`;
   const [localSection,setLocalSection]=useState('realtime');
   const section=props.section??localSection,setSection=props.onSectionChange??setLocalSection;
   const sectionId=useId();
-  const sectionTabs=[{key:'realtime',label:'실시간'},{key:'design',label:'설계'}];
+  const sectionTabs=[{key:'realtime',label:'실시간',Icon:Radio},{key:'design',label:'설계',Icon:PencilRuler},{key:'confirmed',label:'확정된 설계 현황',Icon:ClipboardCheck}];
   const sectionKeyDown=event=>{
     if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
     event.preventDefault();
-    const next=event.key==='Home'?'realtime':event.key==='End'?'design':section==='realtime'?'design':'realtime';
+    const index=sectionTabs.findIndex(tab=>tab.key===section);
+    const next=event.key==='Home'?'realtime':event.key==='End'?'confirmed':sectionTabs[(index+(event.key==='ArrowLeft'?-1:1)+sectionTabs.length)%sectionTabs.length].key;
     setSection(next);requestAnimationFrame(()=>document.getElementById(`${sectionId}-tab-${next}`)?.focus());
   };
-  const [mode, setMode] = useState(() => selectedField.owned && !selectedField.openParking && !Number(selectedField.trees) ? 'parking' : 'farm');
+  const [mode, setMode] = useState(() => {
+    const fallback = selectedField.owned && !selectedField.openParking && !Number(selectedField.trees) ? 'parking' : 'farm';
+    try {
+      const saved = sessionStorage.getItem(modeStorageKey);
+      return ['farm', 'trellis', 'irrigation', 'drainage', 'pipes', 'parking', 'buildings', 'electric'].includes(saved) ? saved : fallback;
+    } catch { return fallback; }
+  });
+  const [facilityMode, setFacilityMode] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem(modeStorageKey);
+      return FACILITY_DESIGN_MODES.some(item => item.key === saved) ? saved : 'parking';
+    } catch { return 'parking'; }
+  });
+  const [cultivationFacilityMode, setCultivationFacilityMode] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem(modeStorageKey);
+      return ['trellis', 'irrigation', 'drainage', 'pipes'].includes(saved) ? saved : 'trellis';
+    } catch { return 'trellis'; }
+  });
+  const [drainageMode, setDrainageMode] = useState(() => {
+    try { return sessionStorage.getItem(modeStorageKey) === 'pipes' ? 'pipes' : 'drainage'; }
+    catch { return 'drainage'; }
+  });
+  useEffect(() => {
+    try { sessionStorage.setItem(modeStorageKey, mode); } catch { /* session storage unavailable */ }
+  }, [modeStorageKey, mode]);
+  useEffect(() => {
+    if (FACILITY_DESIGN_MODES.some(item => item.key === mode)) setFacilityMode(mode);
+    if (['trellis', 'irrigation', 'drainage', 'pipes'].includes(mode)) setCultivationFacilityMode(mode);
+    if (DRAINAGE_DESIGN_MODES.some(item => item.key === mode)) setDrainageMode(mode);
+  }, [mode]);
+  const [showSoil, setShowSoil] = useState(false);
+  const [showGrass, setShowGrass] = useState(false);
+  const [confirmedSoil, setConfirmedSoil] = useState(false);
+  const [confirmedGrass, setConfirmedGrass] = useState(false);
   const cadastre = useMemo(() => buildCadastreForField({ selectedField, markerPoint: selectedFieldMarkerPoint, contours }), [selectedField, selectedFieldMarkerPoint, contours]);
   const groundEnvironment = useMemo(() => ({
     day: props.drainageGame?.day ?? 1,
@@ -41,19 +96,37 @@ export default function CadastrePanel(props) {
   if (!cadastre) return null;
   return <CadastreGroundContext.Provider value={groundEnvironment}><div className={props.className || undefined}>
     <div className="cadastre-section-tabs" role="tablist" aria-label="지적도 하위 탭" onKeyDown={sectionKeyDown}>
-      {sectionTabs.map(tab=><button key={tab.key} type="button" role="tab" id={`${sectionId}-tab-${tab.key}`} aria-controls={`${sectionId}-panel-${tab.key}`} aria-selected={section===tab.key} tabIndex={section===tab.key?0:-1} onClick={()=>setSection(tab.key)}>{tab.label}</button>)}
+      {sectionTabs.map(tab=><button key={tab.key} type="button" role="tab" id={`${sectionId}-tab-${tab.key}`} aria-controls={`${sectionId}-panel-${tab.key}`} aria-selected={section===tab.key} tabIndex={section===tab.key?0:-1} onClick={()=>setSection(tab.key)}><tab.Icon size={17} strokeWidth={1.8} aria-hidden="true"/><span>{tab.label}</span></button>)}
     </div>
     <div className="cadastre-section-panel" role="tabpanel" id={`${sectionId}-panel-realtime`} aria-labelledby={`${sectionId}-tab-realtime`} hidden={section!=='realtime'}>
       <LiveLandView field={selectedField} cadastre={cadastre} zones={props.zones || []} onOpenDesign={()=>{setSection('design');setMode('farm');}} />
       <SoilSummary field={selectedField} />
     </div>
     <div className="cadastre-section-panel" role="tabpanel" id={`${sectionId}-panel-design`} aria-labelledby={`${sectionId}-tab-design`} hidden={section!=='design'}>
-    <CadastreModeTabs mode={mode} onChange={setMode} />
+    <CadastreGroundDisplayContext.Provider value={{showSoil,setShowSoil,showGrass,setShowGrass}}>
+    <CadastreModeTabs mode={mode} onChange={next => setMode(next === 'facility' ? facilityMode : next === 'cultivation-facility' ? cultivationFacilityMode : next)} />
+    {['trellis', 'irrigation', 'drainage', 'pipes'].includes(mode) && <nav className="cadastre-design-submodes" aria-label="재배시설 설계 종류">
+      {CULTIVATION_FACILITY_MODES.map(({ key, label, Icon }) => <button key={key} type="button" aria-pressed={key === 'drainage' ? DRAINAGE_DESIGN_MODES.some(item => item.key === mode) : mode === key} onClick={() => setMode(key === 'drainage' ? drainageMode : key)}><Icon size={17} strokeWidth={1.8} aria-hidden="true" /><span>{label}</span></button>)}
+    </nav>}
+    {DRAINAGE_DESIGN_MODES.some(item => item.key === mode) && <nav className="cadastre-design-submodes cadastre-design-submodes--nested" aria-label="배수로 설계 종류">
+      {DRAINAGE_DESIGN_MODES.map(({ key, label, Icon }) => <button key={key} type="button" aria-pressed={mode === key} onClick={() => setMode(key)}><Icon size={17} strokeWidth={1.8} aria-hidden="true" /><span>{label}</span></button>)}
+    </nav>}
+    {FACILITY_DESIGN_MODES.some(item => item.key === mode) && <nav className="cadastre-design-submodes" aria-label="시설 설계 종류">
+      {FACILITY_DESIGN_MODES.map(({ key, label, Icon }) => <button key={key} type="button" aria-pressed={mode === key} onClick={() => setMode(key)}><Icon size={17} strokeWidth={1.8} aria-hidden="true" /><span>{label}</span></button>)}
+    </nav>}
     <div className="cadastre-design-view" hidden={mode !== 'farm'}><CultivationEditor key={`${selectedField.id}:${cadastre.boundaryContourId}`} {...props} className="" cadastre={cadastre} /></div>
     <div className="cadastre-design-view" hidden={mode !== 'drainage'}><DrainagePlanner key={`${selectedField.id}:${cadastre.boundaryContourId}`} {...props} cadastre={cadastre} /></div>
     <div className="cadastre-design-view" hidden={mode !== 'pipes'}><OrchardPipePlanner key={`${selectedField.id}:${cadastre.boundaryContourId}`} {...props} cadastre={cadastre} onSelectDesign={setMode} /></div>
     {['trellis','irrigation'].map(kind=><div className="cadastre-design-view" hidden={mode!==kind} key={kind}><InfrastructurePlanner key={`${selectedField.id}:${cadastre.boundaryContourId}:${kind}`} kind={kind} {...props} cadastre={cadastre} onSelectDesign={setMode}/></div>)}
     <div className="cadastre-design-view" hidden={mode !== 'parking'}><OpenFacilitiesPlanner key={`${selectedField.id}:${cadastre.boundaryContourId}`} {...props} cadastre={cadastre} /></div>
+    <div className="cadastre-design-view" hidden={mode !== 'buildings'}><FacilityBuildingPlanner field={selectedField} cadastre={cadastre} onFacilityLayoutSave={props.onFacilityLayoutSave} /></div>
+    <div className="cadastre-design-view" hidden={mode !== 'electric'}><ElectricPlanner field={selectedField} cadastre={cadastre} onElectricPlanSave={props.onElectricPlanSave} /></div>
+    </CadastreGroundDisplayContext.Provider>
+    </div>
+    <div className="cadastre-section-panel" role="tabpanel" id={`${sectionId}-panel-confirmed`} aria-labelledby={`${sectionId}-tab-confirmed`} hidden={section!=='confirmed'}>
+      <CadastreGroundDisplayContext.Provider value={{showSoil:confirmedSoil,setShowSoil:setConfirmedSoil,showGrass:confirmedGrass,setShowGrass:setConfirmedGrass}}>
+        <ConfirmedDesignView field={selectedField} cadastre={cadastre} zones={props.zones || []} />
+      </CadastreGroundDisplayContext.Provider>
     </div>
   </div></CadastreGroundContext.Provider>;
 }
@@ -62,7 +135,8 @@ function CultivationEditor({ className = '', selectedField, cadastre, zones: raw
   const parking = useMemo(() => normalizeOpenParking(selectedField.openParking), [selectedField.openParking]);
   const zones = useMemo(() => normalizeCultivationZones(rawZones), [rawZones]);
   const transform = useMemo(() => cadastreEditorTransform(cadastre.boundaryPoints), [cadastre.boundaryPoints]);
-  const [selectedId, setSelectedId] = useState('');
+  const [requestedZoneId, setSelectedId] = useState('');
+  const selectedId = zones.some((zone) => zone.id === requestedZoneId) ? requestedZoneId : (zones[0]?.id || '');
   const [draft, setDraft] = useState(null);
   const [closed, setClosed] = useState(false);
   const [vertexIndex, setVertexIndex] = useState(null);
@@ -151,7 +225,7 @@ function CultivationEditor({ className = '', selectedField, cadastre, zones: raw
       rows: plantingPreview.rows.map((row) => line(row)).join(' '),
       trees: plantingPreview.trees.map((point) => {
         const p = transform.toSvg(point);
-        return `M${(p.x - 0.3).toFixed(3)},${p.y.toFixed(3)}a.3,.3 0 1,0 .6,0a.3,.3 0 1,0 -.6,0`;
+        return `M${(p.x - 0.28).toFixed(3)},${p.y.toFixed(3)}a.28,.28 0 1,0 .56,0a.28,.28 0 1,0 -.56,0`;
       }).join(' ')
     };
   }, [plantingPreview, transform]);
@@ -178,10 +252,11 @@ function CultivationEditor({ className = '', selectedField, cadastre, zones: raw
   return (
     <section className={`action-section cadastre-panel cadastre-editor ${className}`.trim()}>
       <CadastreTutorial topic="farm" title="지적도" />
+      <CadastreDisplayControls />
       <div className="cadastre-layout">
         <div className="cadastre-map-card">
           <div className="cadastre-map-card__grid" aria-hidden="true" />
-          <div className="cadastre-editor__map-heading"><strong>{cadastre.parcelNo}</strong><span>{formatCadastrePyAreaLabel(cadastre.boundaryAreaPy)}</span></div>
+          <div className="cadastre-editor__map-heading"><strong>{cadastre.parcelNo}</strong><div className="cadastre-editor__planting-legend"><span>{formatCadastrePyAreaLabel(cadastre.boundaryAreaPy)}</span>{plantingPaths&&showTrees&&<span><i className="cadastre-editor__planting-legend-tree" aria-hidden="true"/>나무</span>}</div></div>
           {transform && <div className="cadastre-editor__map-toolbar" role="toolbar" aria-label="지도 보기">
             <button type="button" title="축소" aria-label="지적도 축소" disabled={viewport.zoomPercent <= 50} onClick={viewport.zoomOut}><ZoomOut size={18} /></button>
             <output aria-label="지도 배율">{viewport.zoomPercent}%</output>
@@ -332,7 +407,7 @@ function CultivationEditor({ className = '', selectedField, cadastre, zones: raw
                 <div className="cadastre-editor__metrics"><span>여백 제외 면적</span><strong>{formatCadastrePyAreaLabel((plantingPreview?.usableAreaSqM || 0) / 3.305785)}</strong></div>
                 {plantingPreview?.treeCount === 0 && <p className="cadastre-editor__empty">현재 간격과 여백에 배치 가능한 나무가 없습니다.</p>}
               </>}
-              <div className="cadastre-editor__toolbar"><button className="cadastre-editor__command" type="submit" disabled={!editable || !plantingSettings.variety || Boolean(plantingError)}><Save size={18} />식재 계획 확정</button><button className="cadastre-editor__command" type="button" disabled={!plantingDraft} onClick={() => { setPlantingDraft(null); setMessage(''); }}><Undo2 size={18} />되돌리기</button></div>
+              <div className="cadastre-editor__toolbar"><button className="cadastre-editor__command cadastre-design-confirm" type="submit" disabled={!editable || !plantingSettings.variety || Boolean(plantingError)}><Save size={18} />식재 계획 확정</button></div>
               {onOpenWorkTab && selectedField.cadastrePlantingPlans?.some(p => p.zoneId === selected.id) && <button type="button" className="cadastre-editor__command" onClick={() => onOpenWorkTab('season')}>작업 탭에서 식재</button>}
             </form>
           </div>}

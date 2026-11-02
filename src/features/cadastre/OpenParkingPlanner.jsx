@@ -1,4 +1,5 @@
 import CadastreGround from './CadastreGround';
+import CadastreDisplayControls from './CadastreDisplayControls';
 import CadastreTutorial from './CadastreTutorial';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Maximize } from 'lucide-react';
@@ -33,6 +34,7 @@ export default function OpenParkingPlanner({ selectedField: field, cadastre, zon
   };
   return <section className="action-section cadastre-panel cadastre-editor open-parking-planner" aria-label="노지 주차장 배치">
     <CadastreTutorial topic="parking" />
+    <CadastreDisplayControls />
 
 
     <div className="cadastre-layout">
@@ -73,7 +75,7 @@ export default function OpenParkingPlanner({ selectedField: field, cadastre, zon
         <div className="cadastre-editor__metrics"><span>총 점유 면적</span><strong>{geometry ? geometry.occupiedPy.toFixed(1) : '—'}평</strong></div>
         <div className="cadastre-editor__metrics"><span>예상 외주 작업비</span><strong>{(quote.cost || 0).toLocaleString()}원</strong></div>
         {error && <p className="cadastre-editor__error" role="alert">{error}</p>}
-        <div className="cadastre-editor__toolbar"><button type="button" disabled={!editable || !dirty || Boolean(error)} onClick={save}>주차장 계획 확정</button><button type="button" disabled={!dirty} onClick={() => { setPlan(fresh()); setDirty(false); setPlacing(false); setNotice('변경을 취소했습니다.'); }}>변경 취소</button></div>
+        <div className="cadastre-editor__toolbar"><button type="button" className="cadastre-design-confirm" disabled={!editable || !dirty || Boolean(error)} onClick={save}>주차장 계획 확정</button><button type="button" disabled={!dirty} onClick={() => { setPlan(fresh()); setDirty(false); setPlacing(false); setNotice('변경을 취소했습니다.'); }}>변경 취소</button></div>
         {notice && <p className="cadastre-editor__message" role="status">{notice}</p>}
         {field.cadastreParkingPlan && onOpenWorkTab && <button type="button" disabled={dirty} onClick={() => onOpenWorkTab('facility')}>작업 탭에서 시공</button>}
       </aside>

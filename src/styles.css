@@ -15020,6 +15020,19 @@ button {
 }
 
 .cadastre-mode-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.cadastre-design-display { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; width: fit-content; max-width: 100%; box-sizing: border-box; padding: 5px 7px; margin: 0 0 16px; border: 1px solid #dce5d7; border-radius: 13px; background: #edf2e9; color: #657b68; font-size: .82rem; }
+.cadastre-design-display > span { padding: 0 8px; font-weight: 700; white-space: nowrap; }
+.cadastre-design-display button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; padding: 6px 10px; border: 1px solid transparent; border-radius: 9px; background: transparent; color: #657b68; font: inherit; font-weight: 600; cursor: pointer; transition: background-color .15s, color .15s, box-shadow .15s, transform .18s cubic-bezier(.2,.8,.2,1); }
+.cadastre-design-display button:active { transform: scale(.93); }
+.cadastre-design-display button:hover:not([aria-pressed="true"]) { background: #ffffffa6; color: #315e46; }
+.cadastre-design-display button[aria-pressed="true"] { background: linear-gradient(130deg, #3d7758, #254e3c); color: #fffdf6; box-shadow: 0 2px 5px #234e3c24; }
+.cadastre-design-display button small { font-size: .68rem; font-weight: 600; opacity: .85; }
+.cadastre-design-display button:focus-visible { outline: 2px solid #9b7936; outline-offset: 2px; }
+:is(.cadastre-design-view, .confirmed-design) .cadastre-ground__base { transition: fill .35s ease; }
+:is(.cadastre-design-view, .confirmed-design) :is(.cadastre-ground__soil, .cadastre-ground__grass, .cadastre-ground__blueprint) { transition: opacity .35s ease; }
+:is(.cadastre-design-view, .confirmed-design) .cadastre-ground__blueprint { pointer-events: none; }
+:is(.cadastre-design-view, .confirmed-design) .cadastre-ground[data-blueprint="true"] .cadastre-real-boundary__polygon { stroke: #347c9e; stroke-width: 1.6; }
+@media (prefers-reduced-motion: reduce) { .cadastre-design-display button, :is(.cadastre-design-view, .confirmed-design) :is(.cadastre-ground__base, .cadastre-ground__soil, .cadastre-ground__grass, .cadastre-ground__blueprint) { transition: none; } }
 .cadastre-mode-tabs button { padding: 10px 14px; border: 1px solid #b8c8bd; border-radius: 8px; background: #fafcf9; color: #28533d; font: inherit; cursor: pointer; }
 .cadastre-mode-tabs button[aria-pressed="true"] { background: #28533d; color: #fff; }
 .drainage-planner > p { color: #53695b; line-height: 1.6; }
@@ -15138,6 +15151,18 @@ button {
 .cadastre-editor__tools button:hover:not(:disabled) { background: #e7f0f3; border-color: #347c9e; }
 .cadastre-editor__tools button:disabled { opacity: 0.45; cursor: default; }
 .cadastre-editor__tools button:focus-visible { outline: 2px solid #226c9d; outline-offset: 3px; }
+.cadastre-editor .cadastre-editor__tools .cadastre-design-confirm {
+  width: 100%; min-height: 50px; padding: 12px 18px;
+  border: 1px solid #276447; border-radius: 12px;
+  background: linear-gradient(135deg, #3e8b60, #286b4b);
+  color: #fff; font-weight: 700; letter-spacing: .02em;
+  box-shadow: 0 6px 15px rgba(35, 91, 61, .22);
+  transition: transform .18s, box-shadow .18s, background .18s;
+}
+.cadastre-editor .cadastre-editor__tools .cadastre-design-confirm:hover:not(:disabled) { background: linear-gradient(135deg, #4a9b6b, #2d7652); box-shadow: 0 8px 18px rgba(35, 91, 61, .28); transform: translateY(-2px); }
+.cadastre-editor .cadastre-editor__tools .cadastre-design-confirm:active:not(:disabled) { transform: translateY(0); box-shadow: 0 3px 8px rgba(35, 91, 61, .2); }
+.cadastre-editor .cadastre-editor__tools .cadastre-design-confirm:disabled { background: #dce6dd; border-color: #b9cbbd; color: #66816d; box-shadow: none; opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .cadastre-design-confirm { transition: none; } }
 /* SVG outlines use a bounding rectangle and can grow with map zoom.
    Keep keyboard focus on the geometry's non-scaling stroke instead. */
 .cadastre-editor__canvas :focus { outline: none; }
@@ -15186,6 +15211,9 @@ button {
   vector-effect: non-scaling-stroke;
 }
 .cadastre-editor__planting-trees { fill: #246238; }
+.cadastre-editor__planting-legend { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; font-size: .85rem; }
+.cadastre-editor__planting-legend > span { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.cadastre-editor__planting-legend-tree { width: 9px; height: 9px; border-radius: 50%; background: #246238; }
 .cadastre-editor__planting-form {
   display: grid;
   gap: 12px;

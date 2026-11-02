@@ -70,6 +70,13 @@
   transition: transform 260ms cubic-bezier(.22, 1, .36, 1), width 260ms ease, height 260ms ease;
 }
 .cadastre-work-tabs__icon, .cadastre-work-tabs__badge { transition: background-color 200ms ease, color 200ms ease; }
+.cadastre-design-submodes { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; padding: 6px; border: 1px solid #dce5d7; border-radius: 14px; background: #edf2e9; }
+.cadastre-design-submodes button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; flex: 1; min-width: 0; min-height: 44px; padding: 9px; border: 1px solid transparent; border-radius: 10px; background: transparent; color: #446a55; font: inherit; cursor: pointer; }
+.cadastre-design-submodes button svg { flex: none; }
+.cadastre-design-submodes--nested { margin-left: 18px; background: #f5f8f1; }
+.cadastre-design-submodes button[aria-pressed="true"] { background: #356b50; color: #fffdf6; box-shadow: 0 2px 5px #234e3c20; }
+.cadastre-design-submodes button:focus-visible { outline: 2px solid #9b7936; outline-offset: 2px; }
+@media (max-width: 640px) { .cadastre-design-submodes button { flex: 1 1 135px; } }
 .cadastre-design-view:not([hidden]) { animation: cadastre-design-enter 220ms ease-out; }
 @keyframes cadastre-design-enter {
   from { opacity: 0; transform: translateY(6px); }
@@ -82,9 +89,12 @@
   .cadastre-design-view:not([hidden]) { animation: none; }
 }
 
-.cadastre-section-tabs{display:flex;gap:6px;width:min(100%,420px);box-sizing:border-box;padding:5px;margin:0 0 14px;border:1px solid #dce5d7;border-radius:16px;background:#edf2e9}
-.cadastre-section-tabs>button{flex:1;min-width:0;min-height:44px;padding:10px 18px;border:1px solid transparent;border-radius:11px;background:transparent;color:#657b68;font:inherit;font-weight:700;cursor:pointer;transition:background-color .15s,color .15s}
+.cadastre-section-tabs{display:flex;gap:6px;width:min(100%,420px);box-sizing:border-box;padding:5px;margin:0 auto 14px;border:1px solid #dce5d7;border-radius:16px;background:#edf2e9}
+.cadastre-section-tabs:has(>button:nth-child(3)){width:min(100%,700px)}
+.cadastre-section-tabs>button{display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:1;min-width:0;min-height:44px;padding:10px 12px;border:1px solid transparent;border-radius:11px;background:transparent;color:#657b68;font:inherit;font-weight:700;cursor:pointer;transition:background-color .15s,color .15s}
+.cadastre-section-tabs>button svg{flex:none}
 .cadastre-section-tabs>button[aria-selected=true]{background:#356b50;color:#fffdf6;box-shadow:0 2px 5px #234e3c1f}
 .cadastre-section-tabs>button:hover:not([aria-selected=true]){background:#ffffffa6;color:#315e46}
 .cadastre-section-tabs>button:focus-visible{outline:2px solid #9b7936;outline-offset:1px}
+@media(max-width:640px){.cadastre-section-tabs>button{gap:5px;padding:9px 4px;font-size:.78rem}.cadastre-section-tabs>button svg{width:15px;height:15px}}
 @media(prefers-reduced-motion:reduce){.cadastre-section-tabs>button{transition:none}}

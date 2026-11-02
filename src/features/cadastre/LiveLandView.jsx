@@ -32,7 +32,7 @@ export default function LiveLandView({field,cadastre,zones=[],onOpenDesign}){
     {snapshot.parking&&<g aria-label={`완공 주차장 ${snapshot.parking.plan.slots}칸`}><polygon points={toPoints(snapshot.parking.aisle)} fill="#bbbcb3" stroke="#90968b" strokeWidth=".15"/>{snapshot.parking.bays.map((bay,i)=><polygon key={i} points={toPoints(bay)} fill="#dfd2a8" stroke="#faf7eb" strokeWidth=".3"/>)}</g>}
     {snapshot.yard&&<g aria-label="완공 야적창고"><polygon points={toPoints(snapshot.yard.aisle)} fill="#bcbdb1"/><polygon points={toPoints(snapshot.yard.storage)} fill={`url(#${id}-yard)`} stroke="#8e7456" strokeWidth=".3"/></g>}
     <g clipPath={`url(#${id}-land)`}>
-     {snapshot.wires.map(r=><polyline key={r.key} points={toPoints(r.points)} fill="none" stroke={r.condition<=20?'#b9604f':'#ac8550'} strokeWidth=".28" strokeDasharray={r.condition<=20?'.6 .4':undefined}/>)}
+     {snapshot.wires.map(r=><polyline key={r.key} points={toPoints(r.points)} fill="none" stroke={r.condition<=20?'#963e32':'#634321'} strokeWidth=".55" strokeDasharray={r.condition<=20?'.6 .4':undefined}/>)}
      {snapshot.waterLines.map(r=><polyline key={r.key} points={toPoints(r.points)} fill="none" stroke={r.type==='main'?'#287ea8':'#43a2a5'} strokeWidth={r.type==='main'?'.55':'.3'}/>)}
      <g aria-label={`연결된 식재 위치 ${snapshot.trees.length}주`}><path d={paths.shadow} fill="#173c32" opacity=".2"/><path d={paths.trees} fill={season.greenCover>30?'#3b7650':'#747d52'} stroke="#275438" strokeWidth=".08"/><path d={paths.light} fill={season.greenCover>30?'#7eac67':'#a9a576'} opacity=".7"/></g>
      <path d={paths.posts} fill="#66513a" stroke="#fff6db" strokeWidth=".06"/><path d={paths.brokenPosts} fill="#bb5a49"/><path d={paths.nozzles} fill="#9ee3e2" stroke="#287ea8" strokeWidth=".06"/>
