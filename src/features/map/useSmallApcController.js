@@ -17,6 +17,7 @@ const SMALL_APC_SHIPPING_VEHICLE_PROFILES = [
 export default function useSmallApcController({
   game,
   setGame,
+  runtimeActive = true,
   smallApcMapOpen,
   setMapLocationModal,
   setTownMarkerParkingModal,
@@ -314,11 +315,13 @@ export default function useSmallApcController({
   }, [SMALL_APC_BOX_CAPACITY_KG, smallApcFreshnessBucketOf]);
 
   useEffect(() => {
+    if (!runtimeActive) return undefined;
+    setSmallApcWorkflowNow(Date.now());
     const timerId = window.setInterval(() => {
       setSmallApcWorkflowNow(Date.now());
     }, 1000);
     return () => window.clearInterval(timerId);
-  }, []);
+  }, [runtimeActive]);
 
   const placeRowsIntoColdStorage = useCallback((coldStorageByBuilding, rows = [], preferredBuildingKeys = []) => {
     const nextColdStorageByBuilding = normalizeSmallApcColdStorageByBuilding(coldStorageByBuilding);

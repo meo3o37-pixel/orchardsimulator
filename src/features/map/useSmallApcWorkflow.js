@@ -26,6 +26,7 @@ import {
 } from './smallApcSelectors';
 
 export default function useSmallApcWorkflow({
+  runtimeActive = true,
   randIntInclusive,
   randomVehicleNames,
   findItemImageSrcByKeywords,
@@ -97,11 +98,13 @@ export default function useSmallApcWorkflow({
   }, []);
 
   useEffect(() => {
+    if (!runtimeActive) return undefined;
+    setSmallApcLoadingNow(Date.now());
     const intervalId = window.setInterval(() => {
       setSmallApcLoadingNow(Date.now());
     }, 1000);
     return () => window.clearInterval(intervalId);
-  }, []);
+  }, [runtimeActive]);
 
   useEffect(() => {
     smallApcLoadingTicketSeqRef.current = smallApcLoadingTicketSeq;

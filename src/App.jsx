@@ -13672,9 +13672,18 @@ const loadGame = (slot) => {
   const parsed = runtimeSaveSlotsByKey?.[slotKey(slot)] || null;
   return parsed && Array.isArray(parsed.fields) ? cloneSaveSlotPayload(parsed) : null;
 };
+const readSaveSlotSummary = (slot) => {
+  const payload = runtimeSaveSlotsByKey?.[slotKey(slot)] || null;
+  if (!payload || !Array.isArray(payload.fields)) return null;
+  return {
+    farmName: String(payload.farmName || ''),
+    day: Number(payload.day) || 1,
+    money: Number(payload.money) || 0,
+  };
+};
 const findFirstEmptySaveSlot = () => {
   for (let slot = 0; slot < SAVE_SLOTS.length; slot += 1) {
-    if (!loadGame(slot)) return slot;
+    if (!readSaveSlotSummary(slot)) return slot;
   }
   return null;
 };
@@ -24012,11 +24021,13 @@ body { display: flex !important; align-items: center !important; justify-content
     setTownMarkerParkingModal({ open: false, destinationKey: '', zone: 'general', slotNo: 0 });
   }, [tab, townMarkerParkingModal.open]);
   useEffect(() => {
+    if (screen !== 'game') return undefined;
+    setPhoneNow(new Date());
     const timer = setInterval(() => {
       setPhoneNow(new Date());
     }, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [screen]);
   useEffect(() => {
     if (quickDrawerOpen) return;
     setPhoneUnlocked(false);
@@ -25074,6 +25085,7 @@ body { display: flex !important; align-items: center !important; justify-content
   } = useSmallApcController({
     game,
     setGame,
+    runtimeActive: screen === 'game',
     smallApcMapOpen,
     setMapLocationModal,
     setTownMarkerParkingModal,
@@ -25119,6 +25131,7 @@ body { display: flex !important; align-items: center !important; justify-content
     assignSmallApcLoadingSlot,
     smallApcOperationProfile,
   } = useSmallApcWorkflow({
+    runtimeActive: screen === 'game',
     randIntInclusive,
     randomVehicleNames: RANDOM_APC_LOADING_BUSY_VEHICLE_NAMES,
     findItemImageSrcByKeywords,
@@ -45049,7 +45062,7 @@ body { display: flex !important; align-items: center !important; justify-content
   const slotSummaries = useMemo(
     () =>
       SAVE_SLOTS.map((_, slot) => {
-        const data = loadGame(slot);
+        const data = readSaveSlotSummary(slot);
         if (!data) {
           return { slot, empty: true, title: `${slot + 1}번 슬롯`, desc: '비어 있음' };
         }
@@ -45063,7 +45076,7 @@ body { display: flex !important; align-items: center !important; justify-content
           desc: `${day}일차 · ${longDate(day)} · 자금 ${won(money)}`
         };
       }),
-    [slotMode, game, uiEntranceSeed]
+    [slotMode, uiEntranceSeed]
   );
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
