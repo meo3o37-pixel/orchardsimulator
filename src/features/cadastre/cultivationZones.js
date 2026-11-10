@@ -7,7 +7,7 @@ const cross = (a, b, c) => (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)
 const onSegment = (a, b, p) => Math.abs(cross(a, b, p)) < 1e-12
   && p.x >= Math.min(a.x, b.x) - 1e-12 && p.x <= Math.max(a.x, b.x) + 1e-12
   && p.y >= Math.min(a.y, b.y) - 1e-12 && p.y <= Math.max(a.y, b.y) + 1e-12;
-const segmentsMeet = (a, b, c, d) => (
+export const segmentsMeet = (a, b, c, d) => (
   (cross(a, b, c) * cross(a, b, d) < 0 && cross(c, d, a) * cross(c, d, b) < 0)
   || onSegment(a, b, c) || onSegment(a, b, d) || onSegment(c, d, a) || onSegment(c, d, b)
 );

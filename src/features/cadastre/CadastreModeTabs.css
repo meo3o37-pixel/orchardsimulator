@@ -96,5 +96,6 @@
 .cadastre-section-tabs>button[aria-selected=true]{background:#356b50;color:#fffdf6;box-shadow:0 2px 5px #234e3c1f}
 .cadastre-section-tabs>button:hover:not([aria-selected=true]){background:#ffffffa6;color:#315e46}
 .cadastre-section-tabs>button:focus-visible{outline:2px solid #9b7936;outline-offset:1px}
+.cadastre-outline-area-warning{margin:0 0 12px;padding:10px 13px;border:1px solid #d8c9a2;border-radius:10px;background:#fff9e8;color:#70562c;font-size:.86rem;line-height:1.5}
 @media(max-width:640px){.cadastre-section-tabs>button{gap:5px;padding:9px 4px;font-size:.78rem}.cadastre-section-tabs>button svg{width:15px;height:15px}}
 @media(prefers-reduced-motion:reduce){.cadastre-section-tabs>button{transition:none}}

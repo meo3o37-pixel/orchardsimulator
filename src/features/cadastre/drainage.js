@@ -15,6 +15,10 @@ export const DRAINAGE_TYPES = [
   { key: 'main', name: '대형 주 배수로', width: .8, price: 38000, capacity: 7 },
   ...PIPE_TYPES
 ];
+export const DRAINAGE_SELF_WORK_COST_FACTOR = .45;
+export const drainageExcavatorWear = (fuel, machine, durability) => (
+  Math.min(durability, fuel / 4.8 * (Number(machine.item?.usageWear) || .12))
+);
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, Number(v) || 0));
 const typeOf = (key) => DRAINAGE_TYPES.find((type) => type.key === key) || DRAINAGE_TYPES[0];
 export const drainageScopeMatches = (route, scope = 'all') => scope === 'all' || (scope === 'pipes' ? isBuried(route) : scope === 'surface' && !isBuried(route));
@@ -219,7 +223,7 @@ export function drainageWorkQuote(planRaw, mode, day, labor = 0, fuel = 0, avail
     if (mode === 'excavator' && pipeLimits && isBuried(r)) pipeLeft[r.type] = Math.max(0,(pipeLeft[r.type]||0)-add);
     metreBudget -= add; length += add;
     if (mode === 'excavator') { laborLeft -= add * lpm; fuelLeft -= add * fpm; laborUsed += add * lpm; fuelUsed += add * fpm; }
-    cost += add * (isBuried(r) ? pipeRate(r) : typeOf(r.type).price) * (mode === 'excavator' ? .45 : 1);
+    cost += add * (isBuried(r) ? pipeRate(r) : typeOf(r.type).price) * (mode === 'excavator' ? DRAINAGE_SELF_WORK_COST_FACTOR : 1);
     return { ...r, work: r.work + add };
   });
   if (length < .1 && mode === 'excavator' && pipeLimits && plan.routes.some(r => drainageScopeMatches(r,scope) && isBuried(r) && r.work+.1 < drainageLength(r.points) && (pipeLimits[r.type]||0) < .1)) return { error: '매설할 규격의 관이 없습니다. 농자재마트에서 100mm 유공관·150mm 집수 주관을 구매해 현재 토지로 가져와 주세요.' };
@@ -300,5 +304,5 @@ export function applyDrainageAction(state, fieldId, action, deps = {}) {
   const fields = state.fields.map((f, i) => i === index ? { ...f, ...(materials ? { cadastrePipeOffcuts: materials.offcuts } : {}), drainage: { ...plan, lastAction: message } } : f);
   return { ok: true, message, state: { ...consumed.state, fields, money: state.money - cost, labor: state.labor - labor,
     ...(machine ? { machineFuelByInstance: { ...(state.machineFuelByInstance || {}), [machine.id]: Math.max(0, deps.fuel - fuel) },
-      equipmentDurabilityByInstance: { ...(state.equipmentDurabilityByInstance || {}), [machine.id]: Math.max(0, deps.durability - fuel / 4.8 * (Number(machine.item?.usageWear) || .12)) } } : {}) } };
+      equipmentDurabilityByInstance: { ...(state.equipmentDurabilityByInstance || {}), [machine.id]: deps.durability - drainageExcavatorWear(fuel, machine, deps.durability) } } : {}) } };
 }

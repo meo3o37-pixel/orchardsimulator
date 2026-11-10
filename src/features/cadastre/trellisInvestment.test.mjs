@@ -14,7 +14,8 @@ const field=(settings={},extra={})=>({id:'f',name:'시험',trees:16,quality:80,v
 
 test('the store and design use the existing three materials and metre wire units',()=>{
  assert.equal(scaffoldCount(30,5),7);assert.equal(scaffoldCount(31,5),8);
- const p=plan(),r=p.rows[0];assert.deepEqual(infrastructureNeeds(p,r,'posts'),{scaffoldPipe:7});
+ const p=plan(),r=p.rows[0];assert.equal(p.settings.spacing,6);assert.deepEqual(infrastructureNeeds(p,r,'posts'),{scaffoldPipe:6});
+ assert.deepEqual(infrastructureNeeds(plan({spacing:5}),r,'posts'),{scaffoldPipe:7});
  assert.equal(infrastructureNeeds(p,r,'ties').trellisStake,16);assert.equal(infrastructureNeeds(p,r,'wire').trellisWire,94);
  assert.equal(SHOP_ITEMS.consumableMaterial.find(i=>i.key==='trellisWire').unit,'m');assert.ok(!SHOP_ITEMS.consumableMaterial.some(i=>i.key==='orchardEndPost4m'));
  const high=plan({spacing:2.5,stakes:2,wires:5});assert.equal(infrastructureNeeds(high,r,'posts').scaffoldPipe,13);assert.equal(infrastructureNeeds(high,r,'ties').trellisStake,32);assert.equal(infrastructureNeeds(high,r,'wire').trellisWire,154);
@@ -49,6 +50,28 @@ test('deterministic storms persist damage, replay once, and materially favor str
 const zones=[{id:'z',kind:'farm',name:'과원',points:boundary,boundaryContourId:'b',planting:{crop:'apple',variety:'fuji',rootstock:'M9',rowSpacing:3,treeSpacing:1.5,edgeMargin:1,angleDeg:0}}];
 const deps={boundary,boundaryId:'b',pipeMaterialStock:(s,f,key)=>s.inventory[key]||0,consumePipeMaterial:(s,f,key,n)=>({ok:(s.inventory[key]||0)>=n,inventory:{...s.inventory,[key]:(s.inventory[key]||0)-n},vehicleCargoByInstance:s.vehicleCargoByInstance})};
 function saved(settings={}){const s={day:1,money:10000000,labor:100,inventory:{},fields:[{id:'f',owned:true,trees:0}],cultivationZonesByFieldId:{f:structuredClone(zones)}};const src=infrastructureSource(s.fields[0],zones,boundary);return saveInfrastructurePlan(s,'f','trellis',{rowKeys:[src.rows[0].key],settings},deps).state;}
+test('three and four stakes survive reload and consume the specified materials',()=>{
+ const risks=[2,3,4].map(stakes=>trellisRowMetrics(plan({stakes}),row()).damageProbability);
+ assert.ok(risks[0]>risks[1]&&risks[1]>risks[2]&&risks[2]>0);
+ for(const stakes of [3,4]){
+  let s=JSON.parse(JSON.stringify(saved({stakes})));
+  const p=s.fields[0].orchardInfrastructure.trellis;
+  assert.equal(p.settings.stakes,stakes);
+  for(const stage of ['posts','wire']){
+   const result=executeInfrastructureJob(s,'f',`infra:trellis:${stage}`,{mode:'contractor'},deps);
+   assert.equal(result.ok,true,result.message);
+   s=result.state;
+  }
+  const needed=p.rows[0].treeCount*stakes;
+  assert.deepEqual(infrastructureNeeds(p,p.rows[0],'ties'),{trellisStake:needed,bindingString400Pack:needed});
+  s.inventory={trellisStake:needed,bindingString400Pack:1};
+  const result=executeInfrastructureJob(s,'f','infra:trellis:ties',{mode:'manual'},deps);
+  assert.equal(result.ok,true,result.message);
+  assert.equal(result.state.inventory.trellisStake,0);
+  assert.equal(result.state.fields[0].orchardMaterialRemainders.bindingString400Pack,400-needed);
+  assert.ok(Math.abs(s.labor-result.state.labor-needed*.15)<1e-9);
+ }
+});
 test('manual construction requires real scaffold stock and richer plans cost more to hire',()=>{
  const s=saved(),p=s.fields[0].orchardInfrastructure.trellis,q=quoteInfrastructureJob(s,'f','infra:trellis:posts',{mode:'manual'},deps);assert.equal(q.ok,false);assert.match(q.message,/비계파이프/);
  const need=infrastructureNeeds(p,p.rows[0],'posts').scaffoldPipe;s.inventory.scaffoldPipe=need;

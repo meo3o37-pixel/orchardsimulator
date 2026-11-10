@@ -47,15 +47,20 @@ export default function OrchardPipePlanner({selectedField:field,cadastre,zones=[
     {visiblePipes.map(r=><polyline key={r.id} points={pointsOf(r.points)} fill="none" stroke={r.type==='pipe100'?'#825ba7':'#a089b3'} strokeWidth={r.type==='pipe100'?'.65':'.9'} strokeOpacity=".8" strokeDasharray={r.work+.01>=drainageLength(r.points)?undefined:'1 .6'}/>)}
    </svg>}
   </div><aside className="cadastre-editor__tools">
-   <div className="cadastre-editor__metrics"><span>실제 나무</span><strong>{source.total}주</strong></div><div className="cadastre-editor__metrics"><span>위치가 연결된 나무</span><strong>{source.mapped}주 · {source.rows.length}열</strong></div>
+   <div className="cadastre-setting-card">
+    <div className="cadastre-editor__metrics"><span>실제 나무</span><strong>{source.total}주</strong></div>
+    <div className="cadastre-editor__metrics"><span>위치가 연결된 나무</span><strong>{source.mapped}주 · {source.rows.length}열</strong></div>
+   </div>
    {!source.aligned&&<><p className="cadastre-editor__error">{source.total?'나무의 실제 열 위치를 먼저 연결해 주세요.':'식재 후 나무 열을 기준으로 매설할 수 있습니다.'}</p>{onSelectDesign&&<button type="button" onClick={()=>onSelectDesign('farm')}>재배구역·식재 설계로 이동</button>}{source.total>0&&onLinkExistingTreeRows&&<button type="button" ref={linkTriggerRef} disabled={!zones.some(z=>z.planting?.variety)} onClick={()=>setLinkConfirmOpen(true)}>기존 식재 위치 연결</button>}</>}
    <label className="cadastre-editor__rootstock"><span>물을 받을 배수로</span><select value={surfaceId} onChange={e=>{setSurfaceId(e.target.value);setDraft(null)}}><option value="">배수로 선택</option>{surfaces.map((r,i)=><option key={r.id} value={r.id}>배수로 {i+1} · {drainageLength(r.points).toFixed(1)}m</option>)}</select></label>
    {!surfaces.length&&onSelectDesign&&<button type="button" onClick={()=>onSelectDesign('drainage')}>배수로 먼저 설계하기</button>}
    <div className="orchard-pipe-planner__row-heading"><h4>매설할 나무 열</h4><button type="button" disabled={!source.aligned} onClick={()=>{setSelected(selected.length?[]:source.rows.filter(r=>r.treeCount>=2&&!pipes.some(p=>p.rowKey===r.key&&p.work>0)).map(r=>r.key));setDraft(null)}}>{selected.length?'선택 해제':'전체 선택'}</button></div>
    <div className="orchard-pipe-planner__rows">{source.rows.map(row=>{const worked=pipes.find(r=>r.rowKey===row.key&&r.work>0);return<label key={row.key}><input type="checkbox" disabled={!source.aligned||row.treeCount<2||Boolean(worked)} checked={selected.includes(row.key)} onChange={e=>{setSelected(e.target.checked?[...selected,row.key]:selected.filter(k=>k!==row.key));setDraft(null)}}/><span>{row.name}<small>{row.treeCount}주{worked?` · ${worked.work.toFixed(1)}m 매설`:''}</small></span></label>})}</div>
    <button type="button" disabled={!field.owned||!source.aligned||!selected.length||!surfaceId} onClick={generate}>선택한 열 아래로 관로 생성</button>
-   <div className="cadastre-editor__metrics"><span>유공관·집수관 총 길이</span><strong>{visiblePipes.reduce((s,r)=>s+drainageLength(r.points),0).toFixed(1)}m</strong></div>
-   <div className="cadastre-editor__metrics"><span>완공 보호 면적</span><strong>{((draft?analyzeDrainage(saved,field.py,field):status).pipeCoverage*100).toFixed(0)}%</strong></div>
+   <div className="cadastre-setting-card">
+    <div className="cadastre-editor__metrics"><span>유공관·집수관 총 길이</span><strong>{visiblePipes.reduce((s,r)=>s+drainageLength(r.points),0).toFixed(1)}m</strong></div>
+    <div className="cadastre-editor__metrics"><span>완공 보호 면적</span><strong>{((draft?analyzeDrainage(saved,field.py,field):status).pipeCoverage*100).toFixed(0)}%</strong></div>
+   </div>
    {draft&&status.error&&<p className="cadastre-editor__error" role="alert">{status.error}</p>}
    <div className="cadastre-editor__toolbar"><button type="button" className="cadastre-design-confirm" disabled={!draft||Boolean(status.error)} onClick={save}>유공관 계획 확정</button><button type="button" disabled={!draft} onClick={()=>{setDraft(null);setNotice('')}}>변경 취소</button></div>
    {notice&&<p className="cadastre-editor__message" role="status">{notice}</p>}

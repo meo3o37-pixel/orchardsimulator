@@ -63,17 +63,19 @@ export default function OpenParkingPlanner({ selectedField: field, cadastre, zon
         {!transform && <p className="cadastre-editor__message">연결된 토지 경계가 없습니다. 전체지도에서 토지 경계를 연결한 뒤 주차장을 배치해 주세요.</p>}
       </div>
       <aside className="cadastre-editor__tools">
-        <h4>배치 설정</h4>
-        <div className="cadastre-editor__form">
+        <div className="cadastre-setting-card">
+          <h4>배치 설정</h4>
           <label className="cadastre-editor__rootstock">주차 칸 수<select className="text-input" value={plan.slots} disabled={!editable} onChange={(e) => patch({ ...plan, slots: Number(e.target.value) })}>{Array.from({ length: 20 }, (_, i) => <option key={i} value={i + 1}>{i + 1}칸 · {(i + 1) * 4}평</option>)}</select></label>
           <label className="cadastre-editor__rootstock">배치 방향<select className="text-input" value={plan.angle} disabled={!editable} onChange={(e) => patch({ ...plan, angle: Number(e.target.value) })}>{[0, 90, 180, 270].map((v) => <option key={v} value={v}>{v}°</option>)}</select></label>
         </div>
         <button type="button" disabled={!editable} aria-pressed={placing} onClick={() => setPlacing(!placing)}>{placing ? '위치 선택 마치기 · 지도 이동' : '지도에서 위치 선택'}</button>
         <small>주차장과 옆의 폭 3m 회차 공간을 토지 안에 배치하세요. 농장 진입로 연결은 현재 요구하지 않습니다.</small>
-        <div className="cadastre-editor__metrics"><span>주차면</span><strong>{plan.slots * 4}평 · {plan.slots}칸</strong></div>
-        <div className="cadastre-editor__metrics"><span>회차 공간</span><strong>{geometry ? Math.max(0, geometry.occupiedPy - plan.slots * 4).toFixed(1) : '—'}평</strong></div>
-        <div className="cadastre-editor__metrics"><span>총 점유 면적</span><strong>{geometry ? geometry.occupiedPy.toFixed(1) : '—'}평</strong></div>
-        <div className="cadastre-editor__metrics"><span>예상 외주 작업비</span><strong>{(quote.cost || 0).toLocaleString()}원</strong></div>
+        <div className="cadastre-setting-card">
+          <div className="cadastre-editor__metrics"><span>주차면</span><strong>{plan.slots * 4}평 · {plan.slots}칸</strong></div>
+          <div className="cadastre-editor__metrics"><span>회차 공간</span><strong>{geometry ? Math.max(0, geometry.occupiedPy - plan.slots * 4).toFixed(1) : '—'}평</strong></div>
+          <div className="cadastre-editor__metrics"><span>총 점유 면적</span><strong>{geometry ? geometry.occupiedPy.toFixed(1) : '—'}평</strong></div>
+          <div className="cadastre-editor__metrics"><span>예상 외주 작업비</span><strong>{(quote.cost || 0).toLocaleString()}원</strong></div>
+        </div>
         {error && <p className="cadastre-editor__error" role="alert">{error}</p>}
         <div className="cadastre-editor__toolbar"><button type="button" className="cadastre-design-confirm" disabled={!editable || !dirty || Boolean(error)} onClick={save}>주차장 계획 확정</button><button type="button" disabled={!dirty} onClick={() => { setPlan(fresh()); setDirty(false); setPlacing(false); setNotice('변경을 취소했습니다.'); }}>변경 취소</button></div>
         {notice && <p className="cadastre-editor__message" role="status">{notice}</p>}

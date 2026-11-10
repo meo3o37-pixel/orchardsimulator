@@ -133,6 +133,7 @@ export const sanitizeLastViewStatePreference = (raw = {}, config = {}) => {
     tab: safeTab,
     tabGroup: ['farmOps'].includes(String(source.tabGroup || '')) ? String(source.tabGroup) : 'farmOps',
     focusTab: safeFocusTab,
+    cadastreSection: ['design','confirmed'].includes(String(source.cadastreSection || '')) ? String(source.cadastreSection) : 'realtime',
     warehouseTab: sanitizeRestoreKey(source.warehouseTab, 'all'),
     shopTab: sanitizeRestoreKey(source.shopTab, defaultShopTab),
     landFacilityMainTab: ['types', 'warehouse', 'parking', 'control'].includes(String(source.landFacilityMainTab || '')) ? String(source.landFacilityMainTab) : 'types',
@@ -230,6 +231,7 @@ export const applyRestorableViewState = (viewRaw = {}, context = {}) => {
   setters.setTab?.(view.tab || 'farm');
   setters.setTabGroup?.(view.tabGroup || 'farmOps');
   setters.setFocusTab?.(view.focusTab || 'manage');
+  setters.setCadastreSection?.(view.cadastreSection);
   setters.setWarehouseTab?.(view.warehouseTab || 'all');
   setters.setShopTab?.(view.shopTab || config.defaultManagementShopTab || 'machine');
   setters.setLandFacilityMainTab?.(view.landFacilityMainTab || 'types');

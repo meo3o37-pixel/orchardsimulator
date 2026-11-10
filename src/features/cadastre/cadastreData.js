@@ -101,17 +101,44 @@ export const resolveCadastreBoundaryByPoint = ({ contours = [], markerPoint = nu
 export const buildCadastreForField = ({
   selectedField = null,
   markerPoint = null,
-  contours = []
+  contours = [],
+  zones = []
 } = {}) => {
   if (!selectedField) return null;
   const boundaryContour = resolveCadastreBoundaryByPoint({ contours, markerPoint });
-  const boundaryPoints = normalizeCadastreBoundaryPoints(boundaryContour?.points || []);
+  const outlinePoints = normalizeCadastreBoundaryPoints(boundaryContour?.points || []);
+  const outlineAreaPy = outlinePoints.length >= 3 ? polygonAreaPyFromPoints(outlinePoints) : 0;
+  const fieldAreaPy = Number(selectedField.py);
+  const hasLegacyDesign = !selectedField.cadastreMetricBoundary && (
+    (Array.isArray(zones) && zones.length > 0)
+    || selectedField.cadastrePlantingPlans?.length > 0
+    || selectedField.drainage?.routes?.length > 0
+    || selectedField.orchardInfrastructure?.trellis?.rows?.length > 0
+    || selectedField.orchardInfrastructure?.irrigation?.rows?.length > 0
+    || selectedField.cadastreParkingPlan || selectedField.cadastreYardPlan
+    || selectedField.openParking?.footprints?.length > 0
+    || selectedField.openYard?.footprints?.length > 0
+    || selectedField.cadastreFacilityLayoutPlans?.length > 0
+    || (Array.isArray(selectedField.facilitySites) && selectedField.facilitySites.some(site => site.points?.length >= 3))
+    || selectedField.cadastreElectricPlan?.routes?.length > 0
+    || selectedField.cadastreRoadPlan?.routes?.length > 0
+  );
+  const boundaryCalibrated = outlineAreaPy > 0 && fieldAreaPy > 0 && !hasLegacyDesign;
+  const scale = boundaryCalibrated ? Math.sqrt(fieldAreaPy / outlineAreaPy) : 1;
+  const anchor = markerPoint && Number.isFinite(Number(markerPoint.x)) && Number.isFinite(Number(markerPoint.y))
+    ? markerPoint : outlinePoints[0];
+  const boundaryPoints = boundaryCalibrated && anchor
+    ? outlinePoints.map(point => ({ x: Number(anchor.x) + (point.x - Number(anchor.x)) * scale, y: Number(anchor.y) + (point.y - Number(anchor.y)) * scale }))
+    : outlinePoints;
   return {
     parcelNo: String(selectedField?.name || selectedField?.id || '토지'),
     boundaryContourId: String(boundaryContour?.id || ''),
     boundaryPoints,
+    outlinePoints,
     boundarySvgPoints: cadastreBoundarySvgPointsOf(boundaryPoints),
     boundaryWorkspaceSvgPoints: cadastreBoundarySvgPointsOf(boundaryPoints, { pad: 5 }),
-    boundaryAreaPy: boundaryPoints.length >= 3 ? polygonAreaPyFromPoints(boundaryPoints) : 0
+    boundaryAreaPy: Number.isFinite(fieldAreaPy) && fieldAreaPy > 0 ? fieldAreaPy : outlineAreaPy,
+    outlineAreaPy,
+    boundaryCalibrated
   };
 };

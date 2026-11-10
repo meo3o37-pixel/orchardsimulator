@@ -22,7 +22,7 @@ import { evChargerSlotError } from './features/cadastre/evChargerParking';
 import FacilityPlacementModal from './features/facility/FacilityPlacementModal';
 import { facilityInstallDaysOf, requiresFacilityPlacement, facilityPlacementError, normalizeFacilitySites, queueFacilityConstruction, completeFacilityConstruction } from './features/facility/facilityConstruction';
 import { trellisTrainingMultiplier } from './features/cadastre/trellisInvestment.js';
-import { saveInfrastructurePlan, setInfrastructureIrrigation, infrastructureTaskOwned } from './features/cadastre/orchardInfrastructure.js';
+import { saveInfrastructurePlan, setInfrastructureIrrigation } from './features/cadastre/orchardInfrastructure.js';
 import CadastreWorkQueue from './features/cadastre/CadastreWorkQueue';
 import { cadastreJobs, normalizeCadastreWork, saveParkingWorkPlan, saveDrainageWorkPlan, saveCadastreZones, linkExistingTreeRows, quoteCadastreJob, executeCadastreJob } from './features/cadastre/cadastreWork.js';
 import useOverworkGameState from './utils/useOverworkGameState';
@@ -12267,6 +12267,9 @@ const PALLET_ITEM_IMAGE_SRC = (
 );
 const SPECIAL_ITEM_IMAGE_BY_KEY = {
   drainagePerforatedPipe100x6m: ITEM_IMAGE_ENTRIES.find(entry => entry.token === normalizeWeatherToken('HDPE유공관100mm6m'))?.src || '',
+  irrigationMain32x100m: ITEM_IMAGE_ENTRIES.find(entry => entry.token === normalizeWeatherToken('관수주관32mm100m'))?.src || '',
+  irrigationValve25: ITEM_IMAGE_ENTRIES.find(entry => entry.token === normalizeWeatherToken('관수구역밸브25mm'))?.src || '',
+  dripHose16x100m: ITEM_IMAGE_ENTRIES.find(entry => entry.token === normalizeWeatherToken('점적호스16mm100m'))?.src || '',
   plasticPallet1100: PALLET_ITEM_IMAGE_SRC,
   manualCarry: MANUAL_CARRY_IMAGE,
   appleSortingPartsSmall: DISASSEMBLED_SORTING_MACHINE_IMAGE,
@@ -17691,10 +17694,8 @@ const sprayCardGaugeOptionsByTask = (taskKey = '') => {
   return [];
 };
 const getTaskBlockReason = (field, task, month, day = 1, weatherName = '') => {
-  if(infrastructureTaskOwned(field,task.key))return '확정한 시설 설계는 작업 탭의 지적도 확정 계획에서 시공해 주세요.';
-  const hasTrellisInstalledForIrrigation = Math.max(0, Math.floor(fieldFacilityCountOf(field, TRELLIS_SUPPORT_FACILITY_KEY))) > 0;
-  const allowNoCropIrrigationInstall = IRRIGATION_INSTALL_TASK_KEYS.has(task.key) && hasTrellisInstalledForIrrigation;
-  if ((task.requiresCrop ?? true) && !field.cropId && !allowNoCropIrrigationInstall) return '미식재 토지는 작업할 수 없습니다.';
+  if (FACILITY_INSTALL_TASK_KEYS.has(task.key)) return '지적도에서 시설 설계를 확정한 뒤 작업 탭에서 시공해 주세요.';
+  if ((task.requiresCrop ?? true) && !field.cropId) return '미식재 토지는 작업할 수 없습니다.';
   if (SPRAY_TASK_KEYS.includes(task.key) && isWetWeatherForSpray(weatherName)) {
     return '비(강수) 날씨에는 방제 작업을 할 수 없습니다.';
   }
@@ -17745,35 +17746,6 @@ const getTaskBlockReason = (field, task, month, day = 1, weatherName = '') => {
       }
       return `${task.label}는 ${PEST_SEASON_INTERVAL_DAYS}일에 한 번 가능합니다. (${remainDays}일 후 가능)`;
     }
-  }
-  if (task.key === TRELLIS_INSTALL_TASK_KEY) {
-    const totalTrees = Math.max(0, Math.floor(fieldMaxTreeCapacity(field)));
-    const installedTrees = Math.max(0, Math.floor(fieldFacilityCountOf(field, TRELLIS_SUPPORT_FACILITY_KEY)));
-    if (totalTrees <= 0) return '설치할 나무가 없습니다.';
-    if (installedTrees >= totalTrees) return '이미 완료된 작업입니다.';
-    return '';
-  }
-  if (IRRIGATION_INSTALL_TASK_KEYS.has(task.key)) {
-    const totalTrees = Math.max(
-      0,
-      Math.floor(
-        Math.max(
-          liveTreeCount(field),
-          fieldFacilityCountOf(field, TRELLIS_SUPPORT_FACILITY_KEY)
-        )
-      )
-    );
-    const installFacilityKey = task.key === IRRIGATION_PIPE_INSTALL_TASK_KEY
-      ? IRRIGATION_PIPE_FACILITY_KEY
-      : task.key === DRIP_NOZZLE_INSTALL_TASK_KEY
-        ? 'dripIrrigation'
-        : task.key === SPRINKLER_NOZZLE_INSTALL_TASK_KEY
-          ? 'sprinklerIrrigation'
-          : MICRO_SPRINKLER_IRRIGATION_FACILITY_KEY;
-    const installedTrees = Math.max(0, Math.floor(fieldFacilityCountOf(field, installFacilityKey)));
-    if (totalTrees <= 0) return '설치할 나무가 없습니다.';
-    if (installedTrees >= totalTrees) return '이미 완료된 작업입니다.';
-    return '';
   }
   if (task.key === CANOPY_TRAINING_TASK_KEY) {
     const canopyStatus = canopyTrainingStatusOf(field, day, CROPS);
@@ -22841,6 +22813,7 @@ export default function App() {
     tab,
     tabGroup,
     focusTab,
+    cadastreSection,
     warehouseTab,
     shopTab,
     landFacilityMainTab,
@@ -22865,6 +22838,7 @@ export default function App() {
     phoneUnlocked,
     phoneOpenedApp
   }, AUTO_RESTORE_VIEW_CONFIG), [
+    cadastreSection,
     focusTab,
     landFacilityDetailModal,
     landFacilityMainTab,
@@ -48567,6 +48541,9 @@ body { display: flex !important; align-items: center !important; justify-content
       let autoRefillLitersTotal = 0;
       let autoRefillPowerFeeTotal = 0;
       let autoRefillEnvFeeTotal = 0;
+      let directWellIrrigationLitersTotal = 0;
+      let directWellIrrigationPowerFeeTotal = 0;
+      let directWellIrrigationEnvFeeTotal = 0;
       let standbyPowerFeeTotal = 0;
       let coldStoragePowerFeeTotal = 0;
       let evSlowChargeCostTotal = 0;
@@ -48771,8 +48748,8 @@ body { display: flex !important; align-items: center !important; justify-content
           nextTemperatureC,
           nextNightTemperatureC,
           isWinterSeason,
-          autoRefillPowerFeeSpent: autoRefillPowerFeeTotal,
-          autoRefillEnvFeeSpent: autoRefillEnvFeeTotal,
+          autoRefillPowerFeeSpent: autoRefillPowerFeeTotal + directWellIrrigationPowerFeeTotal,
+          autoRefillEnvFeeSpent: autoRefillEnvFeeTotal + directWellIrrigationEnvFeeTotal,
           evSlowChargeCostSpent: evSlowChargeCostTotal,
           nextMachineBatteryKwhByInstance,
           waterAfterDrain,
@@ -48788,6 +48765,9 @@ body { display: flex !important; align-items: center !important; justify-content
           autoRefillUsedLiters,
           autoRefillPowerFeeTotal: fieldAutoRefillPowerFeeTotal,
           autoRefillEnvFeeTotal: fieldAutoRefillEnvFeeTotal,
+          directWellIrrigationLiters,
+          directWellIrrigationPowerFee,
+          directWellIrrigationEnvFee,
           irrigationUseLiters,
           irrigationWaterGain,
           microSprinklerUsedLiters,
@@ -48812,6 +48792,9 @@ body { display: flex !important; align-items: center !important; justify-content
         autoRefillLitersTotal += autoRefillUsedLiters;
         autoRefillPowerFeeTotal += fieldAutoRefillPowerFeeTotal;
         autoRefillEnvFeeTotal += fieldAutoRefillEnvFeeTotal;
+        directWellIrrigationLitersTotal += directWellIrrigationLiters;
+        directWellIrrigationPowerFeeTotal += directWellIrrigationPowerFee;
+        directWellIrrigationEnvFeeTotal += directWellIrrigationEnvFee;
         if (freezeRiskTriggered) freezeRiskFieldCount += 1;
         facilityRepairDoneLogs.push(...fieldSystemResult.facilityRepairDoneLogs);
         nextMachineBatteryKwhByInstance = slowChargeOutcome.nextMachineBatteryKwhByInstance;
@@ -48980,6 +48963,9 @@ body { display: flex !important; align-items: center !important; justify-content
         autoRefillLitersTotal,
         autoRefillPowerFeeTotal,
         autoRefillEnvFeeTotal,
+        directWellIrrigationLitersTotal,
+        directWellIrrigationPowerFeeTotal,
+        directWellIrrigationEnvFeeTotal,
         standbyPowerFeeTotal,
         coldStoragePowerFeeTotal,
         evSlowChargeLogs,
@@ -49376,9 +49362,9 @@ body { display: flex !important; align-items: center !important; justify-content
   const cadastreWorkBindings = PLANT_BINDING_ITEM_KEYS.map(key => ({ key, name: itemMetaByKey[key]?.name || key, stock: game && selectedField ? plantBindingStockOf(game, selectedField, key) : 0 }));
   const cadastreWorkDeps = (state, options = {}) => {
     const field = state.fields.find(f => String(f.id) === String(selectedField.id));
-    const cadastre = buildCadastreForField({ selectedField: field, markerPoint: selectedFieldCadastreMarkerPoint, contours: townMoveUserContours });
+    const cadastre = buildCadastreForField({ selectedField: field, markerPoint: selectedFieldCadastreMarkerPoint, contours: townMoveUserContours, zones: state.cultivationZonesByFieldId?.[String(field?.id)] });
     const machine = options.machineId ? resolveMachineInstanceById(options.machineId) : null;
-    return { boundary: cadastre?.boundaryPoints, boundaryId: cadastre?.boundaryContourId, month: monthOf(state.day), machine, excavatorKeys: PLANT_EXCAVATOR_MACHINE_KEYS,
+    return { boundary: cadastre?.boundaryPoints, boundaryId: cadastre?.boundaryContourId, boundaryCalibrated: cadastre?.boundaryCalibrated, month: monthOf(state.day), machine, excavatorKeys: PLANT_EXCAVATOR_MACHINE_KEYS,
       fuel: machine ? machineFuelLitersOfInstance(state, machine.id, machine.item) : 0, durability: machine ? equipmentDurabilityOfUnit(state, machine.machineKey, machine.unitNo) : 0,
       openYardUsedKg: (s,f) => Math.max(Number(selectedFieldStorageUsedKgByFacility?.[OPEN_STORAGE_BASE_FACILITY_KEY])||0, Object.entries(resolveFieldFacilityInventoryByFacility(s,Number(f.id))?.byFacility?.[OPEN_STORAGE_BASE_FACILITY_KEY]||{}).reduce((sum,[key,qty])=>sum+(storageOccupancyExcludedCategories.has(itemCategoryByKey[key])?0:Math.max(0,Number(qty)||0)*Math.max(0,Number(itemMetaByKey[key]?.weightKg)||0)),0)+(s.storage||[]).filter(b=>isWarehouseHarvestBatch(b,OPEN_STORAGE_BASE_FACILITY_KEY)).reduce((sum,b)=>sum+Math.max(0,Number(b.qty)||0),0)),
       openYardUsedSlot: s => Math.max(0,...(s.storage||[]).filter(b=>isWarehouseHarvestBatch(b,OPEN_STORAGE_BASE_FACILITY_KEY)).map(b=>Number(b.storagePalletSlotNo||b.storagePalletNo)||0)),
@@ -49390,13 +49376,18 @@ body { display: flex !important; align-items: center !important; justify-content
       normalizeLots: normalizePlantLotsForField, treeCapacity: fieldPlantableTreeCapacityByTrellis, maxTreeCapacity: fieldMaxTreeCapacity };
   };
   const commitCadastrePlan = (kind, value, options = {}) => {
-    const apply = state => ['trellis','irrigation'].includes(kind) ? saveInfrastructurePlan(state,selectedField.id,kind,value,cadastreWorkDeps(state))
+    const applyPlan = state => ['trellis','irrigation'].includes(kind) ? saveInfrastructurePlan(state,selectedField.id,kind,value,cadastreWorkDeps(state))
       : kind === 'irrigationSettings' ? setInfrastructureIrrigation(state,selectedField.id,value)
       : kind === 'yard' ? saveOpenYardPlan(state,selectedField.id,value,cadastreWorkDeps(state))
       : kind === 'parking' ? saveParkingWorkPlan(state, selectedField.id, value, cadastreWorkDeps(state))
       : kind === 'drainage' ? saveDrainageWorkPlan(state, selectedField.id, value, cadastreWorkDeps(state))
       : kind === 'linkRows' ? linkExistingTreeRows(state, selectedField.id, cadastreWorkDeps(state))
       : saveCadastreZones(state, selectedField.id, value, cadastreWorkDeps(state), options.confirmPlanting || '');
+    const apply = state => {
+      const result = applyPlan(state);
+      if (!result.ok || kind === 'irrigationSettings' || !cadastreWorkDeps(state).boundaryCalibrated) return result;
+      return { ...result, state: { ...result.state, fields: result.state.fields.map(field => String(field.id) === String(selectedField.id) ? { ...field, cadastreMetricBoundary: true } : field) } };
+    };
     const preview = apply(game); if (!preview.ok) return preview;
     const accepted = setGame(prev => { const result = apply(prev); return result.ok ? { ...result.state, logs: pushDiary(prev, result.message) } : prev; });
     return accepted ? { ok: true, message: preview.message } : { ok: false, message: '계획을 저장하지 못했습니다. 현재 상태를 다시 확인해 주세요.' };
@@ -54999,7 +54990,7 @@ body { display: flex !important; align-items: center !important; justify-content
     const facility = FACILITY_MAP[facilityKey];
     if (!facility) return;
     if (facility?.manualInstallOnly) {
-      window.alert('해당 관수시설은 작업탭에서 자재를 사용해 직접 설치할 수 있습니다.');
+      window.alert('지적도에서 관수시설 설계를 확정한 뒤 작업 탭에서 시공해 주세요.');
       return;
     }
     if (facilityKey === 'wellFacility') {
@@ -55412,7 +55403,7 @@ body { display: flex !important; align-items: center !important; justify-content
         return;
       }
     }
-    const placementCadastre = buildCadastreForField({ selectedField: field, markerPoint: resolveFieldMarkerPointByIndex(fieldIndex), contours: townMoveUserContours });
+    const placementCadastre = buildCadastreForField({ selectedField: field, markerPoint: resolveFieldMarkerPointByIndex(fieldIndex), contours: townMoveUserContours, zones: game.cultivationZonesByFieldId?.[String(field?.id)] });
     if (SINGLE_PER_LAND_FACILITY_KEYS.includes(facility.key) && fieldFacilityUnderConstruction(game, field.id, facility.key)) return window.alert('이 시설은 이미 외주 시공 중입니다.');
     if (requiresFacilityPlacement(facility)) {
       if (!activeInstallRequest.site) {
@@ -63916,7 +63907,9 @@ const requestRepairEquipment = (itemKey) => {
   const townMoveRoads = townMoveStaticRouteViews.roads;
   const townMoveRivers = townMoveStaticRouteViews.rivers;
   const townMoveVillages = townMoveStaticRouteViews.villages;
-  const seasonalTasks = Object.values(TASKS).filter((task) => isTaskSeasonActive(selectedField, task, month));
+  const seasonalTasks = Object.values(TASKS).filter((task) => (
+    !FACILITY_INSTALL_TASK_KEYS.has(task.key) && isTaskSeasonActive(selectedField, task, month)
+  ));
   const selectedFieldClothingActivityInfo = clothingActivityInfoOfField(selectedField, housingInteriorFacilityRow?.key);
   const currentWorkLaborFactors = workLaborFactorsOf({
     weatherName: game.weather,
@@ -65722,22 +65715,7 @@ body { display: flex !important; align-items: center !important; justify-content
     ? '겨울 휴면기에는 잡초 생육이 멈춰 비활성화됩니다.'
     : `${weedStateText(selectedField.weed)}`;
   const canShowWeedMowTask = month >= 4 && month <= 11;
-  const trellisStatusForTaskDisplay = trellisMaterialStatusOf(game, selectedField);
-  const canShowIrrigationInstallWithoutCrop = trellisStatusForTaskDisplay.installedTrees > 0;
-  const seasonalTasksBaseForDisplay = hasAnyPlantedTree
-    ? seasonalTasks
-    : seasonalTasks.filter((task) => (
-      task?.key === TRELLIS_INSTALL_TASK_KEY
-      || (canShowIrrigationInstallWithoutCrop && IRRIGATION_INSTALL_TASK_KEYS.has(task?.key))
-    ));
-  const seasonalTasksForDisplay = seasonalTasksBaseForDisplay.filter((task) => {
-    if (task?.key === TRELLIS_INSTALL_TASK_KEY) {
-      return trellisStatusForTaskDisplay.remainTrees > 0;
-    }
-    if (IRRIGATION_INSTALL_TASK_KEYS.has(task?.key)) {
-      const irrigationStatus = irrigationInstallStatusOf(game, selectedField, task.key);
-      return Math.max(0, Number(irrigationStatus?.remainTrees) || 0) > 0;
-    }
+  const seasonalTasksForDisplay = (hasAnyPlantedTree ? seasonalTasks : []).filter((task) => {
     if (task?.key === CANOPY_TRAINING_TASK_KEY) {
       return canopyTrainingStatusOf(selectedField, game.day, CROPS).totalRemainTrees > 0;
     }
@@ -65754,21 +65732,19 @@ body { display: flex !important; align-items: center !important; justify-content
   }).filter((task) => String(task?.key || '') !== WINTER_PRUNING_HEAVY_TASK_KEY);
   const seasonalTasksSeasonOnly = seasonalTasksForDisplay.filter((task) => (
     !ORCHARD_SS_SPRAY_TASK_KEYS.has(String(task?.key || ''))
-    && !FACILITY_INSTALL_TASK_KEYS.has(String(task?.key || ''))
     && !LAND_IMPROVEMENT_TASK_KEYS.has(String(task?.key || ''))
   ));
   const seasonalTasksSprayOnly = seasonalTasksForDisplay.filter((task) => ORCHARD_SS_SPRAY_TASK_KEYS.has(String(task?.key || '')));
-  const seasonalTasksFacilityOnly = seasonalTasksForDisplay.filter((task) => FACILITY_INSTALL_TASK_KEYS.has(String(task?.key || '')) && !infrastructureTaskOwned(selectedField,task.key));
   const seasonalTasksLandImprovementOnly = seasonalTasksForDisplay.filter((task) => LAND_IMPROVEMENT_TASK_KEYS.has(String(task?.key || '')));
   const seasonalTasksForWorkDisplay = workTaskPanelTab === 'facility'
-    ? seasonalTasksFacilityOnly
+    ? []
     : workTaskPanelTab === 'spray'
       ? seasonalTasksSprayOnly
     : workTaskPanelTab === 'landImprovement'
       ? seasonalTasksLandImprovementOnly
       : seasonalTasksSeasonOnly;
   const seasonalTasksForWorkOrderDisplay = workOrderTaskPanelTab === 'facility'
-    ? seasonalTasksFacilityOnly
+    ? []
     : workOrderTaskPanelTab === 'spray'
       ? seasonalTasksSprayOnly
       : workOrderTaskPanelTab === 'landImprovement'
@@ -65809,10 +65785,6 @@ body { display: flex !important; align-items: center !important; justify-content
     const idx = orderedKeys.indexOf(String(cardKey || ''));
     return idx >= 0 ? idx : fallbackIndex;
   };
-  const canShowNoCropSeasonTask = seasonalTasksForDisplay.some((task) => (
-    (task?.requiresCrop ?? true) === false
-    || (canShowIrrigationInstallWithoutCrop && IRRIGATION_INSTALL_TASK_KEYS.has(task?.key))
-  ));
   const plantedCropSummaryRows = cropCompositionRows.reduce((acc, row) => {
     const cropId = String(row?.cropId || '').trim();
     if (!cropId) return acc;
@@ -68368,6 +68340,7 @@ body { display: flex !important; align-items: center !important; justify-content
         setTab,
         setTabGroup,
         setFocusTab,
+        setCadastreSection,
         setWarehouseTab,
         setShopTab,
         setLandFacilityMainTab,
@@ -69392,7 +69365,8 @@ body { display: flex !important; align-items: center !important; justify-content
                   if (!current?.owned || !current.landFacilities?.farmPowerElectric) return { ok: false, message: '농사용전기가 설치된 내 토지에서 설계할 수 있습니다.' };
                   if (!Array.isArray(plan?.routes) || plan.routes.length > 100) return { ok: false, message: '전기 설계안을 확인해 주세요.' };
                   const sites = normalizeFacilitySites(current.facilitySites);
-                  const boundary = buildCadastreForField({ selectedField: current, markerPoint: selectedFieldCadastreMarkerPoint, contours: townMoveUserContours })?.boundaryPoints;
+                  const cadastre = buildCadastreForField({ selectedField: current, markerPoint: selectedFieldCadastreMarkerPoint, contours: townMoveUserContours, zones: game.cultivationZonesByFieldId?.[fieldId] });
+                  const boundary = cadastre?.boundaryPoints;
                   if (!boundary) return { ok: false, message: '토지 경계를 찾을 수 없습니다.' };
                   const used = new Set();
                   for (const route of plan.routes) {
@@ -69402,19 +69376,20 @@ body { display: flex !important; align-items: center !important; justify-content
                     if (route.points.some(point => !Number.isFinite(point?.x) || !Number.isFinite(point?.y) || !polygonContainsPoint(boundary, point))) return { ok: false, message: '전선은 토지 안에 배치해 주세요.' };
                     if (route.points.slice(1).some((point, index) => Math.hypot(point.x - route.points[index].x, point.y - route.points[index].y) * 1000 > 30)) return { ok: false, message: '전선 한 구간은 30m 이하로 연결해 주세요.' };
                   }
-                  setGame(prev => ({ ...prev, fields: prev.fields.map(field => String(field.id) === fieldId ? { ...field, cadastreElectricPlan: { version: 1, routes: plan.routes } } : field) }));
+                  setGame(prev => ({ ...prev, fields: prev.fields.map(field => String(field.id) === fieldId ? { ...field, cadastreMetricBoundary: cadastre.boundaryCalibrated || field.cadastreMetricBoundary, cadastreElectricPlan: { version: 1, routes: plan.routes } } : field) }));
                   return { ok: true, message: '전기 설계안을 확정했습니다. 실제 연결은 별도 시공이 필요합니다.' };
                 }}
                 onRoadPlanSave={(plan) => {
                   const fieldId = String(selectedField.id);
                   const current = game.fields.find(field => String(field.id) === fieldId);
                   if (!current?.owned || plan?.version !== 1 || !Array.isArray(plan.routes) || plan.routes.length > 100) return { ok: false, message: '도로 설계안을 확인해 주세요.' };
-                  const boundary = buildCadastreForField({ selectedField: current, markerPoint: selectedFieldCadastreMarkerPoint, contours: townMoveUserContours })?.boundaryPoints;
+                  const cadastre = buildCadastreForField({ selectedField: current, markerPoint: selectedFieldCadastreMarkerPoint, contours: townMoveUserContours, zones: game.cultivationZonesByFieldId?.[fieldId] });
+                  const boundary = cadastre?.boundaryPoints;
                   if (!Array.isArray(boundary) || boundary.length < 3) return { ok: false, message: '토지 경계를 찾을 수 없습니다.' };
                   const targets = roadTargets(current, game.cultivationZonesByFieldId?.[fieldId] || []);
                   const error = roadPlanError(plan, boundary, targets);
                   if (error) return { ok: false, message: error };
-                  setGame(prev => ({ ...prev, fields: prev.fields.map(field => String(field.id) === fieldId ? { ...field, cadastreRoadPlan: { version: 1, entrance: plan.entrance, routes: plan.routes } } : field) }));
+                  setGame(prev => ({ ...prev, fields: prev.fields.map(field => String(field.id) === fieldId ? { ...field, cadastreMetricBoundary: cadastre.boundaryCalibrated || field.cadastreMetricBoundary, cadastreRoadPlan: { version: 1, entrance: plan.entrance, routes: plan.routes } } : field) }));
                   return { ok: true, message: '도로 연결 설계안을 저장했습니다. 실제 도로 시공은 별도입니다.' };
                 }}
                 onIrrigationSettings={value => commitCadastrePlan('irrigationSettings',value)}
@@ -69427,7 +69402,8 @@ body { display: flex !important; align-items: center !important; justify-content
                   const fieldId = String(selectedField.id);
                   const current = game.fields.find(field => String(field.id) === fieldId);
                   if (!current?.owned || !Array.isArray(plans)) return { ok: false, message: '설계안을 저장할 토지를 확인해 주세요.' };
-                  const boundary = buildCadastreForField({ selectedField: current, markerPoint: selectedFieldCadastreMarkerPoint, contours: townMoveUserContours })?.boundaryPoints;
+                  const cadastre = buildCadastreForField({ selectedField: current, markerPoint: selectedFieldCadastreMarkerPoint, contours: townMoveUserContours, zones: game.cultivationZonesByFieldId?.[fieldId] });
+                  const boundary = cadastre?.boundaryPoints;
                   if (!boundary) return { ok: false, message: '토지 경계를 찾을 수 없습니다.' };
                   const occupied = [...normalizeFacilitySites(current.facilitySites)];
                   for (const plan of plans) {
@@ -69436,7 +69412,7 @@ body { display: flex !important; align-items: center !important; justify-content
                     if (error) return { ok: false, message: error };
                     occupied.push({ ...plan, status: 'building', startDay: 0, readyDay: 1 });
                   }
-                  setGame(prev => ({ ...prev, fields: prev.fields.map(field => String(field.id) === fieldId ? { ...field, cadastreFacilityLayoutPlans: plans } : field) }));
+                  setGame(prev => ({ ...prev, fields: prev.fields.map(field => String(field.id) === fieldId ? { ...field, cadastreMetricBoundary: cadastre.boundaryCalibrated || field.cadastreMetricBoundary, cadastreFacilityLayoutPlans: plans } : field) }));
                   return { ok: true, message: '시설·건물 설계안을 저장했습니다. 건설은 시설상점에서 진행해 주세요.' };
                 }}
                 onLinkExistingTreeRows={() => commitCadastrePlan('linkRows', null)}
@@ -71216,9 +71192,13 @@ body { display: flex !important; align-items: center !important; justify-content
                 </div>
                 </div>
                 ) : null}
-                {isWorkLandImprovementTab && deadTrees <= 0 && !canShowWeedMowTask && !seasonalTasksForWorkDisplay.length ? (
+                {workTaskPanelTab === 'facility' ? (
+                  cadastrePlanJobs.some((job) => job.panel === 'facility') ? null : (
+                    <div className="empty-box">지적도에서 시설 설계를 확정하면 여기에 시공 작업이 표시됩니다.</div>
+                  )
+                ) : isWorkLandImprovementTab && deadTrees <= 0 && !canShowWeedMowTask && !seasonalTasksForWorkDisplay.length ? (
                   <div className="empty-box">현재 가능한 환경작업이 없습니다.</div>
-                ) : (!isWorkLandImprovementTab && !hasAnyPlantedTree && !canShowNoCropSeasonTask ? (
+                ) : (!isWorkLandImprovementTab && !hasAnyPlantedTree ? (
                   <div className="empty-box">미식재 토지는 작업 목록이 표시되지 않습니다.</div>
                 ) : (
                   <>
@@ -71333,7 +71313,7 @@ body { display: flex !important; align-items: center !important; justify-content
                         </div>
                       </div>
                     ) : null}
-                    {(isWorkLandImprovementTab || hasAnyPlantedTree || canShowNoCropSeasonTask) ? (
+                    {(isWorkLandImprovementTab || hasAnyPlantedTree) ? (
                       seasonalTasksForWorkDisplay.length ? (
                         <div className="meter-grid meter-grid--tasks" style={{ marginTop: 12, gridTemplateColumns: '1fr' }}>
                           {seasonalTasksForWorkDisplay.map((task, fallbackIndex) => {
@@ -72314,8 +72294,6 @@ body { display: flex !important; align-items: center !important; justify-content
                         <div className="empty-box">
                           {cadastrePlanJobs.some(job => job.panel === workTaskPanelTab)
                             ? '그 외 추가 작업이 없습니다.'
-                            : workTaskPanelTab === 'facility'
-                            ? '완료되지 않은 설치작업이 없습니다.'
                             : workTaskPanelTab === 'spray'
                               ? '완료되지 않은 과수약제살포 작업이 없습니다.'
                             : workTaskPanelTab === 'landImprovement'
@@ -72490,9 +72468,11 @@ body { display: flex !important; align-items: center !important; justify-content
                   </div>
                 </div>
                 ) : null}
-                {isWorkOrderLandImprovementTab && !canShowWeedMowTask && !seasonalTasksForWorkOrderDisplay.length ? (
+                {workOrderTaskPanelTab === 'facility' ? (
+                  <div className="empty-box">시설 시공은 작업 탭의 지적도 확정 계획에서 진행할 수 있습니다.</div>
+                ) : isWorkOrderLandImprovementTab && !canShowWeedMowTask && !seasonalTasksForWorkOrderDisplay.length ? (
                   <div className="empty-box">현재 가능한 환경작업 지시가 없습니다.</div>
-                ) : (!isWorkOrderLandImprovementTab && !hasAnyPlantedTree && !canShowNoCropSeasonTask ? (
+                ) : (!isWorkOrderLandImprovementTab && !hasAnyPlantedTree ? (
                   <div className="empty-box">미식재 상태에서는 시즌 작업지시가 표시되지 않습니다. 위 식재 지시를 먼저 진행하세요.</div>
                 ) : (isWorkOrderLandImprovementTab || seasonalTasksForWorkOrderDisplay.length) ? (
                   <div className="meter-grid meter-grid--tasks" style={{ marginTop: 12, gridTemplateColumns: '1fr' }}>

@@ -2,7 +2,7 @@ import {facilityFootprints}from'../facility/facilityConstruction.js';
 import { normalizeCultivationZones, validateCultivationZone, zoneBoundaryError } from './cultivationZones.js';
 import { normalizePlantingSettings, plantingSettingsError } from './plantingSettings.js';
 import { generatePlantingPreview } from './plantingDesign.js';
-import { DRAINAGE_TYPES, normalizeDrainage, drainageLength, drainageScopeMatches, drainagePlantingBlocker, drainageConflictsWithBuildings, drainageWorkQuote, applyDrainageAction } from './drainage.js';
+import { DRAINAGE_TYPES, DRAINAGE_SELF_WORK_COST_FACTOR, normalizeDrainage, drainageLength, drainageScopeMatches, drainagePlantingBlocker, drainageConflictsWithBuildings, drainageWorkQuote, drainageExcavatorWear, applyDrainageAction } from './drainage.js';
 import { isBuried, pipeRate } from './pipeSystem.js';
 import { isActualTreeRowPipe } from './orchardPipeLayout.js';
 import { normalizeOpenParking, parkingGeometry, parkingPlanError, parkingWorkQuote, parkingDrainageConflict, applyOpenParking } from './openParking.js';
@@ -135,7 +135,8 @@ export function quoteCadastreJob(state,id,jobId,options={},deps={}) {
   const labor=mode==='excavator'?Math.max(1,job.total*.025):0,fuel=labor*.6;
   if(mode==='contractor'&&d.lastWorkDay===state.day&&d.contractorMeters>=199.9)return fail('오늘 외주 작업 한도를 사용했습니다.');
   if(state.money<cost||selfLaborAvailable(state)<labor||mode==='excavator'&&deps.fuel<fuel)return fail('세척 작업비·노동력·연료를 확인해 주세요.');
-  return{ok:true,amount:job.total,unit:'m',cost,labor,fuel};
+  const wear=mode==='excavator'?drainageExcavatorWear(fuel,machine,deps.durability):0;
+  return{ok:true,amount:job.total,unit:'m',cost,labor,fuel,wear};
  }
  if(job.kind==='drainage'||job.kind==='pipes'){
   if(job.kind==='drainage'&&Number(field.trees)>0)return fail('나무가 있는 토지는 배수로 굴착 전에 위치 확인이 필요합니다.');
@@ -146,9 +147,10 @@ export function quoteCadastreJob(state,id,jobId,options={},deps={}) {
   q={...q,cost:Math.max(0,q.cost-pipeMaterials.credit),pipeMaterials};
   if(state.money<q.cost)return fail('오늘 시공비가 부족합니다.');
   const d=normalizeDrainage(field.drainage);
-  const materials=d.routes.filter(r=>drainageScopeMatches(r,job.scope)).reduce((s,r)=>s+Math.max(0,drainageLength(r.points)-r.work)*(isBuried(r)?pipeRate(r):DRAINAGE_TYPES.find(t=>t.key===r.type).price)*(mode==='excavator'?.45:1),0);
+  const materials=d.routes.filter(r=>drainageScopeMatches(r,job.scope)).reduce((s,r)=>s+Math.max(0,drainageLength(r.points)-r.work)*(isBuried(r)?pipeRate(r):DRAINAGE_TYPES.find(t=>t.key===r.type).price)*(mode==='excavator'?DRAINAGE_SELF_WORK_COST_FACTOR:1),0);
   const access=d.routes.filter(r=>drainageScopeMatches(r,job.scope)&&isBuried(r)&&r.work<drainageLength(r.points)&&!d.paidAccess.includes(r.id)).length*80000;
-  return {...q,ok:true,amount:q.length,unit:'m',remainingCost:Math.max(q.cost,Math.ceil(materials+access+q.outletCost-pipeMaterials.credit))};
+  const wear=mode==='excavator'?drainageExcavatorWear(q.fuel,machine,deps.durability):0;
+  return {...q,ok:true,amount:q.length,unit:'m',wear,remainingCost:Math.max(q.cost,Math.ceil(materials+access+q.outletCost-pipeMaterials.credit))};
  }
  if(job.kind==='parking'){
   const pending=normalizeCadastreWork(field).cadastreParkingPlan;

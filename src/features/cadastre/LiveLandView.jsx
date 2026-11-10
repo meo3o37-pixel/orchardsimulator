@@ -10,7 +10,7 @@ import {liveLandSnapshot}from'./liveLandSnapshot';
 import {groundSeasonOf}from'./groundSeason';
 import './LiveLandView.css';
 
-export default function LiveLandView({field,cadastre,zones=[],onOpenDesign}){
+export default function LiveLandView({field,cadastre,zones=[]}){
  const snapshot=useMemo(()=>liveLandSnapshot(field),[field]),svg=useRef(null),id=useId().replace(/:/g,'');
  const environment=useContext(CadastreGroundContext),season=groundSeasonOf(environment.day,environment.weather);
  const transform=useMemo(()=>cadastreEditorTransform([...cadastre.boundaryPoints,...snapshot.drains.flatMap(r=>r.points)]),[cadastre.boundaryPoints,snapshot.drains]);
@@ -46,6 +46,5 @@ export default function LiveLandView({field,cadastre,zones=[],onOpenDesign}){
   {normalizeFacilitySites(field.facilitySites).some(s=>s.status==='building')&&<div className="cadastre-live__construction" aria-label="외주 공사 진행">{normalizeFacilitySites(field.facilitySites).filter(s=>s.status==='building').map(s=><article key={s.id}><div><strong>{s.name}</strong><span>건설 중</span></div><progress max={s.readyDay-s.startDay} value={Math.max(0,Math.min(s.readyDay-s.startDay,environment.day-s.startDay))}/><small>착공 {longDate(s.startDay)} · 완공 예정 {longDate(s.readyDay)} · {Math.max(0,s.readyDay-environment.day)}일 남음</small></article>)}</div>}
   {snapshot.unmapped>0&&<p className="cadastre-live__notice">나무 {snapshot.unmapped.toLocaleString()}주는 식재 위치가 연결되지 않아 지도에 표시하지 않았습니다.</p>}
   {Number(field.deadTrees)>0&&<p className="cadastre-live__notice">고사목 {Number(field.deadTrees).toLocaleString()}주 · 개별 고사 위치는 구분되지 않습니다.</p>}
-  <footer><small>저장된 식재 위치와 실제 시공된 구간을 표시합니다.</small><button type="button" onClick={onOpenDesign}>설계로 이동</button></footer>
  </section>;
 }

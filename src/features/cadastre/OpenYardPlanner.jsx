@@ -29,12 +29,14 @@ export default function OpenYardPlanner({selectedField:field,cadastre,zones=[],o
     {geometry&&<g><polygon points={points(geometry.aisle)} fill="#aeb7b1" fillOpacity=".8" stroke="#647167" strokeWidth=".25"/><polygon points={points(geometry.storage)} fill={error?'#d9a099':'#c7a978'} fillOpacity=".85" stroke="#786343" strokeWidth=".3"/><path d={palletPath} fill="#876f4c" fillOpacity=".7" stroke="#f9f2dc" strokeWidth=".13"/></g>}
    </svg>
   </div><aside className="cadastre-editor__tools">
-   <div className="open-yard-planner__dimensions"><label>가로(m)<input type="number" min="2" max="100" step=".5" value={plan.width} disabled={!editable} onChange={e=>patch({...plan,width:Number(e.target.value)})}/></label><label>세로(m)<input type="number" min="2" max="100" step=".5" value={plan.depth} disabled={!editable} onChange={e=>patch({...plan,depth:Number(e.target.value)})}/></label></div>
+   <div className="open-yard-planner__dimensions cadastre-setting-card"><label>가로(m)<input type="number" min="2" max="100" step=".5" value={plan.width} disabled={!editable} onChange={e=>patch({...plan,width:Number(e.target.value)})}/></label><label>세로(m)<input type="number" min="2" max="100" step=".5" value={plan.depth} disabled={!editable} onChange={e=>patch({...plan,depth:Number(e.target.value)})}/></label></div>
    <label>배치 방향<select value={plan.angle} disabled={!editable} onChange={e=>patch({...plan,angle:Number(e.target.value)})}>{[0,45,90,135,180,225,270,315].map(v=><option key={v} value={v}>{v}°</option>)}</select></label>
    <button type="button" disabled={!editable} aria-pressed={placing} onClick={()=>setPlacing(!placing)}>{placing?'위치 선택 마치기 · 지도 이동':'지도에서 위치 선택'}</button>
-   <div className="cadastre-editor__metrics"><span>적재면 / 통로</span><strong>{geometry?`${geometry.storagePy.toFixed(1)}평 / ${geometry.aislePy.toFixed(1)}평`:'—'}</strong></div>
-   <div className="cadastre-editor__metrics"><span>총 점유 면적</span><strong>{geometry?`${geometry.occupiedPy.toFixed(1)}평`:'—'}</strong></div>
-   <div className="cadastre-editor__metrics"><span>적재칸 / 저장 용량</span><strong>{geometry?`${geometry.slots}칸 / ${geometry.capacityKg.toLocaleString()}kg`:'—'}</strong></div>
+   <div className="cadastre-setting-card">
+    <div className="cadastre-editor__metrics"><span>적재면 / 통로</span><strong>{geometry?`${geometry.storagePy.toFixed(1)}평 / ${geometry.aislePy.toFixed(1)}평`:'—'}</strong></div>
+    <div className="cadastre-editor__metrics"><span>총 점유 면적</span><strong>{geometry?`${geometry.occupiedPy.toFixed(1)}평`:'—'}</strong></div>
+    <div className="cadastre-editor__metrics"><span>적재칸 / 저장 용량</span><strong>{geometry?`${geometry.slots}칸 / ${geometry.capacityKg.toLocaleString()}kg`:'—'}</strong></div>
+   </div>
    <p className="open-yard-planner__hint">게임 기준 적재칸 1개당 약 1평·{YARD_SLOT_KG.toLocaleString()}kg. 비·눈에 노출되는 노지 보관이며 기존 날씨 영향을 받습니다. 시공 후 그 자리는 식재 위치에서 제외됩니다.</p>
    {error&&<p role="alert" className="cadastre-editor__error">{error}</p>}
    <button type="button" className="cadastre-design-confirm" disabled={!editable||!dirty||Boolean(error)} onClick={()=>{const r=onOpenYardSave(plan);setNotice(r?.message||'저장하지 못했습니다.');if(r?.ok){setDirty(false);setPlacing(false)}}}>야적창고 계획 확정</button>

@@ -10,16 +10,20 @@ const token=p=>`${p.x.toFixed(8)}:${p.y.toFixed(8)}`;
 export function infrastructureIrrigationDemand(field){
  const p=field?.orchardInfrastructure?.irrigation;
  if(!p)return{groups:[],liters:0,hours:0,error:'관수 설계가 없습니다.'};
+ if(p.awaitingWaterSource)return{groups:[],liters:0,hours:0,error:'관수 설계에 물탱크 또는 관정을 연결해 주세요.'};
  const live=new Set((field.cadastrePlantingPlans||[]).flatMap(plan=>(plan.points||[]).slice(0,plan.done||0).map(token)));
  const mapped=Math.max(0,Number(field.trees)||0),allRows=infrastructureReadyRows(field,'irrigation');let remaining=mapped;
  const rows=allRows.map(row=>{const trees=Math.min(remaining,row.points.filter(point=>live.has(token(point))).length);remaining-=trees;return{...row,liveTrees:trees};}).filter(row=>row.liveTrees>0);
- const flow=p.settings.method==='drip'?2*p.settings.emitters:p.settings.method==='micro'?30:40;
+ const rowFlow=row=>p.settings.method==='drip'?2*(p.settings.emitterMode==='row'?p.settings.rowEmitters:row.liveTrees*p.settings.emitters):row.liveTrees*(p.settings.method==='micro'?30:40);
  const radians=(Number(field.slopeBearing)||0)*Math.PI/180,slope=Math.tan((Number(field.slopeDeg)||0)*Math.PI/180),source=p.header[0];
+ const elevationAt=point=>((source.x-point.x)*Math.cos(radians)+(source.y-point.y)*Math.sin(radians))*1000*slope;
+ const mainHeight=Number(p.settings.mainHeightM)||0;
+ const mainElevation=mainHeight&&rows.length?Math.max(0,...p.header.slice(1).map(point=>elevationAt(point)+mainHeight)):0;
  const groupSize=p.settings.groupSize,groups=[];
  for(let i=0;i<rows.length;i+=groupSize){
-  const group=rows.slice(i,i+groupSize),trees=group.reduce((s,r)=>s+r.liveTrees,0),lph=trees*flow;
-  const elevation=Math.max(0,...group.map(r=>Math.max(...r.points.map(point=>((source.x-point.x)*Math.cos(radians)+(source.y-point.y)*Math.sin(radians))*1000*slope))));
-  const loss=friction(p.headerLength,28,lph)+Math.max(...group.map(row=>friction(row.length,14,row.liveTrees*flow/p.settings.lines)));
+  const group=rows.slice(i,i+groupSize),trees=group.reduce((s,r)=>s+r.liveTrees,0),lph=group.reduce((s,r)=>s+rowFlow(r),0);
+  const elevation=Math.max(mainElevation,...group.map(r=>Math.max(...r.points.map(elevationAt))));
+  const loss=friction(p.headerLength,28,lph)+Math.max(...group.map(row=>friction(p.materialVersion===3?row.lineLength:row.length,p.materialVersion===3&&p.settings.method!=='drip'?28:14,rowFlow(row)/p.settings.lines)));
   const head=10+elevation+loss+3;
   groups.push({rows:group.map(r=>r.key),trees,litersPerHour:lph,requiredHead:head,ready:lph<=INFRASTRUCTURE_PUMP.litersPerHour&&head<=INFRASTRUCTURE_PUMP.headM,liters:lph*p.settings.hours});
  }

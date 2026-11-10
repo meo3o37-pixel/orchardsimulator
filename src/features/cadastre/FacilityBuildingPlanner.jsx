@@ -82,10 +82,12 @@ export default function FacilityBuildingPlanner({ field, cadastre, onFacilityLay
         {draft && <polygon points={points(draft.points)} fill={error ? '#db8d86' : '#75b69a'} fillOpacity=".55" stroke={error ? '#a53632' : '#23664d'} strokeWidth=".55" pointerEvents="none" />}
       </svg>}
     </div><aside className="cadastre-editor__tools">
-      <h4>새 설계안</h4>
-      <button type="button" className="facility-building__choose" onClick={() => setPickerOpen(true)}><span>{facility ? <>{constructionFacilityImageSrcOf(facility.key) && <img src={constructionFacilityImageSrcOf(facility.key)} alt="" />}{facility.name}</> : '시설·건물 선택'}</span><strong>변경</strong></button>
-      {!isEvCharger && <FacilityAngleDial value={angle} onChange={setAngle} />}
-      <p>{isEvCharger ? parking ? `파란 주차칸을 누르면 충전소가 해당 칸 바깥쪽 가장자리에 배치됩니다.${selectedSlotNo ? ` 선택: ${selectedSlotNo}번 칸` : ''}` : '주차장 설계에서 주차칸을 먼저 정해 주세요.' : '지도에서 위치를 선택하세요. 파란 점선은 저장된 설계안입니다.'}</p>
+      <div className="cadastre-setting-card">
+        <h4>새 설계안</h4>
+        <button type="button" className="facility-building__choose" onClick={() => setPickerOpen(true)}><span>{facility ? <>{constructionFacilityImageSrcOf(facility.key) && <img src={constructionFacilityImageSrcOf(facility.key)} alt="" />}{facility.name}</> : '시설·건물 선택'}</span><strong>변경</strong></button>
+        {!isEvCharger && <FacilityAngleDial value={angle} onChange={setAngle} />}
+        <p>{isEvCharger ? parking ? `파란 주차칸을 누르면 충전소가 해당 칸 바깥쪽 가장자리에 배치됩니다.${selectedSlotNo ? ` 선택: ${selectedSlotNo}번 칸` : ''}` : '주차장 설계에서 주차칸을 먼저 정해 주세요.' : '지도에서 위치를 선택하세요. 파란 점선은 저장된 설계안입니다.'}</p>
+      </div>
       {error && <p className="cadastre-editor__error" role="alert">{error}</p>}
       <button type="button" disabled={!draft || Boolean(error) || !field.owned} onClick={save}>설계안 저장</button>
       {notice && <p role="status">{notice}</p>}

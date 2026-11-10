@@ -16,9 +16,10 @@ function JobCard({job,machines,bindings,getQuote,onExecute}) {
  const [mode,setMode]=useState(job.kind==='infrastructure'?'manual':job.kind==='plant'?'shovel':'contractor'),[machineId,setMachineId]=useState(''),[bindingKey,setBindingKey]=useState(bindings[0]?.key||''),[quantity,setQuantity]=useState(''),[notice,setNotice]=useState('');
  const options={mode,machineId,bindingKey,quantity,expectedDone:job.done},quote=getQuote(job.id,options);
  const progress=Math.min(100,job.done/job.total*100);
+ const resourceUse = `노동력 ${(quote.labor||0).toFixed(1)} · 연료 ${(quote.fuel||0).toFixed(2)}L${quote.wear > 0 ? ` · 내구도 −${quote.wear.toFixed(3)}%p` : ''}`;
  const execute=()=>{
   if(!quote.ok)return;
-  if(!window.confirm(`${job.label}\n이번 작업 ${number(quote.amount,quote.unit)}\n작업비 ${number(quote.cost,'원')} · 노동력 ${(quote.labor||0).toFixed(1)} · 연료 ${(quote.fuel||0).toFixed(2)}L\n실행할까요?`))return;
+  if(!window.confirm(`${job.label}\n이번 작업 ${number(quote.amount,quote.unit)}\n작업비 ${number(quote.cost,'원')} · ${resourceUse}\n실행할까요?`))return;
   const result=onExecute(job.id,options);setNotice(result?.message||'작업 결과를 확인해 주세요.');
  };
  return <article className="cadastre-work-card" aria-label={job.label}>
@@ -26,11 +27,11 @@ function JobCard({job,machines,bindings,getQuote,onExecute}) {
   <div className="cadastre-work-card__progress-label"><span>완료 {number(job.done,job.unit)} / {number(job.total,job.unit)}</span><strong>{progress.toFixed(0)}%</strong></div>
   <progress value={job.done} max={job.total} aria-label={`${job.label} 진행률`}/>
   <div className="cadastre-work-card__controls">
-   <label>작업 방식<select value={mode} onChange={e=>setMode(e.target.value)}>{job.kind==='infrastructure'&&<option value="manual">내 노동력 · 보유 자재</option>}{job.kind==='plant'&&<option value="shovel">내 노동력 · 삽</option>}<option value="contractor">전문 외주{['drainage','pipes'].includes(job.kind)?' · 하루 200m':job.kind==='plant'?' · 하루 200주':''}</option>{job.kind!=='infrastructure'&&<option value="excavator">내 굴삭기</option>}</select></label>
-   {mode==='excavator'&&<label>굴삭기<select value={machineId} onChange={e=>setMachineId(e.target.value)}><option value="">장비 선택</option>{machines.map(m=><option key={m.id} value={m.id}>{m.name} · {m.fuel.toFixed(1)}L</option>)}</select></label>}
+   <label>작업 방식<select value={mode} onChange={e=>setMode(e.target.value)}>{job.kind==='infrastructure'&&<option value="manual">내 노동력 · 보유 자재</option>}{job.kind==='plant'&&<option value="shovel">내 노동력 · 삽</option>}<option value="contractor">전문 외주{['drainage','pipes'].includes(job.kind)?' · 하루 200m':job.kind==='plant'?' · 하루 200주':''}</option>{job.kind!=='infrastructure'&&<option value="excavator">자가 노동력 + 내 굴삭기</option>}</select></label>
+   {mode==='excavator'&&<label>굴삭기<select value={machineId} onChange={e=>setMachineId(e.target.value)}><option value="">{machines.length ? '장비 선택' : '이 토지에 주차된 굴삭기 없음'}</option>{machines.map(m=><option key={m.id} value={m.id}>{m.name} · 연료 {m.fuel.toFixed(1)}L · 내구도 {m.durability.toFixed(1)}%</option>)}</select></label>}
    {job.kind==='plant'&&<><label>결속재<select value={bindingKey} onChange={e=>setBindingKey(e.target.value)}>{bindings.map(b=><option key={b.key} value={b.key}>{b.name} · {b.stock}개</option>)}</select></label><label>이번 식재 수량<input type="number" min="1" max={Math.max(1,job.total-job.done)} placeholder="가능한 만큼" value={quantity} onChange={e=>setQuantity(e.target.value)}/></label></>}
   </div>
-  {quote.ok?<><div className="cadastre-work-card__quote"><strong>이번 작업 {number(quote.amount,quote.unit)}</strong><span>{number(quote.cost,'원')} · 노동력 {(quote.labor||0).toFixed(1)} · {(quote.fuel||0).toFixed(2)}L</span></div>{job.kind==='plant'&&<p className="cadastre-work-card__materials">묘목 재고 {quote.stock}주 · 결속재 {quote.bindingStock}개 · 이번 사용 각 {quote.amount}개</p>}{quote.remainingCost>0&&<p className="cadastre-work-card__materials">남은 전체 작업비 약 {number(quote.remainingCost,'원')} · 자재 보유분 별도</p>}</>:<p className="cadastre-work-card__blocked" role="status">{quote.message}</p>}
+  {quote.ok?<><div className="cadastre-work-card__quote"><strong>이번 작업 {number(quote.amount,quote.unit)}</strong><span>{number(quote.cost,'원')} · {resourceUse}</span></div>{job.kind==='plant'&&<p className="cadastre-work-card__materials">묘목 재고 {quote.stock}주 · 결속재 {quote.bindingStock}개 · 이번 사용 각 {quote.amount}개</p>}{quote.remainingCost>0&&<p className="cadastre-work-card__materials">남은 전체 작업비 약 {number(quote.remainingCost,'원')} · 자재 보유분 별도</p>}</>:<p className="cadastre-work-card__blocked" role="status">{quote.message}</p>}
   <div className="cadastre-work-card__actions"><span>남은 작업 {number(job.total-job.done,job.unit)}</span><button type="button" disabled={!quote.ok} onClick={execute}>{job.kind==='infrastructure'?'공정 진행':job.kind==='plant'?'계획대로 식재':job.kind==='pipes'?'매설 진행':job.kind.endsWith('Clean')?'세척 진행':'시공 진행'}</button></div>
   {quote.ok&&quote.pipeMaterials?.rows.some(r=>r.used>0)&&<p className="cadastre-work-card__materials">보유 관 {quote.pipeMaterials.rows.reduce((s,r)=>s+r.used,0).toFixed(1)}m 사용 · 자재비 {number(quote.pipeMaterials.credit,'원')} 차감 · 남은 관 보관</p>}
   {notice&&<p className="cadastre-work-card__notice" role="status">{notice}</p>}

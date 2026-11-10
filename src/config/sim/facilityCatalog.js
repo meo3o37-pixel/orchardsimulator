@@ -18,8 +18,8 @@ export const FACILITIES_BY_TAB = {
     { key: 'peTankLarge', name: 'PE물탱크 대형 (5톤)', price: 1800000, desc: '5,000L 저장 용량' },
     { key: 'peTankXl', name: 'PE물탱크 초대형 (10톤)', price: 2900000, desc: '10,000L 저장 용량' },
     { key: 'peTankXxl', name: 'PE물탱크 특대형 (20톤)', price: 4800000, desc: '20,000L 저장 용량' },
-    { key: 'dripIrrigation', name: '점적관수', unitPricePerTree: 8000, perTree: true, manualInstallOnly: true, desc: '직접 시공형 관수시설 (작업탭에서 점적노즐 설치)' },
-    { key: 'sprinklerIrrigation', name: '스프링클러 관수', unitPricePerTree: 12500, perTree: true, manualInstallOnly: true, desc: '직접 시공형 관수시설 (작업탭에서 스프링클러 노즐 설치)' }
+    { key: 'dripIrrigation', name: '점적관수', unitPricePerTree: 8000, perTree: true, manualInstallOnly: true, desc: '지적도에서 설계를 확정한 뒤 작업 탭에서 시공하는 관수시설' },
+    { key: 'sprinklerIrrigation', name: '스프링클러 관수', unitPricePerTree: 12500, perTree: true, manualInstallOnly: true, desc: '지적도에서 설계를 확정한 뒤 작업 탭에서 시공하는 관수시설' }
   ],
   general: [
     { key: 'openStorage3000Py', name: '노지 야적창고', price: 0, baseProvided: true, desc: '노지 시설 설계에서 적재면·통로·위치를 직접 정합니다. 완공 후 설계 면적에 맞는 저장 용량이 적용됩니다.' },

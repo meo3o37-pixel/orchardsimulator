@@ -66,10 +66,13 @@ export default function ElectricPlanner({ field, cadastre, onElectricPlanSave })
         {origin && <circle cx={transform.toSvg(origin).x} cy={transform.toSvg(origin).y} r=".65" fill="#e9a93d" />}
         {poles.map((pole, index) => <circle key={index} cx={transform.toSvg(pole).x} cy={transform.toSvg(pole).y} r=".45" fill="#9a6b2a" />)}
       </svg>
-    </div><aside className="cadastre-editor__tools electric-planner__tools"><h4>연결할 시설</h4>
-      <select aria-label="전기 연결 시설" value={targetId} onChange={event => { setTargetId(event.target.value); setNotice(''); }}><option value="">시설 선택</option>{sites.map(site => <option key={site.id} value={site.id}>{site.name}</option>)}</select>
-      {!sites.length && <p>지도에 배치된 전기 사용 시설이 없습니다.</p>}
-      {!powerSite && <p>농사용전기 설비가 지도에 없으면 시작점을 직접 찍어 주세요.</p>}
+    </div><aside className="cadastre-editor__tools electric-planner__tools">
+      <div className="cadastre-setting-card">
+        <h4>연결할 시설</h4>
+        <select aria-label="전기 연결 시설" value={targetId} onChange={event => { setTargetId(event.target.value); setNotice(''); }}><option value="">시설 선택</option>{sites.map(site => <option key={site.id} value={site.id}>{site.name}</option>)}</select>
+        {!sites.length && <p>지도에 배치된 전기 사용 시설이 없습니다.</p>}
+        {!powerSite && <p>농사용전기 설비가 지도에 없으면 시작점을 직접 찍어 주세요.</p>}
+      </div>
       <button type="button" aria-pressed={placingPole} disabled={!origin} onClick={() => setPlacingPole(value => !value)}>{placingPole ? '전봇대 배치 중 · 끝내기' : '전봇대 추가'}</button>
       {poles.length > 0 && <button type="button" onClick={() => setPoles(previous => previous.slice(0, -1))}>마지막 전봇대 취소</button>}
       <p>{draft.length > 1 ? `전선 ${draft.slice(1).reduce((sum, point, index) => sum + distance(draft[index], point), 0).toFixed(1)}m · 전봇대 ${poles.length}개${tooLong ? ' · 긴 구간에 전봇대 필요' : ''}` : powerSite ? '시설을 선택하면 전선을 미리 볼 수 있습니다.' : '시설을 선택하고 지도에서 시작점을 찍으세요.'}</p>

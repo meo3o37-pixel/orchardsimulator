@@ -1,14 +1,16 @@
+import { DEFAULT_SCAFFOLD_SPACING_M, MAX_TRELLIS_STAKES_PER_TREE } from '../../config/items/consumableMaterial.js';
+
 // Game balance only: material density improves resistance with diminishing returns.
 const clamp=(n,l,h)=>Math.max(l,Math.min(h,Number(n)||0));
 const pointKey=p=>`${p.x.toFixed(8)}:${p.y.toFixed(8)}`;
-export const normalizeTrellisInvestment=raw=>({spacing:clamp(raw?.spacing??5,2.5,10),wires:Math.round(clamp(raw?.wires??3,1,5)),stakes:Math.round(clamp(raw?.stakes??1,0,2))});
+export const normalizeTrellisInvestment=raw=>({spacing:clamp(raw?.spacing??DEFAULT_SCAFFOLD_SPACING_M,2.5,10),wires:Math.round(clamp(raw?.wires??3,1,5)),stakes:Math.round(clamp(raw?.stakes??1,0,MAX_TRELLIS_STAKES_PER_TREE))});
 export const scaffoldCount=(length,spacing)=>Math.ceil(Math.max(0,length)/spacing)+1;
 export function trellisRowMetrics(plan,row,{preview=false,weather='태풍'}={}){
  const s=normalizeTrellisInvestment(plan.settings),condition=preview?100:clamp(row.condition??100,0,100),health=condition/100;
  const posts=preview||row.done?.posts,wire=posts&&(preview||row.done?.wire),ties=preview||row.done?.ties;
  const actualSpacing=row.length/Math.max(1,scaffoldCount(row.length,s.spacing)-1);
  const pipeStrength=posts?clamp((5/Math.max(1,actualSpacing))**.75,.55,1.4):0;
- const stakeStrength=ties?[.45,.75,.9][s.stakes]:0;
+ const stakeStrength=ties?[.45,.75,.9,.96,1][s.stakes]:0;
  const wireStrength=wire?[0,.65,.78,.86,.91,.94][s.wires]:0;
  const resistance=(pipeStrength*.5+stakeStrength*.3+wireStrength*.2)*health;
  const severity=/태풍/.test(weather)?.25:/돌풍/.test(weather)?.08:/강풍/.test(weather)?.035:0;

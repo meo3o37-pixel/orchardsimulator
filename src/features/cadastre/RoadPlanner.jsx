@@ -64,9 +64,11 @@ export default function RoadPlanner({ selectedField: field, cadastre, zones = []
         {targets.map(item => <circle key={item.id} cx={transform.toSvg(item.point).x} cy={transform.toSvg(item.point).y} r=".38" fill={(saved.routes || []).some(route => route.startId === item.id || route.endId === item.id) ? '#347c5d' : '#d29e52'} />)}
       </svg>
     </div><aside className="cadastre-editor__tools road-planner__tools">
-      <h4>도로 양끝 선택</h4>
-      <select aria-label="도로 시작점" value={startId} onChange={event => { setStartId(event.target.value); setWaypoints([]); }}><option value="entrance">토지 진입점</option>{targets.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
-      <select aria-label="도로 목적지" value={targetId} onChange={event => { setTargetId(event.target.value); setWaypoints([]); }}><option value="">목적지 선택</option>{targets.filter(item => item.id !== startId).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
+      <div className="cadastre-setting-card">
+        <h4>도로 양끝 선택</h4>
+        <select aria-label="도로 시작점" value={startId} onChange={event => { setStartId(event.target.value); setWaypoints([]); }}><option value="entrance">토지 진입점</option>{targets.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
+        <select aria-label="도로 목적지" value={targetId} onChange={event => { setTargetId(event.target.value); setWaypoints([]); }}><option value="">목적지 선택</option>{targets.filter(item => item.id !== startId).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
+      </div>
       <button type="button" aria-pressed={placingEntrance} disabled={(saved.routes || []).length > 0} onClick={() => { setPlacingEntrance(value => !value); setPlacingWaypoint(false); }}>토지 경계에서 진입점 선택</button>
       {(saved.routes || []).length > 0 && <p>진입점을 바꾸려면 저장된 연결을 먼저 삭제해 주세요.</p>}
       <button type="button" aria-pressed={placingWaypoint} disabled={!start || !target} onClick={() => { setPlacingWaypoint(value => !value); setPlacingEntrance(false); }}>도로 중간점 {placingWaypoint ? '배치 중' : '추가'}</button>

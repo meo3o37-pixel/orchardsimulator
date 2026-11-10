@@ -1,6 +1,7 @@
 import { parkingGeometry } from './openParking.js';
 import { yardGeometry } from './openYard.js';
 import { scaffoldCount } from './trellisInvestment.js';
+import { DEFAULT_SCAFFOLD_SPACING_M } from '../../config/items/consumableMaterial.js';
 const valid=p=>Number.isFinite(p?.x)&&Number.isFinite(p?.y);
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y)*1000;
 // Work is stored as installed metres starting at the first route point.
@@ -29,7 +30,7 @@ export function liveLandSnapshot(field){
   const points=(row.points||[]).filter(valid);if(points.length<2)continue;
   const condition=Math.max(0,Math.min(100,Number(row.condition??100))),a=points[0],b=points.at(-1);
   if(row.done?.posts){
-   const count=scaffoldCount(distance(a,b),Math.max(2.5,Number(trellis.settings?.spacing)||5));
+   const count=scaffoldCount(distance(a,b),Math.max(2.5,Number(trellis.settings?.spacing)||DEFAULT_SCAFFOLD_SPACING_M));
    for(let i=0;i<count;i++)posts.push({x:a.x+(b.x-a.x)*i/(count-1),y:a.y+(b.y-a.y)*i/(count-1),condition});
   }
   if(row.done?.wire)wires.push({key:row.key,points:[a,b],condition});

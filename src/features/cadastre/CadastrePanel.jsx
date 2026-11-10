@@ -88,7 +88,9 @@ export default function CadastrePanel(props) {
   const [showGrass, setShowGrass] = useState(false);
   const [confirmedSoil, setConfirmedSoil] = useState(false);
   const [confirmedGrass, setConfirmedGrass] = useState(false);
-  const cadastre = useMemo(() => buildCadastreForField({ selectedField, markerPoint: selectedFieldMarkerPoint, contours }), [selectedField, selectedFieldMarkerPoint, contours]);
+  const cadastre = useMemo(() => buildCadastreForField({ selectedField, markerPoint: selectedFieldMarkerPoint, contours, zones: props.zones }), [selectedField, selectedFieldMarkerPoint, contours, props.zones]);
+  const outlineRatio = cadastre?.boundaryAreaPy > 0 && cadastre?.outlineAreaPy > 0
+    ? cadastre.outlineAreaPy / cadastre.boundaryAreaPy : 1;
   const groundEnvironment = useMemo(() => ({
     day: props.drainageGame?.day ?? 1,
     weather: props.drainageGame?.weather ?? ''
@@ -99,11 +101,12 @@ export default function CadastrePanel(props) {
       {sectionTabs.map(tab=><button key={tab.key} type="button" role="tab" id={`${sectionId}-tab-${tab.key}`} aria-controls={`${sectionId}-panel-${tab.key}`} aria-selected={section===tab.key} tabIndex={section===tab.key?0:-1} onClick={()=>setSection(tab.key)}><tab.Icon size={17} strokeWidth={1.8} aria-hidden="true"/><span>{tab.label}</span></button>)}
     </div>
     <div className="cadastre-section-panel" role="tabpanel" id={`${sectionId}-panel-realtime`} aria-labelledby={`${sectionId}-tab-realtime`} hidden={section!=='realtime'}>
-      <LiveLandView field={selectedField} cadastre={cadastre} zones={props.zones || []} onOpenDesign={()=>{setSection('design');setMode('farm');}} />
+      <LiveLandView field={selectedField} cadastre={cadastre} zones={props.zones || []} />
       <SoilSummary field={selectedField} />
     </div>
     <div className="cadastre-section-panel" role="tabpanel" id={`${sectionId}-panel-design`} aria-labelledby={`${sectionId}-tab-design`} hidden={section!=='design'}>
     <CadastreGroundDisplayContext.Provider value={{showSoil,setShowSoil,showGrass,setShowGrass}}>
+    {!cadastre.boundaryCalibrated && (outlineRatio > 1.2 || outlineRatio < 1 / 1.2) && <p className="cadastre-outline-area-warning" role="status">기존 설계 위치를 유지하고 있습니다. 지도 윤곽 축척이 토지 면적 {formatCadastrePyAreaLabel(cadastre.boundaryAreaPy)}과 달라 설계 거리와 식재 수량에 차이가 있을 수 있습니다.</p>}
     <CadastreModeTabs mode={mode} onChange={next => setMode(next === 'facility' ? facilityMode : next === 'cultivation-facility' ? cultivationFacilityMode : next)} />
     {['trellis', 'irrigation', 'drainage', 'pipes'].includes(mode) && <nav className="cadastre-design-submodes" aria-label="재배시설 설계 종류">
       {CULTIVATION_FACILITY_MODES.map(({ key, label, Icon }) => <button key={key} type="button" aria-pressed={key === 'drainage' ? DRAINAGE_DESIGN_MODES.some(item => item.key === mode) : mode === key} onClick={() => setMode(key === 'drainage' ? drainageMode : key)}><Icon size={17} strokeWidth={1.8} aria-hidden="true" /><span>{label}</span></button>)}
@@ -152,6 +155,12 @@ function CultivationEditor({ className = '', selectedField, cadastre, zones: raw
   const pendingVertex = useRef(null);
   const [vertexDragging, setVertexDragging] = useState(false);
   useEffect(() => () => { if (vertexFrame.current) cancelAnimationFrame(vertexFrame.current); }, []);
+  useEffect(() => {
+    if (!draft || !cadastre.boundaryCalibrated || Math.abs(cadastre.outlineAreaPy - cadastre.boundaryAreaPy) < .01) return;
+    if (draft.points.length !== cadastre.outlinePoints.length || !draft.points.every((point, index) => Math.hypot(point.x - cadastre.outlinePoints[index].x, point.y - cadastre.outlinePoints[index].y) < 1e-9)) return;
+    setDraft(previous => previous && { ...previous, points: cadastre.boundaryPoints.map(({ x, y }) => ({ x, y })) });
+    setMessage('토지 면적에 맞는 경계로 갱신했습니다.');
+  }, [draft, cadastre]);
   const viewport = useCadastreViewport(svgRef, Boolean(transform), !draft || panMode);
   const selected = zones.find((zone) => zone.id === selectedId);
   const plantingSettings = useMemo(() => plantingDraft?.zoneId === selectedId ? plantingDraft.values : normalizePlantingSettings(selected?.planting), [plantingDraft, selectedId, selected?.planting]);
@@ -338,8 +347,9 @@ function CultivationEditor({ className = '', selectedField, cadastre, zones: raw
           {draft ? (
             <form className="cadastre-editor__form" onSubmit={save}>
               <h4>{draft.id ? '재배구역 수정' : '새 재배구역'}</h4>
-              <label htmlFor="cadastre-zone-name">구역명</label>
-              <input id="cadastre-zone-name" className="text-input" value={draft.name} maxLength={40} required onChange={(event) => setDraft((prev) => ({ ...prev, name: event.target.value }))} />
+              <label className="cadastre-setting-card" htmlFor="cadastre-zone-name">구역명
+                <input id="cadastre-zone-name" className="text-input" value={draft.name} maxLength={40} required onChange={(event) => setDraft((prev) => ({ ...prev, name: event.target.value }))} />
+              </label>
               <button type="button" className="cadastre-editor__command" disabled={!editable} onClick={useParcelBoundary}><Maximize size={18} />토지 그대로 사용</button>
               <div className="cadastre-editor__metrics"><span>구역 면적</span><strong>{formatCadastrePyAreaLabel(draftArea)}</strong></div>
               <div className="cadastre-editor__toolbar">
@@ -357,7 +367,7 @@ function CultivationEditor({ className = '', selectedField, cadastre, zones: raw
             {deletePending && <div className="cadastre-editor__delete" role="group" aria-label="구역 삭제 확인"><p>{selected.name} 구역을 삭제할까요?</p><div className="cadastre-editor__toolbar"><button type="button" className="cadastre-editor__command" onClick={deleteSelected}>삭제</button><button type="button" className="cadastre-editor__command" onClick={() => setDeletePending(false)}>취소</button></div></div>}
             <form className="cadastre-editor__planting-form" onSubmit={savePlanting}>
               <h4>식재 설정</h4>
-              <label className="cadastre-editor__rootstock" htmlFor="cadastre-crop"><span>품목</span>
+              <label className="cadastre-editor__rootstock cadastre-setting-card" htmlFor="cadastre-crop"><span>품목</span>
                 <select id="cadastre-crop" className="text-input" disabled={!editable} value={plantingSettings.crop || 'apple'} onChange={(event) => {
                   setPlantingDraft({ zoneId: selectedId, values: { ...plantingSettings, crop: event.target.value, variety: '' } });
                   setMessage('');
@@ -365,7 +375,7 @@ function CultivationEditor({ className = '', selectedField, cadastre, zones: raw
                   {PLANTING_CROPS.map((crop) => <option key={crop.key} value={crop.key}>{crop.label}</option>)}
                 </select>
               </label>
-              <label className="cadastre-editor__rootstock" htmlFor="cadastre-variety"><span>품종</span>
+              <label className="cadastre-editor__rootstock cadastre-setting-card" htmlFor="cadastre-variety"><span>품종</span>
                 <select id="cadastre-variety" className="text-input" required disabled={!editable} value={plantingSettings.variety || ''} onChange={(event) => {
                   setPlantingDraft({ zoneId: selectedId, values: { ...plantingSettings, crop: plantingSettings.crop || 'apple', variety: event.target.value } });
                   setMessage('');
@@ -374,7 +384,7 @@ function CultivationEditor({ className = '', selectedField, cadastre, zones: raw
                   {PLANTING_CROPS.find((crop) => crop.key === (plantingSettings.crop || 'apple'))?.varieties.map((variety) => <option key={variety.key} value={variety.key}>{variety.label}</option>)}
                 </select>
               </label>
-              <label className="cadastre-editor__rootstock" htmlFor="cadastre-rootstock"><span>대목</span>
+              <label className="cadastre-editor__rootstock cadastre-setting-card" htmlFor="cadastre-rootstock"><span>대목</span>
                 <select id="cadastre-rootstock" className="text-input" disabled={!editable} value={plantingSettings.rootstock} onChange={(event) => {
                   const limits = plantingRootstockOf(event.target.value);
                   setPlantingDraft({ zoneId: selectedId, values: {
@@ -388,7 +398,7 @@ function CultivationEditor({ className = '', selectedField, cadastre, zones: raw
                   {PLANTING_ROOTSTOCKS.map((rootstock) => <option key={rootstock.key} value={rootstock.key}>{rootstock.label}</option>)}
                 </select>
               </label>
-              <div className="cadastre-editor__planting-fields">
+              <div className="cadastre-editor__planting-fields cadastre-setting-card">
                 {plantingFieldsOf(plantingSettings.rootstock).map((field) => <label key={field.key} htmlFor={`cadastre-${field.key}`}>
                   <span>{field.label}</span>
                   <div className="cadastre-editor__number"><input id={`cadastre-${field.key}`} type="number" className="text-input" min={field.min} max={field.max} step={field.step} required disabled={!editable}

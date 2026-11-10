@@ -1,4 +1,5 @@
 import { infrastructureIrrigationDelivery, infrastructureIrrigationDemand } from '../cadastre/infrastructureIrrigation.js';
+import { infrastructureWaterSources } from '../cadastre/orchardInfrastructure.js';
 export const processDailyWaterSystems = (
   {
     field,
@@ -36,6 +37,9 @@ export const processDailyWaterSystems = (
   let autoRefillUsedLiters = 0;
   let autoRefillPowerFeeTotal = 0;
   let autoRefillEnvFeeTotal = 0;
+  let directWellIrrigationLiters = 0;
+  let directWellIrrigationPowerFee = 0;
+  let directWellIrrigationEnvFee = 0;
   const autoRefillTargetWater = Math.floor(tankCapacity * deps.tankAutoRefillTargetRatio);
   const tryAutoRefill = (needLiters) => {
     if (!hasAutoRefillValve || !autoRefillEnabled || !hasTankInfra) return 0;
@@ -45,7 +49,7 @@ export const processDailyWaterSystems = (
     if (refillLiters <= 0) return 0;
     const refillPowerFee = Math.max(1, Math.round((refillLiters / deps.waterPumpUnitLiter) * deps.waterPumpPowerFeePer1000L));
     const refillEnvFee = Math.max(1, Math.round(refillLiters * deps.waterEnvFeePerLiter));
-    if (prevMoney - autoRefillSpentMoney - autoRefillPowerFeeTotal - autoRefillEnvFeeTotal < (refillPowerFee + refillEnvFee)) return 0;
+    if (prevMoney - autoRefillSpentMoney - autoRefillPowerFeeTotal - autoRefillEnvFeeTotal - directWellIrrigationPowerFee - directWellIrrigationEnvFee < (refillPowerFee + refillEnvFee)) return 0;
     tankAfterAutoRefill += refillLiters;
     autoRefillUsedLiters += refillLiters;
     autoRefillPowerFeeTotal += refillPowerFee;
@@ -74,9 +78,30 @@ export const processDailyWaterSystems = (
   }
   if(designed){
     const need = infrastructureIrrigationDemand(field);
-    if(field.orchardInfrastructure.irrigation.settings.enabled && hasTankInfra && irrigationPumpActive && need.hours<=24)tryAutoRefill(need.liters-tankAfterAutoRefill);
-    const delivered = infrastructureIrrigationDelivery(field,tankAfterAutoRefill,{tankReady:hasTankInfra,pumpActive:irrigationPumpActive});
+    const irrigationDesign=field.orchardInfrastructure.irrigation;
+    const linkedSource=infrastructureWaterSources(field).find(source=>source.id===irrigationDesign.sourceId);
+    const linkedPoint=irrigationDesign.header?.[0];
+    const sourceAtConnection=linkedPoint&&linkedSource&&Math.hypot(linkedSource.point.x-linkedPoint.x,linkedSource.point.y-linkedPoint.y)*1000<=.001;
+    const installedSource=linkedSource?.status==='complete'&&sourceAtConnection&&deps.fieldFacilityUsable(field,linkedSource.facilityKey,nextDay);
+    const powerReady=deps.fieldFacilityUsable(field,'farmPowerElectric',nextDay);
+    const directWell=installedSource&&linkedSource.type==='well'&&powerReady;
+    const linkedTank=installedSource&&linkedSource.type==='tank'&&powerReady&&tankCapacity>0;
+    const tankReady=irrigationDesign.sourceId?linkedTank:hasTankInfra;
+    if(irrigationDesign.settings.enabled&&tankReady&&irrigationPumpActive&&need.hours<=24)tryAutoRefill(need.liters-tankAfterAutoRefill);
+    let available=directWell?groundwaterLitersAvailable:tankAfterAutoRefill;
+    if(directWell&&irrigationDesign.settings.enabled&&need.hours<=24&&need.liters>0){
+      available=Math.min(available,need.liters);
+      if(available>0){
+        const powerFee=Math.max(1,Math.round(available/deps.waterPumpUnitLiter*deps.waterPumpPowerFeePer1000L));
+        const envFee=Math.max(1,Math.round(available*deps.waterEnvFeePerLiter));
+        if(prevMoney-autoRefillSpentMoney-autoRefillPowerFeeTotal-autoRefillEnvFeeTotal>=powerFee+envFee){
+          directWellIrrigationPowerFee=powerFee;directWellIrrigationEnvFee=envFee;
+        }else available=0;
+      }
+    }
+    const delivered = infrastructureIrrigationDelivery(field,available,{tankReady:Boolean(directWell||tankReady),pumpActive:Boolean(directWell||irrigationPumpActive)});
     irrigationUseLiters=delivered.usedLiters;irrigationWaterGain=delivered.waterGain;
+    if(directWell){directWellIrrigationLiters=delivered.usedLiters;groundwaterLitersAvailable=Math.max(0,groundwaterLitersAvailable-directWellIrrigationLiters);}
   }
   const passiveIrrigationTrees = Math.max(
     0,
@@ -90,7 +115,7 @@ export const processDailyWaterSystems = (
     ? 0
     : (Math.max(0, Math.min(plantedTrees, passiveIrrigationTrees)) * 2);
   const tankBeforeIrrigation = tankAfterAutoRefill;
-  const tankAfterIrrigation = Math.max(0, tankBeforeIrrigation - irrigationUseLiters - passiveIrrigationUseLiters);
+  const tankAfterIrrigation = Math.max(0, tankBeforeIrrigation - (irrigationUseLiters-directWellIrrigationLiters) - passiveIrrigationUseLiters);
   tankAfterAutoRefill = tankAfterIrrigation;
   tryAutoRefill(autoRefillTargetWater - tankAfterAutoRefill);
   const stageNow = deps.growthStageLabel(field);
@@ -148,6 +173,12 @@ export const processDailyWaterSystems = (
       'farmPowerElectric',
       ((powerRule.pumpAutoPer1000L || 0) * autoRefillUsedLiters) / deps.waterPumpUnitLiter
     );
+  }
+  if(directWellIrrigationLiters>0){
+    for(const facilityKey of ['wellFacility','farmPowerElectric']){
+      const rule=deps.facilityDurabilityRuleOf(facilityKey);
+      nextFacilityDurabilityByKey=deps.applyFacilityDurabilityWear(nextFacilityDurabilityByKey,facilityKey,((rule.irrigationPer1000L||0)*directWellIrrigationLiters)/deps.waterPumpUnitLiter);
+    }
   }
   if (irrigationUseLiters > 0 && plan?.facilityKey) {
     const rule = deps.facilityDurabilityRuleOf(plan.facilityKey);
@@ -224,6 +255,9 @@ export const processDailyWaterSystems = (
     autoRefillUsedLiters,
     autoRefillPowerFeeTotal,
     autoRefillEnvFeeTotal,
+    directWellIrrigationLiters,
+    directWellIrrigationPowerFee,
+    directWellIrrigationEnvFee,
     irrigationUseLiters,
     irrigationWaterGain,
     microSprinklerUsedLiters,

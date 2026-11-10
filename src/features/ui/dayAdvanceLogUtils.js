@@ -35,6 +35,9 @@ export const buildAdvanceDaySummaryLogs = (params, deps) => {
   const autoRefillLog = params.autoRefillLitersTotal > 0
     ? `자동 급수: ${Math.floor(params.autoRefillLitersTotal).toLocaleString()}L (전기료 ${deps.won(params.autoRefillPowerFeeTotal)} / 환경부담금 ${deps.won(params.autoRefillEnvFeeTotal)})`
     : '';
+  const directWellIrrigationLog = params.directWellIrrigationLitersTotal > 0
+    ? `관정 직결 관수: ${Math.floor(params.directWellIrrigationLitersTotal).toLocaleString()}L (전기료 ${deps.won(params.directWellIrrigationPowerFeeTotal)} / 환경부담금 ${deps.won(params.directWellIrrigationEnvFeeTotal)})`
+    : '';
   const standbyPowerFeeBreakdown = [
     `한전ON ${deps.won(params.standbyPowerFarmPowerOnDaily)}`,
     `펌프ON ${deps.won(params.standbyPowerIrrigationPumpOnDaily)}`,
@@ -61,6 +64,7 @@ export const buildAdvanceDaySummaryLogs = (params, deps) => {
     winterDamageLog,
     hailDamageLog,
     autoRefillLog,
+    directWellIrrigationLog,
     standbyPowerFeeLog,
     evSlowChargeLog,
     freezeRiskLog
@@ -72,6 +76,7 @@ export const composeAdvanceDayDiaryLog = ({
   dayLog,
   laborLog,
   autoRefillLog,
+  directWellIrrigationLog,
   standbyPowerFeeLog,
   evSlowChargeLog,
   dueCreditBillLog,
@@ -98,6 +103,7 @@ export const composeAdvanceDayDiaryLog = ({
     dayLog,
     laborLog,
     autoRefillLog,
+    directWellIrrigationLog,
     standbyPowerFeeLog,
     evSlowChargeLog,
     dueCreditBillLog,

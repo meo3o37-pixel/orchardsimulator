@@ -7,6 +7,8 @@ import { generatePlantingPreview } from './plantingDesign';
 import { parkingGeometry } from './openParking';
 import { yardGeometry } from './openYard';
 import { normalizeFacilitySites } from '../facility/facilityConstruction';
+import { isIrrigationMainBuried } from './orchardInfrastructure';
+import { DEFAULT_SCAFFOLD_SPACING_M } from '../../config/items/consumableMaterial';
 import useCadastreViewport from './useCadastreViewport';
 import './ConfirmedDesignView.css';
 
@@ -26,18 +28,20 @@ export default function ConfirmedDesignView({ field, cadastre, zones: rawZones =
   }), [zones, field.drainage, transform]);
   const trellis = field.orchardInfrastructure?.trellis;
   const irrigation = field.orchardInfrastructure?.irrigation;
+  const irrigationMainBuried = isIrrigationMainBuried(irrigation?.settings);
   const routes = (field.drainage?.routes || []).filter(route => validPath(route.points));
   const parking = parkingGeometry(field.cadastreParkingPlan?.plan || field.openParking);
   const yard = yardGeometry(field.cadastreYardPlan?.plan || field.openYard);
   const facilityPlans = (Array.isArray(field.cadastreFacilityLayoutPlans) ? field.cadastreFacilityLayoutPlans : []).filter(plan => validFootprint(plan.points));
   const plannedIds = new Set(facilityPlans.map(plan => plan.id));
   const facilitySites = normalizeFacilitySites(field.facilitySites).filter(site => validFootprint(site.points) && !plannedIds.has(site.id));
+  const irrigationSource = [...facilitySites, ...facilityPlans].find(site => String(site.id) === String(irrigation?.sourceId));
   const electricRoutes = (field.cadastreElectricPlan?.routes || []).filter(route => validPath(route.points));
   const roadRoutes = (field.cadastreRoadPlan?.routes || []).filter(route => validPath(route.points));
   const planItems = [
     ...zones.filter(zone => zone.points?.length >= 3).map(zone => ({ key: `zone-${zone.id}`, type: '재배구역·식재', name: zone.name, detail: zone.planting?.variety ? `${zone.planting.variety} 식재 계획` : '구역 경계 확정' })),
-    ...(trellis?.rows || []).filter(row => validPath(row.points)).map(row => ({ key: `trellis-${row.key}`, type: '지주시설', name: row.name, detail: `비계파이프 최대 ${trellis.settings?.spacing ?? 5}m 간격 · 와이어 ${trellis.settings?.wires ?? 3}단` })),
-    ...(irrigation?.rows || []).filter(row => validPath(row.points)).map(row => ({ key: `irrigation-${row.key}`, type: '관수시설', name: row.name, detail: irrigation.settings?.method === 'drip' ? '점적관수' : irrigation.settings?.method === 'micro' ? '미세살수' : '스프링클러' })),
+    ...(trellis?.rows || []).filter(row => validPath(row.points)).map(row => ({ key: `trellis-${row.key}`, type: '지주시설', name: row.name, detail: `비계파이프 최대 ${trellis.settings?.spacing ?? DEFAULT_SCAFFOLD_SPACING_M}m 간격 · 와이어 ${trellis.settings?.wires ?? 3}단` })),
+    ...(irrigation?.rows || []).filter(row => validPath(row.points)).map(row => ({ key: `irrigation-${row.key}`, type: '관수시설', name: row.name, detail: `${irrigation.settings?.method === 'drip' ? '주관 연결 점적호스' : irrigation.settings?.method === 'micro' ? '열별 32mm 주관 · 미세살수' : '열별 32mm 주관 · 스프링클러'}${irrigation.settings?.mainPlacement === 'custom' ? ' · 직접 그린 주관' : ''}${irrigationMainBuried ? ' · 주관 땅속 매설' : irrigation.settings?.mainHeightM > 0 ? ` · 지면 위 ${irrigation.settings.mainHeightM}m` : ''}${irrigationSource ? ` · 수원 ${irrigationSource.name || irrigationSource.facilityKey}` : irrigation.awaitingWaterSource ? ' · 수원 미연결' : ''}` })),
     ...routes.map((route, index) => ({ key: `route-${route.id || index}`, type: route.type === 'pipe100' || route.type === 'pipe150' ? '유공관' : '배수로', name: `${route.type === 'pipe100' || route.type === 'pipe150' ? '유공관' : '배수로'} ${index + 1}`, detail: '경로 확정' })),
     ...(parking ? [{ key: 'parking', type: '노지 시설', name: '노지 주차장', detail: `${parking.plan.slots}칸` }] : []),
     ...(yard ? [{ key: 'yard', type: '노지 시설', name: '노지 야적창고', detail: `${yard.plan.width} × ${yard.plan.depth}m` }] : []),
@@ -61,12 +65,14 @@ export default function ConfirmedDesignView({ field, cadastre, zones: rawZones =
         {planting.map(plan => <g key={plan.id}><g fill="none" stroke="#378757" strokeWidth="1.2">{plan.rows.map((row, index) => validPath(row) && <polyline key={index} points={points(row)} vectorEffect="non-scaling-stroke" />)}</g><path d={plan.treePath} fill="#24583b" /></g>)}
         {routes.map(route => <polyline key={route.id} points={points(route.points)} fill="none" stroke={route.type === 'pipe100' || route.type === 'pipe150' ? '#7952a8' : '#287ea8'} strokeWidth="2" vectorEffect="non-scaling-stroke" />)}
         {(trellis?.rows || []).filter(row => validPath(row.points)).map(row => <polyline key={row.key} points={points([row.points[0], row.points.at(-1)])} fill="none" stroke="#483b2f" strokeWidth="1.7" vectorEffect="non-scaling-stroke" />)}
-        {validPath(irrigation?.header) && <polyline points={points(irrigation.header)} fill="none" stroke="#217ca8" strokeWidth="2.2" vectorEffect="non-scaling-stroke" />}
-        {(irrigation?.rows || []).filter(row => validPath(row.points)).map(row => <polyline key={row.key} points={points([row.points[0], row.points.at(-1)])} fill="none" stroke="#43a2a5" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />)}
+        {validPath(irrigation?.header) && <polyline points={points(irrigation.header)} fill="none" stroke="#217ca8" strokeWidth="2.2" strokeDasharray={irrigationMainBuried ? '5 3' : undefined} vectorEffect="non-scaling-stroke" />}
+        {(irrigation?.rows || []).filter(row => validPath(row.route || row.points)).map(row => <polyline key={row.key} points={points(row.route || [row.points[0], row.points.at(-1)])} fill="none" stroke={irrigation.settings?.method === 'drip' ? '#2d8a65' : '#217ca8'} strokeWidth="1.5" vectorEffect="non-scaling-stroke" />)}
+        {irrigation?.settings?.method !== 'drip' && (irrigation?.rows || []).map(row => <path key={`head-${row.key}`} d={(row.points || []).map(point => { const p = transform.toSvg(point), r = .32; return `M${p.x-r} ${p.y}a${r} ${r} 0 1 0 ${2*r} 0a${r} ${r} 0 1 0 ${-2*r} 0`; }).join(' ')} fill="#217ca8" />)}
         {parking && <g><polygon points={points(parking.aisle)} fill="#aab1b5aa" /><polygon points={points(parking.parking)} fill="#e3c985aa" stroke="#8c7446" strokeWidth="1.4" vectorEffect="non-scaling-stroke" /></g>}
         {yard && <g><polygon points={points(yard.aisle)} fill="#aab1b5aa" /><polygon points={points(yard.storage)} fill="#ba9e79aa" stroke="#765b3e" strokeWidth="1.4" vectorEffect="non-scaling-stroke" /></g>}
         {facilityPlans.map((plan, index) => <polygon key={plan.id || index} points={points(plan.points)} fill="#79acc655" stroke="#246f94" strokeWidth="1.7" strokeDasharray="5 3" vectorEffect="non-scaling-stroke"><title>{plan.name || '시설 설계안'} · 배치 설계 확정</title></polygon>)}
         {facilitySites.map(site => <polygon key={site.id} points={points(site.points)} fill="#acb9ac88" stroke="#466755" strokeWidth="1.7" vectorEffect="non-scaling-stroke"><title>{site.name || '시설'} · {site.status === 'building' ? '시공 중' : '완공'}</title></polygon>)}
+        {validPath(irrigation?.header) && irrigationSource && <circle cx={transform.toSvg(irrigation.header[0]).x} cy={transform.toSvg(irrigation.header[0]).y} r=".8" fill="#176f9a" stroke="#fff" strokeWidth=".25"><title>관수 수원 · {irrigationSource.name || irrigationSource.facilityKey}</title></circle>}
         {roadRoutes.map(route => <polyline key={`road-${route.id}`} points={points(route.points)} fill="none" stroke="#765238" strokeWidth="3" vectorEffect="non-scaling-stroke"><title>{route.name || '도로 연결'} · 도로 설계</title></polyline>)}
         {electricRoutes.map(route => <g key={`electric-${route.targetId}`}><polyline points={points(route.points)} fill="none" stroke="#b47b24" strokeWidth="2.4" vectorEffect="non-scaling-stroke"><title>{route.targetName || '전기 연결'} · 전선 설계</title></polyline>{(route.poles || []).map((pole, index) => <circle key={index} cx={transform.toSvg(pole).x} cy={transform.toSvg(pole).y} r=".45" fill="#9a6b2a" stroke="#fff" strokeWidth=".12" />)}</g>)}
       </svg>

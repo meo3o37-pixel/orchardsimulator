@@ -4,6 +4,8 @@ export const settleDailyFinance = (
     nextDay,
     autoRefillPowerFeeTotal,
     autoRefillEnvFeeTotal,
+    directWellIrrigationPowerFeeTotal = 0,
+    directWellIrrigationEnvFeeTotal = 0,
     standbyPowerFeeTotal,
     evSlowChargeCostTotal,
     cardEffectsById,
@@ -11,7 +13,7 @@ export const settleDailyFinance = (
   },
   deps
 ) => {
-  let nextMoney = (Number(prev.money) || 0) - autoRefillPowerFeeTotal - autoRefillEnvFeeTotal - standbyPowerFeeTotal - evSlowChargeCostTotal;
+  let nextMoney = (Number(prev.money) || 0) - autoRefillPowerFeeTotal - autoRefillEnvFeeTotal - directWellIrrigationPowerFeeTotal - directWellIrrigationEnvFeeTotal - standbyPowerFeeTotal - evSlowChargeCostTotal;
   const currentDayOfMonth = deps.toDate(nextDay).getDate();
   const creditBillsRaw = Array.isArray(prev.pendingCreditCardBills) ? prev.pendingCreditCardBills : [];
   const dueCreditBills = currentDayOfMonth === 1

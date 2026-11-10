@@ -1,5 +1,8 @@
 import { INFRASTRUCTURE_ITEMS } from './infrastructureItems.js';
 import { DRAINAGE_MATERIAL_ITEMS } from './drainageMaterial.js';
+export const SCAFFOLD_PIPE_LENGTH_M = 3;
+export const DEFAULT_SCAFFOLD_SPACING_M = 6;
+export const MAX_TRELLIS_STAKES_PER_TREE = 4;
 export const CONSUMABLE_MATERIAL_ITEMS = [
   ...DRAINAGE_MATERIAL_ITEMS,
   ...INFRASTRUCTURE_ITEMS,
@@ -7,16 +10,16 @@ export const CONSUMABLE_MATERIAL_ITEMS = [
     key: 'trellisStake',
     name: '지주대 2m',
     price: 1500,
-    desc: '개별 나무 지지용. 지주시설 설계에서 나무당 0~2개 선택 · 설치율에 따라 강풍 피해 위험 감소',
+    desc: `개별 나무 지지용. 지주시설 설계에서 나무당 0~${MAX_TRELLIS_STAKES_PER_TREE}개 선택 · 설치율에 따라 강풍 피해 위험 감소`,
     unit: '개',
     durable: false,
     weightKg: 0.25
   },
   {
     key: 'scaffoldPipe',
-    name: '비계파이프 3m',
+    name: `비계파이프 ${SCAFFOLD_PIPE_LENGTH_M}m`,
     price: 18000,
-    desc: '나무 열 양 끝과 중간의 구조 지주용. 기본 최대 5m 간격 · 촘촘할수록 강풍 저항 증가, 자재·시공비 증가',
+    desc: `나무 열 양 끝과 중간의 구조 지주용. 기본 최대 ${DEFAULT_SCAFFOLD_SPACING_M}m 간격 · 촘촘할수록 강풍 저항 증가, 자재·시공비 증가`,
     unit: '본',
     durable: false,
     weightKg: 8
@@ -93,6 +96,19 @@ export const CONSUMABLE_MATERIAL_ITEMS = [
     desc: '1롤 100m, 배관 설치 시 1주당 1m 소모',
     unit: '롤',
     weightKg: 10
+  },
+  {
+    key: 'dripHose16x100m',
+    name: '점적호스 16mm · 100m',
+    price: 25000,
+    desc: '16mm 점적관수용 호스 100m 1롤. 호스 자체에서 물이 조금씩 배출됩니다. 관수 주관·일반 관수배관과 구분해 보관합니다.',
+    unit: '롤',
+    durable: false,
+    weightKg: 5,
+    lengthM: 100,
+    diameterMm: 16,
+    specSource: '팜모닝 판매 상품의 16mm · 100m 규격과 25,000원 판매가 참고. 무게 5kg은 게임용 추정치',
+    sourceUrl: 'https://farmmorning.com/marketplace/products/ZGlyZWN0LWRlYWwtcG9zdDo1MDQzNTE%3D'
   },
   {
     key: 'dripNozzle',

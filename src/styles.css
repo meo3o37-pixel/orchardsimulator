@@ -15125,6 +15125,44 @@ button {
   gap: 12px;
   color: var(--green-strong);
 }
+.cadastre-design-view :is(.cadastre-editor__tools > label, .cadastre-setting-card) {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid #cbdccf;
+  border-left: 4px solid #6b9275;
+  border-radius: 11px;
+  background: rgba(250, 253, 248, .93);
+  box-shadow: 0 3px 12px rgba(34, 69, 44, .07);
+}
+.cadastre-design-view :is(.cadastre-editor__tools > label, .cadastre-setting-card):focus-within {
+  border-color: #568b67;
+  border-left-color: #326d49;
+  box-shadow: 0 0 0 3px rgba(77, 132, 95, .15);
+}
+.cadastre-design-view :is(.cadastre-editor__tools > label, label.cadastre-setting-card, .cadastre-setting-card > label) {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+  color: #254d35;
+  font-size: .9rem;
+  font-weight: 700;
+}
+.cadastre-design-view :is(.cadastre-editor__tools > label, .cadastre-setting-card) :is(select, input[type="number"], input.text-input) {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 45px;
+  padding: 9px 11px;
+  border: 1px solid #a9c4ae;
+  border-radius: 7px;
+  background: #fff;
+  color: #214833;
+  font: inherit;
+  font-weight: 600;
+}
+.cadastre-design-view .cadastre-setting-card > p { margin: 0; }
 .cadastre-editor__heading, .cadastre-editor__metrics {
   display: flex;
   justify-content: space-between;
