@@ -12267,6 +12267,8 @@ const PALLET_ITEM_IMAGE_SRC = (
 );
 const SPECIAL_ITEM_IMAGE_BY_KEY = {
   drainagePerforatedPipe100x6m: ITEM_IMAGE_ENTRIES.find(entry => entry.token === normalizeWeatherToken('HDPE유공관100mm6m'))?.src || '',
+  drainagePe200x6m: ITEM_IMAGE_ENTRIES.find(entry => entry.token === normalizeWeatherToken('PE관200mm6m'))?.src || '',
+  drainageConcrete600x1m: ITEM_IMAGE_ENTRIES.find(entry => entry.token === normalizeWeatherToken('콘크리트수로600mm1m'))?.src || '',
   irrigationMain32x100m: ITEM_IMAGE_ENTRIES.find(entry => entry.token === normalizeWeatherToken('관수주관32mm100m'))?.src || '',
   irrigationValve25: ITEM_IMAGE_ENTRIES.find(entry => entry.token === normalizeWeatherToken('관수구역밸브25mm'))?.src || '',
   dripHose16x100m: ITEM_IMAGE_ENTRIES.find(entry => entry.token === normalizeWeatherToken('점적호스16mm100m'))?.src || '',
@@ -69387,7 +69389,7 @@ body { display: flex !important; align-items: center !important; justify-content
                   const boundary = cadastre?.boundaryPoints;
                   if (!Array.isArray(boundary) || boundary.length < 3) return { ok: false, message: '토지 경계를 찾을 수 없습니다.' };
                   const targets = roadTargets(current, game.cultivationZonesByFieldId?.[fieldId] || []);
-                  const error = roadPlanError(plan, boundary, targets);
+                  const error = roadPlanError(plan, boundary, targets, current.drainage?.routes||[]);
                   if (error) return { ok: false, message: error };
                   setGame(prev => ({ ...prev, fields: prev.fields.map(field => String(field.id) === fieldId ? { ...field, cadastreMetricBoundary: cadastre.boundaryCalibrated || field.cadastreMetricBoundary, cadastreRoadPlan: { version: 1, entrance: plan.entrance, routes: plan.routes } } : field) }));
                   return { ok: true, message: '도로 연결 설계안을 저장했습니다. 실제 도로 시공은 별도입니다.' };

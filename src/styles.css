@@ -15036,6 +15036,40 @@ button {
 .cadastre-mode-tabs button { padding: 10px 14px; border: 1px solid #b8c8bd; border-radius: 8px; background: #fafcf9; color: #28533d; font: inherit; cursor: pointer; }
 .cadastre-mode-tabs button[aria-pressed="true"] { background: #28533d; color: #fff; }
 .drainage-planner > p { color: #53695b; line-height: 1.6; }
+.drainage-type-picker { display:grid; gap:8px; }
+.drainage-planner .cadastre-editor__tools .drainage-type-picker__option { display:flex; align-items:center; gap:10px; width:100%; min-width:0; padding:8px 10px; border:1px solid #d3ded4; border-radius:12px; background:#fffdf8; color:#355947; text-align:left; cursor:pointer; }
+.drainage-planner .cadastre-editor__tools .drainage-type-picker__option[aria-pressed="true"] { border-color:#4b8a64; background:#eaf5eb; box-shadow:0 0 0 1px #4b8a6430; }
+.drainage-type-picker__option img { width:66px; height:66px; flex-shrink:0; object-fit:contain; }
+.drainage-type-picker__option>span:not(.drainage-type-picker__check) { flex:1; min-width:0; }
+.drainage-type-picker__option strong { display:block; font-size:.85rem; }
+.drainage-type-picker__option small { display:block; margin-top:4px; font-size:.73rem; }
+.drainage-type-picker__check { color:#43805b; font-size:1.1rem; }
+.drainage-type-picker__option:disabled { opacity:.6; cursor:default; }
+.drainage-status { display:flex; align-items:center; gap:10px; padding:13px 12px; border:1px solid #e5cfaa; border-radius:12px; background:linear-gradient(135deg,#fff9ed,#faf2e2); color:#89602a; }
+.drainage-status.is-ready { border-color:#b5d8bc; background:linear-gradient(135deg,#eef8ef,#e5f2e8); color:#2e6744; }
+.drainage-status__icon { display:grid; place-items:center; flex:0 0 26px; height:26px; border-radius:50%; background:#eddbb8; font-weight:800; }
+.drainage-status.is-ready .drainage-status__icon { background:#c9e5d0; }
+.drainage-status>div { flex:1; min-width:0; }
+.drainage-status strong { display:block; font-size:.9rem; }
+.drainage-status p { margin:4px 0 0; font-size:.75rem; line-height:1.5; opacity:.85; }
+.drainage-status__badge { flex-shrink:0; padding:4px 8px; border:1px solid currentColor; border-radius:999px; font-size:.72rem; font-weight:700; }
+.drainage-slope-info { display:flex; align-items:center; gap:10px; padding:13px 12px; border:1px solid #cbdce2; border-radius:12px; background:linear-gradient(135deg,#f1f7f8,#eaf2f4); color:#315d70; }
+.drainage-slope-info__compass { display:grid; place-items:center; flex:0 0 38px; height:38px; border:1px solid #bfd3dc; border-radius:50%; background:#fffdf8; box-shadow:0 2px 5px #315d7010; }
+.drainage-slope-info__compass>span { display:block; font-size:27px; line-height:1; color:#287ea8; }
+.drainage-slope-info>div:not(.drainage-slope-info__angle) { flex:1; min-width:0; }
+.drainage-slope-info__label,.drainage-slope-info__hint { display:block; font-size:.72rem; line-height:1.5; }
+.drainage-slope-info__hint { margin-top:3px; color:#637e88; font-size:.68rem; }
+.drainage-slope-info strong { display:block; margin-top:3px; font-size:.9rem; }
+.drainage-slope-info__angle { flex-shrink:0; padding-left:10px; border-left:1px solid #cbdce2; text-align:center; }
+.drainage-slope-info__angle>span { font-size:.7rem; }
+.drainage-tree-impact { padding:13px 14px; border:1px solid #ddd4bf; border-radius:12px; background:linear-gradient(135deg,#fbf8ee,#f3efe3); color:#6e6044; }
+.drainage-tree-impact>div { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.drainage-tree-impact__label { font-size:.8rem; font-weight:600; }
+.drainage-tree-impact strong { font-size:1.5rem; color:#92652e; line-height:1.2; white-space:nowrap; }
+.drainage-tree-impact strong>span { margin-left:4px; font-size:.8rem; font-weight:500; }
+.drainage-tree-impact p { margin:8px 0 4px; font-size:.76rem; line-height:1.5; }
+.drainage-tree-impact p>span { margin:0 5px; color:#a58b60; }
+.drainage-planner .drainage-tree-impact small { font-size:.68rem; color:#887b63; }
 .drainage-planner .cadastre-editor__tools select { width: 100%; min-width: 0; min-height: 42px; padding: 8px; border: 1px solid #b8c8bd; border-radius: 6px; background: #fafcf9; color: #28533d; font: inherit; }
 .drainage-planner .cadastre-editor__tools small { color: #53695b; line-height: 1.6; overflow-wrap: anywhere; }
 .drainage-route-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 1px solid #d7e1d9; padding-bottom: 8px; font-size: .9rem; }

@@ -3,8 +3,8 @@ import { soilProfileOf } from '../../utils/soil.js';
 
 // All dimensions, prices and capacities below are game balance values.
 export const PIPE_TYPES = [
-  { key: 'pipe100', name: '유공 가지관 100mm', width: .6, price: 28000, capacity: 3, buried: true, capture: true },
-  { key: 'pipe150', name: '집수 주관 150mm', width: .6, price: 42000, capacity: 7, buried: true, capture: false }
+  { key: 'pipe100', name: '유공관 100mm', width: .6, price: 28000, capacity: 3, buried: true, capture: true },
+  { key: 'pipe150', name: '유공관 150mm', width: .6, price: 42000, capacity: 7, buried: true, capture: true }
 ];
 export const isBuried = (route) => PIPE_TYPES.some((t) => t.key === route?.type);
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y) * 1000;
@@ -25,22 +25,25 @@ export function routeDepthAt(route, segment = 0, t = 0) {
 }
 export function pipeGradeError(route, bearing, slopeDeg) {
   if (!isBuried(route)) return '';
+  if(route.id?.startsWith('tree-link:'))return '';
   const tangent = Math.tan(Math.max(0, Math.min(60, Number(slopeDeg) || 0)) * Math.PI / 180);
   for (let i = 1; i < route.points.length; i++) {
     const a = route.points[i - 1], b = route.points[i];
+    if((route.rowKey||route.id?.startsWith('tree-link:'))&&projection(b,bearing)>projection(a,bearing)+.05)continue;
     const drop = (projection(b, bearing) - projection(a, bearing)) * tangent + routeDepthAt(route, i - 1, 1) - routeDepthAt(route, i - 1, 0);
     if (drop / Math.max(.001, distance(a, b)) < .002 - 1e-8) return '유공관 역구배·구배 부족: 관 바닥이 출구 방향으로 최소 0.2% 내려가게 깊이를 조정해 주세요(게임 기준).';
   }
   return '';
 }
-export function junctionDepthOK(route, receiving) {
+export function junctionDepthOK(route, receiving, bearing = null) {
   if (!isBuried(route)) return !isBuried(receiving); // Surface runoff needs an open channel, not an unmodeled inlet.
   const end = route.points.at(-1);
   for (let i = 1; i < receiving.points.length; i++) {
     const a = receiving.points[i - 1], b = receiving.points[i], dx = b.x - a.x, dy = b.y - a.y;
     const den = dx * dx + dy * dy;
     const t = den ? Math.max(0, Math.min(1, ((end.x - a.x) * dx + (end.y - a.y) * dy) / den)) : 0;
-    if (distance(end, { x: a.x + dx * t, y: a.y + dy * t }) <= .05 && route.depthEnd <= routeDepthAt(receiving, i - 1, t) + .02) return true;
+    const downhillLink=Number.isFinite(bearing)&&(route.rowKey||route.id?.startsWith('tree-link:'))&&projection(end,bearing)>projection(route.points[0],bearing)+.05;
+    if (distance(end, { x: a.x + dx * t, y: a.y + dy * t }) <= .05 && (route.id?.startsWith('tree-link:')||receiving.id?.startsWith('tree-link:')||downhillLink||route.depthEnd <= routeDepthAt(receiving, i - 1, t) + .02)) return true;
   }
   return false;
 }
@@ -77,13 +80,13 @@ export function analyzePipeNetwork(plan, field, built, downstream, roots, typeOf
     });
     if (!changed) break;
   }
-  const pipes = routes.filter((r, i) => r.type === 'pipe100' && built[i] && available[i] > 0);
+  const pipes = routes.filter((r, i) => (r.rowKey || r.type === 'pipe100') && built[i] && available[i] > 0);
   const spacing = pipeSpacing(field);
   const coverage = pipeCoveragePaths(pipes, boundary, spacing);
-  const branchLimit = routes.reduce((s, r, i) => s + (r.type === 'pipe100' && built[i] ? available[i] : 0), 0);
+  const branchLimit = routes.reduce((s, r, i) => s + ((r.rowKey || r.type === 'pipe100') && built[i] ? available[i] : 0), 0);
   const outletLimit = roots.reduce((s, i) => s + (built[i] ? rate(i) : 0), 0);
   // A conservative shared main bottleneck prevents multiple branches bypassing a small collector.
-  const collectors = routes.flatMap((r, i) => r.type === 'pipe150' && built[i] ? [rate(i)] : []);
+  const collectors = routes.flatMap((r, i) => !r.rowKey && r.type === 'pipe150' && built[i] ? [rate(i)] : []);
   const rawCapacity = Math.min(branchLimit, outletLimit, ...(collectors.length ? collectors : [Infinity]));
   const capacity = Math.min(12 * coverage.fraction, rawCapacity * 300 / Math.max(100, Number(field?.py) || 0));
   return { pipeSpacing: spacing, pipeCoverage: coverage.fraction, pipePaths: coverage.paths, pipeCapacity: capacity, outletCapacity: outletLimit * 300 / Math.max(100, Number(field?.py) || 0) };

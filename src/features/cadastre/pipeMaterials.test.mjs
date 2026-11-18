@@ -4,7 +4,7 @@ import { SHOP_ITEMS } from '../../config/items/index.js';
 import { DRAINAGE_MATERIAL_ITEMS } from '../../config/items/drainageMaterial.js';
 import { applyDrainageAction, drainageLength, drainageWorkQuote } from './drainage.js';
 import { allocatePipeMaterials } from './pipeMaterials.js';
-const [branch,main]=DRAINAGE_MATERIAL_ITEMS;
+const branch=DRAINAGE_MATERIAL_ITEMS.find(i=>i.drainageRouteType==='pipe100'),main=DRAINAGE_MATERIAL_ITEMS.find(i=>i.drainageRouteType==='pipe150');
 const p=(x,y)=>({x:x/1000,y:y/1000}),boundary=[p(0,0),p(30,0),p(30,30),p(0,30)];
 const raw={version:1,bearing:90,boundary,routes:[
  {id:'out',type:'earth',points:[p(28,0),p(28,32)],work:32},
@@ -19,6 +19,15 @@ const save=s=>applyDrainageAction(s,'f',{kind:'save',plan:raw},deps).state;
 const ownDeps={...deps,machine:{id:'dig-1',machineKey:'dig',unitNo:1,item:{usageWear:.12}},excavatorKeys:new Set(['dig']),durability:100};
 const ownGame=inventory=>{const s=save(game());s.inventory={dig:1,...inventory};s.fields[0].machineParkingSlots=['dig-1'];s.fields[0].drainage.routes[0].work=32;return s;};
 const ownWork=s=>applyDrainageAction(s,'f',{kind:'work',mode:'excavator',scope:'all'},ownDeps);
+test('PE and concrete self construction consumes only purchased lengths and preserves offcuts',()=>{
+ for(const type of ['lined','main']){
+  const item=DRAINAGE_MATERIAL_ITEMS.find(i=>i.drainageRouteType===type);
+  const s=ownGame({[item.key]:1});s.money=10000000;s.fields[0].drainage.routes=[{id:'surface',type,points:[p(28,0),p(28,32)],work:0,blockage:0}];
+  const r=ownWork(s);assert.equal(r.ok,true,r.message);assert.equal(r.state.fields[0].drainage.routes[0].work,item.lengthM);assert.equal(r.state.inventory[item.key],0);
+  assert.equal(ownWork(r.state).ok,false);
+  const contractor=applyDrainageAction(s,'f',{kind:'work',mode:'contractor',scope:'surface'},deps);assert.equal(contractor.ok,true,contractor.message);assert.equal(contractor.state.inventory[item.key],1);
+ }
+});
 
 test('own excavator without purchased pipes cannot spend anything or advance burial',()=>{
  const s=ownGame({}),before=JSON.stringify(s),r=ownWork(s);
@@ -43,7 +52,7 @@ test('own excavator uses offcuts after reload and stops at their exact length',(
 });
 
 test('mart catalog exposes HDPE pipes in whole six-metre lengths with weight and price',()=>{
- for(const item of DRAINAGE_MATERIAL_ITEMS){const catalog=SHOP_ITEMS.consumableMaterial.find(i=>i.key===item.key);assert.equal(catalog.lengthM,6);assert.equal(catalog.unit,'본');assert.equal(catalog.material,'HDPE');assert.ok(catalog.weightKg>0&&catalog.price>0);}
+ for(const item of DRAINAGE_MATERIAL_ITEMS.filter(i=>['pipe100','pipe150'].includes(i.drainageRouteType))){const catalog=SHOP_ITEMS.consumableMaterial.find(i=>i.key===item.key);assert.equal(catalog.lengthM,6);assert.equal(catalog.unit,'본');assert.equal(catalog.material,'HDPE');assert.ok(catalog.weightKg>0&&catalog.price>0);}
 });
 test('planning is free; execution consumes whole pipes once and deducts exactly their used value',()=>{
  const initial=game(),s=save(initial);assert.deepEqual(s.inventory,initial.inventory);
@@ -62,7 +71,7 @@ test('short offcuts survive JSON reload and pay only for the next installed metr
  const loaded=JSON.parse(JSON.stringify({...f,cadastrePipeOffcuts:a.offcuts}));
  const further={...partial,routes:partial.routes.map(r=>r.id==='branch'?{...r,work:5}:r)};
  const b=allocatePipeMaterials({...s,inventory:{}},loaded,partial,further,deps);
- assert.equal(b.rows.find(r=>r.key===branch.key).units,0);assert.equal(b.offcuts[branch.key],1);assert.equal(b.credit,7700);
+ assert.equal(b.rows.find(r=>r.key===branch.key).units,0);assert.equal(b.offcuts[branch.key],1);assert.equal(b.credit,Math.floor(3*branch.price/branch.lengthM));
 });
 test('insufficient money or changed stock never consumes pipes or advances work',()=>{
  const s=save(game()),before=JSON.stringify(s);

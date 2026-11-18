@@ -31,17 +31,18 @@ export function infrastructureSource(field,zonesRaw=[],boundary){
  const normalizedZones=normalizeCultivationZones(zonesRaw);
  const zones=normalizedZones.filter(z=>z.kind==='farm'&&z.planting?.variety);
  if(!zones.length)return{rows:[],error:'재배구역의 품종·식재 간격을 먼저 저장해 주세요.'};
- const plans=[];
+ const plans=[],rowSegments=[];
  for(const z of zones){
   const error=validateCultivationZone({points:z.points,boundaryPoints:boundary,zones,excludeId:z.id});if(error)return{rows:[],error};
   const preview=generatePlantingPreview(z.points,z.planting,field.drainage?.routes||[],[...(field.openParking?.footprints||[]),...facilityFootprints(field),...yardFootprints(field)]);
   if(preview.error)return{rows:[],error:preview.error};
+  rowSegments.push(...preview.rows);
   plans.push({zoneId:z.id,name:z.name,planting:z.planting,points:preview.trees,done:preview.treeCount});
  }
  const total=sum(plans.map(p=>p.done));if(total>15000)return{rows:[],error:'한 번에 설계 가능한 나무는 15,000주입니다. 재배구역을 나눠 주세요.'};
  const rows=orchardTreeRows({trees:total,cadastrePlantingPlans:plans}).rows.filter(r=>r.points.length>=2);
  if(rows.length>500)return{rows:[],error:'설계 가능한 나무 열은 500열입니다.'};
- return{rows,zones:zones.map(zone=>({id:zone.id,name:zone.name,points:zone.points})),boundary,buildings:normalizedZones.filter(zone=>zone.kind==='building').map(zone=>zone.points),error:rows.length?'':'2주 이상 배치된 나무 열이 필요합니다.',signature:JSON.stringify(rows.map(r=>[r.key,r.points]))};
+ return{rows,rowSegments,zones:zones.map(zone=>({id:zone.id,name:zone.name,points:zone.points})),boundary,buildings:normalizedZones.filter(zone=>zone.kind==='building').map(zone=>zone.points),error:rows.length?'':'2주 이상 배치된 나무 열이 필요합니다.',signature:JSON.stringify(rows.map(r=>[r.key,r.points]))};
 }
 export function infrastructureSettings(kind,raw={}){
  if(kind==='trellis')return normalizeTrellisInvestment(raw);

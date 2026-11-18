@@ -375,27 +375,22 @@ function CultivationEditor({ className = '', selectedField, cadastre, zones: raw
                   {PLANTING_CROPS.map((crop) => <option key={crop.key} value={crop.key}>{crop.label}</option>)}
                 </select>
               </label>
-              <label className="cadastre-editor__rootstock cadastre-setting-card" htmlFor="cadastre-variety"><span>품종</span>
-                <select id="cadastre-variety" className="text-input" required disabled={!editable} value={plantingSettings.variety || ''} onChange={(event) => {
-                  setPlantingDraft({ zoneId: selectedId, values: { ...plantingSettings, crop: plantingSettings.crop || 'apple', variety: event.target.value } });
-                  setMessage('');
-                }}>
-                  <option value="" disabled>품종 선택</option>
-                  {PLANTING_CROPS.find((crop) => crop.key === (plantingSettings.crop || 'apple'))?.varieties.map((variety) => <option key={variety.key} value={variety.key}>{variety.label}</option>)}
-                </select>
-              </label>
-              <label className="cadastre-editor__rootstock cadastre-setting-card" htmlFor="cadastre-rootstock"><span>대목</span>
-                <select id="cadastre-rootstock" className="text-input" disabled={!editable} value={plantingSettings.rootstock} onChange={(event) => {
-                  const limits = plantingRootstockOf(event.target.value);
+              <label className="cadastre-editor__rootstock cadastre-setting-card" htmlFor="cadastre-variety"><span>품종 · 대목</span>
+                <select id="cadastre-variety" className="text-input" required disabled={!editable} value={plantingSettings.variety ? `${plantingSettings.variety}:${plantingSettings.rootstock}` : ''} onChange={(event) => {
+                  const [variety, rootstock] = event.target.value.split(':');
+                  const limits = plantingRootstockOf(rootstock);
                   setPlantingDraft({ zoneId: selectedId, values: {
                     ...plantingSettings,
+                    crop: plantingSettings.crop || 'apple',
+                    variety,
                     rootstock: limits.key,
                     rowSpacing: Math.max(limits.rowSpacing, Number(plantingSettings.rowSpacing) || 0),
                     treeSpacing: Math.max(limits.treeSpacing, Number(plantingSettings.treeSpacing) || 0)
                   } });
                   setMessage(`${limits.label} 대목 기준을 적용했습니다.`);
                 }}>
-                  {PLANTING_ROOTSTOCKS.map((rootstock) => <option key={rootstock.key} value={rootstock.key}>{rootstock.label}</option>)}
+                  <option value="" disabled>묘목 품종·대목 선택</option>
+                  {PLANTING_CROPS.find(crop=>crop.key===(plantingSettings.crop||'apple'))?.varieties.flatMap(variety=>PLANTING_ROOTSTOCKS.map(rootstock=><option key={`${variety.key}:${rootstock.key}`} value={`${variety.key}:${rootstock.key}`}>{variety.label} {rootstock.label}</option>))}
                 </select>
               </label>
               <div className="cadastre-editor__planting-fields cadastre-setting-card">

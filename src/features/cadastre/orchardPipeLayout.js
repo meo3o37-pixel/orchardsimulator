@@ -1,5 +1,5 @@
 import { polygonContainsPoint } from './cadastreData.js';
-import { routeDepthAt } from './pipeSystem.js';
+import { routeDepthAt,pipeGradeError } from './pipeSystem.js';
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y)*1000;
 const length=points=>points.slice(1).reduce((s,b,i)=>s+distance(points[i],b),0);
 const projection=(p,bearing)=>(p.x*Math.cos(bearing*Math.PI/180)+p.y*Math.sin(bearing*Math.PI/180))*1000;
@@ -28,9 +28,21 @@ export function underRowPoints(row,bearing) {
  if(projection(a,bearing)>projection(b,bearing))[a,b]=[b,a];
  return[a,b];
 }
+export function orchardPipeRows(field) {
+ const plans=field?.cadastrePlantingPlans||[];
+ // Confirmed planting coordinates also define pipe positions before planting.
+ if(plans.length){
+  const actual=orchardTreeRows(field);
+  if(Number(field?.trees)>0&&!actual.aligned)return actual;
+  const total=plans.reduce((sum,plan)=>sum+(plan.points?.length||0),0);
+  const source=orchardTreeRows({...field,trees:total,cadastrePlantingPlans:plans.map(plan=>({...plan,done:plan.points?.length||0}))});
+  return {...source,planned:true};
+ }
+ return orchardTreeRows(field);
+}
 export function isActualTreeRowPipe(field,route,bearing) {
- if(route.type!=='pipe100')return true;
- const source=orchardTreeRows(field);if(!source.aligned)return false;
+ if(!route.rowKey&&route.type!=='pipe100')return true;
+ const source=orchardPipeRows(field);if(!source.aligned)return false;
  const row=source.rows.find(r=>r.key===route.rowKey),expected=row&&underRowPoints(row,bearing);
  return Boolean(expected&&route.points?.length===2&&distance(route.points[0],expected[0])<.02&&distance(route.points[1],expected[1])<.02);
 }
@@ -45,14 +57,23 @@ function outletConnection(route,boundary) {
  }
  return null;
 }
-export function createOrchardPipeLayout(field,rowKeys,surfaceId,boundary,bearing) {
- const source=orchardTreeRows(field),fail=message=>({ok:false,message});
- if(!source.aligned)return fail('실제 나무 주수와 식재 위치를 먼저 연결해 주세요.');
+export function createOrchardPipeLayout(field,rowKeys,surfaceId,boundary,bearing,pipeType='pipe100',connectNearest=false) {
+ const source=orchardPipeRows(field),fail=message=>({ok:false,message});
+ if(!source.aligned)return fail('재배구역에서 식재 열 설계를 먼저 확정해 주세요.');
  const selected=source.rows.filter(r=>rowKeys.includes(r.key));
  if(!selected.length)return fail('매설할 나무 열을 선택해 주세요.');
  const surface=field.drainage?.routes?.find(r=>r.id===surfaceId&&!['pipe100','pipe150'].includes(r.type));
  if(!surface)return fail('연결할 배수로를 먼저 설계해 주세요.');
- const connection=outletConnection(surface,boundary);if(!connection)return fail('토지 안쪽의 배수로 연결점을 찾지 못했습니다.');
+ let connection=outletConnection(surface,boundary);
+ if(connectNearest){
+  const ends=selected.map(row=>underRowPoints(row,bearing)?.at(-1)).filter(Boolean);
+  const center=ends.length?{x:ends.reduce((s,p)=>s+p.x,0)/ends.length,y:ends.reduce((s,p)=>s+p.y,0)/ends.length}:null;
+  let best=Infinity;
+  if(center)surface.points.slice(1).forEach((b,i)=>{const a=surface.points[i],dx=b.x-a.x,dy=b.y-a.y,den=dx*dx+dy*dy,t=den?Math.max(0,Math.min(1,((center.x-a.x)*dx+(center.y-a.y)*dy)/den)):0,p={x:a.x+dx*t,y:a.y+dy*t};
+   if(polygonContainsPoint(boundary,p)&&distance(center,p)<best){best=distance(center,p);connection=p;}
+  });
+ }
+ if(!connection)return fail('토지 안쪽의 배수로 연결점을 찾지 못했습니다.');
  const preserved=(field.drainage?.routes||[]).filter(r=>['pipe100','pipe150'].includes(r.type)&&r.work>0);
  const routes=[];
  for(const row of selected){
@@ -61,20 +82,35 @@ export function createOrchardPipeLayout(field,rowKeys,surfaceId,boundary,bearing
   if(points.some(p=>!polygonContainsPoint(boundary,p)))return fail(`${row.name}: 열 끝의 연결 공간이 토지 밖입니다.`);
   const depthEnd=Math.max(.8,.6+length(points)*.002+.01);
   if(depthEnd>1.7)return fail(`${row.name}: 열이 너무 길어 구간을 나눠야 합니다.`);
-  routes.push({id:`tree-row:${row.key}`,rowKey:row.key,type:'pipe100',points,depthStart:.6,depthEnd,envelope:true,work:0,blockage:0});
+  routes.push({id:`tree-row:${row.key}`,rowKey:row.key,type:pipeType==='pipe150'?'pipe150':'pipe100',points,depthStart:.6,depthEnd,envelope:true,work:0,blockage:0});
  }
  if(!routes.length)return fail('선택한 열에는 이미 매설한 관로가 있습니다.');
- const existingCollector=preserved.find(main=>main.type==='pipe150'&&routes.every(row=>{
-  const end=row.points.at(-1);
-  return main.points.slice(1).some((b,i)=>{const a=main.points[i],dx=b.x-a.x,dy=b.y-a.y,den=dx*dx+dy*dy,t=den?Math.max(0,Math.min(1,((end.x-a.x)*dx+(end.y-a.y)*dy)/den)):0;return distance(end,{x:a.x+dx*t,y:a.y+dy*t})<.02&&row.depthEnd<=routeDepthAt(main,i,t)+.02;});
- }));
- if(existingCollector)return{ok:true,routes:[...preserved,...routes],rowCount:routes.length};
- const ends=routes.map(r=>r.points.at(-1)).sort((a,b)=>projection(a,bearing)-projection(b,bearing)||a.x-b.x||a.y-b.y);
- const collector=[...ends,connection].filter((p,i,all)=>i===0||distance(p,all[i-1])>=.1);
- const depthStart=Math.max(...routes.map(r=>r.depthEnd))+.05,depthEnd=depthStart+length(collector)*.002+.01;
- const receiving=routeDepthAt(surface);
- if(depthEnd>Math.min(1.8,receiving))return fail('집수관 구배를 확보하기 어렵습니다. 열을 나눠 설계하거나 더 깊은 배수로에 연결해 주세요.');
- if(collector.length<2||length(collector)<1)return fail('배수로 연결점이 너무 가깝습니다. 다른 배수로에 연결해 주세요.');
- routes.unshift({id:`tree-collector:${routes[0].rowKey}`,type:'pipe150',points:collector,depthStart,depthEnd,envelope:true,work:0,blockage:0});
- return{ok:true,routes:[...preserved,...routes],rowCount:routes.filter(r=>r.type==='pipe100').length};
+ if(!connectNearest)return {ok:true,routes:[...preserved,...routes],rowCount:routes.length};
+ const links=[];
+ const drained=[];
+ const surfaceGap=row=>Math.min(...surface.points.slice(1).map((b,i)=>{const a=surface.points[i],p=row.points.at(-1),dx=b.x-a.x,dy=b.y-a.y,den=dx*dx+dy*dy,t=den?Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/den)):0;return distance(p,{x:a.x+dx*t,y:a.y+dy*t});}));
+ for(const row of [...routes].sort((a,b)=>surfaceGap(a)-surfaceGap(b))){
+  const end=row.points.at(-1);let nearest=null,best=Infinity;
+  surface.points.slice(1).forEach((b,i)=>{const a=surface.points[i],dx=b.x-a.x,dy=b.y-a.y,den=dx*dx+dy*dy,t=den?Math.max(0,Math.min(1,((end.x-a.x)*dx+(end.y-a.y)*dy)/den)):0,p={x:a.x+dx*t,y:a.y+dy*t};if(polygonContainsPoint(boundary,p)&&distance(end,p)<best){best=distance(end,p);nearest=p;}});
+  if(!nearest)return fail('토지 안쪽의 배수로 연결점을 찾지 못했습니다.');
+  if(best<.05){drained.push(row);continue;}
+  if(best>=3){
+   const candidates=[...drained,...links].flatMap(target=>target.points.slice(1).map((b,i)=>{const a=target.points[i],dx=b.x-a.x,dy=b.y-a.y,den=dx*dx+dy*dy,t=den?Math.max(0,Math.min(1,((end.x-a.x)*dx+(end.y-a.y)*dy)/den)):0,point={x:a.x+dx*t,y:a.y+dy*t};return {target,point,gap:distance(end,point),depth:routeDepthAt(target,i,t)};})).filter(candidate=>candidate.gap>=1&&candidate.gap<best).sort((a,b)=>a.gap-b.gap);
+   let joined=false;
+   for(const candidate of candidates){
+    const drop=(projection(candidate.point,bearing)-projection(end,bearing))*Math.tan((field.slopeDeg||0)*Math.PI/180);
+    const endDepth=candidate.depth,startDepth=row.depthEnd;
+    const adjusted={...row,depthEnd:startDepth};
+    row.depthEnd=startDepth;
+    links.push({id:`tree-link:${row.rowKey}`,type:'pipe150',points:[end,candidate.point],depthStart:startDepth,depthEnd:endDepth,envelope:true,work:0,blockage:0});
+    drained.push(row);joined=true;break;
+   }
+   if(joined)continue;
+  }
+  const depthStart=row.depthEnd+.02,depthEnd=depthStart+best*.002+.01;
+  if(depthEnd>Math.min(1.8,routeDepthAt(surface)))return fail('가까운 배수로까지 연결할 깊이가 부족합니다. 더 깊은 배수로를 선택해 주세요.');
+  links.push({id:`tree-link:${row.rowKey}`,type:'pipe150',points:[end,nearest],depthStart,depthEnd,envelope:true,work:0,blockage:0});
+  drained.push(row);
+ }
+ return {ok:true,routes:[...preserved,...routes,...links],rowCount:routes.length};
 }

@@ -2,6 +2,7 @@ import FacilitySiteLayer from '../facility/FacilitySiteLayer';
 import {normalizeFacilitySites}from'../facility/facilityConstruction';
 import {longDate}from'../../utils/common';
 import React,{useContext,useId,useMemo,useRef}from'react';
+import {DrainStroke} from './DesignRouteStroke';
 import CadastreGround,{CadastreGroundContext}from'./CadastreGround';
 import CadastreMapToolbar,{cadastreViewportEvents}from'./CadastreMapToolbar';
 import useCadastreViewport from'./useCadastreViewport';
@@ -37,7 +38,7 @@ export default function LiveLandView({field,cadastre,zones=[]}){
      <g aria-label={`연결된 식재 위치 ${snapshot.trees.length}주`}><path d={paths.shadow} fill="#173c32" opacity=".2"/><path d={paths.trees} fill={season.greenCover>30?'#3b7650':'#747d52'} stroke="#275438" strokeWidth=".08"/><path d={paths.light} fill={season.greenCover>30?'#7eac67':'#a9a576'} opacity=".7"/></g>
      <path d={paths.posts} fill="#66513a" stroke="#fff6db" strokeWidth=".06"/><path d={paths.brokenPosts} fill="#bb5a49"/><path d={paths.nozzles} fill="#9ee3e2" stroke="#287ea8" strokeWidth=".06"/>
     </g>
-    {snapshot.drains.map(r=><polyline key={r.id} points={toPoints(r.points)} fill="none" stroke={r.type==='pipe100'||r.type==='pipe150'?'#8a6aa9':'#4094b7'} strokeWidth={r.type==='pipe150'?'.6':'.4'} strokeDasharray={r.type==='pipe100'||r.type==='pipe150'?'1 .6':undefined}/>) }
+    {snapshot.drains.map(r=><DrainStroke key={r.id} points={toPoints(r.points)} type={r.type} complete/>)}
     <FacilitySiteLayer field={field} transform={transform} day={environment.day}/>
     <polygon points={toPoints(cadastre.boundaryPoints)} fill="none" stroke="#34694a" strokeWidth=".28"/>
    </svg>

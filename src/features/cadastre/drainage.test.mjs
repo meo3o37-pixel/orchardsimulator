@@ -16,6 +16,7 @@ test('area minimums and downhill/outside/connected topology', () => {
   assert.deepEqual(drainageRequirement(300), { length: 30, outlets: 1 });
   assert.deepEqual(drainageRequirement(1501), { length: 151, outlets: 2 });
   assert.equal(analyzeDrainage(plan(), 300).error, '');
+  assert.equal(analyzeDrainage(plan([route('reversed',[p(15,32),p(15,0)])]),300).error,'');
   assert.match(analyzeDrainage(plan([route('bad', [p(15,20),p(15,-2)])]), 300).error, /하경사|역경사/);
   assert.match(analyzeDrainage(plan([route('bad', [p(15,0),p(15,20)])]), 300).error, /연결/);
   assert.match(analyzeDrainage(plan([route('bad', [p(15,0),p(15,40)])]), 300).error, /5m/);

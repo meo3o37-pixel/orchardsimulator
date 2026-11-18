@@ -46,7 +46,7 @@ export function connectedRoadRoutes(routes) {
   return routes.filter(route => connected.has(route.startId) && connected.has(route.endId));
 }
 
-export function roadPlanError(plan, boundary, targets) {
+export function roadPlanError(plan, boundary, targets, drainageRoutes = []) {
   if (!valid(plan?.entrance)) return '지도에서 토지 경계의 진입점을 먼저 선택해 주세요.';
   const nearest = nearestBoundaryPoint(boundary, plan.entrance);
   if (!nearest || Math.hypot(plan.entrance.x - nearest.x, plan.entrance.y - nearest.y) > 1e-7) return '진입점은 토지 경계 위에 있어야 합니다.';
@@ -61,6 +61,12 @@ export function roadPlanError(plan, boundary, targets) {
     if (Math.hypot(route.points[0].x - start.x, route.points[0].y - start.y) > 1e-7 || Math.hypot(route.points.at(-1).x - end.x, route.points.at(-1).y - end.y) > 1e-7) return '도로 양끝을 선택한 시설에 연결해 주세요.';
     for (let i = 1; i < route.points.length; i++) {
       const a = route.points[i - 1], b = route.points[i];
+      for(const drain of drainageRoutes.filter(r=>r.type==='earth'))for(let j=1;j<drain.points.length;j++){
+        const c=drain.points[j-1],d=drain.points[j],dx=b.x-a.x,dy=b.y-a.y,ex=d.x-c.x,ey=d.y-c.y,den=dx*ey-dy*ex;
+        if(Math.abs(den)<1e-16)continue;
+        const t=((c.x-a.x)*ey-(c.y-a.y)*ex)/den,u=((c.x-a.x)*dy-(c.y-a.y)*dx)/den;
+        if(t>=0&&t<=1&&u>=0&&u<=1)return '흙수로를 도로가 건널 수 없습니다. PE관 배수로 또는 콘크리트 수로 구간으로 연결해 주세요.';
+      }
       for (let step = 1; step <= 10; step++) {
         const t = step / 11;
         if (!polygonContainsPoint(boundary, { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t })) return '도로는 토지 경계 안으로 배치해 주세요.';

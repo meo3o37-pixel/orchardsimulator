@@ -126,7 +126,8 @@ export function quoteCadastreJob(state,id,jobId,options={},deps={}) {
  if(job.kind==='infrastructure')return quoteInfrastructureJob(state,id,jobId,options,deps);
  if(job.done+.001>=job.total)return fail('이미 완료한 작업입니다.');
  const mode=options.mode||'contractor',machine=deps.machine;
- if(!['contractor','excavator',...(job.kind==='plant'?['shovel']:[])].includes(mode))return fail('작업 방식을 선택해 주세요.');
+ if(!['contractor','excavator',...(['plant','drainage'].includes(job.kind)?['shovel']:[])].includes(mode))return fail('작업 방식을 선택해 주세요.');
+ if(mode==='shovel'&&job.kind==='drainage'&&!deps.hasShovel)return fail('배수로를 직접 파려면 삽이 필요합니다.');
  if(mode==='excavator'&&(!machine||!deps.excavatorKeys?.has(machine.machineKey)||!(field.machineParkingSlots||[]).includes(machine.id)||!(Number(state.inventory?.[machine.machineKey])>=Number(machine.unitNo||1))||!(deps.durability>0)))return fail('현재 토지에 주차된 정상 상태의 내 굴삭기를 선택해 주세요.');
  let q;
  if(job.kind==='drainageClean'||job.kind==='pipesClean'){
@@ -140,14 +141,14 @@ export function quoteCadastreJob(state,id,jobId,options={},deps={}) {
  }
  if(job.kind==='drainage'||job.kind==='pipes'){
   if(job.kind==='drainage'&&Number(field.trees)>0)return fail('나무가 있는 토지는 배수로 굴착 전에 위치 확인이 필요합니다.');
-  if(job.kind==='pipes'&&(field.drainage?.routes||[]).some(r=>r.type==='pipe100'&&r.work+.01<drainageLength(r.points)&&!isActualTreeRowPipe(field,r,field.drainage.bearing)))return fail('실제 나무 열 아래로 유공관 설계를 다시 확정해 주세요.');
-  q=drainageWorkQuote(field.drainage,mode,state.day,state.labor,deps.fuel||0,selfLaborAvailable(state),job.scope,mode==='excavator'?pipeMaterialLimits(state,field,deps):null);
+  if(job.kind==='pipes'&&(field.drainage?.routes||[]).some(r=>(r.rowKey||r.type==='pipe100')&&r.work+.01<drainageLength(r.points)&&!isActualTreeRowPipe(field,r,field.drainage.bearing)))return fail('실제 나무 열 아래로 유공관 설계를 다시 확정해 주세요.');
+  q=drainageWorkQuote(field.drainage,mode,state.day,state.labor,deps.fuel||0,selfLaborAvailable(state),job.scope,mode!=='contractor'?pipeMaterialLimits(state,field,deps):null);
   if(q.error)return fail(q.error);
-  const pipeMaterials=allocatePipeMaterials(state,field,normalizeDrainage(field.drainage),q.plan,deps);
+  const pipeMaterials=allocatePipeMaterials(state,field,normalizeDrainage(field.drainage),q.plan,{...deps,drainageContractor:mode==='contractor'});
   q={...q,cost:Math.max(0,q.cost-pipeMaterials.credit),pipeMaterials};
   if(state.money<q.cost)return fail('오늘 시공비가 부족합니다.');
   const d=normalizeDrainage(field.drainage);
-  const materials=d.routes.filter(r=>drainageScopeMatches(r,job.scope)).reduce((s,r)=>s+Math.max(0,drainageLength(r.points)-r.work)*(isBuried(r)?pipeRate(r):DRAINAGE_TYPES.find(t=>t.key===r.type).price)*(mode==='excavator'?DRAINAGE_SELF_WORK_COST_FACTOR:1),0);
+  const materials=d.routes.filter(r=>drainageScopeMatches(r,job.scope)).reduce((s,r)=>s+Math.max(0,drainageLength(r.points)-r.work)*(isBuried(r)?pipeRate(r):DRAINAGE_TYPES.find(t=>t.key===r.type).price)*(mode!=='contractor'?DRAINAGE_SELF_WORK_COST_FACTOR:1),0);
   const access=d.routes.filter(r=>drainageScopeMatches(r,job.scope)&&isBuried(r)&&r.work<drainageLength(r.points)&&!d.paidAccess.includes(r.id)).length*80000;
   const wear=mode==='excavator'?drainageExcavatorWear(q.fuel,machine,deps.durability):0;
   return {...q,ok:true,amount:q.length,unit:'m',wear,remainingCost:Math.max(q.cost,Math.ceil(materials+access+q.outletCost-pipeMaterials.credit))};

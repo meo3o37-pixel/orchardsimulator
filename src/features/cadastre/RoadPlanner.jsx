@@ -38,7 +38,7 @@ export default function RoadPlanner({ selectedField: field, cadastre, zones = []
     const id = [startId, targetId].sort().join('|');
     const routes = [...(saved.routes || []).filter(route => route.id !== id), { id, startId, endId: targetId, name: `${startId === 'entrance' ? '토지 진입점' : targets.find(item => item.id === startId)?.name} → ${target.name}`, points: draft }];
     const plan = { version: 1, entrance, routes };
-    const error = roadPlanError(plan, cadastre.boundaryPoints, targets);
+    const error = roadPlanError(plan, cadastre.boundaryPoints, targets, field.drainage?.routes||[]);
     if (error) { setNotice(error); return; }
     const result = onRoadPlanSave?.(plan);
     setNotice(result?.message || '도로 설계안을 저장하지 못했습니다.');

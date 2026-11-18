@@ -14,6 +14,7 @@ export function pipeMaterialLimits(state, field, deps={}) {
 export function allocatePipeMaterials(state, field, before, after, deps={}) {
  const offcuts={...(field.cadastrePipeOffcuts||{})},rows=[];let credit=0;
  for(const item of DRAINAGE_MATERIAL_ITEMS){
+  if(deps.drainageContractor&&['lined','main'].includes(item.drainageRouteType))continue;
   const length=after.routes.reduce((sum,r)=>sum+(r.type===item.drainageRouteType?Math.max(0,Math.min(metres(r.points),r.work)-(before.routes.find(old=>old.id===r.id)?.work||0)):0),0);
   if(length<1e-6)continue;
   const stored=Math.min(item.lengthM,Math.max(0,Number(offcuts[item.key])||0));
